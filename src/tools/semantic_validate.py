@@ -13,6 +13,7 @@ from pathlib import Path
 from dataclasses import dataclass
 
 from ..agent.tools import Tool, ToolResult
+from ..research.knighter_env import load_knighter_e2_config
 from loguru import logger
 
 
@@ -42,6 +43,7 @@ class SemanticValidateTool(Tool):
         self.clang_path = self.config.get("clang_path", "/usr/lib/llvm-18/bin/clang++")
         self.llvm_dir = self.config.get("llvm_dir", "/usr/lib/llvm-18")
         self.timeout = self.config.get("timeout_seconds", 120)
+        self.knighter_env = load_knighter_e2_config({"knighter_e2": self.config.get("knighter_e2", {})})
 
     @property
     def name(self) -> str:
@@ -89,7 +91,7 @@ class SemanticValidateTool(Tool):
                 },
                 "patch_path": {
                     "type": "string",
-                    "description": "补丁路径（可选，用于报告上下文）"
+                    "description": "补丁路径（Knighter E2 验证需要，用于解析 commit 与 object）"
                 }
             },
             "required": ["checker_so_path", "checker_name", "target_path"]
@@ -136,6 +138,40 @@ class SemanticValidateTool(Tool):
             )
 
         try:
+            if self.knighter_env.enabled:
+                from ..validation.semantic_validator import SemanticValidator
+
+                validator = SemanticValidator({"knighter_e2": self.config.get("knighter_e2", {})})
+                result = validator.validate_csa_checker(
+                    checker_so_path=checker_so_path,
+                    checker_name=checker_name,
+                    target_path=target_path,
+                    include_dirs=include_dirs,
+                    patch_path=patch_path or "",
+                )
+                metadata = dict(result.metadata or {})
+                buggy_counts = metadata.get("buggy_counts", {}) or {}
+                fixed_counts = metadata.get("fixed_counts", {}) or {}
+                total_reports = sum(int(value or 0) for value in buggy_counts.values())
+                output_lines = [
+                    "Knighter E2 语义验证完成",
+                    f"检测器: {checker_name}",
+                    f"目标: {target_path}",
+                    f"补丁: {patch_path or '未提供'}",
+                    f"对象: {', '.join(metadata.get('objects', []) or [])}",
+                    f"buggy_counts: {buggy_counts}",
+                    f"fixed_counts: {fixed_counts}",
+                    f"日志: {metadata.get('log_path', '')}",
+                ]
+                metadata.setdefault("total_bug_reports", total_reports)
+                metadata.setdefault("files_with_bugs", sum(1 for value in buggy_counts.values() if int(value or 0) > 0))
+                return ToolResult(
+                    success=bool(result.success),
+                    output="\n".join(output_lines),
+                    error=result.error_message,
+                    metadata=metadata,
+                )
+
             target = Path(target_path)
 
             if target.is_file():

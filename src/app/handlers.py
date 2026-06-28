@@ -437,6 +437,66 @@ def cmd_refine(args):
     return 1
 
 
+def cmd_experiment(args):
+    """实验管理命令。"""
+    from ..experiments import (
+        audit_manifest,
+        default_experiment_root,
+        init_experiment_root,
+        rebuild_table_exports,
+        run_experiments,
+    )
+
+    print_banner()
+
+    root = getattr(args, "root", None)
+    action = getattr(args, "action", "")
+    config_path = resolve_config_path(args.config, __file__)
+
+    if action == "init":
+        layout = init_experiment_root(root=root, force=bool(getattr(args, "force", False)))
+        print("✅ 实验目录已初始化")
+        print(f"  根目录: {layout.root}")
+        print(f"  样本清单: {layout.manifest_path}")
+        print(f"  结果表格: {layout.tables_dir}")
+        return 0
+
+    if action == "audit":
+        result = audit_manifest(
+            root=root,
+            manifest_path=getattr(args, "manifest", None),
+            sample_id=getattr(args, "sample_id", None),
+        )
+        print("✅ 样本审查完成")
+        print(f"  根目录: {result['root']}")
+        print(f"  审查样本数: {result['audited']}")
+        return 0
+
+    if action == "run":
+        result = run_experiments(
+            root=root,
+            manifest_path=getattr(args, "manifest", None),
+            config_path=config_path,
+            sample_id=getattr(args, "sample_id", None),
+            run_all=bool(getattr(args, "all", False)),
+            generate_only=bool(getattr(args, "generate_only", False)),
+        )
+        print("✅ 实验运行完成")
+        print(f"  根目录: {result['root']}")
+        print(f"  选中样本数: {result['selected']}")
+        print(f"  执行生成次数: {result['executed']}")
+        return 0
+
+    if action == "summarize":
+        result = rebuild_table_exports(root=root or str(default_experiment_root()))
+        print("✅ 实验表格已重建 Markdown 导出")
+        print(f"  根目录: {result['root']}")
+        return 0
+
+    logger.error(f"未知实验操作: {action}")
+    return 1
+
+
 def cmd_validate(args):
     """验证检测器命令。"""
     from ..validation.unified_validator import UnifiedValidator, AnalyzerType

@@ -936,6 +936,8 @@ class LangChainGenerateAgent:
         )
 
     def _render_task_prompt(self, request: GenerationRequest) -> str:
+        from ..research.knighter_env import knighter_helper_context
+
         return self.prompt_repository.render(
             "generate.agent.task",
             {
@@ -946,6 +948,7 @@ class LangChainGenerateAgent:
                 "VALIDATE_PATH": request.validate_path or "未提供",
                 "MAX_ITERATIONS": int(request.max_iterations or self.max_iterations),
                 "ANALYZER_POLICY": self._render_analyzer_policy(request.analyzer),
+                "EXPERIMENT_CONTEXT": knighter_helper_context(self.config),
             },
             strict=True,
         )

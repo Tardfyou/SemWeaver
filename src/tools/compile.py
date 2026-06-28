@@ -11,6 +11,11 @@ import tempfile
 from typing import Dict, Any
 
 from ..agent.tools import Tool, ToolResult
+from ..research.knighter_env import (
+    build_knighter_checker,
+    load_knighter_e2_config,
+    normalize_checker_name,
+)
 
 
 class CompileCheckerTool(Tool):
@@ -31,6 +36,7 @@ class CompileCheckerTool(Tool):
         self.llvm_dir = self.config.get("llvm_dir", "/usr/lib/llvm-18")
         self.clang_path = self.config.get("clang_path", f"{self.llvm_dir}/bin/clang++")
         self.timeout = self.config.get("timeout_seconds", 120)
+        self.knighter_env = load_knighter_e2_config({"knighter_e2": self.config.get("knighter_e2", {})})
 
     def set_work_dir(self, work_dir: str):
         """设置工作目录，确保编译输出留在任务输出目录内。"""
@@ -90,6 +96,43 @@ class CompileCheckerTool(Tool):
             if output_dir is None:
                 output_dir = self._default_output_dir(checker_name)
             os.makedirs(output_dir, exist_ok=True)
+
+            if self.knighter_env.enabled:
+                plugin_name = normalize_checker_name(checker_name or self.knighter_env.checker_name)
+                env = self.knighter_env.__class__(
+                    **{
+                        **self.knighter_env.__dict__,
+                        "checker_name": plugin_name,
+                        "jobs": int(self.config.get("jobs", self.knighter_env.jobs) or self.knighter_env.jobs),
+                        "timeout": int(self.config.get("timeout_seconds", self.knighter_env.timeout) or self.knighter_env.timeout),
+                    }
+                )
+                success, build_output, metadata = build_knighter_checker(
+                    env,
+                    source_code,
+                    output_dir=output_dir,
+                )
+                if success:
+                    output_file = str(metadata.get("output_file", "") or "")
+                    file_size = os.path.getsize(output_file) if output_file and os.path.exists(output_file) else 0
+                    metadata["file_size"] = file_size
+                    return ToolResult(
+                        success=True,
+                        output=(
+                            "Knighter LLVM 插件编译成功!\n"
+                            f"输出文件: {output_file}\n"
+                            f"构建日志: {metadata.get('build_log', '')}\n"
+                            f"文件大小: {file_size} 字节"
+                        ),
+                        metadata=metadata,
+                    )
+                error_text = str(metadata.get("error", "") or "Knighter LLVM 插件编译失败")
+                return ToolResult(
+                    success=False,
+                    output=build_output,
+                    error=error_text,
+                    metadata=metadata,
+                )
 
             # 保存源文件
             source_file = os.path.join(output_dir, f"{checker_name}.cpp")

@@ -7,6 +7,7 @@ from typing import Optional, Sequence
 
 from .handlers import (
     cmd_evidence,
+    cmd_experiment,
     cmd_generate,
     cmd_refine,
     cmd_validate,
@@ -39,6 +40,11 @@ CLI_EPILOG = """
 
   # 独立收集 refine 所需证据
   python3 -m src.main evidence -p tests/patch.diff --evidence-dir tests/project -o evidence_output/
+
+  # 初始化并运行实验管理目录
+  python3 -m src.main experiment init
+  python3 -m src.main experiment audit --all
+  python3 -m src.main experiment run --all
 
   # 验证检测器
   python3 -m src.main validate --checker output/checker.so --target tests/test.c
@@ -171,6 +177,34 @@ def build_parser() -> argparse.ArgumentParser:
     )
     val_parser.add_argument("--verbose", action="store_true", default=True, help="显示详细输出")
     val_parser.set_defaults(func=cmd_validate)
+
+    exp_parser = subparsers.add_parser("experiment", help="管理 artifact 实验目录")
+    exp_parser.add_argument(
+        "action",
+        choices=["init", "audit", "run", "summarize"],
+        help="实验操作：init 初始化目录，audit 审查样本，run 批量运行，summarize 重建表格导出",
+    )
+    exp_parser.add_argument(
+        "--root",
+        help="实验根目录，默认使用 artifacts/experiments/v2/",
+    )
+    exp_parser.add_argument(
+        "--manifest",
+        help="样本清单 CSV，默认使用 <root>/manifests/samples.csv",
+    )
+    exp_parser.add_argument("--sample-id", help="仅处理指定样本")
+    exp_parser.add_argument("--all", action="store_true", help="处理清单中的全部样本")
+    exp_parser.add_argument(
+        "--generate-only",
+        action="store_true",
+        help="仅执行生成实验并写入生成/性能表，不触发 refine 或后端对比",
+    )
+    exp_parser.add_argument(
+        "--force",
+        action="store_true",
+        help="init 时重建模板文件和空表格",
+    )
+    exp_parser.set_defaults(func=cmd_experiment)
 
     kb_parser = subparsers.add_parser("knowledge", help="知识库操作")
     kb_parser.add_argument("action", choices=["status", "search", "import"], help="操作类型")

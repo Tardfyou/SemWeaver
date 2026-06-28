@@ -47,8 +47,30 @@ By default, runtime artifacts are written under:
 
 - `output/`
 - `logs/`
+- `artifacts/experiments/`
+- `artifacts/external/`
 - `codeql_dbs/`
 - `codeql_cache/`
 - `pretrained_models/`
 
 These directories are ignored and should not be included in a source release.
+
+## Optional KNighter E2 Integration
+
+The KNighter/E2 validation path is disabled by default. Enable it only after
+placing the required external environment under `artifacts/` or equivalent
+local paths.
+
+Example configuration override:
+
+```yaml
+validation:
+  semantic:
+    knighter_e2:
+      enabled: true
+      knighter_root: "${PROJECT_ROOT:-.}/experiments/knighter/baseline"
+      llvm_dir: "${PROJECT_ROOT:-.}/artifacts/external/llvm"
+      linux_dir: "${PROJECT_ROOT:-.}/artifacts/external/linux"
+      host_deps_dir: "${PROJECT_ROOT:-.}/artifacts/external/host_deps/jammy-amd64/root"
+      result_dir: "${PROJECT_ROOT:-.}/artifacts/experiments/knighter/runs"
+```

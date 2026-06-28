@@ -2,7 +2,7 @@
 
 SemWeaver is a patch-guided framework for generating and refining static-analysis detectors. It takes a security patch, extracts patch-relevant evidence from the target source tree, and helps synthesize or refine detectors for Clang Static Analyzer (CSA) and CodeQL.
 
-This repository contains the project source code, prompts, configuration, knowledge seeds, setup scripts, and a small smoke-test lab. It intentionally does not include paper experiment directories, bulk datasets, cached databases, model caches, scan outputs, API keys, or author-identifying metadata.
+This repository contains the project source code, prompts, configuration, knowledge seeds, setup scripts, a small smoke-test lab, and source-only experiment drivers. It intentionally does not include bulk datasets, materialized sample checkouts, cached databases, model caches, scan outputs, result tables, API keys, or author-identifying metadata.
 
 ## Repository Contents
 
@@ -11,6 +11,8 @@ This repository contains the project source code, prompts, configuration, knowle
 - `data/knowledge/`: small static knowledge seeds used by optional RAG import.
 - `config/config.yaml`: default environment-variable based configuration.
 - `scripts/`: setup, ChromaDB/RAG, CodeQL, and CSA helper scripts.
+- `experiments/`: source-only artifact experiment drivers and baseline-integration code.
+- `artifacts/`: placeholder for future artifact data packages and generated experiment outputs.
 - `tests/tiny_buffer_lab/`: minimal C buffer-bound smoke fixture.
 - `docs/`: installation, usage, configuration, and structure documentation.
 
@@ -42,8 +44,9 @@ python3 scripts/import_knowledge.py
 - [Usage](docs/USAGE.md)
 - [Configuration](docs/CONFIGURATION.md)
 - [Artifact Structure](docs/ARTIFACT_STRUCTURE.md)
+- [Experiment Source](experiments/README.md)
 - [Security Notes](SECURITY.md)
 
 ## Scope
 
-The included smoke fixture is for checking that the toolchain, prompts, and CLI are wired correctly. Paper evaluation scripts, experiment manifests, result tables, scan outputs, and dataset materialization logic are outside this source-code release and should be added separately if needed.
+The included smoke fixture is for checking that the toolchain, prompts, and CLI are wired correctly. Experiment driver source is included, but manifests, datasets, result tables, scan outputs, and generated artifacts should be added later under `artifacts/` only.

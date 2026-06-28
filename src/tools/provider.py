@@ -91,6 +91,9 @@ def build_tool_registry(
 
     if options.include_semantic:
         validation_config = dict(config.get("validation", {}) or {})
+        semantic_config = dict((validation_config.get("semantic", {}) or {}))
+        if "knighter_e2" in semantic_config:
+            validation_config["knighter_e2"] = semantic_config.get("knighter_e2")
         registry.register(SemanticValidateTool(validation_config))
 
     if options.include_codeql:
@@ -129,6 +132,9 @@ def _register_core_tools(
     if include_artifact_review and artifact_review_enabled:
         registry.register(ArtifactReviewTool())
     compilation_config = dict(config.get("compilation", {}) or {})
+    semantic_config = ((config.get("validation", {}) or {}).get("semantic", {}) or {})
+    if "knighter_e2" in semantic_config and "knighter_e2" not in compilation_config:
+        compilation_config["knighter_e2"] = semantic_config.get("knighter_e2")
     registry.register(CompileCheckerTool(compilation_config))
     if include_patch_analysis:
         registry.register(

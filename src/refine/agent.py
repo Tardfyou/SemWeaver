@@ -1423,6 +1423,8 @@ class LangChainRefinementAgent:
         )
 
     def _render_task_prompt(self, request: RefinementRequest) -> str:
+        from ..research.knighter_env import knighter_helper_context
+
         return self.prompt_repository.render(
             "refine.agent.task",
             {
@@ -1433,6 +1435,7 @@ class LangChainRefinementAgent:
                 "PATCH_PATH": request.patch_path,
                 "VALIDATE_PATH": request.validate_path or "未提供",
                 "EVIDENCE_DIR": request.evidence_dir or "未提供",
+                "EXPERIMENT_CONTEXT": knighter_helper_context(self.config),
             },
             strict=True,
         )

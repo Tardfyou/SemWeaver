@@ -17,6 +17,12 @@ from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import unquote, urlparse
 
 from ...core.analyzer_base import AnalyzerContext
+from ...research.knighter_env import (
+    load_knighter_e2_config,
+    knighter_scan_prefix,
+    objects_from_patch,
+    validate_knighter_environment,
+)
 from ...tools.project_analyzer import ProjectAnalyzerTool
 from ...validation.codeql_support import build_codeql_search_path_args, ensure_codeql_pack
 from ...validation.codeql_support import (
@@ -135,7 +141,7 @@ class ProjectArtifactExtractor:
         project_info = self.project_info(project_root)
         compile_commands = self.compile_commands(project_info)
         project_include_flags, project_define_flags = self.aggregate_project_flags(compile_commands)
-        source_revision = ""
+        knighter_source_revision = self._knighter_e2_source_revision(context)
 
         source_contexts: List[SourceArtifactContext] = []
         for patch_file in self.parse_patch(context.patch_path):
@@ -147,7 +153,7 @@ class ProjectArtifactExtractor:
                 project_root=project_root,
                 resolved_file=resolved,
                 patch_file=patch_file,
-                source_revision=source_revision,
+                source_revision=knighter_source_revision,
             )
             if not lines:
                 continue
@@ -205,7 +211,7 @@ class ProjectArtifactExtractor:
                             compile_directory=compile_directory,
                             include_flags=include_flags,
                             define_flags=define_flags,
-                            source_revision=source_revision,
+                            source_revision=knighter_source_revision,
                             source_read_method=source_read_method,
                         )
                     )
@@ -214,8 +220,8 @@ class ProjectArtifactExtractor:
             "project_root": str(project_root),
             "project_info": project_info,
             "compile_commands_count": len(compile_commands),
-            "source_revision": source_revision,
-            "source_read_method": "worktree",
+            "source_revision": knighter_source_revision,
+            "source_read_method": "git_show" if knighter_source_revision else "worktree",
         }
         return source_contexts, artifact_meta
 
@@ -272,6 +278,31 @@ class ProjectArtifactExtractor:
         context: AnalyzerContext,
         source_contexts: List[SourceArtifactContext],
     ) -> Dict[str, Any]:
+        knighter_env = load_knighter_e2_config(context.shared_analysis or {})
+        if knighter_env.enabled:
+            patch_text = ""
+            try:
+                patch_text = Path(context.patch_path).read_text(encoding="utf-8", errors="ignore")
+            except OSError:
+                patch_text = ""
+            objects = objects_from_patch(knighter_env, patch_text)
+            ok, env_error = validate_knighter_environment(knighter_env, require_plugin_tree=True)
+            output_dir = Path(context.output_dir or ".").expanduser().resolve() / "csa" / "patchweaver_runtime" / "knighter_scan"
+            return {
+                "available": ok,
+                "runtime_mode": "knighter_scan_build_make",
+                "clang_path": str(knighter_env.llvm_build_dir / "bin" / "clang"),
+                "scan_build_path": str(knighter_env.scan_build),
+                "cfg_snapshots": [],
+                "call_edges": [],
+                "error": env_error,
+                "objects": objects,
+                "arch": knighter_env.arch,
+                "scan_command_preview": self.command_preview(
+                    (knighter_scan_prefix(knighter_env, output_dir) + f"make LLVM=1 ARCH={knighter_env.arch} <object> -j{knighter_env.jobs}").split()
+                ),
+            }
+
         cache_key = {
             "cache_version": 6,
             "patch_path": str(Path(context.patch_path).expanduser().resolve()),
@@ -592,6 +623,12 @@ class ProjectArtifactExtractor:
         if matches:
             return matches[0].resolve()
         return None
+
+    def _knighter_e2_source_revision(self, context: AnalyzerContext) -> str:
+        knighter_env = load_knighter_e2_config(context.shared_analysis or {})
+        if not knighter_env.enabled:
+            return ""
+        return self._patch_commit_id(context.patch_path)
 
     def _patch_commit_id(self, patch_path: str) -> str:
         try:

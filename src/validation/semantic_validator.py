@@ -14,6 +14,8 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urlparse, unquote
 
+from ..experiments.sample_env import load_validation_env
+from ..research.knighter_env import load_knighter_e2_config, run_knighter_validation
 from .codeql_support import (
     build_codeql_search_path_args,
     build_codeql_database_path,
@@ -68,9 +70,45 @@ class SemanticValidator:
             )
 
         try:
+            knighter_env = load_knighter_e2_config({"knighter_e2": self.config.get("knighter_e2", {})})
+            if knighter_env.enabled:
+                summary = run_knighter_validation(
+                    knighter_env,
+                    checker_so_path=checker_so_path,
+                    target_path=target_path,
+                    patch_path=patch_path,
+                )
+                diagnostics = [
+                    Diagnostic(
+                        file_path=str(item.get("file_path", target_path) or target_path),
+                        line=int(item.get("line", 0) or 0),
+                        column=int(item.get("column", 0) or 0),
+                        severity=str(item.get("severity", "warning") or "warning"),
+                        message=str(item.get("message", "") or ""),
+                        source=str(item.get("source", "csa") or "csa"),
+                    )
+                    for item in summary.diagnostics
+                ]
+                return ValidationResult(
+                    stage=ValidationStage.SEMANTIC,
+                    analyzer=AnalyzerType.CSA,
+                    success=bool(summary.success),
+                    diagnostics=diagnostics,
+                    execution_time=time.time() - start_time,
+                    error_message=summary.error_message,
+                    metadata={
+                        **dict(summary.metadata or {}),
+                        "bugs_found": len(diagnostics),
+                        "checker_name": checker_name,
+                        "target_path": target_path,
+                        "validation_target": target_path,
+                        "patch_path": patch_path,
+                    },
+                )
+
             project_root = Path(__file__).resolve().parents[2]
             scan_script = project_root / "scripts" / "scan_project.sh"
-            validation_env = self._load_validation_env(target_path)
+            validation_env = load_validation_env(target_path)
             compile_commands_path = str(validation_env.get("compile_commands_path", "") or "").strip()
             resolved_include_dirs = self._resolve_csa_include_dirs(
                 target_path,
@@ -350,18 +388,6 @@ class SemanticValidator:
 
     def _strip_ansi(self, text: str) -> str:
         return self._ANSI_ESCAPE_RE.sub("", text or "")
-
-    def _load_validation_env(self, target_path: str) -> Dict[str, Any]:
-        target = Path(target_path).expanduser().resolve()
-        candidates = []
-        if target.is_dir():
-            candidates.append(target / "compile_commands.json")
-        else:
-            candidates.append(target.parent / "compile_commands.json")
-        for candidate in candidates:
-            if candidate.exists():
-                return {"compile_commands_path": str(candidate)}
-        return {}
 
     def _resolve_csa_include_dirs(
         self,
