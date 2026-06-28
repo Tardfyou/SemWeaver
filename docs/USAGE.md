@@ -2,6 +2,8 @@
 
 Run commands from the repository root.
 
+`generate`, `evidence`, and `refine` initialize the configured LLM provider. Set the provider key in the shell or in a private `.env` file before running them.
+
 ## CLI Help
 
 ```bash
@@ -57,7 +59,7 @@ python3 -m src.main \
 ```bash
 python3 -m src.main \
   validate \
-  --checker output/tiny_buffer_lab/csa/ExampleChecker.cpp \
+  --checker output/tiny_buffer_lab/csa/ExampleChecker.so \
   --target tests/tiny_buffer_lab \
   --analyzer csa
 ```

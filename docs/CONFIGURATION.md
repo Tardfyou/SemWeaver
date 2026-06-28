@@ -28,7 +28,7 @@ export OPENAI_API_KEY="<your key>"
 export OPENAI_BASE_URL="https://example.com/v1"
 ```
 
-Do not commit `.env` files or real API keys. `.env.example` documents the expected variables.
+Do not commit `.env` files or real API keys. `.env.example` documents the expected variables. SemWeaver automatically loads `.env` from the repository root before expanding `config/config.yaml`.
 
 ## Tool Paths
 

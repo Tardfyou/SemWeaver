@@ -118,8 +118,9 @@ class Orchestrator:
         # 默认配置
         return {
             "llm": {
-                "primary_model": "deepseek-chat",
-                "temperature": 0.3
+                "provider": "openai",
+                "primary_model": "gpt-4.1",
+                "temperature": 0.3,
             },
             "agent": {
                 "max_iterations": 30,

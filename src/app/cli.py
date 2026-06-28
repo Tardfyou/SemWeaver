@@ -20,31 +20,31 @@ from .runtime import print_banner, setup_logging
 CLI_EPILOG = """
 示例:
   # 生成CSA检测器
-  python main.py generate -p tests/null_ptr.patch -o output/
+  python3 -m src.main generate -p tests/null_ptr.patch -o output/
 
   # 生成CodeQL查询
-  python main.py generate -p tests/sql_injection.patch --analyzer codeql
+  python3 -m src.main generate -p tests/sql_injection.patch --analyzer codeql
 
   # 使用两种分析器
-  python main.py generate -p tests/buffer_overflow.patch --analyzer both
+  python3 -m src.main generate -p tests/buffer_overflow.patch --analyzer both
 
   # 智能选择分析器
-  python main.py generate -p tests/patch.diff --analyzer auto
+  python3 -m src.main generate -p tests/patch.diff --analyzer auto
 
   # 生成并验证
-  python main.py generate -p tests/patch.diff -v tests/vulnerable.c
+  python3 -m src.main generate -p tests/patch.diff -v tests/vulnerable.c
 
   # 基于已有输出执行 detector 精炼
-  python main.py refine -i output/ -v tests/project
+  python3 -m src.main refine -i output/ -v tests/project
 
   # 独立收集 refine 所需证据
-  python main.py evidence -p tests/patch.diff --evidence-dir tests/project -o evidence_output/
+  python3 -m src.main evidence -p tests/patch.diff --evidence-dir tests/project -o evidence_output/
 
   # 验证检测器
-  python main.py validate --checker output/checker.so --target tests/test.c
+  python3 -m src.main validate --checker output/checker.so --target tests/test.c
 
   # 导入知识库
-  python main.py knowledge import
+  python3 -m src.main knowledge import
 
 更多信息请参考 README.md
 """
