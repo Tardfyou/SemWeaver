@@ -10,6 +10,19 @@ Run commands from the repository root.
 python3 -m src.main --help
 ```
 
+## Local Component Check
+
+Before a full run, verify optional local services and analyzer tools:
+
+```bash
+python3 -m src.main --help
+${CLANGD:-/usr/lib/llvm-18/bin/clangd} --version
+${CODEQL:-codeql} version
+curl -fsS http://localhost:8001/api/v1/heartbeat || curl -fsS http://localhost:8001/api/v2/heartbeat
+```
+
+The ChromaDB check is only required when using RAG-backed knowledge search. `scripts/setup_rag.sh` starts ChromaDB and prepares `pretrained_models/`; the embedding model is downloaded on first RAG use if it is not already cached.
+
 ## Generate a Detector
 
 ```bash
@@ -64,7 +77,7 @@ python3 -m src.main \
   --analyzer csa
 ```
 
-CSA validation requires a compiled `.so` detector for full semantic checking. CodeQL validation requires CodeQL CLI and a C/C++ database; SemWeaver can create a database for simple targets when `codeql_auto_create_db` is enabled.
+CSA validation requires a compiled `.so` detector for full semantic checking. LSP validation requires `clangd`. CodeQL validation requires CodeQL CLI and a C/C++ database; SemWeaver can create a database for simple targets when `codeql_auto_create_db` is enabled.
 
 ## Smoke Fixture
 

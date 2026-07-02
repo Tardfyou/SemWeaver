@@ -48,6 +48,11 @@ get_compose_cmd() {
 	fi
 }
 
+check_chromadb_health() {
+	curl -s http://localhost:8001/api/v1/heartbeat >/dev/null 2>&1 ||
+		curl -s http://localhost:8001/api/v2/heartbeat >/dev/null 2>&1
+}
+
 download_file() {
 	local url="$1"
 	local dest="$2"
@@ -163,6 +168,30 @@ if [ "$INSTALL_CODEQL" = true ]; then
 	install_codeql_cli
 fi
 
+echo ""
+echo "检查 LLVM/Clang 工具..."
+if [ -n "${CLANGXX:-}" ] && [ -x "$CLANGXX" ]; then
+	echo " - clang++: $CLANGXX"
+elif [ -x "${LLVM_DIR:-/usr/lib/llvm-18}/bin/clang++" ]; then
+	echo " - clang++: ${LLVM_DIR:-/usr/lib/llvm-18}/bin/clang++"
+elif command -v clang++ >/dev/null 2>&1; then
+	echo " - clang++: $(command -v clang++)"
+else
+	echo " - clang++: 未找到"
+	echo "   请安装 clang++/LLVM，或设置 CLANGXX=/path/to/clang++"
+fi
+
+if [ -n "${CLANGD:-}" ] && [ -x "$CLANGD" ]; then
+	echo " - clangd: $CLANGD"
+elif [ -x "${LLVM_DIR:-/usr/lib/llvm-18}/bin/clangd" ]; then
+	echo " - clangd: ${LLVM_DIR:-/usr/lib/llvm-18}/bin/clangd"
+elif command -v clangd >/dev/null 2>&1; then
+	echo " - clangd: $(command -v clangd)"
+else
+	echo " - clangd: 未找到"
+	echo "   LSP 验证需要 clangd。请安装 clangd，或设置 CLANGD=/path/to/clangd"
+fi
+
 # 显示 CodeQL 状态
 echo ""
 echo "检查 CodeQL..."
@@ -177,7 +206,7 @@ fi
 # 启动 ChromaDB（可选）
 echo ""
 if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
-	if curl -s http://localhost:8001/api/v1/heartbeat >/dev/null 2>&1; then
+	if check_chromadb_health; then
 		echo "检测到已有 ChromaDB 服务 (8001)，跳过启动"
 	elif ss -lnt 2>/dev/null | grep -q ':8001 '; then
 		echo "检测到 8001 端口已被占用，跳过启动 ChromaDB"
@@ -195,7 +224,7 @@ if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
 				echo "等待 ChromaDB 启动..."
 				sleep 5
 				echo "检查 ChromaDB 状态..."
-				curl -s http://localhost:8001/api/v1/heartbeat >/dev/null 2>&1 && \
+				check_chromadb_health && \
 					echo " - ChromaDB 运行正常" || echo " - ChromaDB 启动中..."
 			fi
 		fi
@@ -205,7 +234,7 @@ else
 fi
 
 # 创建输出目录
-mkdir -p output logs codeql_dbs codeql_packs
+mkdir -p output logs codeql_dbs codeql_packs pretrained_models
 if [ ! -f codeql_packs/qlpack.yml ]; then
 	cat > codeql_packs/qlpack.yml <<'EOF'
 name: local/custom-queries

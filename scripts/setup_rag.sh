@@ -17,6 +17,11 @@ PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 
 cd "$PROJECT_DIR"
 
+check_chromadb_health() {
+    curl -s http://localhost:8001/api/v1/heartbeat > /dev/null 2>&1 ||
+        curl -s http://localhost:8001/api/v2/heartbeat > /dev/null 2>&1
+}
+
 echo "=========================================="
 echo "RAG 知识库环境设置"
 echo "=========================================="
@@ -110,7 +115,7 @@ MAX_RETRIES=30
 RETRY_COUNT=0
 
 while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-    if curl -s http://localhost:8001/api/v1/heartbeat > /dev/null 2>&1; then
+    if check_chromadb_health; then
         echo "✓ ChromaDB 已就绪"
         break
     fi

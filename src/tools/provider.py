@@ -185,11 +185,12 @@ def _register_lsp_tool(
         from ..lsp.diagnostic_manager import DiagnosticManager
 
         compilation_config = config.get("compilation", {})
+        lsp_config = dict(config.get("lsp", {}) or {})
         llvm_dir = compilation_config.get("llvm_dir", "/usr/lib/llvm-18")
         clangd_config = {
-            "clangd_path": f"{llvm_dir}/bin/clangd",
-            "timeout_seconds": 30,
-            "diagnostic_timeout": 10,
+            "clangd_path": lsp_config.get("clangd_path") or f"{llvm_dir}/bin/clangd",
+            "timeout_seconds": lsp_config.get("timeout_seconds", 30),
+            "diagnostic_timeout": lsp_config.get("diagnostic_timeout", 10),
             "llvm_dir": llvm_dir,
         }
 

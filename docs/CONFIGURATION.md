@@ -37,9 +37,31 @@ Common overrides:
 ```bash
 export LLVM_DIR=/usr/lib/llvm-18
 export CLANGXX=/usr/lib/llvm-18/bin/clang++
+export CLANGD=/usr/lib/llvm-18/bin/clangd
 export CODEQL=codeql
 export CHROMA_HOST=localhost
 ```
+
+`compilation.llvm_dir` and `compilation.clang_path` drive CSA checker compilation. `lsp.clangd_path` drives LSP validation and defaults to `CLANGD` or `/usr/lib/llvm-18/bin/clangd`. Keep these paths on the same LLVM major version when possible.
+
+Minimal path check:
+
+```bash
+test -x "${CLANGXX:-/usr/lib/llvm-18/bin/clang++}"
+test -x "${CLANGD:-/usr/lib/llvm-18/bin/clangd}"
+${CODEQL:-codeql} version
+```
+
+## ChromaDB and Embeddings
+
+RAG-backed knowledge search is configured under `knowledge_base`:
+
+- `knowledge_base.chromadb.host` defaults to `CHROMA_HOST` or `localhost`.
+- `knowledge_base.chromadb.port` defaults to `8001`.
+- `knowledge_base.embedding.model` defaults to `sentence-transformers--all-MiniLM-L6-v2`.
+- `knowledge_base.embedding.cache_dir` defaults to `pretrained_models/`.
+
+Use `bash scripts/setup_rag.sh` to install RAG dependencies, start ChromaDB, and create the embedding cache directory. The model is downloaded on first use unless the cache already contains it.
 
 ## Output Locations
 
