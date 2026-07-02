@@ -65,20 +65,8 @@ RUN pip3 install --no-cache-dir -r requirements.txt
 # Copy the project
 COPY . .
 
-# Initialize git submodules (for tree-sitter) - handle both git repo and archive cases
-RUN if [ -d .git ]; then \
-        git submodule update --init --recursive; \
-    else \
-        echo "Not a git repo, checking tree-sitter-cpp..."; \
-        if [ ! -d "src/kparser/tree-sitter-cpp/.git" ]; then \
-            echo "Setting up tree-sitter-cpp..."; \
-            cd src/kparser && \
-            rm -rf tree-sitter-cpp && \
-            git clone https://github.com/tree-sitter/tree-sitter-cpp.git; \
-        else \
-            echo "tree-sitter-cpp already exists"; \
-        fi; \
-    fi
+# This source subset uses a lightweight in-tree parser fallback and does not
+# vendor the original tree-sitter-cpp submodule or checker database.
 
 # Set back to main working directory
 WORKDIR /app

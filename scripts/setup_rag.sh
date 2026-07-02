@@ -47,11 +47,12 @@ if [ "$SKIP_DEPS" = false ]; then
     pip install -q openai loguru pyyaml
 
     echo "安装 RAG 依赖..."
-    pip install -q chromadb>=0.4.0 \
-        llama-index-core>=0.10.0 \
-        llama-index-vector-stores-chroma>=0.1.0 \
-        llama-index-embeddings-huggingface>=0.1.0 \
-        sentence-transformers>=2.2.0
+    pip install -q \
+        "chromadb>=0.4.0" \
+        "llama-index-core>=0.10.0" \
+        "llama-index-vector-stores-chroma>=0.1.0" \
+        "llama-index-embeddings-huggingface>=0.1.0" \
+        "sentence-transformers>=2.2.0"
 
     echo "✓ 依赖安装完成"
 else
@@ -93,7 +94,11 @@ else
         docker start checker-chromadb
     else
         echo "创建并启动 ChromaDB 容器..."
-        docker-compose up -d
+        if docker compose version >/dev/null 2>&1; then
+            docker compose up -d
+        else
+            docker-compose up -d
+        fi
     fi
 fi
 

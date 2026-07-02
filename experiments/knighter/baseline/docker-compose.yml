@@ -6,21 +6,21 @@ services:
       context: .
       dockerfile: Dockerfile
     volumes:
-      # Mount only results directory for output (LLVM and Linux are built into image)
+      # Persist baseline outputs.
       - knighter_results:/data/results
+      # Mount the repository artifact directory for external LLVM/Linux trees and optional commits.
+      - ../../../artifacts:/artifacts
       # Mount configuration files
       - ./config.yaml:/app/config.yaml
       - ./src/llm_keys.yaml:/app/src/llm_keys.yaml
-      # Mount commits data
-      - ./commits:/app/commits
     environment:
-      - LLVM_DIR=/data/llvm
-      - LINUX_DIR=/data/linux
+      - LLVM_DIR=/artifacts/external/llvm
+      - LINUX_DIR=/artifacts/external/linux
       - RESULT_DIR=/data/results
     working_dir: /app/src
     # Override default command - examples:
     command: ["/bin/zsh", "-c", "python3 main.py --help"]
-    # command: ["/bin/zsh", "-c", "python3 main.py gen --commit_file=../commits/commits-selected.txt --config_file=../config.yaml"]
+    # command: ["/bin/zsh", "-c", "python3 main.py gen --commit_file=/artifacts/experiments/knighter/baseline/commits/commits-selected.txt --config_file=../config.yaml"]
     # command: ["/bin/zsh", "-c", "python3 main.py refine --checker_dir=/data/results --config_file=../config.yaml"]
 
 volumes:

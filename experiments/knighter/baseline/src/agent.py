@@ -36,10 +36,13 @@ class Example(BaseModel):
         )
 
 
-for checker_dir in example_dir.iterdir():
-    if not checker_dir.is_dir():
-        continue
-    default_checker_examples.append(Example.load_example_from_dir(checker_dir))
+if example_dir.exists():
+    for checker_dir in example_dir.iterdir():
+        if not checker_dir.is_dir():
+            continue
+        default_checker_examples.append(Example.load_example_from_dir(checker_dir))
+else:
+    logger.warning("Prompt example directory is not included; continuing without few-shot examples.")
 
 
 def get_example_text(

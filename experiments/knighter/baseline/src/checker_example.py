@@ -49,6 +49,10 @@ class ExampleChecker:
 
 def init_example():
     global example_list
+    if not example_dir.exists():
+        print(f"Example checker database not found: {example_dir}. Continuing without sampled examples.")
+        example_list = []
+        return
     for checker_dir in example_dir.iterdir():
         if not checker_dir.is_dir():
             continue
@@ -57,6 +61,8 @@ def init_example():
 
 def choose_example(content: str, type: str, num_samples=3):
     """Choose the most similar example checker for the given content."""
+    if not example_list:
+        return []
 
     embeddings = torch.tensor(get_embeddings(content))
     similarity_list = []
