@@ -137,7 +137,7 @@ def main() -> int:
     parser.add_argument("--skip-codeql", action="store_true")
     parser.add_argument("--checker-so", default=str(REPO_ROOT / "artifacts/checkers/csa/BufferOverflowChecker.so"))
     parser.add_argument("--checker-name", default="custom.BufferOverflowChecker")
-    parser.add_argument("--codeql-query", default=str(REPO_ROOT / "experiments/v2/support/codeql_smoke/smoke.ql"))
+    parser.add_argument("--codeql-query", default=str(REPO_ROOT / "experiments/cross_backend/support/codeql_smoke/smoke.ql"))
     args = parser.parse_args()
 
     experiment_root = Path(args.experiment_root).expanduser().resolve()

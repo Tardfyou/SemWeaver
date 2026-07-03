@@ -44,7 +44,7 @@ def _ensure_executable(path: Path) -> None:
 
 
 @dataclass(frozen=True)
-class KnighterE2Config:
+class KnighterConfig:
     enabled: bool = False
     knighter_root: Path = Path("")
     llvm_dir: Path = Path("")
@@ -60,7 +60,7 @@ class KnighterE2Config:
     utility_source: Path = Path("")
 
     @classmethod
-    def from_config(cls, raw: Dict[str, Any] | None) -> "KnighterE2Config":
+    def from_config(cls, raw: Dict[str, Any] | None) -> "KnighterConfig":
         data = raw or {}
         knighter_root = _optional_path(data.get("knighter_root", ""))
         llvm_dir = _optional_path(data.get("llvm_dir", ""))
@@ -147,17 +147,27 @@ class KnighterE2Config:
         ]
 
 
-def load_knighter_e2_config(config: Dict[str, Any] | None) -> KnighterE2Config:
+KnighterE2Config = KnighterConfig
+
+
+def load_knighter_config(config: Dict[str, Any] | None) -> KnighterConfig:
     data = config or {}
+    if "knighter" in data:
+        return KnighterConfig.from_config(data.get("knighter") or {})
     if "knighter_e2" in data:
-        return KnighterE2Config.from_config(data.get("knighter_e2") or {})
+        return KnighterConfig.from_config(data.get("knighter_e2") or {})
     semantic = (data.get("validation", {}) or {}).get("semantic", {}) or {}
-    return KnighterE2Config.from_config(semantic.get("knighter_e2") or {})
+    if "knighter" in semantic:
+        return KnighterConfig.from_config(semantic.get("knighter") or {})
+    return KnighterConfig.from_config(semantic.get("knighter_e2") or {})
 
 
-def validate_knighter_environment(env: KnighterE2Config, *, require_plugin_tree: bool = True) -> Tuple[bool, str]:
+load_knighter_e2_config = load_knighter_config
+
+
+def validate_knighter_environment(env: KnighterConfig, *, require_plugin_tree: bool = True) -> Tuple[bool, str]:
     if not env.enabled:
-        return False, "Knighter E2 mode is disabled"
+        return False, "Knighter mode is disabled"
     _ensure_executable(env.scan_build)
     _ensure_executable(env.llvm_build_dir / "bin" / "clang")
     _ensure_executable(env.llvm_build_dir / "bin" / "ld.lld")
@@ -208,7 +218,7 @@ def _merge_path_value(prefix_values: List[str], current: str) -> str:
     return ":".join(parts).strip(":")
 
 
-def build_knighter_process_env(env: KnighterE2Config) -> Dict[str, str]:
+def build_knighter_process_env(env: KnighterConfig) -> Dict[str, str]:
     process_env = dict(os.environ)
     path_prefixes = [str(env.llvm_build_dir / "bin")]
 
@@ -278,10 +288,10 @@ def _patch_ccc_analyzer_mllvm(script_path: Path) -> None:
     _ensure_executable(script_path)
 
 
-def prepare_knighter_e2_scan_build(env: KnighterE2Config, work_root: Path) -> Path:
-    """Create an E2-only patched scan-build toolchain without mutating Knighter's LLVM tree."""
+def prepare_knighter_scan_build(env: KnighterConfig, work_root: Path) -> Path:
+    """Create a Knighter-only patched scan-build toolchain without mutating Knighter's LLVM tree."""
     work_root = Path(work_root).expanduser().resolve()
-    tool_root = work_root / ".knighter_e2_scan_build"
+    tool_root = work_root / ".knighter_scan_build"
     scan_build_root = tool_root / "tools" / "scan-build"
     bin_dir = scan_build_root / "bin"
     libexec_dir = scan_build_root / "libexec"
@@ -306,6 +316,9 @@ def prepare_knighter_e2_scan_build(env: KnighterE2Config, work_root: Path) -> Pa
     return scan_build_dst
 
 
+prepare_knighter_e2_scan_build = prepare_knighter_scan_build
+
+
 def normalize_checker_name(checker_name: str, default: str = "SAGenTest") -> str:
     name = str(checker_name or default).strip()
     name = re.sub(r"Checker$", "", name)
@@ -328,7 +341,7 @@ def rewrite_checker_identity(source_code: str, plugin_name: str) -> str:
     return text
 
 
-def ensure_knighter_plugin(env: KnighterE2Config) -> Tuple[bool, str]:
+def ensure_knighter_plugin(env: KnighterConfig) -> Tuple[bool, str]:
     ok, message = validate_knighter_environment(env, require_plugin_tree=True)
     if not ok:
         return False, message
@@ -370,12 +383,12 @@ def ensure_knighter_plugin(env: KnighterE2Config) -> Tuple[bool, str]:
 
 
 def build_knighter_checker(
-    env: KnighterE2Config,
+    env: KnighterConfig,
     source_code: str,
     *,
     output_dir: str = "",
 ) -> Tuple[bool, str, Dict[str, Any]]:
-    env = KnighterE2Config(
+    env = KnighterConfig(
         **{
             **env.__dict__,
             "checker_name": normalize_checker_name(env.checker_name),
@@ -480,12 +493,12 @@ def object_for_source(knighter_root: Path, source_file: str) -> str:
     return matches[0]
 
 
-def objects_from_patch(env: KnighterE2Config, patch_text: str) -> List[str]:
+def objects_from_patch(env: KnighterConfig, patch_text: str) -> List[str]:
     return [object_for_source(env.knighter_root, path) for path in changed_c_files_from_patch(patch_text)]
 
 
 def knighter_scan_prefix(
-    env: KnighterE2Config,
+    env: KnighterConfig,
     output_dir: Path,
     *,
     no_output: bool = False,
@@ -518,7 +531,7 @@ def knighter_scan_prefix(
 
 
 def git_checkout_and_configure(
-    env: KnighterE2Config,
+    env: KnighterConfig,
     commit_id: str,
     *,
     before: bool,
@@ -548,7 +561,7 @@ def git_checkout_and_configure(
 
     scripts_config = env.linux_dir / "scripts" / "config"
     if scripts_config.exists():
-        # E2 validation runs Clang Static Analyzer over kernel objects. Some
+        # Knighter validation runs Clang Static Analyzer over kernel objects. Some
         # allyesconfig instrumentation options add cc1-only or plugin flags that
         # scan-build replays as invalid analyzer arguments (for example a bare
         # "-mllvm -mllvm" from AUTOFDO), causing false 0/0 validation results.
@@ -623,7 +636,7 @@ class KnighterValidationSummary:
 
 
 def run_knighter_validation(
-    env: KnighterE2Config,
+    env: KnighterConfig,
     *,
     checker_so_path: str,
     target_path: str,
@@ -758,11 +771,11 @@ def run_knighter_validation(
 
 
 def knighter_helper_context(config: Dict[str, Any] | None) -> str:
-    env = load_knighter_e2_config(config)
+    env = load_knighter_config(config)
     if not env.enabled:
         return ""
     lines = [
-        "Knighter E2 environment:",
+        "Knighter environment:",
         f"- LLVM_dir: {env.llvm_dir}",
         f"- linux_dir: {env.linux_dir}",
         f"- host_deps_dir: {env.host_deps_dir}",

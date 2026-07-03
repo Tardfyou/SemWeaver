@@ -77,9 +77,9 @@ By default, runtime artifacts are written under:
 
 These directories are ignored and should not be included in a source release.
 
-## Optional KNighter E2 Integration
+## Optional Knighter Integration
 
-The KNighter/E2 validation path is disabled by default. Enable it only after
+The Knighter validation path is disabled by default. Enable it only after
 placing the required external environment under `artifacts/` or equivalent
 local paths.
 
@@ -88,7 +88,7 @@ Example configuration override:
 ```yaml
 validation:
   semantic:
-    knighter_e2:
+    knighter:
       enabled: true
       knighter_root: "${PROJECT_ROOT:-.}/experiments/knighter/baseline"
       llvm_dir: "${PROJECT_ROOT:-.}/artifacts/external/llvm"

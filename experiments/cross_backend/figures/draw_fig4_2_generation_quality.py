@@ -15,7 +15,7 @@ import numpy as np
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-OUT_DIR = REPO_ROOT / "artifacts" / "experiments" / "v2" / "figures"
+OUT_DIR = REPO_ROOT / "artifacts" / "experiments" / "cross_backend" / "figures"
 
 
 METRICS = ["GSR", "VHR", "FSR", "PDS"]

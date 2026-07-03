@@ -9,8 +9,8 @@ from datetime import datetime
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
-MR = ROOT / "artifacts/experiments/knighter/e2/model_robustness"
-SAMPLES = ROOT / "artifacts/experiments/knighter/e2/ablation/config/ablation_samples.csv"
+MR = ROOT / "artifacts/experiments/knighter/experiment/model_robustness"
+SAMPLES = ROOT / "artifacts/experiments/knighter/experiment/ablation/config/ablation_samples.csv"
 RESULTS = MR / "results/model_robustness_results.csv"
 
 FIELDNAMES = [

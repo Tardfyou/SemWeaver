@@ -9,7 +9,7 @@ from datetime import datetime
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
-ABL = ROOT / "artifacts/experiments/knighter/e2/ablation"
+ABL = ROOT / "artifacts/experiments/knighter/experiment/ablation"
 SAMPLES = ABL / "config/ablation_samples.csv"
 RESULTS = ABL / "results/ablation_results.csv"
 

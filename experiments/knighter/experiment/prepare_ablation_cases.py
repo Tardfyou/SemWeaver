@@ -4,7 +4,7 @@ import argparse, csv, json, shutil
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[3]
-ABL=ROOT/'artifacts/experiments/knighter/e2/ablation'
+ABL=ROOT/'artifacts/experiments/knighter/experiment/ablation'
 SAMPLES=ABL/'config/ablation_samples.csv'
 ANALYZER_NATIVE={'semantic_slice','path_guard','state_transition','allocation_lifecycle','call_graph','data_flow','taint_flow'}
 ABLATION_CONTROL_TYPE='ablation_control'
@@ -27,7 +27,7 @@ def ablation_control_record(variant):
         'evidence_id': f'ablation_{variant}_control',
         'type': ABLATION_CONTROL_TYPE,
         'analyzer': 'experiment',
-        'scope': {'repo': 'artifacts/experiments/knighter/e2/ablation', 'file': '', 'function': ''},
+        'scope': {'repo': 'artifacts/experiments/knighter/experiment/ablation', 'file': '', 'function': ''},
         'location': {'line': 0, 'column': 0},
         'semantic_payload': {
             'kind': f'ablation_{variant}',

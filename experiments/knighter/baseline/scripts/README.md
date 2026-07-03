@@ -1,8 +1,8 @@
-# Scripts of KNighter
+# Scripts of Knighter
 
 ## `collect_valid_checkers.py`: Collect Valid Checkers
 
-This script collects all valid checkers from the KNighter synthesized checkers.
+This script collects all valid checkers from the Knighter synthesized checkers.
 
 ```sh
 python3 collect_valid_checkers.py /path/to/synthesized_checkers /path/to/output_dir

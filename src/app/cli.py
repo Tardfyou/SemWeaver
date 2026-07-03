@@ -186,7 +186,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     exp_parser.add_argument(
         "--root",
-        help="实验根目录，默认使用 artifacts/experiments/v2/",
+        help="实验根目录，默认使用 artifacts/experiments/cross_backend/",
     )
     exp_parser.add_argument(
         "--manifest",

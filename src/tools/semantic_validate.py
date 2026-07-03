@@ -13,7 +13,7 @@ from pathlib import Path
 from dataclasses import dataclass
 
 from ..agent.tools import Tool, ToolResult
-from ..research.knighter_env import load_knighter_e2_config
+from ..research.knighter_env import load_knighter_config
 from loguru import logger
 
 
@@ -43,7 +43,7 @@ class SemanticValidateTool(Tool):
         self.clang_path = self.config.get("clang_path", "/usr/lib/llvm-18/bin/clang++")
         self.llvm_dir = self.config.get("llvm_dir", "/usr/lib/llvm-18")
         self.timeout = self.config.get("timeout_seconds", 120)
-        self.knighter_env = load_knighter_e2_config({"knighter_e2": self.config.get("knighter_e2", {})})
+        self.knighter_env = load_knighter_config(self.config)
 
     @property
     def name(self) -> str:
@@ -91,7 +91,7 @@ class SemanticValidateTool(Tool):
                 },
                 "patch_path": {
                     "type": "string",
-                    "description": "补丁路径（Knighter E2 验证需要，用于解析 commit 与 object）"
+                    "description": "补丁路径（Knighter 验证需要，用于解析 commit 与 object）"
                 }
             },
             "required": ["checker_so_path", "checker_name", "target_path"]
@@ -141,7 +141,7 @@ class SemanticValidateTool(Tool):
             if self.knighter_env.enabled:
                 from ..validation.semantic_validator import SemanticValidator
 
-                validator = SemanticValidator({"knighter_e2": self.config.get("knighter_e2", {})})
+                validator = SemanticValidator(self.config)
                 result = validator.validate_csa_checker(
                     checker_so_path=checker_so_path,
                     checker_name=checker_name,
@@ -154,7 +154,7 @@ class SemanticValidateTool(Tool):
                 fixed_counts = metadata.get("fixed_counts", {}) or {}
                 total_reports = sum(int(value or 0) for value in buggy_counts.values())
                 output_lines = [
-                    "Knighter E2 语义验证完成",
+                    "Knighter 语义验证完成",
                     f"检测器: {checker_name}",
                     f"目标: {target_path}",
                     f"补丁: {patch_path or '未提供'}",

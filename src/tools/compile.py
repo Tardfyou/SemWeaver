@@ -13,7 +13,7 @@ from typing import Dict, Any
 from ..agent.tools import Tool, ToolResult
 from ..research.knighter_env import (
     build_knighter_checker,
-    load_knighter_e2_config,
+    load_knighter_config,
     normalize_checker_name,
 )
 
@@ -36,7 +36,7 @@ class CompileCheckerTool(Tool):
         self.llvm_dir = self.config.get("llvm_dir", "/usr/lib/llvm-18")
         self.clang_path = self.config.get("clang_path", f"{self.llvm_dir}/bin/clang++")
         self.timeout = self.config.get("timeout_seconds", 120)
-        self.knighter_env = load_knighter_e2_config({"knighter_e2": self.config.get("knighter_e2", {})})
+        self.knighter_env = load_knighter_config(self.config)
 
     def set_work_dir(self, work_dir: str):
         """设置工作目录，确保编译输出留在任务输出目录内。"""

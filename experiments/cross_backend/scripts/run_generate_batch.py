@@ -13,7 +13,7 @@ from typing import Dict, List, Set
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-DEFAULT_EXPERIMENT_ROOT = REPO_ROOT / "artifacts" / "experiments" / "v2"
+DEFAULT_EXPERIMENT_ROOT = REPO_ROOT / "artifacts" / "experiments" / "cross_backend"
 
 
 def _read_csv(path: Path) -> List[Dict[str, str]]:

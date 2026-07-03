@@ -18,7 +18,7 @@ from urllib.parse import unquote, urlparse
 
 from ...core.analyzer_base import AnalyzerContext
 from ...research.knighter_env import (
-    load_knighter_e2_config,
+    load_knighter_config,
     knighter_scan_prefix,
     objects_from_patch,
     validate_knighter_environment,
@@ -141,7 +141,7 @@ class ProjectArtifactExtractor:
         project_info = self.project_info(project_root)
         compile_commands = self.compile_commands(project_info)
         project_include_flags, project_define_flags = self.aggregate_project_flags(compile_commands)
-        knighter_source_revision = self._knighter_e2_source_revision(context)
+        knighter_source_revision = self._knighter_source_revision(context)
 
         source_contexts: List[SourceArtifactContext] = []
         for patch_file in self.parse_patch(context.patch_path):
@@ -278,7 +278,7 @@ class ProjectArtifactExtractor:
         context: AnalyzerContext,
         source_contexts: List[SourceArtifactContext],
     ) -> Dict[str, Any]:
-        knighter_env = load_knighter_e2_config(context.shared_analysis or {})
+        knighter_env = load_knighter_config(context.shared_analysis or {})
         if knighter_env.enabled:
             patch_text = ""
             try:
@@ -624,8 +624,8 @@ class ProjectArtifactExtractor:
             return matches[0].resolve()
         return None
 
-    def _knighter_e2_source_revision(self, context: AnalyzerContext) -> str:
-        knighter_env = load_knighter_e2_config(context.shared_analysis or {})
+    def _knighter_source_revision(self, context: AnalyzerContext) -> str:
+        knighter_env = load_knighter_config(context.shared_analysis or {})
         if not knighter_env.enabled:
             return ""
         return self._patch_commit_id(context.patch_path)

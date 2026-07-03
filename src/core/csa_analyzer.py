@@ -128,7 +128,7 @@ class CSAAnalyzer(BaseAnalyzer):
 
         from .evidence_schema import EvidenceBundle
 
-        self._attach_knighter_e2_context(context)
+        self._attach_knighter_context(context)
         evidence_bundle = EvidenceBundle()
         synthesis_input = self.build_synthesis_input(context, evidence_bundle)
         self._emit_progress(
@@ -172,18 +172,19 @@ class CSAAnalyzer(BaseAnalyzer):
 
     def collect_evidence(self, context: AnalyzerContext, plan: Optional[Dict[str, Any]] = None):
         from ..evidence.collectors.csa_path import CSAPathEvidenceCollector
-        self._attach_knighter_e2_context(context)
+        self._attach_knighter_context(context)
         return self._collect_patchweaver_evidence(
             context,
             analyzer_id=AnalyzerType.CSA,
             analyzer_collector=CSAPathEvidenceCollector(),
         )
 
-    def _attach_knighter_e2_context(self, context: AnalyzerContext) -> None:
+    def _attach_knighter_context(self, context: AnalyzerContext) -> None:
         semantic_config = ((self.config.get("validation", {}) or {}).get("semantic", {}) or {})
-        if semantic_config.get("knighter_e2"):
+        knighter_config = semantic_config.get("knighter", semantic_config.get("knighter_e2"))
+        if knighter_config:
             shared = context.shared_analysis if isinstance(context.shared_analysis, dict) else {}
-            shared.setdefault("knighter_e2", semantic_config.get("knighter_e2"))
+            shared.setdefault("knighter", knighter_config)
             context.shared_analysis = shared
 
     def synthesize_detector(
@@ -195,7 +196,7 @@ class CSAAnalyzer(BaseAnalyzer):
         self._ensure_initialized()
         work_dir = self._create_work_dir(context.output_dir)
         self._setup_tool_work_dirs(work_dir)
-        self._attach_knighter_e2_context(context)
+        self._attach_knighter_context(context)
         from ..evidence.normalizer import EvidenceNormalizer
 
         self._ensure_generate_agent()
@@ -366,7 +367,7 @@ class CSAAnalyzer(BaseAnalyzer):
         work_dir = self._create_work_dir(context.output_dir)
         self._setup_tool_work_dirs(work_dir)
 
-        self._attach_knighter_e2_context(context)
+        self._attach_knighter_context(context)
         evidence_bundle = self.restore_refinement_evidence_bundle(context)
         synthesis_input = self.build_synthesis_input(context, evidence_bundle)
         self._emit_progress(

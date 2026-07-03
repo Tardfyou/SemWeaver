@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Draw Figure 4-4: backend-specific refinement gain.
 
-Values are derived from artifacts/experiments/v2/tables/refine_results.csv. The figure
+Values are derived from artifacts/experiments/cross_backend/tables/refine_results.csv. The figure
 shows before/after rates for CSA and CodeQL on VHR, FSR, and PDS.
 """
 
@@ -15,7 +15,7 @@ import pandas as pd
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-EXPERIMENT_ROOT = REPO_ROOT / "artifacts" / "experiments" / "v2"
+EXPERIMENT_ROOT = REPO_ROOT / "artifacts" / "experiments" / "cross_backend"
 OUT_DIR = EXPERIMENT_ROOT / "figures"
 DATA_PATH = EXPERIMENT_ROOT / "tables" / "refine_results.csv"
 

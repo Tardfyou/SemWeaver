@@ -259,7 +259,7 @@ def materialize_dataset(
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Materialize curated upstream git commit samples into artifacts/experiments/v2.")
+    parser = argparse.ArgumentParser(description="Materialize curated upstream git commit samples into artifacts/experiments/cross_backend.")
     parser.add_argument("--experiment-root", default=str(DEFAULT_EXPERIMENT_ROOT))
     parser.add_argument("--selection", default=str(DEFAULT_SELECTION))
     parser.add_argument("--main-manifest", default=str(DEFAULT_MAIN_MANIFEST))

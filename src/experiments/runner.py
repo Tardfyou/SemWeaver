@@ -325,7 +325,7 @@ class ExperimentLayout:
 
 
 def default_experiment_root() -> Path:
-    return Path(__file__).resolve().parents[2] / "artifacts" / "experiments" / "v2"
+    return Path(__file__).resolve().parents[2] / "artifacts" / "experiments" / "cross_backend"
 
 
 def init_experiment_root(root: Optional[str] = None, force: bool = False) -> ExperimentLayout:
@@ -1500,10 +1500,9 @@ def _is_fixed_silent(validation: Dict[str, Any]) -> bool:
 def _experiment_readme() -> str:
     return """# SemWeaver Experiment Workspace
 
-This directory is generated at runtime under `artifacts/experiments/v2`.
+This directory is generated at runtime under the selected experiment `--root`.
 It is intentionally outside the source tree. Put manifests, materialized
-datasets, runs, logs, and result tables here when reproducing the paper
-experiments.
+datasets, runs, logs, and result tables here when staging local experiments.
 
 建议流程如下：
 
@@ -1519,7 +1518,7 @@ experiments.
 - 标记 `run_refine=true` 的子集参与证据收集与精炼实验。
 - 标记 `run_backend_compare=true` 的样本参与 `CSA/CodeQL` 后端对比。
 
-Knighter E2 口径说明：
+Knighter 实验口径说明：
 - `knighter_report_count` / `knighter_manual_bugs` / `knighter_manual_not_bugs` 是 Knighter 基线扫描与人工标注侧的全局统计。
 - `vuln_hit` / `fixed_silent` / `pds` 以及对应 refine 字段是 patch-local semantic gate，不等同于 full-kernel report_count/FPR。
 """

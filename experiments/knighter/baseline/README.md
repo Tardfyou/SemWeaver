@@ -1,4 +1,4 @@
-# KNighter Baseline Source Subset
+# Knighter Baseline Source Subset
 
 This is the source subset required by the baseline integration scripts. It
 contains Python drivers, prompt templates, LLVM plugin helper files, Docker

@@ -23,13 +23,13 @@ from src.research.knighter_env import (  # type: ignore
     build_knighter_process_env,
     extract_commit_id_from_patch,
     knighter_scan_prefix,
-    load_knighter_e2_config,
-    prepare_knighter_e2_scan_build,
+    load_knighter_config,
+    prepare_knighter_scan_build,
 )
 
 
-DEFAULT_OUT = ROOT / "artifacts/experiments/knighter/e2/generalization/fullscan"
-DEFAULT_ARCHIVE = ROOT / "artifacts/experiments/knighter/e2/generalization/reports"
+DEFAULT_OUT = ROOT / "artifacts/experiments/knighter/experiment/generalization/fullscan"
+DEFAULT_ARCHIVE = ROOT / "artifacts/experiments/knighter/experiment/generalization/reports"
 DEFAULT_CONFIG = {
     "enabled": True,
     "knighter_root": str(ROOT / "experiments/knighter/baseline"),
@@ -52,17 +52,17 @@ CASES = {
         "commit_id": "768f17fd25e4a98bf5166148629ecf6f647d5efc",
         "bug_type": "Integer-Overflow",
         "historical_report_count": 1729,
-        "case_dir": "artifacts/experiments/knighter/e2/cases/08_768f17fd25e4_Integer_Overflow",
-        "patch": "artifacts/experiments/knighter/e2/cases/08_768f17fd25e4_Integer_Overflow/patches/commit.patch",
-        "refined_checker": "artifacts/experiments/knighter/e2/cases/08_768f17fd25e4_Integer_Overflow/csa/refinements/20260617_142234/csa/SAGenTestChecker.cpp",
+        "case_dir": "artifacts/experiments/knighter/experiment/cases/08_768f17fd25e4_Integer_Overflow",
+        "patch": "artifacts/experiments/knighter/experiment/cases/08_768f17fd25e4_Integer_Overflow/patches/commit.patch",
+        "refined_checker": "artifacts/experiments/knighter/experiment/cases/08_768f17fd25e4_Integer_Overflow/csa/refinements/20260617_142234/csa/SAGenTestChecker.cpp",
     },
     "14_c3d749609472_Out_of_Bound": {
         "commit_id": "c3d749609472ba0b217b42ab66f80459847e2bcb",
         "bug_type": "Out-of-Bound",
         "historical_report_count": 6,
-        "case_dir": "artifacts/experiments/knighter/e2/cases/14_c3d749609472_Out_of_Bound",
-        "patch": "artifacts/experiments/knighter/e2/cases/14_c3d749609472_Out_of_Bound/patches/commit.patch",
-        "refined_checker": "artifacts/experiments/knighter/e2/cases/14_c3d749609472_Out_of_Bound/csa/refinements/20260617_161108/csa/SAGenTestChecker.cpp",
+        "case_dir": "artifacts/experiments/knighter/experiment/cases/14_c3d749609472_Out_of_Bound",
+        "patch": "artifacts/experiments/knighter/experiment/cases/14_c3d749609472_Out_of_Bound/patches/commit.patch",
+        "refined_checker": "artifacts/experiments/knighter/experiment/cases/14_c3d749609472_Out_of_Bound/csa/refinements/20260617_161108/csa/SAGenTestChecker.cpp",
     },
 }
 
@@ -158,7 +158,7 @@ def run_case(env, case_id: str, output_root: Path, archive_root: Path) -> dict[s
             "error": str(build_meta.get("error", "checker build failed")),
         }
 
-    scan_build_path = prepare_knighter_e2_scan_build(env, case_dir)
+    scan_build_path = prepare_knighter_scan_build(env, case_dir)
     process_env = build_knighter_process_env(env)
     timeout = max(600, env.timeout)
     fixed_dir = case_output / "fixed"
@@ -225,7 +225,7 @@ def main() -> int:
         raw["jobs"] = args.jobs
     if args.timeout is not None:
         raw["timeout"] = args.timeout
-    env = load_knighter_e2_config({"knighter_e2": raw})
+    env = load_knighter_config({"knighter": raw})
     selected = args.case_id or sorted(CASES)
     all_results: list[dict[str, Any]] = []
     for index, case_id in enumerate(selected, start=1):

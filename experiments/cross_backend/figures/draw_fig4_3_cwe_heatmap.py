@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Draw Figure 4-3: sample-level CWE heatmap for generation quality.
 
-Values are derived from artifacts/experiments/v2/tables/generate_results.csv. The
+Values are derived from artifacts/experiments/cross_backend/tables/generate_results.csv. The
 paper
 figure is explicitly sample-level: for each CWE, there are two samples. A sample
 is counted as successful for a metric if either backend run for that sample
@@ -21,7 +21,7 @@ from matplotlib.colors import LinearSegmentedColormap
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-EXPERIMENT_ROOT = REPO_ROOT / "artifacts" / "experiments" / "v2"
+EXPERIMENT_ROOT = REPO_ROOT / "artifacts" / "experiments" / "cross_backend"
 OUT_DIR = EXPERIMENT_ROOT / "figures"
 DATA_PATH = EXPERIMENT_ROOT / "tables" / "generate_results.csv"
 

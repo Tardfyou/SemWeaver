@@ -82,3 +82,47 @@ CSA validation requires a compiled `.so` detector for full semantic checking. LS
 ## Smoke Fixture
 
 See `tests/tiny_buffer_lab/MANUAL_TEST_STEPS.md` for a small end-to-end command sequence. This fixture is not an experiment dataset.
+
+## Knighter Smoke Experiment
+
+The Knighter smoke profile reads the CSV in `experiments/samples/` and stages
+sample inputs from the external artifact package under
+`artifacts/research/knighter/cases/`. Runtime files are written under
+`artifacts/experiments/knighter/smoke/`.
+
+```bash
+./scripts/knighter_smoke.sh setup
+./scripts/knighter_smoke.sh audit
+```
+
+To run the smoke experiment, configure the external Knighter runtime first:
+
+```bash
+export KNIGHTER_LLVM_DIR="$PWD/artifacts/external/llvm"
+export KNIGHTER_LINUX_DIR="$PWD/artifacts/external/linux"
+export KNIGHTER_HOST_DEPS_DIR="$PWD/artifacts/external/host_deps/jammy-amd64/root"
+export OPENAI_API_KEY="<your key>"
+
+./scripts/knighter_smoke.sh run
+```
+
+`run` executes the minimal generate smoke. `run-full` also enables the refine
+step. Add future smoke cases by appending rows to
+`experiments/samples/knighter/profiles/smoke.csv`.
+
+## Sample Manifests
+
+Sample manifest CSVs are under `experiments/samples/`. The full sample
+environments are expected under `artifacts/` after unpacking the artifact
+package. Keep runtime output roots under `artifacts/`:
+
+```bash
+python3 -m src.main experiment audit \
+  --root artifacts/experiments/cross_backend \
+  --manifest experiments/samples/cross_backend/profiles/samples.csv \
+  --sample-id vul4c_cwe369_libtiff_cve20177595
+```
+
+The Knighter materialized case list is
+`experiments/samples/knighter/profiles/knighter_materialized_cases.csv`; the smoke
+wrapper remains the quickest end-to-end preflight.

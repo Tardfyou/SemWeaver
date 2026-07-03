@@ -13,7 +13,7 @@ from typing import Dict, Iterable, List
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-DEFAULT_EXPERIMENT_ROOT = REPO_ROOT / "artifacts" / "experiments" / "v2"
+DEFAULT_EXPERIMENT_ROOT = REPO_ROOT / "artifacts" / "experiments" / "cross_backend"
 DEFAULT_SELECTION = DEFAULT_EXPERIMENT_ROOT / "manifests" / "vul4c_seed_selection.csv"
 DEFAULT_MAIN_MANIFEST = DEFAULT_EXPERIMENT_ROOT / "manifests" / "samples.csv"
 DEFAULT_VUL4C_ROOT = DEFAULT_EXPERIMENT_ROOT / "datasets" / "raw" / "SoK-Vul4C"
@@ -336,7 +336,7 @@ def materialize_vul4c_dataset(
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Materialize selected Vul4C samples into artifacts/experiments/v2.")
+    parser = argparse.ArgumentParser(description="Materialize selected Vul4C samples into artifacts/experiments/cross_backend.")
     parser.add_argument("--experiment-root", default=str(DEFAULT_EXPERIMENT_ROOT))
     parser.add_argument("--selection", default=str(DEFAULT_SELECTION))
     parser.add_argument("--main-manifest", default=str(DEFAULT_MAIN_MANIFEST))

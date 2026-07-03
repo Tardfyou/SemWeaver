@@ -17,7 +17,7 @@ import pandas as pd
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-EXPERIMENT_ROOT = REPO_ROOT / "artifacts" / "experiments" / "v2"
+EXPERIMENT_ROOT = REPO_ROOT / "artifacts" / "experiments" / "cross_backend"
 OUT_DIR = EXPERIMENT_ROOT / "figures"
 GENERATE_PATH = EXPERIMENT_ROOT / "tables" / "generate_results.csv"
 REFINE_PATH = EXPERIMENT_ROOT / "tables" / "refine_results.csv"

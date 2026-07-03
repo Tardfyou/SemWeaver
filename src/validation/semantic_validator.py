@@ -15,7 +15,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urlparse, unquote
 
 from ..experiments.sample_env import load_validation_env
-from ..research.knighter_env import load_knighter_e2_config, run_knighter_validation
+from ..research.knighter_env import load_knighter_config, run_knighter_validation
 from .codeql_support import (
     build_codeql_search_path_args,
     build_codeql_database_path,
@@ -70,7 +70,7 @@ class SemanticValidator:
             )
 
         try:
-            knighter_env = load_knighter_e2_config({"knighter_e2": self.config.get("knighter_e2", {})})
+            knighter_env = load_knighter_config(self.config)
             if knighter_env.enabled:
                 summary = run_knighter_validation(
                     knighter_env,

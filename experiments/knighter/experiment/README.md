@@ -1,8 +1,8 @@
-# KNighter E2 Drivers
+# Knighter Experiment Drivers
 
-These scripts operate on E2 case directories and baseline/refined checker
+These scripts operate on Knighter case directories and baseline/refined checker
 outputs. They are source-only and expect their inputs under
-`artifacts/experiments/knighter/e2`.
+`artifacts/experiments/knighter/experiment`.
 
 Included drivers:
 
