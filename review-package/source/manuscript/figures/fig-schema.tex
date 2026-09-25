@@ -1,0 +1,60 @@
+% Fig. 3 -- Backend complementarity (SINGLE-COLUMN, do NOT make figure*).
+% Three-stage mapping: backend-native fact  ->  normalized role  ->  detector edit,
+% then the EvidenceSlice payload and the target-preserving gate.
+% Aesthetic matches the redrawn PPT figures via figstyle.tex (pastel bands,
+% magenta sub-title, amber "becomes-an-edit" connectors).
+% Grounded in SemWeaver source:
+%   evidence/collectors/csa_path.py   -> path_guard, state_transition,
+%                                        allocation_lifecycle, semantic_slice
+%   evidence/collectors/codeql_flow.py-> dataflow_candidate, call_chain, semantic_slice
+%   core/evidence_schema.py           -> EvidenceSlice fields, provenance, missing_evidence
+\begin{tikzpicture}[sw,
+    rolechip/.style={swbox, fill=swwhite, line width=0.7pt, font=\scriptsize,
+                     align=center, text width=16mm, minimum height=5.4mm, inner sep=2pt},
+    plab/.style={font=\scriptsize\bfseries, rotate=90, anchor=center},
+    colh/.style={font=\tiny\bfseries, text=swmuted, anchor=base},
+  ]
+  \def\xW{8.6}
+
+  % ---- title + column headers ----
+  \node[swptitle, anchor=west] at (0.0,0.30)
+       {Backend-native fact $\rightarrow$ normalized role $\rightarrow$ detector edit};
+  \node[colh] at (1.55,-0.18) {native fact};
+  \node[colh] at (4.00,-0.18) {role};
+  \node[colh] at (6.85,-0.18) {detector constraint};
+
+  % ---- provider bands (behind rows) ----
+  \begin{scope}[on background layer]
+    \fill[rounded corners=1.6pt, fill=swbluefill]   (0.0,-0.60) rectangle (\xW,-2.38);
+    \fill[rounded corners=1.6pt, fill=sworangefill] (0.0,-2.46) rectangle (\xW,-4.24);
+    \fill[rounded corners=1.6pt, fill=swtealfill]   (0.0,-4.32) rectangle (\xW,-5.12);
+    \fill[rounded corners=1.6pt, fill=swmist]       (0.0,-5.20) rectangle (\xW,-6.00);
+  \end{scope}
+  \node[plab, text=swblue]   at (0.20,-1.49) {CSA};
+  \node[plab, text=sworange] at (0.20,-3.35) {CodeQL};
+  \node[plab, text=swteal,  font=\tiny\bfseries] at (0.20,-4.72) {both};
+  \node[plab, text=swmuted, font=\tiny\bfseries] at (0.20,-5.60) {valid.};
+
+  % ---- rows: y / provider-colour / native fact / role / detector edit ----
+  \foreach \y/\pc/\ft/\rl/\cn in {%
+     -1.05/swblue/{path\_guard}/{guard / barrier}/{branch \& reachability predicate},
+     -1.93/swblue/{state\_transition,\\allocation\_lifecycle}/{state / lifetime}/{object-state \& ownership predicate},
+     -2.91/sworange/{dataflow\_candidate}/{flow}/{source-to-sink value-flow constraint},
+     -3.79/sworange/{call\_chain\\(api\_terms)}/{call / API}/{interprocedural \& API filter},
+     -4.72/swteal/{semantic\_slice}/{patch slice}/{local edit context (stmts, guards)},
+     -5.60/swmuted/{validation\_outcome}/{validation feedback}/{accept / reject signal}}{
+    \node[font=\tiny\ttfamily, text=\pc, anchor=west, align=left, text width=23mm] at (0.46,\y) {\ft};
+    \node[rolechip, draw=\pc] at (4.0,\y) {\rl};
+    \node[font=\tiny\itshape, text=swink, anchor=west, align=left, text width=33mm] at (5.18,\y) {\cn};
+    \draw[swthin]      (2.95,\y) -- (3.20,\y);
+    \draw[swamberedge] (4.82,\y) -- (5.12,\y);
+  }
+
+  % ---- EvidenceSlice payload + provenance strip ----
+  \node[draw=swblue!55, fill=swlav, rounded corners=2pt, line width=0.5pt,
+        anchor=north west, align=left, inner sep=3.2pt, text width=83mm,
+        font=\tiny] at (0.0,-6.16)
+       {\textbf{\scriptsize EvidenceSlice} payload: statements $\cdot$ guards $\cdot$ call\_edges
+        $\cdot$ state\_transitions $\cdot$ api\_terms $\cdot$ related\_symbols $\cdot$ coverage\_status\\[1.5pt]
+        \textit{provenance:} analyzer-backed $\cdot$ source-window fallback $\cdot$ \texttt{missing\_evidence} kept};
+\end{tikzpicture}

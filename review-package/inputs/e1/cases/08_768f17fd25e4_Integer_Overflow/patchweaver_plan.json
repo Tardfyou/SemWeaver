@@ -1,0 +1,1093 @@
+{
+  "schema_version": 1,
+  "source": "prepare_e2_inputs.py",
+  "patch_path": "patches/commit.patch",
+  "validate_path": "/anonymous/home/LLM-Native/research/knighter/linux",
+  "knighter": {
+    "commit_id": "768f17fd25e4a98bf5166148629ecf6f647d5efc",
+    "bug_type": "Integer-Overflow",
+    "checker_id": "old:768f17fd25e4a98bf5166148629ecf6f647d5efc:checker1",
+    "candidate_group": "positive_scan_report_count",
+    "report_count": 1729,
+    "manual_bugs": 0,
+    "manual_not_bugs": 0,
+    "patch_local_screen1": {
+      "buggy_alerts": 8,
+      "fixed_alerts": 6,
+      "buggy_miss": false,
+      "fixed_noisy": true,
+      "poor_distinguishing": true,
+      "screen1_priority": "P0",
+      "screen1_reason": "fixed-side noisy",
+      "patch_related_targets": [
+        "drivers/gpu/drm/i915/i915_hwmon.o"
+      ]
+    },
+    "baseline_validation_summary": "Baseline validation (csa): Knighter基线扫描报告数=1729, 人工确认bug=0, 人工非bug=0, 候选组=positive_scan_report_count。漏洞版命中=true, 漏洞版patch-scoped告警数=8, 修复版误报数=6, fixed_silent=false, PDS=false. 这些数只表示patch-local语义验证门，不等同于Knighter full-kernel report_count/FPR统计。"
+  },
+  "patchweaver": {
+    "refinement_evidence_bundles": {
+      "csa": {
+        "records": [
+          {
+            "evidence_id": "knighter_e2_patch_local_validation",
+            "type": "validation_outcome",
+            "analyzer": "csa",
+            "scope": {
+              "repo": "linux",
+              "file": "drivers/gpu/drm/i915/i915_hwmon.o",
+              "function": "patch_local_validation"
+            },
+            "location": {
+              "line": 0,
+              "column": 0
+            },
+            "semantic_payload": {
+              "kind": "knighter_e2_patch_local",
+              "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=8, fixed_alerts=6, buggy_miss=false, fixed_noisy=true, pds=false, targets=drivers/gpu/drm/i915/i915_hwmon.o.",
+              "commit_id": "768f17fd25e4a98bf5166148629ecf6f647d5efc",
+              "case_id": "08_768f17fd25e4_Integer_Overflow",
+              "bug_type": "Integer-Overflow",
+              "candidate_group": "positive_scan_report_count",
+              "checker_id": "old:768f17fd25e4a98bf5166148629ecf6f647d5efc:checker1",
+              "checker_name": "SAGenTestChecker",
+              "patch_related_targets": [
+                "drivers/gpu/drm/i915/i915_hwmon.o"
+              ],
+              "buggy_counts": {
+                "drivers/gpu/drm/i915/i915_hwmon.o": 8
+              },
+              "fixed_counts": {
+                "drivers/gpu/drm/i915/i915_hwmon.o": 6
+              },
+              "buggy_alerts": 8,
+              "fixed_alerts": 6,
+              "buggy_miss": false,
+              "fixed_noisy": true,
+              "pds": false,
+              "failure_mode": "fixed_noisy",
+              "repair_priority": "high",
+              "repair_action": "Add the patch-introduced guard/barrier/silence condition to reduce fixed-side alerts.",
+              "feedback_hint": "KNighter E2 strict patch-local baseline: buggy_alerts=8, fixed_alerts=6, buggy_miss=false, fixed_noisy=true, pds=false, targets=drivers/gpu/drm/i915/i915_hwmon.o.",
+              "historical_reference": "Historical KNighter report_count=1729, manual_bugs=0, manual_not_bugs=0; this is not the same metric as patch-local E2 validation.",
+              "patch_semantic_context": {
+                "patch_excerpt": "commit 768f17fd25e4a98bf5166148629ecf6f647d5efc\nAuthor: Karthik Poosa <karthik.poosa@intel.com>\nDate:   Mon Dec 4 20:18:09 2023 +0530\n\n    drm/i915/hwmon: Fix static analysis tool reported issues\n    \n    Updated i915 hwmon with fixes for issues reported by static analysis tool.\n    Fixed integer overflow with upcasting.\n    \n    v2:\n    - Added Fixes tag (Badal).\n    - Updated commit message as per review comments (Anshuman).\n    \n    Fixes: 4c2572fe0ae7 (\"drm/i915/hwmon: Expose power1_max_interval\")\n    Reviewed-by: Badal Nilawar <badal.nilawar@intel.com>\n    Reviewed-by: Anshuman Gupta <anshuman.gupta@intel.com>\n    Signed-off-by: Karthik Poosa <karthik.poosa@intel.com>\n    Signed-off-by: Anshuman Gupta <anshuman.gupta@intel.com>\n    Link: https://patchwork.freedesktop.org/patch/msgid/20231204144809.1518704-1-karthik.poosa@intel.com\n    (cherry picked from commit ac3420d3d428443a08b923f9118121c170192b62)\n    Signed-off-by: Jani Nikula <jani.nikula@intel.com>\n\ndiff --git a/drivers/gpu/drm/i915/i915_hwmon.c b/drivers/gpu/drm/i915/i915_hwmon.c\nindex 975da8e7f2a9..8c3f443c8347 100644\n--- a/drivers/gpu/drm/i915/i915_hwmon.c\n+++ b/drivers/gpu/drm/i915/i915_hwmon.c\n@@ -175,7 +175,7 @@ hwm_power1_max_interval_show(struct device *dev, struct device_attribute *attr,\n \t *     tau4 = (4 | x) << y\n \t * but add 2 when doing the final right shift to account for units\n \t */\n-\ttau4 = ((1 << x_w) | x) << y;\n+\ttau4 = (u64)((1 << x_w) | x) << y;\n \t/* val in hwmon interface units (millisec) */\n \tout = mul_u64_u32_shr(tau4, SF_TIME, hwmon->scl_shift_time + x_w);\n \n@@ -211,7 +211,7 @@ hwm_power1_max_interval_store(struct device *dev,\n \tr = FIELD_PREP(PKG_MAX_WIN, PKG_MAX_WIN_DEFAULT);\n \tx = REG_FIELD_GET(PKG_MAX_WIN_X, r);\n \ty = REG_FIELD_GET(PKG_MAX_WIN_Y, r);\n-\ttau4 = ((1 << x_w) | x) << y;\n+\ttau4 = (u64)((1 << x_w) | x) << y;\n \tmax_win = mul_u64_u32_shr(tau4, SF_TIME, hwmon->scl_shift_time + x_w);\n \n \tif (val > max_win)\n",
+                "patch_related_targets": [
+                  "drivers/gpu/drm/i915/i915_hwmon.o"
+                ],
+                "knighter_original_generation_plan_excerpt": "/*\n1. Program State Customization:\n   • No custom program state maps are necessary for this checker since the bug pattern only involves\n     verifying the proper type casting in shift expressions. We'll work directly with the AST nodes.\n     \n2. Choose Callback Functions:\n   • Use checkPreStmt to hook into BinaryOperator nodes because the bug pattern involves arithmetic\n     left shifts (<<) where the left-hand side is not properly upcast to a 64-bit type.\n     \n3. Step-by-Step Implementation Plan:\n\n   Step 1: Hook BinaryOperator Nodes\n      - In the checkPreStmt callback, check if the statement is a BinaryOperator.\n      - Verify that the operator is the left shift operator (\"<<\").\n\n   Step 2: Analyze the Left-Hand Side (LHS) Expression\n      - For the LHS expression of the BinaryOperator:\n         • Determine its type. If the type is an integer type and its width is 32 bits,\n           this is a candidate for potential overflow.\n      - Use utility functions like getType() on the expression and check if it is casted to a 64-bit type.\n      - Specifically, check if the LHS is a CastExpr casting to an unsigned 64-bit type (e.g., \"u64\").\n         • If a CastExpr exists and the destination type is 64-bit, then the expression is safe.\n         • Otherwise, the shift is conducted with a 32-bit operand.\n\n   Step 3: Issue a Bug Report on Offending Shift Expressions\n      - If the LHS is determined to be 32-bit (or not upcast to a 64-bit type) before shifting,\n        then prepare a bug report.\n      - Use a simple bug reporting mechanism like std::make_unique<BasicBugReport> to report a short\n        and clear message such as \"Potential integer overflow: left shift performed on a 32-bit value.\"\n      - Emit the bug report to alert the user of the detected pattern.\n      \n   Step 4: Finalize and Review the Checker\n      - Ensure the checker correctly identifies shift operations that do not include an explicit cast to u64.\n      - Use the provided utility functions if needed for AST navigation (e.g., findSpecificTypeInChildren) to\n        dig into the LHS expression to confirm whether a proper cast is present.\n        \nThis plan provides a clear, concise approach to implementing a checker that detects arithmetic shift operations\nperformed on 32-bit values without an upcast to 64-bit, which matches the target bug pattern indicated by the patch.\n*/",
+                "knighter_refined_plan_excerpt": "/*\n1. Program State Customization:\n   • No custom program state maps are necessary for this checker since the bug pattern only involves\n     verifying the proper type casting in shift expressions. We'll work directly with the AST nodes.\n     \n2. Choose Callback Functions:\n   • Use checkPreStmt to hook into BinaryOperator nodes because the bug pattern involves arithmetic\n     left shifts (<<) where the left-hand side is not properly upcast to a 64-bit type.\n     \n3. Step-by-Step Implementation Plan:\n\n   Step 1: Hook BinaryOperator Nodes\n      - In the checkPreStmt callback, check if the statement is a BinaryOperator.\n      - Verify that the operator is the left shift operator (\"<<\").\n\n   Step 2: Analyze the Left-Hand Side (LHS) Expression\n      - For the LHS expression of the BinaryOperator:\n         • Determine its type. If the type is an integer type and its width is 32 bits,\n           this is a candidate for potential overflow.\n      - Use utility functions like getType() on the expression and check if it is casted to a 64-bit type.\n      - Specifically, check if the LHS is a CastExpr casting to an unsigned 64-bit type (e.g., \"u64\").\n         • If a CastExpr exists and the destination type is 64-bit, then the expression is safe.\n         • Otherwise, the shift is conducted with a 32-bit operand.\n\n   Step 3: Issue a Bug Report on Offending Shift Expressions\n      - If the LHS is determined to be 32-bit (or not upcast to a 64-bit type) before shifting,\n        then prepare a bug report.\n      - Use a simple bug reporting mechanism like std::make_unique<BasicBugReport> to report a short\n        and clear message such as \"Potential integer overflow: left shift performed on a 32-bit value.\"\n      - Emit the bug report to alert the user of the detected pattern.\n      \n   Step 4: Finalize and Review the Checker\n      - Ensure the checker correctly identifies shift operations that do not include an explicit cast to u64.\n      - Use the provided utility functions if needed for AST navigation (e.g., findSpecificTypeInChildren) to\n        dig into the LHS expression to confirm whether a proper cast is present.\n        \nThis plan provides a clear, concise approach to implementing a checker that detects arithmetic shift operations\nperformed on 32-bit values without an upcast to 64-bit, which matches the target bug pattern indicated by the patch.\n*/",
+                "knighter_pattern_excerpt": "## Bug Pattern\n\nPerforming arithmetic shifts on values computed as 32-bit integers without first upcasting them to a 64-bit type. This can lead to integer overflow when the shift amount is large, so the left shift is performed in a narrower type than intended. Explicitly casting the operand to u64 before shifting (as done in the fix) prevents overflow and yields the correct 64-bit result.",
+                "knighter_generated_patch_excerpt": "## Patch Description\n\ndrm/i915/hwmon: Fix static analysis tool reported issues\n\nUpdated i915 hwmon with fixes for issues reported by static analysis tool.\nFixed integer overflow with upcasting.\n\nv2:\n- Added Fixes tag (Badal).\n- Updated commit message as per review comments (Anshuman).\n\nFixes: 4c2572fe0ae7 (\"drm/i915/hwmon: Expose power1_max_interval\")\nReviewed-by: Badal Nilawar <badal.nilawar@intel.com>\nReviewed-by: Anshuman Gupta <anshuman.gupta@intel.com>\nSigned-off-by: Karthik Poosa <karthik.poosa@intel.com>\nSigned-off-by: Anshuman Gupta <anshuman.gupta@intel.com>\nLink: https://patchwork.freedesktop.org/patch/msgid/20231204144809.1518704-1-karthik.poosa@intel.com\n(cherry picked from commit ac3420d3d428443a08b923f9118121c170192b62)\nSigned-off-by: Jani Nikula <jani.nikula@intel.com>\n\n## Buggy Code\n\n```c\n// drivers/gpu/drm/i915/i915_hwmon.c\nstatic ssize_t\nhwm_power1_max_interval_store(struct device *dev,\n\t\t\t      struct device_attribute *attr,\n\t\t\t      const char *buf, size_t count)\n{\n\tstruct hwm_drvdata *ddat = dev_get_drvdata(dev);\n\tstruct i915_hwmon *hwmon = ddat->hwmon;\n\tu32 x, y, rxy, x_w = 2; /* 2 bits */\n\tu64 tau4, r, max_win;\n\tunsigned long val;\n\tint ret;\n\n\tret = kstrtoul(buf, 0, &val);\n\tif (ret)\n\t\treturn ret;\n\n\t/*\n\t * Max HW supported tau in '1.x * power(2,y)' format, x = 0, y = 0x12\n\t * The hwmon->scl_shift_time default of 0xa results in a max tau of 256 seconds\n\t */\n#define PKG_MAX_WIN_DEFAULT 0x12ull\n\n\t/*\n\t * val must be < max in hwmon interface units. The steps below are\n\t * explained in i915_power1_max_interval_show()\n\t */\n\tr = FIELD_PREP(PKG_MAX_WIN, PKG_MAX_WIN_DEFAULT);\n\tx = REG_FIELD_GET(PKG_MAX_WIN_X, r);\n\ty = REG_FIELD_GET(PKG_MAX_WIN_Y, r);\n\ttau4 = ((1 << x_w) | x) << y;\n\tmax_win = mul_u64_u32_shr(tau4, SF_TIME, hwmon->scl_shift_time + x_w);\n\n\tif (val > max_win)\n\t\treturn -EINVAL;\n\n\t/* val in hw units */\n\tval = DIV_ROUND_CLOSEST_ULL((u64)val << hwmon->scl_shift_time, SF_TIME);\n\t/* Convert to 1.x * power(2,y) */\n\tif (!val) {\n\t\t/* Avoid ilog2(0) */\n\t\ty = 0;\n\t\tx = 0;\n\t} else {\n\t\ty = ilog2(val);\n\t\t/* x = (val - (1 << y)) >> (y - 2); */\n\t\tx = (val - (1ul << y)) << x_w >> y;\n\t}\n\n\trxy = REG_FIELD_PREP(PKG_PWR_LIM_1_TIME_X, x) | REG_FIELD_PREP(PKG_PWR_LIM_1_TIME_Y, y);\n\n\thwm_locked_with_pm_intel_uncore_rmw(ddat, hwmon->rg.pkg_rapl_limit,\n\t\t\t\t\t    PKG_PWR_LIM_1_TIME, rxy);\n\treturn count;\n}\n```\n```c\n// drivers/gpu/drm/i915/i915_hwmon.c\nstatic ssize_t\nhwm_power1_max_interval_show(struct device *dev, struct device_attribute *attr,\n\t\t\t     char *buf)\n{\n\tstruct hwm_drvdata *ddat = dev_get_drvdata(dev);\n\tstruct i915_hwmon *hwmon = ddat->hwmon;\n\tintel_wakeref_t wakeref;\n\tu32 r, x, y, x_w = 2; /* 2 bits */\n\tu64 tau4, out;\n\n\twith_intel_runtime_pm(ddat->uncore->rpm, wakeref)\n\t\tr = intel_uncore_read(ddat->uncore, hwmon->rg.pkg_rapl_limit);\n\n\tx = REG_FIELD_GET(PKG_PWR_LIM_1_TIME_X, r);\n\ty = REG_FIELD_GET(PKG_PWR_LIM_1_TIME_Y, r);\n\t/*\n\t * tau = 1.x * power(2,y), x = bits(23:22), y = bits(21:17)\n\t *     = (4 | x) << (y - 2)\n\t * where (y - 2) ensures a 1.x fixed point representation of 1.x\n\t * However because y can be < 2, we compute\n\t *     tau4 = (4 | x) << y\n\t * but add 2 when doing the final right shift to account for units\n\t */\n\ttau4 = ((1 << x_w) | x) << y;\n\t/* val in hwmon interface units (millisec) */\n\tout = mul_u64_u32_shr(tau4, SF_TIME, hwmon->scl_shift_time + x_w);\n\n\treturn sysfs_emit(buf, \"%llu\\n\", out);\n}\n```\n\n## Bug Fix Patch\n\n```diff\ndiff --git a/drivers/gpu/drm/i915/i915_hwmon.c b/drivers/gpu/drm/i915/i915_hwmon.c\nindex 975da8e7f2a9..8c3f443c8347 100644\n--- a/drivers/gpu/drm/i915/i915_hwmon.c\n+++ b/drivers/gpu/drm/i915/i915_hwmon.c\n@@ -175,7 +175,7 @@ hwm_power1_max_interval_show(struct device *dev, struct device_attribute *attr,\n \t *     tau4 = (4 | x) << y\n \t * but add 2 when doing the final right shift to account for units\n \t */\n-\ttau4 = ((1 << x_w) | x) << y;\n+\ttau4 = (u64)((1 << x_w) | x) << y;\n \t/* val in hwmon interface units (millisec) */\n \tout = mul_u64_u32_shr(tau4, SF_TIME, hwmon->scl_shift_time + x_w);\n \n@@ -211,7 +211,7 @@ hwm_power1_max_interval_store(struct device *dev,\n \tr = FIELD_PREP(PKG_MAX_WIN, PKG_MAX_WIN_DEFAULT);\n \tx = REG_FIELD_GET(PKG_MAX_WIN_X, r);\n \ty = REG_FIELD_GET(PKG_MAX_WIN_Y, r);\n-\ttau4 = ((1 << x_w) | x) << y;\n+\ttau4 = (u64)((1 << x_w) | x) << y;\n \tmax_win = mul_u64_u32_shr(tau4, SF_TIME, hwmon->scl_shift_time + x_w);\n \n \tif (val > max_win)\n```\n\n",
+                "checker_source_summary": {
+                  "available": true,
+                  "callbacks_or_hooks": [],
+                  "notable_tokens": [
+                    "ret",
+                    "BO_Shl",
+                    "CastExpr",
+                    "getTypeSize",
+                    "PathSensitiveBugReport"
+                  ],
+                  "source_excerpt": "// /external/upstream-study/SAGEN/result-0224-bugfail-multi-o3mini/test-Integer-Overflow-768f17fd25e4a98bf5166148629ecf6f647d5efc/checkers/checker1.cpp\n#include \"clang/AST/ASTContext.h\"\n#include \"clang/AST/Expr.h\"\n#include \"clang/AST/Stmt.h\"\n#include \"clang/StaticAnalyzer/Core/BugReporter/BugReporter.h\"\n#include \"clang/StaticAnalyzer/Core/BugReporter/BugType.h\"\n#include \"clang/StaticAnalyzer/Core/Checker.h\"\n#include \"clang/StaticAnalyzer/Core/PathSensitive/CheckerContext.h\"\n#include \"clang/StaticAnalyzer/Core/PathSensitive/ProgramState.h\"\n#include \"clang/StaticAnalyzer/Core/PathSensitive/SymExpr.h\"\n#include \"clang/StaticAnalyzer/Frontend/CheckerRegistry.h\"\n#include \"clang/AST/RecursiveASTVisitor.h\"\n#include \"clang/StaticAnalyzer/Checkers/utility.h\"\n#include \"llvm/Support/raw_ostream.h\"\nusing namespace clang;\nusing namespace ento;\nnamespace {\n// The checker only needs to hook the PreStmt callback for BinaryOperator.\nclass SAGenTestChecker : public Checker< check::PreStmt<BinaryOperator> > {\n  mutable std::unique_ptr<BugType> BT;\npublic:\n  SAGenTestChecker()\n      : BT(new BugType(this, \"Potential 32-bit left shift without 64-bit upcasting\")) {}\n  void checkPreStmt(const BinaryOperator *BOp, CheckerContext &C) const;\nprivate:\n  // Helper function that uses downward AST traversal to look for a CastExpr that upcasts\n  // an integer expression to a 64-bit type.\n  bool isProperlyCastTo64(const Expr *E, CheckerContext &C) const;\n};\nbool SAGenTestChecker::isProperlyCastTo64(const Expr *E, CheckerContext &C) const {\n  // Look for any cast expression in the subtree of E.\n  const CastExpr *CE = findSpecificTypeInChildren<CastExpr>(E);\n  if (!CE)\n    // Also check if E itself is a CastExpr.\n    if (const CastExpr *SelfCE = dyn_cast<CastExpr>(E))\n      CE = SelfCE;\n  if (CE) {\n    QualType DestTy = CE->getType();\n    if (DestTy->isIntegerType()) {\n      // Get the bit-width of the destination type.\n      unsigned width = C.getASTContext().getTypeSize(DestTy);\n      if (width >= 64)\n        return true;\n    }\n  }\n  return false;\n}\nvoid SAGenTestChecker::checkPreStmt(const BinaryOperator *BOp, CheckerContext &C) const {\n  // We are only interested in left shift operators.\n  if (BOp->getOpcode() != BO_Shl)\n    return;\n  const Expr *LHS = BOp->getLHS();\n  if (!LHS)\n    return;\n  // If the LHS expression is explicitly cast to a 64-bit integer, then no bug.\n  if (isProperlyCastTo64(LHS, C))\n    return;\n  QualType LHSType = LHS->getType();\n  // Proceed only if the LHS is an integer type.\n  if (!LHSType->isIntegerType())\n    return;\n  unsigned typeWidth = C.getASTContext().getTypeSize(LHSType);\n  // If the width is less than 64 bits, then shifting might lead to overflow.\n  if (typeWidth >= 64)\n    return;\n  // Report a bug if a 32-bit (or sub-64-bit) integer is left-shifted without upcasting.\n  ExplodedNode *N = C.generateNonFatalErrorNode();\n  if (!N)\n    return;\n  auto report = std::make_unique<PathSensitiveBugReport>(\n      *BT, \"Potential integer overflow: left shift performed on a 32-bit value without upcasting to 64-bit\", N);\n  report->addRange(BOp->getSourceRange());\n  C.emitReport(std::move(report));\n}\n} // end anonymous namespace\nextern \"C\" void clang_registerCheckers(CheckerRegistry &registry) {\n  registry.addChecker<SAGenTestChecker>(\n      \"custom.SAGenTestChecker\",\n      \"Detects arithmetic shifts on 32-bit integers without prior upcasting to 64-bit\",\n      \"\");\n}\nextern \"C\" const char clang_analyzerAPIVersionString[] =\n    CLANG_ANALYZER_API_VERSION_STRING;"
+                },
+                "buggy_report_index": {
+                  "report_dir": "research/knighter/e2/results/screen1_reports/08_768f17fd25e4_Integer_Overflow/buggy",
+                  "index_available": true,
+                  "summary_lines": [
+                    "<h2>Bug Summary</h2><table>",
+                    "<thead><tr><td>Bug Type</td><td>Quantity</td><td class=\"sorttable_nosort\">Display?</td></tr></thead>",
+                    "<tr style=\"font-weight:bold\"><td class=\"SUMM_DESC\">All Bugs</td><td class=\"Q\">8</td><td><center><input type=\"checkbox\" id=\"AllBugsCheck\" onClick=\"CopyCheckedStateToCheckButtons(this);\" checked/></center></td></tr>",
+                    "<tr><td class=\"SUMM_DESC\">Potential 32-bit left shift without 64-bit upcasting</td><td class=\"Q\">8</td><td><center><input type=\"checkbox\" onClick=\"ToggleDisplay(this,'bt_logic_error_potential_32-bit_left_shift_without_64-bit_upcasting');\" checked/></center></td></tr>",
+                    "  <td class=\"Q\">Line</td>",
+                    "  <td class=\"Q\">Path Length</td>",
+                    "<tr class=\"bt_logic_error_potential_32-bit_left_shift_without_64-bit_upcasting\"><td class=\"DESC\">Logic error</td><td class=\"DESC\">Potential 32-bit left shift without 64-bit upcasting</td><td>drivers/gpu/drm/i915/i915_hwmon.c</td><td class=\"DESC\">hwm_power1_max_interval_store</td><td class=\"Q\">214</td><td class=\"Q\">53</td><td><a href=\"report-213cf4.html#EndPath\">View Report</a></td>",
+                    "<tr class=\"bt_logic_error_potential_32-bit_left_shift_without_64-bit_upcasting\"><td class=\"DESC\">Logic error</td><td class=\"DESC\">Potential 32-bit left shift without 64-bit upcasting</td><td>drivers/gpu/drm/i915/i915_hwmon.c</td><td class=\"DESC\">hwm_power1_max_interval_store</td><td class=\"Q\">233</td><td class=\"Q\">60</td><td><a href=\"report-28d7ed.html#EndPath\">View Report</a></td>",
+                    "<tr class=\"bt_logic_error_potential_32-bit_left_shift_without_64-bit_upcasting\"><td class=\"DESC\">Logic error</td><td class=\"DESC\">Potential 32-bit left shift without 64-bit upcasting</td><td>drivers/gpu/drm/i915/i915_hwmon.c</td><td class=\"DESC\">hwm_power1_max_interval_show</td><td class=\"Q\">178</td><td class=\"Q\">35</td><td><a href=\"report-339428.html#EndPath\">View Report</a></td>",
+                    "<tr class=\"bt_logic_error_potential_32-bit_left_shift_without_64-bit_upcasting\"><td class=\"DESC\">Logic error</td><td class=\"DESC\">Potential 32-bit left shift without 64-bit upcasting</td><td>drivers/gpu/drm/i915/i915_hwmon.c</td><td class=\"DESC\">hwm_power_max_write</td><td class=\"Q\">442</td><td class=\"Q\">14</td><td><a href=\"report-6dbf39.html#EndPath\">View Report</a></td>",
+                    "<tr class=\"bt_logic_error_potential_32-bit_left_shift_without_64-bit_upcasting\"><td class=\"DESC\">Logic error</td><td class=\"DESC\">Potential 32-bit left shift without 64-bit upcasting</td><td>drivers/gpu/drm/i915/i915_hwmon.c</td><td class=\"DESC\">hwm_power1_max_interval_store</td><td class=\"Q\">214</td><td class=\"Q\">52</td><td><a href=\"report-77f083.html#EndPath\">View Report</a></td>",
+                    "<tr class=\"bt_logic_error_potential_32-bit_left_shift_without_64-bit_upcasting\"><td class=\"DESC\">Logic error</td><td class=\"DESC\">Potential 32-bit left shift without 64-bit upcasting</td><td>include/linux/instrumented.h</td><td class=\"DESC\">instrument_atomic_read</td><td class=\"Q\">69</td><td class=\"Q\">13</td><td><a href=\"report-79870c.html#EndPath\">View Report</a></td>",
+                    "<tr class=\"bt_logic_error_potential_32-bit_left_shift_without_64-bit_upcasting\"><td class=\"DESC\">Logic error</td><td class=\"DESC\">Potential 32-bit left shift without 64-bit upcasting</td><td>drivers/gpu/drm/i915/i915_hwmon.c</td><td class=\"DESC\">hwm_power1_max_interval_store</td><td class=\"Q\">233</td><td class=\"Q\">59</td><td><a href=\"report-e61466.html#EndPath\">View Report</a></td>",
+                    "<tr class=\"bt_logic_error_potential_32-bit_left_shift_without_64-bit_upcasting\"><td class=\"DESC\">Logic error</td><td class=\"DESC\">Potential 32-bit left shift without 64-bit upcasting</td><td>drivers/gpu/drm/i915/i915_hwmon.c</td><td class=\"DESC\">hwm_power1_max_interval_show</td><td class=\"Q\">178</td><td class=\"Q\">36</td><td><a href=\"report-f7e9d4.html#EndPath\">View Report</a></td>"
+                  ]
+                },
+                "fixed_report_index": {
+                  "report_dir": "research/knighter/e2/results/screen1_reports/08_768f17fd25e4_Integer_Overflow/fixed",
+                  "index_available": true,
+                  "summary_lines": [
+                    "<h2>Bug Summary</h2><table>",
+                    "<thead><tr><td>Bug Type</td><td>Quantity</td><td class=\"sorttable_nosort\">Display?</td></tr></thead>",
+                    "<tr style=\"font-weight:bold\"><td class=\"SUMM_DESC\">All Bugs</td><td class=\"Q\">6</td><td><center><input type=\"checkbox\" id=\"AllBugsCheck\" onClick=\"CopyCheckedStateToCheckButtons(this);\" checked/></center></td></tr>",
+                    "<tr><td class=\"SUMM_DESC\">Potential 32-bit left shift without 64-bit upcasting</td><td class=\"Q\">6</td><td><center><input type=\"checkbox\" onClick=\"ToggleDisplay(this,'bt_logic_error_potential_32-bit_left_shift_without_64-bit_upcasting');\" checked/></center></td></tr>",
+                    "  <td class=\"Q\">Line</td>",
+                    "  <td class=\"Q\">Path Length</td>",
+                    "<tr class=\"bt_logic_error_potential_32-bit_left_shift_without_64-bit_upcasting\"><td class=\"DESC\">Logic error</td><td class=\"DESC\">Potential 32-bit left shift without 64-bit upcasting</td><td>drivers/gpu/drm/i915/i915_hwmon.c</td><td class=\"DESC\">hwm_power1_max_interval_store</td><td class=\"Q\">233</td><td class=\"Q\">60</td><td><a href=\"report-28d7ed.html#EndPath\">View Report</a></td>",
+                    "<tr class=\"bt_logic_error_potential_32-bit_left_shift_without_64-bit_upcasting\"><td class=\"DESC\">Logic error</td><td class=\"DESC\">Potential 32-bit left shift without 64-bit upcasting</td><td>drivers/gpu/drm/i915/i915_hwmon.c</td><td class=\"DESC\">hwm_power_max_write</td><td class=\"Q\">442</td><td class=\"Q\">14</td><td><a href=\"report-6dbf39.html#EndPath\">View Report</a></td>",
+                    "<tr class=\"bt_logic_error_potential_32-bit_left_shift_without_64-bit_upcasting\"><td class=\"DESC\">Logic error</td><td class=\"DESC\">Potential 32-bit left shift without 64-bit upcasting</td><td>include/linux/instrumented.h</td><td class=\"DESC\">instrument_atomic_read</td><td class=\"Q\">69</td><td class=\"Q\">13</td><td><a href=\"report-79870c.html#EndPath\">View Report</a></td>",
+                    "<tr class=\"bt_logic_error_potential_32-bit_left_shift_without_64-bit_upcasting\"><td class=\"DESC\">Logic error</td><td class=\"DESC\">Potential 32-bit left shift without 64-bit upcasting</td><td>drivers/gpu/drm/i915/i915_hwmon.c</td><td class=\"DESC\">hwm_power1_max_interval_store</td><td class=\"Q\">214</td><td class=\"Q\">52</td><td><a href=\"report-d71648.html#EndPath\">View Report</a></td>",
+                    "<tr class=\"bt_logic_error_potential_32-bit_left_shift_without_64-bit_upcasting\"><td class=\"DESC\">Logic error</td><td class=\"DESC\">Potential 32-bit left shift without 64-bit upcasting</td><td>drivers/gpu/drm/i915/i915_hwmon.c</td><td class=\"DESC\">hwm_power1_max_interval_show</td><td class=\"Q\">178</td><td class=\"Q\">35</td><td><a href=\"report-dd0cc9.html#EndPath\">View Report</a></td>",
+                    "<tr class=\"bt_logic_error_potential_32-bit_left_shift_without_64-bit_upcasting\"><td class=\"DESC\">Logic error</td><td class=\"DESC\">Potential 32-bit left shift without 64-bit upcasting</td><td>drivers/gpu/drm/i915/i915_hwmon.c</td><td class=\"DESC\">hwm_power1_max_interval_store</td><td class=\"Q\">233</td><td class=\"Q\">59</td><td><a href=\"report-e61466.html#EndPath\">View Report</a></td>"
+                  ]
+                },
+                "refinement_guidance": [
+                  "Patch widens the composed left-shift operand to u64 before shifting; the checker should model integer width at the shift operand, not only the presence of a shift expression.",
+                  "The vulnerable value is tau4, computed by left-shifting a sub-64-bit expression and then consumed by mul_u64_u32_shr."
+                ]
+              },
+              "log_path": "/anonymous/home/LLM-Native/research/knighter/runs/knighter-v613/validation_20260616_192116/knighter_validation.log",
+              "output_root": "/anonymous/home/LLM-Native/research/knighter/runs/knighter-v613/validation_20260616_192116",
+              "archived_buggy_report_dir": "research/knighter/e2/results/screen1_reports/08_768f17fd25e4_Integer_Overflow/buggy",
+              "archived_fixed_report_dir": "research/knighter/e2/results/screen1_reports/08_768f17fd25e4_Integer_Overflow/fixed"
+            },
+            "provenance": {
+              "tool": "research/knighter/scripts/run_e2_patch_local_audit.py",
+              "artifact": "research/knighter/e2/results/screening/patch_local_baseline/08_768f17fd25e4_Integer_Overflow/patch_local_result.json",
+              "confidence": 0.95
+            },
+            "evidence_slice": {}
+          },
+          {
+            "evidence_id": "knighter_historical_report_reference",
+            "type": "context_summary",
+            "analyzer": "csa",
+            "scope": {
+              "repo": "linux",
+              "file": "drivers/gpu/drm/i915/i915_hwmon.o",
+              "function": "knighter_historical_reference"
+            },
+            "location": {
+              "line": 0,
+              "column": 0
+            },
+            "semantic_payload": {
+              "kind": "knighter_historical_reference",
+              "summary": "Historical KNighter report_count=1729, manual_bugs=0, manual_not_bugs=0; this is not the same metric as patch-local E2 validation.",
+              "knighter_report_count": 1729,
+              "knighter_manual_bugs": 0,
+              "knighter_manual_not_bugs": 0,
+              "metric_scope_note": "Historical KNighter report_count is not patch-local buggy/fixed validation."
+            },
+            "provenance": {
+              "tool": "KNighter old-version generated/checker-for-evaluation/refine",
+              "artifact": "commit_report_map.txt + triage_report.csv",
+              "confidence": 0.72
+            },
+            "evidence_slice": {}
+          },
+          {
+            "evidence_id": "knighter_e2_patch_fact",
+            "type": "patch_fact",
+            "analyzer": "csa",
+            "scope": {
+              "repo": "linux",
+              "file": "drivers/gpu/drm/i915/i915_hwmon.c",
+              "function": "hwm_power1_max_interval_show"
+            },
+            "location": {
+              "line": 0,
+              "column": 0
+            },
+            "semantic_payload": {
+              "fact_type": "upcast_before_left_shift",
+              "label": "Integer-Overflow",
+              "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=8, fixed_alerts=6, buggy_miss=false, fixed_noisy=true, pds=false, targets=drivers/gpu/drm/i915/i915_hwmon.o.",
+              "attributes": {
+                "patterns": [
+                  "integer_overflow",
+                  "upcast_before_shift",
+                  "narrow_lhs_shift"
+                ],
+                "functions": [
+                  "hwm_power1_max_interval_show",
+                  "hwm_power1_max_interval_store"
+                ],
+                "tracked_symbols": [
+                  "tau4",
+                  "x_w",
+                  "x",
+                  "y",
+                  "SF_TIME",
+                  "hwmon->scl_shift_time"
+                ],
+                "fixed_noisy": true,
+                "buggy_miss": false
+              }
+            },
+            "provenance": {
+              "tool": "research/knighter/scripts/backfill_e2_refine_inputs.py",
+              "artifact": "research/knighter/e2/cases/08_768f17fd25e4_Integer_Overflow/patches/commit.patch",
+              "confidence": 0.9
+            },
+            "evidence_slice": {
+              "kind": "patch_fact",
+              "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=8, fixed_alerts=6, buggy_miss=false, fixed_noisy=true, pds=false, targets=drivers/gpu/drm/i915/i915_hwmon.o.",
+              "statements": [
+                "hwm_power1_max_interval_store(struct device *dev,",
+                "u64 tau4, r, max_win;",
+                "r = FIELD_PREP(PKG_MAX_WIN, PKG_MAX_WIN_DEFAULT);",
+                "x = REG_FIELD_GET(PKG_MAX_WIN_X, r);",
+                "y = REG_FIELD_GET(PKG_MAX_WIN_Y, r);",
+                "tau4 = ((1 << x_w) | x) << y;",
+                "max_win = mul_u64_u32_shr(tau4, SF_TIME, hwmon->scl_shift_time + x_w);",
+                "val = DIV_ROUND_CLOSEST_ULL((u64)val << hwmon->scl_shift_time, SF_TIME);",
+                "/* x = (val - (1 << y)) >> (y - 2); */",
+                "x = (val - (1ul << y)) << x_w >> y;"
+              ],
+              "api_terms": [
+                "ret",
+                "BO_Shl",
+                "CastExpr",
+                "getTypeSize",
+                "PathSensitiveBugReport",
+                "(u64)",
+                "<<",
+                "mul_u64_u32_shr",
+                "FIELD_PREP",
+                "REG_FIELD_GET"
+              ],
+              "related_symbols": [
+                "tau4",
+                "x_w",
+                "x",
+                "y",
+                "SF_TIME",
+                "hwmon->scl_shift_time"
+              ],
+              "coverage_status": "patch-local",
+              "verifier": "research/knighter/scripts/backfill_e2_refine_inputs.py",
+              "extraction_method": "research/knighter/e2/cases/08_768f17fd25e4_Integer_Overflow/patches/commit.patch"
+            }
+          },
+          {
+            "evidence_id": "knighter_e2_semantic_slice",
+            "type": "semantic_slice",
+            "analyzer": "csa",
+            "scope": {
+              "repo": "linux",
+              "file": "drivers/gpu/drm/i915/i915_hwmon.c",
+              "function": "hwm_power1_max_interval_show"
+            },
+            "location": {
+              "line": 0,
+              "column": 0
+            },
+            "semantic_payload": {
+              "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=8, fixed_alerts=6, buggy_miss=false, fixed_noisy=true, pds=false, targets=drivers/gpu/drm/i915/i915_hwmon.o.",
+              "tracked_symbols": [
+                "tau4",
+                "x_w",
+                "x",
+                "y",
+                "SF_TIME",
+                "hwmon->scl_shift_time"
+              ],
+              "source_excerpt": "## Patch Description\n\ndrm/i915/hwmon: Fix static analysis tool reported issues\n\nUpdated i915 hwmon with fixes for issues reported by static analysis tool.\nFixed integer overflow with upcasting.\n\nv2:\n- Added Fixes tag (Badal).\n- Updated commit message as per review comments (Anshuman).\n\nFixes: 4c2572fe0ae7 (\"drm/i915/hwmon: Expose power1_max_interval\")\nReviewed-by: Badal Nilawar <badal.nilawar@intel.com>\nReviewed-by: Anshuman Gupta <anshuman.gupta@intel.com>\nSigned-off-by: Karthik Poosa <karthik.poosa@intel.com>\nSigned-off-by: Anshuman Gupta <anshuman.gupta@intel.com>\nLink: https://patchwork.freedesktop.org/patch/msgid/20231204144809.1518704-1-karthik.poosa@intel.com\n(cherry picked from commit ac3420d3d428443a08b923f9118121c170192b62)\nSigned-off-by: Jani Nikula <jani.nikula@intel.com>\n\n## Buggy Code\n\n```c\n// drivers/gpu/drm/i915/i915_hwmon.c\nstatic ssize_t\nhwm_power1_max_interval_store(struct device *dev,\n\t\t\t      struct device_attribute *attr,\n\t\t\t      const char *buf, size_t count)\n{\n\tstruct hwm_drvdata *ddat = dev_get_drvdata(dev);\n\tstruct i915_hwmon *hwmon = ddat->hwmon;\n\tu32 x, y, rxy, x_w = 2; /* 2 bits */\n\tu64 tau4, r, max_win;\n\tunsigned long val;\n\tint ret;\n\n\tret = kstrtoul(buf, 0, &val);\n\tif (ret)\n\t\treturn ret;\n\n\t/*\n\t * Max HW supported tau in '1.x * power(2,y)' format, x = 0, y = 0x12\n\t * The hwmon->scl_shift_time default of 0xa results in a max tau of 256 seconds\n\t */\n#define PKG_MAX_WIN_DEFAULT 0x12ull\n\n\t/*\n\t * val must be < max in hwmon interface units. The steps below are\n\t * explained in i915_power1_max_interval_show()\n\t */\n\tr = FIELD_PREP(PKG_MAX_WIN, PKG_MAX_WIN_DEFAULT);\n\tx = REG_FIELD_GET(PKG_MAX_WIN_X, r);\n\ty = REG_FIELD_GET(PKG_MAX_WIN_Y, r);\n\ttau4 = ((1 << x_w) | x) << y;\n\tmax_win = mul_u64_u32_shr(tau4, SF_TIME, hwmon->scl_shift_time + x_w);\n\n\tif (val > max_win)\n\t\treturn -EINVAL;\n\n\t/* val in hw units */\n\tval = DIV_ROUND_CLOSEST_ULL((u64)val << hwmon->scl_shift_time, SF_TIME);\n\t/* Convert to 1.x * power(2,y) */\n\tif (!val) {\n\t\t/* Avoid ilog2(0) */\n\t\ty = 0;\n\t\tx = 0;\n\t} else {\n\t\ty = ilog2(val);\n\t\t/* x = (val - (1 << y)) >> (y - 2); */\n\t\tx = (val - (1ul << y)) << x_w >> y;\n\t}\n\n\trxy = REG_FIELD_PREP(PKG_PWR_LIM_1_TIME_X, x) | REG_FIELD_PREP(PKG_PW",
+              "coverage_status": "patch-local"
+            },
+            "provenance": {
+              "tool": "research/knighter/scripts/backfill_e2_refine_inputs.py",
+              "artifact": "research/knighter/e2/cases/08_768f17fd25e4_Integer_Overflow/patches/commit.patch",
+              "confidence": 0.9
+            },
+            "evidence_slice": {
+              "kind": "semantic_slice",
+              "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=8, fixed_alerts=6, buggy_miss=false, fixed_noisy=true, pds=false, targets=drivers/gpu/drm/i915/i915_hwmon.o.",
+              "statements": [
+                "hwm_power1_max_interval_store(struct device *dev,",
+                "u64 tau4, r, max_win;",
+                "r = FIELD_PREP(PKG_MAX_WIN, PKG_MAX_WIN_DEFAULT);",
+                "x = REG_FIELD_GET(PKG_MAX_WIN_X, r);",
+                "y = REG_FIELD_GET(PKG_MAX_WIN_Y, r);",
+                "tau4 = ((1 << x_w) | x) << y;",
+                "max_win = mul_u64_u32_shr(tau4, SF_TIME, hwmon->scl_shift_time + x_w);",
+                "val = DIV_ROUND_CLOSEST_ULL((u64)val << hwmon->scl_shift_time, SF_TIME);",
+                "/* x = (val - (1 << y)) >> (y - 2); */",
+                "x = (val - (1ul << y)) << x_w >> y;",
+                "rxy = REG_FIELD_PREP(PKG_PWR_LIM_1_TIME_X, x) | REG_FIELD_PREP(PKG_PWR_LIM_1_TIME_Y, y);",
+                "hwm_power1_max_interval_show(struct device *dev, struct device_attribute *attr,"
+              ],
+              "guards": [
+                "left-shift operand must be widened to u64 before shifting by y",
+                "fixed expression casts ((1 << x_w) | x) to u64 before << y",
+                "same tau4 computation appears in show and store paths"
+              ],
+              "call_edges": [
+                "hwm_power1_max_interval_show -> mul_u64_u32_shr(tau4, SF_TIME, ...)",
+                "hwm_power1_max_interval_store -> mul_u64_u32_shr(tau4, SF_TIME, ...)"
+              ],
+              "state_transitions": [
+                "buggy: tau4 = ((1 << x_w) | x) << y",
+                "fixed: tau4 = (u64)((1 << x_w) | x) << y"
+              ],
+              "api_terms": [
+                "ret",
+                "BO_Shl",
+                "CastExpr",
+                "getTypeSize",
+                "PathSensitiveBugReport",
+                "(u64)",
+                "<<",
+                "mul_u64_u32_shr",
+                "FIELD_PREP",
+                "REG_FIELD_GET"
+              ],
+              "related_symbols": [
+                "tau4",
+                "x_w",
+                "x",
+                "y",
+                "SF_TIME",
+                "hwmon->scl_shift_time"
+              ],
+              "verifier": "research/knighter/scripts/backfill_e2_refine_inputs.py",
+              "extraction_method": "research/knighter/e2/cases/08_768f17fd25e4_Integer_Overflow/patches/commit.patch",
+              "coverage_status": "patch-local"
+            }
+          },
+          {
+            "evidence_id": "knighter_e2_path_guard",
+            "type": "path_guard",
+            "analyzer": "csa",
+            "scope": {
+              "repo": "linux",
+              "file": "drivers/gpu/drm/i915/i915_hwmon.c",
+              "function": "hwm_power1_max_interval_show"
+            },
+            "location": {
+              "line": 0,
+              "column": 0
+            },
+            "semantic_payload": {
+              "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=8, fixed_alerts=6, buggy_miss=false, fixed_noisy=true, pds=false, targets=drivers/gpu/drm/i915/i915_hwmon.o.",
+              "guard_expr": "left-shift operand must be widened to u64 before shifting by y",
+              "state_before": [
+                "((1 << x_w) | x) is evaluated at sub-64-bit integer width before the shift",
+                "left-shifting the narrow composed value by y may overflow before assignment to u64 tau4"
+              ],
+              "state_after": [
+                "(u64)((1 << x_w) | x) widens the composed value before << y",
+                "tau4 is consumed by mul_u64_u32_shr after the widened shift"
+              ],
+              "tracked_symbols": [
+                "tau4",
+                "x_w",
+                "x",
+                "y",
+                "SF_TIME",
+                "hwmon->scl_shift_time"
+              ]
+            },
+            "provenance": {
+              "tool": "research/knighter/scripts/backfill_e2_refine_inputs.py",
+              "artifact": "research/knighter/e2/cases/08_768f17fd25e4_Integer_Overflow/patches/commit.patch",
+              "confidence": 0.9
+            },
+            "evidence_slice": {
+              "kind": "path_guard",
+              "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=8, fixed_alerts=6, buggy_miss=false, fixed_noisy=true, pds=false, targets=drivers/gpu/drm/i915/i915_hwmon.o.",
+              "guards": [
+                "left-shift operand must be widened to u64 before shifting by y",
+                "fixed expression casts ((1 << x_w) | x) to u64 before << y",
+                "same tau4 computation appears in show and store paths"
+              ],
+              "state_transitions": [
+                "buggy: tau4 = ((1 << x_w) | x) << y",
+                "fixed: tau4 = (u64)((1 << x_w) | x) << y"
+              ],
+              "related_symbols": [
+                "tau4",
+                "x_w",
+                "x",
+                "y",
+                "SF_TIME",
+                "hwmon->scl_shift_time"
+              ],
+              "verifier": "research/knighter/scripts/backfill_e2_refine_inputs.py",
+              "extraction_method": "research/knighter/e2/cases/08_768f17fd25e4_Integer_Overflow/patches/commit.patch",
+              "coverage_status": "patch-local"
+            }
+          },
+          {
+            "evidence_id": "knighter_e2_allocation_lifecycle",
+            "type": "allocation_lifecycle",
+            "analyzer": "csa",
+            "scope": {
+              "repo": "linux",
+              "file": "drivers/gpu/drm/i915/i915_hwmon.c",
+              "function": "hwm_power1_max_interval_show"
+            },
+            "location": {
+              "line": 0,
+              "column": 0
+            },
+            "semantic_payload": {
+              "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=8, fixed_alerts=6, buggy_miss=false, fixed_noisy=true, pds=false, targets=drivers/gpu/drm/i915/i915_hwmon.o.",
+              "path": [
+                "buggy: tau4 = ((1 << x_w) | x) << y",
+                "fixed: tau4 = (u64)((1 << x_w) | x) << y",
+                "hwm_power1_max_interval_show -> mul_u64_u32_shr(tau4, SF_TIME, ...)",
+                "hwm_power1_max_interval_store -> mul_u64_u32_shr(tau4, SF_TIME, ...)"
+              ],
+              "operations": [
+                "compose tau4 mantissa from (1 << x_w) | x",
+                "widen composed value to u64 before left shift",
+                "left shift by y",
+                "consume tau4 in mul_u64_u32_shr"
+              ],
+              "acquisition_ops": [
+                "REG_FIELD_GET(PKG_MAX_WIN_X, r)",
+                "REG_FIELD_GET(PKG_MAX_WIN_Y, r)"
+              ],
+              "release_ops": [],
+              "transition_ops": [
+                "narrow shift",
+                "u64-widened shift"
+              ],
+              "state_before": [
+                "((1 << x_w) | x) is evaluated at sub-64-bit integer width before the shift",
+                "left-shifting the narrow composed value by y may overflow before assignment to u64 tau4"
+              ],
+              "state_after": [
+                "(u64)((1 << x_w) | x) widens the composed value before << y",
+                "tau4 is consumed by mul_u64_u32_shr after the widened shift"
+              ]
+            },
+            "provenance": {
+              "tool": "research/knighter/scripts/backfill_e2_refine_inputs.py",
+              "artifact": "research/knighter/e2/cases/08_768f17fd25e4_Integer_Overflow/patches/commit.patch",
+              "confidence": 0.9
+            },
+            "evidence_slice": {
+              "kind": "allocation_lifecycle",
+              "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=8, fixed_alerts=6, buggy_miss=false, fixed_noisy=true, pds=false, targets=drivers/gpu/drm/i915/i915_hwmon.o.",
+              "statements": [
+                "hwm_power1_max_interval_store(struct device *dev,",
+                "u64 tau4, r, max_win;",
+                "r = FIELD_PREP(PKG_MAX_WIN, PKG_MAX_WIN_DEFAULT);",
+                "x = REG_FIELD_GET(PKG_MAX_WIN_X, r);",
+                "y = REG_FIELD_GET(PKG_MAX_WIN_Y, r);",
+                "tau4 = ((1 << x_w) | x) << y;",
+                "max_win = mul_u64_u32_shr(tau4, SF_TIME, hwmon->scl_shift_time + x_w);",
+                "val = DIV_ROUND_CLOSEST_ULL((u64)val << hwmon->scl_shift_time, SF_TIME);",
+                "/* x = (val - (1 << y)) >> (y - 2); */",
+                "x = (val - (1ul << y)) << x_w >> y;",
+                "rxy = REG_FIELD_PREP(PKG_PWR_LIM_1_TIME_X, x) | REG_FIELD_PREP(PKG_PWR_LIM_1_TIME_Y, y);",
+                "hwm_power1_max_interval_show(struct device *dev, struct device_attribute *attr,"
+              ],
+              "state_transitions": [
+                "buggy: tau4 = ((1 << x_w) | x) << y",
+                "fixed: tau4 = (u64)((1 << x_w) | x) << y"
+              ],
+              "api_terms": [
+                "ret",
+                "BO_Shl",
+                "CastExpr",
+                "getTypeSize",
+                "PathSensitiveBugReport",
+                "(u64)",
+                "<<",
+                "mul_u64_u32_shr",
+                "FIELD_PREP",
+                "REG_FIELD_GET"
+              ],
+              "related_symbols": [
+                "tau4",
+                "x_w",
+                "x",
+                "y",
+                "SF_TIME",
+                "hwmon->scl_shift_time"
+              ],
+              "verifier": "research/knighter/scripts/backfill_e2_refine_inputs.py",
+              "extraction_method": "research/knighter/e2/cases/08_768f17fd25e4_Integer_Overflow/patches/commit.patch",
+              "coverage_status": "patch-local"
+            }
+          },
+          {
+            "evidence_id": "knighter_e2_call_chain",
+            "type": "call_chain",
+            "analyzer": "csa",
+            "scope": {
+              "repo": "linux",
+              "file": "drivers/gpu/drm/i915/i915_hwmon.c",
+              "function": "hwm_power1_max_interval_show"
+            },
+            "location": {
+              "line": 0,
+              "column": 0
+            },
+            "semantic_payload": {
+              "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=8, fixed_alerts=6, buggy_miss=false, fixed_noisy=true, pds=false, targets=drivers/gpu/drm/i915/i915_hwmon.o.",
+              "call_edges": [
+                "hwm_power1_max_interval_show -> mul_u64_u32_shr(tau4, SF_TIME, ...)",
+                "hwm_power1_max_interval_store -> mul_u64_u32_shr(tau4, SF_TIME, ...)"
+              ]
+            },
+            "provenance": {
+              "tool": "research/knighter/scripts/backfill_e2_refine_inputs.py",
+              "artifact": "research/knighter/e2/cases/08_768f17fd25e4_Integer_Overflow/patches/commit.patch",
+              "confidence": 0.9
+            },
+            "evidence_slice": {
+              "kind": "call_chain",
+              "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=8, fixed_alerts=6, buggy_miss=false, fixed_noisy=true, pds=false, targets=drivers/gpu/drm/i915/i915_hwmon.o.",
+              "call_edges": [
+                "hwm_power1_max_interval_show -> mul_u64_u32_shr(tau4, SF_TIME, ...)",
+                "hwm_power1_max_interval_store -> mul_u64_u32_shr(tau4, SF_TIME, ...)"
+              ],
+              "related_symbols": [
+                "tau4",
+                "x_w",
+                "x",
+                "y",
+                "SF_TIME",
+                "hwmon->scl_shift_time"
+              ],
+              "verifier": "research/knighter/scripts/backfill_e2_refine_inputs.py",
+              "extraction_method": "research/knighter/e2/cases/08_768f17fd25e4_Integer_Overflow/patches/commit.patch",
+              "coverage_status": "patch-local"
+            }
+          }
+        ],
+        "missing_evidence": [],
+        "collected_analyzers": [
+          "csa"
+        ]
+      }
+    },
+    "validation_feedback": {
+      "records": [
+        {
+          "evidence_id": "knighter_e2_patch_local_validation",
+          "type": "validation_outcome",
+          "analyzer": "csa",
+          "scope": {
+            "repo": "linux",
+            "file": "drivers/gpu/drm/i915/i915_hwmon.o",
+            "function": "patch_local_validation"
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "kind": "knighter_e2_patch_local",
+            "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=8, fixed_alerts=6, buggy_miss=false, fixed_noisy=true, pds=false, targets=drivers/gpu/drm/i915/i915_hwmon.o.",
+            "commit_id": "768f17fd25e4a98bf5166148629ecf6f647d5efc",
+            "case_id": "08_768f17fd25e4_Integer_Overflow",
+            "bug_type": "Integer-Overflow",
+            "candidate_group": "positive_scan_report_count",
+            "checker_id": "old:768f17fd25e4a98bf5166148629ecf6f647d5efc:checker1",
+            "checker_name": "SAGenTestChecker",
+            "patch_related_targets": [
+              "drivers/gpu/drm/i915/i915_hwmon.o"
+            ],
+            "buggy_counts": {
+              "drivers/gpu/drm/i915/i915_hwmon.o": 8
+            },
+            "fixed_counts": {
+              "drivers/gpu/drm/i915/i915_hwmon.o": 6
+            },
+            "buggy_alerts": 8,
+            "fixed_alerts": 6,
+            "buggy_miss": false,
+            "fixed_noisy": true,
+            "pds": false,
+            "failure_mode": "fixed_noisy",
+            "repair_priority": "high",
+            "repair_action": "Add the patch-introduced guard/barrier/silence condition to reduce fixed-side alerts.",
+            "feedback_hint": "KNighter E2 strict patch-local baseline: buggy_alerts=8, fixed_alerts=6, buggy_miss=false, fixed_noisy=true, pds=false, targets=drivers/gpu/drm/i915/i915_hwmon.o.",
+            "historical_reference": "Historical KNighter report_count=1729, manual_bugs=0, manual_not_bugs=0; this is not the same metric as patch-local E2 validation.",
+            "patch_semantic_context": {
+              "patch_excerpt": "commit 768f17fd25e4a98bf5166148629ecf6f647d5efc\nAuthor: Karthik Poosa <karthik.poosa@intel.com>\nDate:   Mon Dec 4 20:18:09 2023 +0530\n\n    drm/i915/hwmon: Fix static analysis tool reported issues\n    \n    Updated i915 hwmon with fixes for issues reported by static analysis tool.\n    Fixed integer overflow with upcasting.\n    \n    v2:\n    - Added Fixes tag (Badal).\n    - Updated commit message as per review comments (Anshuman).\n    \n    Fixes: 4c2572fe0ae7 (\"drm/i915/hwmon: Expose power1_max_interval\")\n    Reviewed-by: Badal Nilawar <badal.nilawar@intel.com>\n    Reviewed-by: Anshuman Gupta <anshuman.gupta@intel.com>\n    Signed-off-by: Karthik Poosa <karthik.poosa@intel.com>\n    Signed-off-by: Anshuman Gupta <anshuman.gupta@intel.com>\n    Link: https://patchwork.freedesktop.org/patch/msgid/20231204144809.1518704-1-karthik.poosa@intel.com\n    (cherry picked from commit ac3420d3d428443a08b923f9118121c170192b62)\n    Signed-off-by: Jani Nikula <jani.nikula@intel.com>\n\ndiff --git a/drivers/gpu/drm/i915/i915_hwmon.c b/drivers/gpu/drm/i915/i915_hwmon.c\nindex 975da8e7f2a9..8c3f443c8347 100644\n--- a/drivers/gpu/drm/i915/i915_hwmon.c\n+++ b/drivers/gpu/drm/i915/i915_hwmon.c\n@@ -175,7 +175,7 @@ hwm_power1_max_interval_show(struct device *dev, struct device_attribute *attr,\n \t *     tau4 = (4 | x) << y\n \t * but add 2 when doing the final right shift to account for units\n \t */\n-\ttau4 = ((1 << x_w) | x) << y;\n+\ttau4 = (u64)((1 << x_w) | x) << y;\n \t/* val in hwmon interface units (millisec) */\n \tout = mul_u64_u32_shr(tau4, SF_TIME, hwmon->scl_shift_time + x_w);\n \n@@ -211,7 +211,7 @@ hwm_power1_max_interval_store(struct device *dev,\n \tr = FIELD_PREP(PKG_MAX_WIN, PKG_MAX_WIN_DEFAULT);\n \tx = REG_FIELD_GET(PKG_MAX_WIN_X, r);\n \ty = REG_FIELD_GET(PKG_MAX_WIN_Y, r);\n-\ttau4 = ((1 << x_w) | x) << y;\n+\ttau4 = (u64)((1 << x_w) | x) << y;\n \tmax_win = mul_u64_u32_shr(tau4, SF_TIME, hwmon->scl_shift_time + x_w);\n \n \tif (val > max_win)\n",
+              "patch_related_targets": [
+                "drivers/gpu/drm/i915/i915_hwmon.o"
+              ],
+              "knighter_original_generation_plan_excerpt": "/*\n1. Program State Customization:\n   • No custom program state maps are necessary for this checker since the bug pattern only involves\n     verifying the proper type casting in shift expressions. We'll work directly with the AST nodes.\n     \n2. Choose Callback Functions:\n   • Use checkPreStmt to hook into BinaryOperator nodes because the bug pattern involves arithmetic\n     left shifts (<<) where the left-hand side is not properly upcast to a 64-bit type.\n     \n3. Step-by-Step Implementation Plan:\n\n   Step 1: Hook BinaryOperator Nodes\n      - In the checkPreStmt callback, check if the statement is a BinaryOperator.\n      - Verify that the operator is the left shift operator (\"<<\").\n\n   Step 2: Analyze the Left-Hand Side (LHS) Expression\n      - For the LHS expression of the BinaryOperator:\n         • Determine its type. If the type is an integer type and its width is 32 bits,\n           this is a candidate for potential overflow.\n      - Use utility functions like getType() on the expression and check if it is casted to a 64-bit type.\n      - Specifically, check if the LHS is a CastExpr casting to an unsigned 64-bit type (e.g., \"u64\").\n         • If a CastExpr exists and the destination type is 64-bit, then the expression is safe.\n         • Otherwise, the shift is conducted with a 32-bit operand.\n\n   Step 3: Issue a Bug Report on Offending Shift Expressions\n      - If the LHS is determined to be 32-bit (or not upcast to a 64-bit type) before shifting,\n        then prepare a bug report.\n      - Use a simple bug reporting mechanism like std::make_unique<BasicBugReport> to report a short\n        and clear message such as \"Potential integer overflow: left shift performed on a 32-bit value.\"\n      - Emit the bug report to alert the user of the detected pattern.\n      \n   Step 4: Finalize and Review the Checker\n      - Ensure the checker correctly identifies shift operations that do not include an explicit cast to u64.\n      - Use the provided utility functions if needed for AST navigation (e.g., findSpecificTypeInChildren) to\n        dig into the LHS expression to confirm whether a proper cast is present.\n        \nThis plan provides a clear, concise approach to implementing a checker that detects arithmetic shift operations\nperformed on 32-bit values without an upcast to 64-bit, which matches the target bug pattern indicated by the patch.\n*/",
+              "knighter_refined_plan_excerpt": "/*\n1. Program State Customization:\n   • No custom program state maps are necessary for this checker since the bug pattern only involves\n     verifying the proper type casting in shift expressions. We'll work directly with the AST nodes.\n     \n2. Choose Callback Functions:\n   • Use checkPreStmt to hook into BinaryOperator nodes because the bug pattern involves arithmetic\n     left shifts (<<) where the left-hand side is not properly upcast to a 64-bit type.\n     \n3. Step-by-Step Implementation Plan:\n\n   Step 1: Hook BinaryOperator Nodes\n      - In the checkPreStmt callback, check if the statement is a BinaryOperator.\n      - Verify that the operator is the left shift operator (\"<<\").\n\n   Step 2: Analyze the Left-Hand Side (LHS) Expression\n      - For the LHS expression of the BinaryOperator:\n         • Determine its type. If the type is an integer type and its width is 32 bits,\n           this is a candidate for potential overflow.\n      - Use utility functions like getType() on the expression and check if it is casted to a 64-bit type.\n      - Specifically, check if the LHS is a CastExpr casting to an unsigned 64-bit type (e.g., \"u64\").\n         • If a CastExpr exists and the destination type is 64-bit, then the expression is safe.\n         • Otherwise, the shift is conducted with a 32-bit operand.\n\n   Step 3: Issue a Bug Report on Offending Shift Expressions\n      - If the LHS is determined to be 32-bit (or not upcast to a 64-bit type) before shifting,\n        then prepare a bug report.\n      - Use a simple bug reporting mechanism like std::make_unique<BasicBugReport> to report a short\n        and clear message such as \"Potential integer overflow: left shift performed on a 32-bit value.\"\n      - Emit the bug report to alert the user of the detected pattern.\n      \n   Step 4: Finalize and Review the Checker\n      - Ensure the checker correctly identifies shift operations that do not include an explicit cast to u64.\n      - Use the provided utility functions if needed for AST navigation (e.g., findSpecificTypeInChildren) to\n        dig into the LHS expression to confirm whether a proper cast is present.\n        \nThis plan provides a clear, concise approach to implementing a checker that detects arithmetic shift operations\nperformed on 32-bit values without an upcast to 64-bit, which matches the target bug pattern indicated by the patch.\n*/",
+              "knighter_pattern_excerpt": "## Bug Pattern\n\nPerforming arithmetic shifts on values computed as 32-bit integers without first upcasting them to a 64-bit type. This can lead to integer overflow when the shift amount is large, so the left shift is performed in a narrower type than intended. Explicitly casting the operand to u64 before shifting (as done in the fix) prevents overflow and yields the correct 64-bit result.",
+              "knighter_generated_patch_excerpt": "## Patch Description\n\ndrm/i915/hwmon: Fix static analysis tool reported issues\n\nUpdated i915 hwmon with fixes for issues reported by static analysis tool.\nFixed integer overflow with upcasting.\n\nv2:\n- Added Fixes tag (Badal).\n- Updated commit message as per review comments (Anshuman).\n\nFixes: 4c2572fe0ae7 (\"drm/i915/hwmon: Expose power1_max_interval\")\nReviewed-by: Badal Nilawar <badal.nilawar@intel.com>\nReviewed-by: Anshuman Gupta <anshuman.gupta@intel.com>\nSigned-off-by: Karthik Poosa <karthik.poosa@intel.com>\nSigned-off-by: Anshuman Gupta <anshuman.gupta@intel.com>\nLink: https://patchwork.freedesktop.org/patch/msgid/20231204144809.1518704-1-karthik.poosa@intel.com\n(cherry picked from commit ac3420d3d428443a08b923f9118121c170192b62)\nSigned-off-by: Jani Nikula <jani.nikula@intel.com>\n\n## Buggy Code\n\n```c\n// drivers/gpu/drm/i915/i915_hwmon.c\nstatic ssize_t\nhwm_power1_max_interval_store(struct device *dev,\n\t\t\t      struct device_attribute *attr,\n\t\t\t      const char *buf, size_t count)\n{\n\tstruct hwm_drvdata *ddat = dev_get_drvdata(dev);\n\tstruct i915_hwmon *hwmon = ddat->hwmon;\n\tu32 x, y, rxy, x_w = 2; /* 2 bits */\n\tu64 tau4, r, max_win;\n\tunsigned long val;\n\tint ret;\n\n\tret = kstrtoul(buf, 0, &val);\n\tif (ret)\n\t\treturn ret;\n\n\t/*\n\t * Max HW supported tau in '1.x * power(2,y)' format, x = 0, y = 0x12\n\t * The hwmon->scl_shift_time default of 0xa results in a max tau of 256 seconds\n\t */\n#define PKG_MAX_WIN_DEFAULT 0x12ull\n\n\t/*\n\t * val must be < max in hwmon interface units. The steps below are\n\t * explained in i915_power1_max_interval_show()\n\t */\n\tr = FIELD_PREP(PKG_MAX_WIN, PKG_MAX_WIN_DEFAULT);\n\tx = REG_FIELD_GET(PKG_MAX_WIN_X, r);\n\ty = REG_FIELD_GET(PKG_MAX_WIN_Y, r);\n\ttau4 = ((1 << x_w) | x) << y;\n\tmax_win = mul_u64_u32_shr(tau4, SF_TIME, hwmon->scl_shift_time + x_w);\n\n\tif (val > max_win)\n\t\treturn -EINVAL;\n\n\t/* val in hw units */\n\tval = DIV_ROUND_CLOSEST_ULL((u64)val << hwmon->scl_shift_time, SF_TIME);\n\t/* Convert to 1.x * power(2,y) */\n\tif (!val) {\n\t\t/* Avoid ilog2(0) */\n\t\ty = 0;\n\t\tx = 0;\n\t} else {\n\t\ty = ilog2(val);\n\t\t/* x = (val - (1 << y)) >> (y - 2); */\n\t\tx = (val - (1ul << y)) << x_w >> y;\n\t}\n\n\trxy = REG_FIELD_PREP(PKG_PWR_LIM_1_TIME_X, x) | REG_FIELD_PREP(PKG_PWR_LIM_1_TIME_Y, y);\n\n\thwm_locked_with_pm_intel_uncore_rmw(ddat, hwmon->rg.pkg_rapl_limit,\n\t\t\t\t\t    PKG_PWR_LIM_1_TIME, rxy);\n\treturn count;\n}\n```\n```c\n// drivers/gpu/drm/i915/i915_hwmon.c\nstatic ssize_t\nhwm_power1_max_interval_show(struct device *dev, struct device_attribute *attr,\n\t\t\t     char *buf)\n{\n\tstruct hwm_drvdata *ddat = dev_get_drvdata(dev);\n\tstruct i915_hwmon *hwmon = ddat->hwmon;\n\tintel_wakeref_t wakeref;\n\tu32 r, x, y, x_w = 2; /* 2 bits */\n\tu64 tau4, out;\n\n\twith_intel_runtime_pm(ddat->uncore->rpm, wakeref)\n\t\tr = intel_uncore_read(ddat->uncore, hwmon->rg.pkg_rapl_limit);\n\n\tx = REG_FIELD_GET(PKG_PWR_LIM_1_TIME_X, r);\n\ty = REG_FIELD_GET(PKG_PWR_LIM_1_TIME_Y, r);\n\t/*\n\t * tau = 1.x * power(2,y), x = bits(23:22), y = bits(21:17)\n\t *     = (4 | x) << (y - 2)\n\t * where (y - 2) ensures a 1.x fixed point representation of 1.x\n\t * However because y can be < 2, we compute\n\t *     tau4 = (4 | x) << y\n\t * but add 2 when doing the final right shift to account for units\n\t */\n\ttau4 = ((1 << x_w) | x) << y;\n\t/* val in hwmon interface units (millisec) */\n\tout = mul_u64_u32_shr(tau4, SF_TIME, hwmon->scl_shift_time + x_w);\n\n\treturn sysfs_emit(buf, \"%llu\\n\", out);\n}\n```\n\n## Bug Fix Patch\n\n```diff\ndiff --git a/drivers/gpu/drm/i915/i915_hwmon.c b/drivers/gpu/drm/i915/i915_hwmon.c\nindex 975da8e7f2a9..8c3f443c8347 100644\n--- a/drivers/gpu/drm/i915/i915_hwmon.c\n+++ b/drivers/gpu/drm/i915/i915_hwmon.c\n@@ -175,7 +175,7 @@ hwm_power1_max_interval_show(struct device *dev, struct device_attribute *attr,\n \t *     tau4 = (4 | x) << y\n \t * but add 2 when doing the final right shift to account for units\n \t */\n-\ttau4 = ((1 << x_w) | x) << y;\n+\ttau4 = (u64)((1 << x_w) | x) << y;\n \t/* val in hwmon interface units (millisec) */\n \tout = mul_u64_u32_shr(tau4, SF_TIME, hwmon->scl_shift_time + x_w);\n \n@@ -211,7 +211,7 @@ hwm_power1_max_interval_store(struct device *dev,\n \tr = FIELD_PREP(PKG_MAX_WIN, PKG_MAX_WIN_DEFAULT);\n \tx = REG_FIELD_GET(PKG_MAX_WIN_X, r);\n \ty = REG_FIELD_GET(PKG_MAX_WIN_Y, r);\n-\ttau4 = ((1 << x_w) | x) << y;\n+\ttau4 = (u64)((1 << x_w) | x) << y;\n \tmax_win = mul_u64_u32_shr(tau4, SF_TIME, hwmon->scl_shift_time + x_w);\n \n \tif (val > max_win)\n```\n\n",
+              "checker_source_summary": {
+                "available": true,
+                "callbacks_or_hooks": [],
+                "notable_tokens": [
+                  "ret",
+                  "BO_Shl",
+                  "CastExpr",
+                  "getTypeSize",
+                  "PathSensitiveBugReport"
+                ],
+                "source_excerpt": "// /external/upstream-study/SAGEN/result-0224-bugfail-multi-o3mini/test-Integer-Overflow-768f17fd25e4a98bf5166148629ecf6f647d5efc/checkers/checker1.cpp\n#include \"clang/AST/ASTContext.h\"\n#include \"clang/AST/Expr.h\"\n#include \"clang/AST/Stmt.h\"\n#include \"clang/StaticAnalyzer/Core/BugReporter/BugReporter.h\"\n#include \"clang/StaticAnalyzer/Core/BugReporter/BugType.h\"\n#include \"clang/StaticAnalyzer/Core/Checker.h\"\n#include \"clang/StaticAnalyzer/Core/PathSensitive/CheckerContext.h\"\n#include \"clang/StaticAnalyzer/Core/PathSensitive/ProgramState.h\"\n#include \"clang/StaticAnalyzer/Core/PathSensitive/SymExpr.h\"\n#include \"clang/StaticAnalyzer/Frontend/CheckerRegistry.h\"\n#include \"clang/AST/RecursiveASTVisitor.h\"\n#include \"clang/StaticAnalyzer/Checkers/utility.h\"\n#include \"llvm/Support/raw_ostream.h\"\nusing namespace clang;\nusing namespace ento;\nnamespace {\n// The checker only needs to hook the PreStmt callback for BinaryOperator.\nclass SAGenTestChecker : public Checker< check::PreStmt<BinaryOperator> > {\n  mutable std::unique_ptr<BugType> BT;\npublic:\n  SAGenTestChecker()\n      : BT(new BugType(this, \"Potential 32-bit left shift without 64-bit upcasting\")) {}\n  void checkPreStmt(const BinaryOperator *BOp, CheckerContext &C) const;\nprivate:\n  // Helper function that uses downward AST traversal to look for a CastExpr that upcasts\n  // an integer expression to a 64-bit type.\n  bool isProperlyCastTo64(const Expr *E, CheckerContext &C) const;\n};\nbool SAGenTestChecker::isProperlyCastTo64(const Expr *E, CheckerContext &C) const {\n  // Look for any cast expression in the subtree of E.\n  const CastExpr *CE = findSpecificTypeInChildren<CastExpr>(E);\n  if (!CE)\n    // Also check if E itself is a CastExpr.\n    if (const CastExpr *SelfCE = dyn_cast<CastExpr>(E))\n      CE = SelfCE;\n  if (CE) {\n    QualType DestTy = CE->getType();\n    if (DestTy->isIntegerType()) {\n      // Get the bit-width of the destination type.\n      unsigned width = C.getASTContext().getTypeSize(DestTy);\n      if (width >= 64)\n        return true;\n    }\n  }\n  return false;\n}\nvoid SAGenTestChecker::checkPreStmt(const BinaryOperator *BOp, CheckerContext &C) const {\n  // We are only interested in left shift operators.\n  if (BOp->getOpcode() != BO_Shl)\n    return;\n  const Expr *LHS = BOp->getLHS();\n  if (!LHS)\n    return;\n  // If the LHS expression is explicitly cast to a 64-bit integer, then no bug.\n  if (isProperlyCastTo64(LHS, C))\n    return;\n  QualType LHSType = LHS->getType();\n  // Proceed only if the LHS is an integer type.\n  if (!LHSType->isIntegerType())\n    return;\n  unsigned typeWidth = C.getASTContext().getTypeSize(LHSType);\n  // If the width is less than 64 bits, then shifting might lead to overflow.\n  if (typeWidth >= 64)\n    return;\n  // Report a bug if a 32-bit (or sub-64-bit) integer is left-shifted without upcasting.\n  ExplodedNode *N = C.generateNonFatalErrorNode();\n  if (!N)\n    return;\n  auto report = std::make_unique<PathSensitiveBugReport>(\n      *BT, \"Potential integer overflow: left shift performed on a 32-bit value without upcasting to 64-bit\", N);\n  report->addRange(BOp->getSourceRange());\n  C.emitReport(std::move(report));\n}\n} // end anonymous namespace\nextern \"C\" void clang_registerCheckers(CheckerRegistry &registry) {\n  registry.addChecker<SAGenTestChecker>(\n      \"custom.SAGenTestChecker\",\n      \"Detects arithmetic shifts on 32-bit integers without prior upcasting to 64-bit\",\n      \"\");\n}\nextern \"C\" const char clang_analyzerAPIVersionString[] =\n    CLANG_ANALYZER_API_VERSION_STRING;"
+              },
+              "buggy_report_index": {
+                "report_dir": "research/knighter/e2/results/screen1_reports/08_768f17fd25e4_Integer_Overflow/buggy",
+                "index_available": true,
+                "summary_lines": [
+                  "<h2>Bug Summary</h2><table>",
+                  "<thead><tr><td>Bug Type</td><td>Quantity</td><td class=\"sorttable_nosort\">Display?</td></tr></thead>",
+                  "<tr style=\"font-weight:bold\"><td class=\"SUMM_DESC\">All Bugs</td><td class=\"Q\">8</td><td><center><input type=\"checkbox\" id=\"AllBugsCheck\" onClick=\"CopyCheckedStateToCheckButtons(this);\" checked/></center></td></tr>",
+                  "<tr><td class=\"SUMM_DESC\">Potential 32-bit left shift without 64-bit upcasting</td><td class=\"Q\">8</td><td><center><input type=\"checkbox\" onClick=\"ToggleDisplay(this,'bt_logic_error_potential_32-bit_left_shift_without_64-bit_upcasting');\" checked/></center></td></tr>",
+                  "  <td class=\"Q\">Line</td>",
+                  "  <td class=\"Q\">Path Length</td>",
+                  "<tr class=\"bt_logic_error_potential_32-bit_left_shift_without_64-bit_upcasting\"><td class=\"DESC\">Logic error</td><td class=\"DESC\">Potential 32-bit left shift without 64-bit upcasting</td><td>drivers/gpu/drm/i915/i915_hwmon.c</td><td class=\"DESC\">hwm_power1_max_interval_store</td><td class=\"Q\">214</td><td class=\"Q\">53</td><td><a href=\"report-213cf4.html#EndPath\">View Report</a></td>",
+                  "<tr class=\"bt_logic_error_potential_32-bit_left_shift_without_64-bit_upcasting\"><td class=\"DESC\">Logic error</td><td class=\"DESC\">Potential 32-bit left shift without 64-bit upcasting</td><td>drivers/gpu/drm/i915/i915_hwmon.c</td><td class=\"DESC\">hwm_power1_max_interval_store</td><td class=\"Q\">233</td><td class=\"Q\">60</td><td><a href=\"report-28d7ed.html#EndPath\">View Report</a></td>",
+                  "<tr class=\"bt_logic_error_potential_32-bit_left_shift_without_64-bit_upcasting\"><td class=\"DESC\">Logic error</td><td class=\"DESC\">Potential 32-bit left shift without 64-bit upcasting</td><td>drivers/gpu/drm/i915/i915_hwmon.c</td><td class=\"DESC\">hwm_power1_max_interval_show</td><td class=\"Q\">178</td><td class=\"Q\">35</td><td><a href=\"report-339428.html#EndPath\">View Report</a></td>",
+                  "<tr class=\"bt_logic_error_potential_32-bit_left_shift_without_64-bit_upcasting\"><td class=\"DESC\">Logic error</td><td class=\"DESC\">Potential 32-bit left shift without 64-bit upcasting</td><td>drivers/gpu/drm/i915/i915_hwmon.c</td><td class=\"DESC\">hwm_power_max_write</td><td class=\"Q\">442</td><td class=\"Q\">14</td><td><a href=\"report-6dbf39.html#EndPath\">View Report</a></td>",
+                  "<tr class=\"bt_logic_error_potential_32-bit_left_shift_without_64-bit_upcasting\"><td class=\"DESC\">Logic error</td><td class=\"DESC\">Potential 32-bit left shift without 64-bit upcasting</td><td>drivers/gpu/drm/i915/i915_hwmon.c</td><td class=\"DESC\">hwm_power1_max_interval_store</td><td class=\"Q\">214</td><td class=\"Q\">52</td><td><a href=\"report-77f083.html#EndPath\">View Report</a></td>",
+                  "<tr class=\"bt_logic_error_potential_32-bit_left_shift_without_64-bit_upcasting\"><td class=\"DESC\">Logic error</td><td class=\"DESC\">Potential 32-bit left shift without 64-bit upcasting</td><td>include/linux/instrumented.h</td><td class=\"DESC\">instrument_atomic_read</td><td class=\"Q\">69</td><td class=\"Q\">13</td><td><a href=\"report-79870c.html#EndPath\">View Report</a></td>",
+                  "<tr class=\"bt_logic_error_potential_32-bit_left_shift_without_64-bit_upcasting\"><td class=\"DESC\">Logic error</td><td class=\"DESC\">Potential 32-bit left shift without 64-bit upcasting</td><td>drivers/gpu/drm/i915/i915_hwmon.c</td><td class=\"DESC\">hwm_power1_max_interval_store</td><td class=\"Q\">233</td><td class=\"Q\">59</td><td><a href=\"report-e61466.html#EndPath\">View Report</a></td>",
+                  "<tr class=\"bt_logic_error_potential_32-bit_left_shift_without_64-bit_upcasting\"><td class=\"DESC\">Logic error</td><td class=\"DESC\">Potential 32-bit left shift without 64-bit upcasting</td><td>drivers/gpu/drm/i915/i915_hwmon.c</td><td class=\"DESC\">hwm_power1_max_interval_show</td><td class=\"Q\">178</td><td class=\"Q\">36</td><td><a href=\"report-f7e9d4.html#EndPath\">View Report</a></td>"
+                ]
+              },
+              "fixed_report_index": {
+                "report_dir": "research/knighter/e2/results/screen1_reports/08_768f17fd25e4_Integer_Overflow/fixed",
+                "index_available": true,
+                "summary_lines": [
+                  "<h2>Bug Summary</h2><table>",
+                  "<thead><tr><td>Bug Type</td><td>Quantity</td><td class=\"sorttable_nosort\">Display?</td></tr></thead>",
+                  "<tr style=\"font-weight:bold\"><td class=\"SUMM_DESC\">All Bugs</td><td class=\"Q\">6</td><td><center><input type=\"checkbox\" id=\"AllBugsCheck\" onClick=\"CopyCheckedStateToCheckButtons(this);\" checked/></center></td></tr>",
+                  "<tr><td class=\"SUMM_DESC\">Potential 32-bit left shift without 64-bit upcasting</td><td class=\"Q\">6</td><td><center><input type=\"checkbox\" onClick=\"ToggleDisplay(this,'bt_logic_error_potential_32-bit_left_shift_without_64-bit_upcasting');\" checked/></center></td></tr>",
+                  "  <td class=\"Q\">Line</td>",
+                  "  <td class=\"Q\">Path Length</td>",
+                  "<tr class=\"bt_logic_error_potential_32-bit_left_shift_without_64-bit_upcasting\"><td class=\"DESC\">Logic error</td><td class=\"DESC\">Potential 32-bit left shift without 64-bit upcasting</td><td>drivers/gpu/drm/i915/i915_hwmon.c</td><td class=\"DESC\">hwm_power1_max_interval_store</td><td class=\"Q\">233</td><td class=\"Q\">60</td><td><a href=\"report-28d7ed.html#EndPath\">View Report</a></td>",
+                  "<tr class=\"bt_logic_error_potential_32-bit_left_shift_without_64-bit_upcasting\"><td class=\"DESC\">Logic error</td><td class=\"DESC\">Potential 32-bit left shift without 64-bit upcasting</td><td>drivers/gpu/drm/i915/i915_hwmon.c</td><td class=\"DESC\">hwm_power_max_write</td><td class=\"Q\">442</td><td class=\"Q\">14</td><td><a href=\"report-6dbf39.html#EndPath\">View Report</a></td>",
+                  "<tr class=\"bt_logic_error_potential_32-bit_left_shift_without_64-bit_upcasting\"><td class=\"DESC\">Logic error</td><td class=\"DESC\">Potential 32-bit left shift without 64-bit upcasting</td><td>include/linux/instrumented.h</td><td class=\"DESC\">instrument_atomic_read</td><td class=\"Q\">69</td><td class=\"Q\">13</td><td><a href=\"report-79870c.html#EndPath\">View Report</a></td>",
+                  "<tr class=\"bt_logic_error_potential_32-bit_left_shift_without_64-bit_upcasting\"><td class=\"DESC\">Logic error</td><td class=\"DESC\">Potential 32-bit left shift without 64-bit upcasting</td><td>drivers/gpu/drm/i915/i915_hwmon.c</td><td class=\"DESC\">hwm_power1_max_interval_store</td><td class=\"Q\">214</td><td class=\"Q\">52</td><td><a href=\"report-d71648.html#EndPath\">View Report</a></td>",
+                  "<tr class=\"bt_logic_error_potential_32-bit_left_shift_without_64-bit_upcasting\"><td class=\"DESC\">Logic error</td><td class=\"DESC\">Potential 32-bit left shift without 64-bit upcasting</td><td>drivers/gpu/drm/i915/i915_hwmon.c</td><td class=\"DESC\">hwm_power1_max_interval_show</td><td class=\"Q\">178</td><td class=\"Q\">35</td><td><a href=\"report-dd0cc9.html#EndPath\">View Report</a></td>",
+                  "<tr class=\"bt_logic_error_potential_32-bit_left_shift_without_64-bit_upcasting\"><td class=\"DESC\">Logic error</td><td class=\"DESC\">Potential 32-bit left shift without 64-bit upcasting</td><td>drivers/gpu/drm/i915/i915_hwmon.c</td><td class=\"DESC\">hwm_power1_max_interval_store</td><td class=\"Q\">233</td><td class=\"Q\">59</td><td><a href=\"report-e61466.html#EndPath\">View Report</a></td>"
+                ]
+              },
+              "refinement_guidance": [
+                "Patch widens the composed left-shift operand to u64 before shifting; the checker should model integer width at the shift operand, not only the presence of a shift expression.",
+                "The vulnerable value is tau4, computed by left-shifting a sub-64-bit expression and then consumed by mul_u64_u32_shr."
+              ]
+            },
+            "log_path": "/anonymous/home/LLM-Native/research/knighter/runs/knighter-v613/validation_20260616_192116/knighter_validation.log",
+            "output_root": "/anonymous/home/LLM-Native/research/knighter/runs/knighter-v613/validation_20260616_192116",
+            "archived_buggy_report_dir": "research/knighter/e2/results/screen1_reports/08_768f17fd25e4_Integer_Overflow/buggy",
+            "archived_fixed_report_dir": "research/knighter/e2/results/screen1_reports/08_768f17fd25e4_Integer_Overflow/fixed"
+          },
+          "provenance": {
+            "tool": "research/knighter/scripts/run_e2_patch_local_audit.py",
+            "artifact": "research/knighter/e2/results/screening/patch_local_baseline/08_768f17fd25e4_Integer_Overflow/patch_local_result.json",
+            "confidence": 0.95
+          },
+          "evidence_slice": {}
+        },
+        {
+          "evidence_id": "knighter_historical_report_reference",
+          "type": "context_summary",
+          "analyzer": "csa",
+          "scope": {
+            "repo": "linux",
+            "file": "drivers/gpu/drm/i915/i915_hwmon.o",
+            "function": "knighter_historical_reference"
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "kind": "knighter_historical_reference",
+            "summary": "Historical KNighter report_count=1729, manual_bugs=0, manual_not_bugs=0; this is not the same metric as patch-local E2 validation.",
+            "knighter_report_count": 1729,
+            "knighter_manual_bugs": 0,
+            "knighter_manual_not_bugs": 0,
+            "metric_scope_note": "Historical KNighter report_count is not patch-local buggy/fixed validation."
+          },
+          "provenance": {
+            "tool": "KNighter old-version generated/checker-for-evaluation/refine",
+            "artifact": "commit_report_map.txt + triage_report.csv",
+            "confidence": 0.72
+          },
+          "evidence_slice": {}
+        },
+        {
+          "evidence_id": "knighter_e2_patch_fact",
+          "type": "patch_fact",
+          "analyzer": "csa",
+          "scope": {
+            "repo": "linux",
+            "file": "drivers/gpu/drm/i915/i915_hwmon.c",
+            "function": "hwm_power1_max_interval_show"
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "fact_type": "upcast_before_left_shift",
+            "label": "Integer-Overflow",
+            "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=8, fixed_alerts=6, buggy_miss=false, fixed_noisy=true, pds=false, targets=drivers/gpu/drm/i915/i915_hwmon.o.",
+            "attributes": {
+              "patterns": [
+                "integer_overflow",
+                "upcast_before_shift",
+                "narrow_lhs_shift"
+              ],
+              "functions": [
+                "hwm_power1_max_interval_show",
+                "hwm_power1_max_interval_store"
+              ],
+              "tracked_symbols": [
+                "tau4",
+                "x_w",
+                "x",
+                "y",
+                "SF_TIME",
+                "hwmon->scl_shift_time"
+              ],
+              "fixed_noisy": true,
+              "buggy_miss": false
+            }
+          },
+          "provenance": {
+            "tool": "research/knighter/scripts/backfill_e2_refine_inputs.py",
+            "artifact": "research/knighter/e2/cases/08_768f17fd25e4_Integer_Overflow/patches/commit.patch",
+            "confidence": 0.9
+          },
+          "evidence_slice": {
+            "kind": "patch_fact",
+            "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=8, fixed_alerts=6, buggy_miss=false, fixed_noisy=true, pds=false, targets=drivers/gpu/drm/i915/i915_hwmon.o.",
+            "statements": [
+              "hwm_power1_max_interval_store(struct device *dev,",
+              "u64 tau4, r, max_win;",
+              "r = FIELD_PREP(PKG_MAX_WIN, PKG_MAX_WIN_DEFAULT);",
+              "x = REG_FIELD_GET(PKG_MAX_WIN_X, r);",
+              "y = REG_FIELD_GET(PKG_MAX_WIN_Y, r);",
+              "tau4 = ((1 << x_w) | x) << y;",
+              "max_win = mul_u64_u32_shr(tau4, SF_TIME, hwmon->scl_shift_time + x_w);",
+              "val = DIV_ROUND_CLOSEST_ULL((u64)val << hwmon->scl_shift_time, SF_TIME);",
+              "/* x = (val - (1 << y)) >> (y - 2); */",
+              "x = (val - (1ul << y)) << x_w >> y;"
+            ],
+            "api_terms": [
+              "ret",
+              "BO_Shl",
+              "CastExpr",
+              "getTypeSize",
+              "PathSensitiveBugReport",
+              "(u64)",
+              "<<",
+              "mul_u64_u32_shr",
+              "FIELD_PREP",
+              "REG_FIELD_GET"
+            ],
+            "related_symbols": [
+              "tau4",
+              "x_w",
+              "x",
+              "y",
+              "SF_TIME",
+              "hwmon->scl_shift_time"
+            ],
+            "coverage_status": "patch-local",
+            "verifier": "research/knighter/scripts/backfill_e2_refine_inputs.py",
+            "extraction_method": "research/knighter/e2/cases/08_768f17fd25e4_Integer_Overflow/patches/commit.patch"
+          }
+        },
+        {
+          "evidence_id": "knighter_e2_semantic_slice",
+          "type": "semantic_slice",
+          "analyzer": "csa",
+          "scope": {
+            "repo": "linux",
+            "file": "drivers/gpu/drm/i915/i915_hwmon.c",
+            "function": "hwm_power1_max_interval_show"
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=8, fixed_alerts=6, buggy_miss=false, fixed_noisy=true, pds=false, targets=drivers/gpu/drm/i915/i915_hwmon.o.",
+            "tracked_symbols": [
+              "tau4",
+              "x_w",
+              "x",
+              "y",
+              "SF_TIME",
+              "hwmon->scl_shift_time"
+            ],
+            "source_excerpt": "## Patch Description\n\ndrm/i915/hwmon: Fix static analysis tool reported issues\n\nUpdated i915 hwmon with fixes for issues reported by static analysis tool.\nFixed integer overflow with upcasting.\n\nv2:\n- Added Fixes tag (Badal).\n- Updated commit message as per review comments (Anshuman).\n\nFixes: 4c2572fe0ae7 (\"drm/i915/hwmon: Expose power1_max_interval\")\nReviewed-by: Badal Nilawar <badal.nilawar@intel.com>\nReviewed-by: Anshuman Gupta <anshuman.gupta@intel.com>\nSigned-off-by: Karthik Poosa <karthik.poosa@intel.com>\nSigned-off-by: Anshuman Gupta <anshuman.gupta@intel.com>\nLink: https://patchwork.freedesktop.org/patch/msgid/20231204144809.1518704-1-karthik.poosa@intel.com\n(cherry picked from commit ac3420d3d428443a08b923f9118121c170192b62)\nSigned-off-by: Jani Nikula <jani.nikula@intel.com>\n\n## Buggy Code\n\n```c\n// drivers/gpu/drm/i915/i915_hwmon.c\nstatic ssize_t\nhwm_power1_max_interval_store(struct device *dev,\n\t\t\t      struct device_attribute *attr,\n\t\t\t      const char *buf, size_t count)\n{\n\tstruct hwm_drvdata *ddat = dev_get_drvdata(dev);\n\tstruct i915_hwmon *hwmon = ddat->hwmon;\n\tu32 x, y, rxy, x_w = 2; /* 2 bits */\n\tu64 tau4, r, max_win;\n\tunsigned long val;\n\tint ret;\n\n\tret = kstrtoul(buf, 0, &val);\n\tif (ret)\n\t\treturn ret;\n\n\t/*\n\t * Max HW supported tau in '1.x * power(2,y)' format, x = 0, y = 0x12\n\t * The hwmon->scl_shift_time default of 0xa results in a max tau of 256 seconds\n\t */\n#define PKG_MAX_WIN_DEFAULT 0x12ull\n\n\t/*\n\t * val must be < max in hwmon interface units. The steps below are\n\t * explained in i915_power1_max_interval_show()\n\t */\n\tr = FIELD_PREP(PKG_MAX_WIN, PKG_MAX_WIN_DEFAULT);\n\tx = REG_FIELD_GET(PKG_MAX_WIN_X, r);\n\ty = REG_FIELD_GET(PKG_MAX_WIN_Y, r);\n\ttau4 = ((1 << x_w) | x) << y;\n\tmax_win = mul_u64_u32_shr(tau4, SF_TIME, hwmon->scl_shift_time + x_w);\n\n\tif (val > max_win)\n\t\treturn -EINVAL;\n\n\t/* val in hw units */\n\tval = DIV_ROUND_CLOSEST_ULL((u64)val << hwmon->scl_shift_time, SF_TIME);\n\t/* Convert to 1.x * power(2,y) */\n\tif (!val) {\n\t\t/* Avoid ilog2(0) */\n\t\ty = 0;\n\t\tx = 0;\n\t} else {\n\t\ty = ilog2(val);\n\t\t/* x = (val - (1 << y)) >> (y - 2); */\n\t\tx = (val - (1ul << y)) << x_w >> y;\n\t}\n\n\trxy = REG_FIELD_PREP(PKG_PWR_LIM_1_TIME_X, x) | REG_FIELD_PREP(PKG_PW",
+            "coverage_status": "patch-local"
+          },
+          "provenance": {
+            "tool": "research/knighter/scripts/backfill_e2_refine_inputs.py",
+            "artifact": "research/knighter/e2/cases/08_768f17fd25e4_Integer_Overflow/patches/commit.patch",
+            "confidence": 0.9
+          },
+          "evidence_slice": {
+            "kind": "semantic_slice",
+            "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=8, fixed_alerts=6, buggy_miss=false, fixed_noisy=true, pds=false, targets=drivers/gpu/drm/i915/i915_hwmon.o.",
+            "statements": [
+              "hwm_power1_max_interval_store(struct device *dev,",
+              "u64 tau4, r, max_win;",
+              "r = FIELD_PREP(PKG_MAX_WIN, PKG_MAX_WIN_DEFAULT);",
+              "x = REG_FIELD_GET(PKG_MAX_WIN_X, r);",
+              "y = REG_FIELD_GET(PKG_MAX_WIN_Y, r);",
+              "tau4 = ((1 << x_w) | x) << y;",
+              "max_win = mul_u64_u32_shr(tau4, SF_TIME, hwmon->scl_shift_time + x_w);",
+              "val = DIV_ROUND_CLOSEST_ULL((u64)val << hwmon->scl_shift_time, SF_TIME);",
+              "/* x = (val - (1 << y)) >> (y - 2); */",
+              "x = (val - (1ul << y)) << x_w >> y;",
+              "rxy = REG_FIELD_PREP(PKG_PWR_LIM_1_TIME_X, x) | REG_FIELD_PREP(PKG_PWR_LIM_1_TIME_Y, y);",
+              "hwm_power1_max_interval_show(struct device *dev, struct device_attribute *attr,"
+            ],
+            "guards": [
+              "left-shift operand must be widened to u64 before shifting by y",
+              "fixed expression casts ((1 << x_w) | x) to u64 before << y",
+              "same tau4 computation appears in show and store paths"
+            ],
+            "call_edges": [
+              "hwm_power1_max_interval_show -> mul_u64_u32_shr(tau4, SF_TIME, ...)",
+              "hwm_power1_max_interval_store -> mul_u64_u32_shr(tau4, SF_TIME, ...)"
+            ],
+            "state_transitions": [
+              "buggy: tau4 = ((1 << x_w) | x) << y",
+              "fixed: tau4 = (u64)((1 << x_w) | x) << y"
+            ],
+            "api_terms": [
+              "ret",
+              "BO_Shl",
+              "CastExpr",
+              "getTypeSize",
+              "PathSensitiveBugReport",
+              "(u64)",
+              "<<",
+              "mul_u64_u32_shr",
+              "FIELD_PREP",
+              "REG_FIELD_GET"
+            ],
+            "related_symbols": [
+              "tau4",
+              "x_w",
+              "x",
+              "y",
+              "SF_TIME",
+              "hwmon->scl_shift_time"
+            ],
+            "verifier": "research/knighter/scripts/backfill_e2_refine_inputs.py",
+            "extraction_method": "research/knighter/e2/cases/08_768f17fd25e4_Integer_Overflow/patches/commit.patch",
+            "coverage_status": "patch-local"
+          }
+        },
+        {
+          "evidence_id": "knighter_e2_path_guard",
+          "type": "path_guard",
+          "analyzer": "csa",
+          "scope": {
+            "repo": "linux",
+            "file": "drivers/gpu/drm/i915/i915_hwmon.c",
+            "function": "hwm_power1_max_interval_show"
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=8, fixed_alerts=6, buggy_miss=false, fixed_noisy=true, pds=false, targets=drivers/gpu/drm/i915/i915_hwmon.o.",
+            "guard_expr": "left-shift operand must be widened to u64 before shifting by y",
+            "state_before": [
+              "((1 << x_w) | x) is evaluated at sub-64-bit integer width before the shift",
+              "left-shifting the narrow composed value by y may overflow before assignment to u64 tau4"
+            ],
+            "state_after": [
+              "(u64)((1 << x_w) | x) widens the composed value before << y",
+              "tau4 is consumed by mul_u64_u32_shr after the widened shift"
+            ],
+            "tracked_symbols": [
+              "tau4",
+              "x_w",
+              "x",
+              "y",
+              "SF_TIME",
+              "hwmon->scl_shift_time"
+            ]
+          },
+          "provenance": {
+            "tool": "research/knighter/scripts/backfill_e2_refine_inputs.py",
+            "artifact": "research/knighter/e2/cases/08_768f17fd25e4_Integer_Overflow/patches/commit.patch",
+            "confidence": 0.9
+          },
+          "evidence_slice": {
+            "kind": "path_guard",
+            "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=8, fixed_alerts=6, buggy_miss=false, fixed_noisy=true, pds=false, targets=drivers/gpu/drm/i915/i915_hwmon.o.",
+            "guards": [
+              "left-shift operand must be widened to u64 before shifting by y",
+              "fixed expression casts ((1 << x_w) | x) to u64 before << y",
+              "same tau4 computation appears in show and store paths"
+            ],
+            "state_transitions": [
+              "buggy: tau4 = ((1 << x_w) | x) << y",
+              "fixed: tau4 = (u64)((1 << x_w) | x) << y"
+            ],
+            "related_symbols": [
+              "tau4",
+              "x_w",
+              "x",
+              "y",
+              "SF_TIME",
+              "hwmon->scl_shift_time"
+            ],
+            "verifier": "research/knighter/scripts/backfill_e2_refine_inputs.py",
+            "extraction_method": "research/knighter/e2/cases/08_768f17fd25e4_Integer_Overflow/patches/commit.patch",
+            "coverage_status": "patch-local"
+          }
+        },
+        {
+          "evidence_id": "knighter_e2_allocation_lifecycle",
+          "type": "allocation_lifecycle",
+          "analyzer": "csa",
+          "scope": {
+            "repo": "linux",
+            "file": "drivers/gpu/drm/i915/i915_hwmon.c",
+            "function": "hwm_power1_max_interval_show"
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=8, fixed_alerts=6, buggy_miss=false, fixed_noisy=true, pds=false, targets=drivers/gpu/drm/i915/i915_hwmon.o.",
+            "path": [
+              "buggy: tau4 = ((1 << x_w) | x) << y",
+              "fixed: tau4 = (u64)((1 << x_w) | x) << y",
+              "hwm_power1_max_interval_show -> mul_u64_u32_shr(tau4, SF_TIME, ...)",
+              "hwm_power1_max_interval_store -> mul_u64_u32_shr(tau4, SF_TIME, ...)"
+            ],
+            "operations": [
+              "compose tau4 mantissa from (1 << x_w) | x",
+              "widen composed value to u64 before left shift",
+              "left shift by y",
+              "consume tau4 in mul_u64_u32_shr"
+            ],
+            "acquisition_ops": [
+              "REG_FIELD_GET(PKG_MAX_WIN_X, r)",
+              "REG_FIELD_GET(PKG_MAX_WIN_Y, r)"
+            ],
+            "release_ops": [],
+            "transition_ops": [
+              "narrow shift",
+              "u64-widened shift"
+            ],
+            "state_before": [
+              "((1 << x_w) | x) is evaluated at sub-64-bit integer width before the shift",
+              "left-shifting the narrow composed value by y may overflow before assignment to u64 tau4"
+            ],
+            "state_after": [
+              "(u64)((1 << x_w) | x) widens the composed value before << y",
+              "tau4 is consumed by mul_u64_u32_shr after the widened shift"
+            ]
+          },
+          "provenance": {
+            "tool": "research/knighter/scripts/backfill_e2_refine_inputs.py",
+            "artifact": "research/knighter/e2/cases/08_768f17fd25e4_Integer_Overflow/patches/commit.patch",
+            "confidence": 0.9
+          },
+          "evidence_slice": {
+            "kind": "allocation_lifecycle",
+            "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=8, fixed_alerts=6, buggy_miss=false, fixed_noisy=true, pds=false, targets=drivers/gpu/drm/i915/i915_hwmon.o.",
+            "statements": [
+              "hwm_power1_max_interval_store(struct device *dev,",
+              "u64 tau4, r, max_win;",
+              "r = FIELD_PREP(PKG_MAX_WIN, PKG_MAX_WIN_DEFAULT);",
+              "x = REG_FIELD_GET(PKG_MAX_WIN_X, r);",
+              "y = REG_FIELD_GET(PKG_MAX_WIN_Y, r);",
+              "tau4 = ((1 << x_w) | x) << y;",
+              "max_win = mul_u64_u32_shr(tau4, SF_TIME, hwmon->scl_shift_time + x_w);",
+              "val = DIV_ROUND_CLOSEST_ULL((u64)val << hwmon->scl_shift_time, SF_TIME);",
+              "/* x = (val - (1 << y)) >> (y - 2); */",
+              "x = (val - (1ul << y)) << x_w >> y;",
+              "rxy = REG_FIELD_PREP(PKG_PWR_LIM_1_TIME_X, x) | REG_FIELD_PREP(PKG_PWR_LIM_1_TIME_Y, y);",
+              "hwm_power1_max_interval_show(struct device *dev, struct device_attribute *attr,"
+            ],
+            "state_transitions": [
+              "buggy: tau4 = ((1 << x_w) | x) << y",
+              "fixed: tau4 = (u64)((1 << x_w) | x) << y"
+            ],
+            "api_terms": [
+              "ret",
+              "BO_Shl",
+              "CastExpr",
+              "getTypeSize",
+              "PathSensitiveBugReport",
+              "(u64)",
+              "<<",
+              "mul_u64_u32_shr",
+              "FIELD_PREP",
+              "REG_FIELD_GET"
+            ],
+            "related_symbols": [
+              "tau4",
+              "x_w",
+              "x",
+              "y",
+              "SF_TIME",
+              "hwmon->scl_shift_time"
+            ],
+            "verifier": "research/knighter/scripts/backfill_e2_refine_inputs.py",
+            "extraction_method": "research/knighter/e2/cases/08_768f17fd25e4_Integer_Overflow/patches/commit.patch",
+            "coverage_status": "patch-local"
+          }
+        },
+        {
+          "evidence_id": "knighter_e2_call_chain",
+          "type": "call_chain",
+          "analyzer": "csa",
+          "scope": {
+            "repo": "linux",
+            "file": "drivers/gpu/drm/i915/i915_hwmon.c",
+            "function": "hwm_power1_max_interval_show"
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=8, fixed_alerts=6, buggy_miss=false, fixed_noisy=true, pds=false, targets=drivers/gpu/drm/i915/i915_hwmon.o.",
+            "call_edges": [
+              "hwm_power1_max_interval_show -> mul_u64_u32_shr(tau4, SF_TIME, ...)",
+              "hwm_power1_max_interval_store -> mul_u64_u32_shr(tau4, SF_TIME, ...)"
+            ]
+          },
+          "provenance": {
+            "tool": "research/knighter/scripts/backfill_e2_refine_inputs.py",
+            "artifact": "research/knighter/e2/cases/08_768f17fd25e4_Integer_Overflow/patches/commit.patch",
+            "confidence": 0.9
+          },
+          "evidence_slice": {
+            "kind": "call_chain",
+            "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=8, fixed_alerts=6, buggy_miss=false, fixed_noisy=true, pds=false, targets=drivers/gpu/drm/i915/i915_hwmon.o.",
+            "call_edges": [
+              "hwm_power1_max_interval_show -> mul_u64_u32_shr(tau4, SF_TIME, ...)",
+              "hwm_power1_max_interval_store -> mul_u64_u32_shr(tau4, SF_TIME, ...)"
+            ],
+            "related_symbols": [
+              "tau4",
+              "x_w",
+              "x",
+              "y",
+              "SF_TIME",
+              "hwmon->scl_shift_time"
+            ],
+            "verifier": "research/knighter/scripts/backfill_e2_refine_inputs.py",
+            "extraction_method": "research/knighter/e2/cases/08_768f17fd25e4_Integer_Overflow/patches/commit.patch",
+            "coverage_status": "patch-local"
+          }
+        }
+      ],
+      "missing_evidence": [],
+      "collected_analyzers": [
+        "csa"
+      ]
+    },
+    "validation_feedback_history": [
+      {
+        "analyzer": "csa",
+        "phase": "knighter_e2_patch_local_baseline",
+        "summary": "Baseline validation (csa): Knighter基线扫描报告数=1729, 人工确认bug=0, 人工非bug=0, 候选组=positive_scan_report_count。漏洞版命中=true, 漏洞版patch-scoped告警数=8, 修复版误报数=6, fixed_silent=false, PDS=false. 这些数只表示patch-local语义验证门，不等同于Knighter full-kernel report_count/FPR统计。"
+      }
+    ]
+  }
+}

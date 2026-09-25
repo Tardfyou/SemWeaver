@@ -1,0 +1,38 @@
+\subsection{RQ1: KNighter-Derived Checkers}
+
+Within the 12 selected fixed-noisy cases, every starting checker hits both paired revisions.  The original follow-up records five \emph{automatically} accepted PDS edits, six PDS edits requiring manual completion, and one automatic validity loss.  Thus, the often-quoted 11/12 is an \emph{assisted} outcome, not the automatic success rate; likewise, $0/12$ is the entry criterion, not a KNighter-refinement result.  Under an adopt-only-on-PDS policy, the five historical automatic edits retain the vulnerable-side reports and reduce fixed-side object alerts from 37 to 23 in this stratum; the six manual edits are excluded from that reduction.  On the full 39-checker portfolio, the 27 initially discriminating checkers remain unchanged, yielding 32/39 PDS after adopting those five edits.  At the patch-version decision level, the unmodified portfolio has $TP=39$, $FP=12$, $FN=0$ ($F_1=0.867$); the historical adopt-only portfolio has $TP=39$, $FP=7$, $FN=0$ ($F_1=0.918$).  These are within-patch decisions, not alert-level precision or unseen-code generalization.  Crucially, these historical edits were generated before the strict native-evidence audit and cannot demonstrate that analyzer-internal evidence caused their gain.
+
+Table~\ref{tab:matched-repeats} reports three complete matched repeats on the same 12 selected checkers.  The cells give PDS count, retained fixed-side alerts under PDS-only adoption (out of 37 initially), and actual model calls, respectively.  The call ceiling is matched \emph{per case} to that repeat's actual KNighter calls (25, 26, or 29 total); \toolname may stop early.  KNighter's actual loop reaches 3, 2, and 6 PDS, while native-evidence \toolname reaches 6, 5, and 7.  It retains 23, 23, and 18 fixed-side alerts versus KNighter's 28, 27, and 22: fewer observed false alerts in all three repeats while retaining vulnerable-side hits for every adopted edit.  At the 39-checker patch-version decision level, the corresponding hypothetical PDS-only $F_1$ is $0.929/0.918/0.940$ for \toolname and $0.897/0.886/0.929$ for KNighter.  These are within-patch decisions, not alert-level or deployment precision.
+
+The exact paired McNemar $p$-values against KNighter are $0.375$, $0.375$, and $1.0$ by repeat; no single repeat establishes significant superiority.  The original 19-call one-pass tie and an unequal-budget development condition remain diagnostics, not part of Table~\ref{tab:matched-repeats}.  A separate review heuristic accepted all 6, 5, and 7 native PDS candidates, but only 3, 1, and 5 of KNighter's PDS candidates; its findings are quality warnings, not grounds to erase valid paired executions.  The three repeats characterize stochastic variability on the same development-informed stratum, not an independent 36-checker cohort.
+
+\begin{table}[t]
+\centering\footnotesize
+\setlength{\tabcolsep}{3pt}
+\caption{Full 12-case matched repeats. Each arm cell is PDS / retained fixed-side alerts (starting from 37) / actual model calls. Both \toolname arms share the same per-case call ceiling and feedback loop.}
+\label{tab:matched-repeats}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Repeat & KNighter & Native \toolname & No-internal \toolname \\
+\midrule
+1 & $3/28/25$ & $6/23/17$ & $3/26/16$ \\
+2 & $2/27/26$ & $5/23/21$ & $3/28/20$ \\
+3 & $6/22/29$ & $7/18/16$ & $3/26/23$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{RQ2: Cross-Backend Feasibility and Provenance}
+
+The historical 20-detector CSA/CodeQL table exercises both formats but mixes at least seven manual-path rows and cannot support an automatic cross-backend gain.  Its former $8/20\to12/20$ summary is not independently reproducible; E2 remains interface feasibility until generator prompts, checker hashes, manual status, and paired logs are bound per row.
+
+\subsection{RQ3: Evidence Sensitivity and Provenance}
+
+The matched no-internal arm keeps patch, source, model, feedback, and call ceilings, but lacks hash-bound CFG/call-graph records.  It reaches $3/12$ PDS in each repeat versus native $6/12$, $5/12$, and $7/12$, retaining 26, 28, and 26 fixed alerts versus 23, 23, and 18.  Within-repeat paired $p$-values are $0.25$, $0.625$, and $0.125$; none is significant alone.  Case 02 succeeds only without internal evidence in repeat 2, ruling out a necessity claim.  The older purposive five-case ablation had no strictly internal records and remains only a failure-mode illustration.
+
+\subsection{Qualitative Findings}
+
+The case studies cover resource-lifecycle, initialization, and integer/bounds edits, but patch-local acceptance alone does not show that the resulting checker will recognize unseen sites.
+
+The negative case is equally important: a refinement can silence the fixed side by making the checker too narrow.  That is not success, even though the fixed side is silent.  Feedback alone cannot tell a correct semantic barrier from an over-pruned detector.
+In a post-hoc, development-informed case-19 probe of a native PDS candidate, inserting an unrelated statement and renaming the enclosing function preserve the alert, but consistently renaming the cleanup callback loses it; two negative controls remain silent.  This $3/4$ positive, $2/2$ negative result is a scoped robustness diagnostic, not held-out generalization or an additional automatic PDS success.

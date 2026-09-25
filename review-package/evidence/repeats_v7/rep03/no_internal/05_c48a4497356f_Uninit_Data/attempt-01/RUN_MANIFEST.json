@@ -1,0 +1,146 @@
+{
+  "schema_version": 1,
+  "method": "semweaver_no_internal_evidence_ablation",
+  "evidence_mode": "no_internal",
+  "origin_gate_enabled": false,
+  "case_id": "05_c48a4497356f_Uninit_Data",
+  "model": "gpt-5.6-terra",
+  "provider": "openai_compatible",
+  "wire_api": "responses",
+  "reasoning_effort": "high",
+  "max_iterations": 1,
+  "max_tokens_per_call": 16000,
+  "request_timeout_seconds": 600,
+  "wrapper_max_retries": 0,
+  "inline_semantic_validation": false,
+  "external_paired_validation_required": true,
+  "internal_evidence_preloaded": false,
+  "evidence_requests_disabled": true,
+  "compile_after_each_edit": true,
+  "llm_exchange_log": "/work/artifacts/fse_revision/repeats_v7/rep03/no_internal/05_c48a4497356f_Uninit_Data/attempt-01/llm_exchanges.jsonl",
+  "llm_exchange_log_sha256": "1f042f59cd62afec3c226e4b914071fbdb17a433a8fccfc872af52096e653eae",
+  "preloaded_internal_evidence_ids": [],
+  "patch_sha256": "88577ccef2ea0f7785c41e7c9e30fd044f50386307bfb39e4d939042bcbcc1fe",
+  "original_checker_sha256": "dd8f1d5546cf13facd255b307e81f6e5c1ce803e20d5d3ca6660d69fc11a2e6a",
+  "starting_checker_sha256": "dd8f1d5546cf13facd255b307e81f6e5c1ce803e20d5d3ca6660d69fc11a2e6a",
+  "evidence_bundle_sha256": "2ad162e2d52b465d81d0344cf92748bcc7b7bc4ba9b5d1f150d7eea342bb3031",
+  "visible_evidence_sha256": "fc99258f671361c50e3b029c4bfba1619124126435da488caef4bbada652bab8",
+  "visible_evidence_record_count": 0,
+  "frozen_source_revision": "c48a4497356f701f94f1951626637ae240af909e^",
+  "frozen_source_hashes": {
+    "sound/soc/codecs/sma1307.c": "fdf32174c391f65eb4652123331158f7ff94d1e33106b8493220c98bcde17808"
+  },
+  "feedback_result_sha256": null,
+  "feedback_run_manifest_sha256": null,
+  "feedback_candidate_sha256": null,
+  "feedback_kind": null,
+  "candidate_sha256": "dd8f1d5546cf13facd255b307e81f6e5c1ce803e20d5d3ca6660d69fc11a2e6a",
+  "candidate_changed": false,
+  "success": false,
+  "agent_success": false,
+  "iterations": 1,
+  "compile_attempts": 0,
+  "error_message": "模型预算耗尽，最后候选未通过本地前置门: ERROR: 生成产物结构审查未通过（存在语义空壳、占位实现或高风险结构问题）\n结构审查未通过，发现以下高风险问题:\n- CSA output-parameter checker 缺少 output load consumer 覆盖：只从 branch AST 重新推断 region，无法可靠匹配 producer 记录的 address-taken变量 region；必须用 `check::Location` 的 load location 绑定同一 base region。\n\n定向修复建议:\n- 先证明被跟踪实参确实是输出参数（例如 address-of pointer、参数类型/属性或等价的签名合同），再把该 region 与同一次调用的返回状态绑定；不要把任意调用的固定位置实参当成输出。\n- 泛化必须同时保留 producer 资格、输出 region、返回状态和成功值四个关系；缺少任一关系都应 abstain，而不是扩大到所有 CallExpr。\n- 为 pointer-output region 实现 `check::Location` load callback，并用 load 的 location/base region 查询 pending map；branch AST 可补充定位，但不能替代 CSA 的 region load 事件。\n请在保留漏洞语义目标的前提下做定点修复，不要通过删逻辑或改名绕过审查。",
+  "final_message": "候选已产生但被本地前置门拒绝，未进入结果验证。",
+  "output_path": "",
+  "elapsed_seconds": 78.80336499214172,
+  "llm_usage": {
+    "prompt_tokens": 12546,
+    "completion_tokens": 4053,
+    "total_tokens": 16599,
+    "call_count": 1,
+    "available": true,
+    "model": "gpt-5.6-terra",
+    "phases": 1
+  },
+  "llm_usage_by_phase": {
+    "decide": {
+      "prompt_tokens": 12546,
+      "completion_tokens": 4053,
+      "total_tokens": 16599,
+      "call_count": 1,
+      "available": true,
+      "model": "gpt-5.6-terra"
+    }
+  },
+  "artifact_review": {
+    "artifact_path": "/work/artifacts/fse_revision/repeats_v7/rep03/no_internal/05_c48a4497356f_Uninit_Data/attempt-01/SAGenTestChecker.cpp",
+    "analyzer": "csa",
+    "review_mode": "refine",
+    "findings": [
+      "CSA output-parameter checker 缺少 output load consumer 覆盖：只从 branch AST 重新推断 region，无法可靠匹配 producer 记录的 address-taken变量 region；必须用 `check::Location` 的 load location 绑定同一 base region。"
+    ],
+    "warnings": []
+  },
+  "failure_type": "preflight_review_failure",
+  "latest_failure_title": "preflight_review_resulting_content",
+  "latest_failure_text": "ERROR: 生成产物结构审查未通过（存在语义空壳、占位实现或高风险结构问题）\n结构审查未通过，发现以下高风险问题:\n- CSA output-parameter checker 缺少 output load consumer 覆盖：只从 branch AST 重新推断 region，无法可靠匹配 producer 记录的 address-taken变量 region；必须用 `check::Location` 的 load location 绑定同一 base region。\n\n定向修复建议:\n- 先证明被跟踪实参确实是输出参数（例如 address-of pointer、参数类型/属性或等价的签名合同），再把该 region 与同一次调用的返回状态绑定；不要把任意调用的固定位置实参当成输出。\n- 泛化必须同时保留 producer 资格、输出 region、返回状态和成功值四个关系；缺少任一关系都应 abstain，而不是扩大到所有 CallExpr。\n- 为 pointer-output region 实现 `check::Location` load callback，并用 load 的 location/base region 查询 pending map；branch AST 可补充定位，但不能替代 CSA 的 region load 事件。\n请在保留漏洞语义目标的前提下做定点修复，不要通过删逻辑或改名绕过审查。",
+  "tool_history": [
+    {
+      "tool_name": "read_file",
+      "success": true,
+      "error": "",
+      "metadata": {
+        "path": "/work/artifacts/fse_revision/repeats_v7/rep03/no_internal/05_c48a4497356f_Uninit_Data/attempt-01/SAGenTestChecker.cpp",
+        "length": 5087,
+        "lines": 136
+      }
+    },
+    {
+      "tool_name": "read_file",
+      "success": true,
+      "error": "",
+      "metadata": {
+        "path": "/work/artifacts/research/experiment/e1/05_c48a4497356f_Uninit_Data/patches/commit.patch",
+        "length": 1882,
+        "lines": 49
+      }
+    },
+    {
+      "tool_name": "read_file",
+      "success": true,
+      "error": "",
+      "metadata": {
+        "path": "/work/artifacts/fse_revision/repeats_v7/rep03/no_internal/05_c48a4497356f_Uninit_Data/attempt-01/frozen_source/sound/soc/codecs/sma1307.c",
+        "length": 58488,
+        "lines": 2050
+      }
+    },
+    {
+      "tool_name": "review_artifact",
+      "success": true,
+      "error": "",
+      "metadata": {
+        "artifact_path": "/work/artifacts/fse_revision/repeats_v7/rep03/no_internal/05_c48a4497356f_Uninit_Data/attempt-01/SAGenTestChecker.cpp",
+        "analyzer": "csa",
+        "review_mode": "refine",
+        "findings": [],
+        "warnings": []
+      }
+    },
+    {
+      "tool_name": "lsp_validate",
+      "success": true,
+      "error": "",
+      "metadata": {
+        "check_level": "quick",
+        "errors": 0
+      }
+    },
+    {
+      "tool_name": "review_artifact",
+      "success": false,
+      "error": "生成产物结构审查未通过（存在语义空壳、占位实现或高风险结构问题）",
+      "metadata": {
+        "artifact_path": "/work/artifacts/fse_revision/repeats_v7/rep03/no_internal/05_c48a4497356f_Uninit_Data/attempt-01/SAGenTestChecker.cpp",
+        "analyzer": "csa",
+        "review_mode": "refine",
+        "findings": [
+          "CSA output-parameter checker 缺少 output load consumer 覆盖：只从 branch AST 重新推断 region，无法可靠匹配 producer 记录的 address-taken变量 region；必须用 `check::Location` 的 load location 绑定同一 base region。"
+        ],
+        "warnings": []
+      }
+    }
+  ],
+  "event_count": 20
+}

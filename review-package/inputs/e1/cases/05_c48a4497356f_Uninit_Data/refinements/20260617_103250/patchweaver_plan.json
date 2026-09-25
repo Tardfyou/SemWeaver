@@ -1,0 +1,1379 @@
+{
+  "files_changed": [
+    "sound/soc/codecs/sma1307.c"
+  ],
+  "file_details": [
+    {
+      "path": "sound/soc/codecs/sma1307.c",
+      "additions": 5,
+      "deletions": 5,
+      "hunks": 1
+    }
+  ],
+  "vulnerability_patterns": [
+    {
+      "type": "uninitialized_data_use",
+      "description": "A local output pointer passed to request_firmware() may remain uninitialized when the request fails or is compiled out, but the old code consumed that pointer in a null check and then passed it to release_firmware(). The fix uses the request_firmware() return code as the authoritative success/failure state and returns before any fw dereference or release on failure.",
+      "trigger_conditions": [
+        "A local pointer is declared without initialization: 'const struct firmware *fw;'",
+        "The pointer is passed by address to an output-parameter API: 'request_firmware(&fw, file, sma1307->dev);'",
+        "The return value from the output-parameter API is ignored, so there is no authoritative proof that 'fw' was assigned",
+        "The same pointer is then consumed by a condition or cleanup call, such as 'if (!fw)' or 'release_firmware(fw)'",
+        "A later success path dereferences the pointer, such as '(fw->size)', relying on the earlier pointer-state check"
+      ],
+      "fix_patterns": [
+        "Store the return value from request_firmware(): 'ret = request_firmware(&fw, file, sma1307->dev);'",
+        "Use 'if (ret)' as the failure barrier instead of testing the potentially uninitialized output pointer",
+        "On failure, report the error using the return code via 'ERR_PTR(ret)' rather than consuming 'fw'",
+        "Remove 'release_firmware(fw)' from the failure path where 'fw' is not proven initialized",
+        "Return immediately after setting 'sma1307->set.status = false', so later 'fw->size' access is only reachable after successful request_firmware()"
+      ],
+      "affected_functions": [
+        "sma1307_setting_loaded",
+        "request_firmware",
+        "release_firmware",
+        "dev_err",
+        "ERR_PTR"
+      ],
+      "cross_file": false,
+      "source": "llm",
+      "confidence": 0.94,
+      "evidence_lines": [
+        "const struct firmware *fw;",
+        "-\trequest_firmware(&fw, file, sma1307->dev);",
+        "+\tret = request_firmware(&fw, file, sma1307->dev);",
+        "-\tif (!fw) {",
+        "+\tif (ret) {",
+        "-\t\trelease_firmware(fw);"
+      ]
+    }
+  ],
+  "cross_file_dependencies": [],
+  "detection_strategy": {
+    "primary_pattern": "uninitialized_data_use",
+    "check_types": [
+      "local_uninitialized_pointer_use",
+      "ignored_return_value_from_output_parameter_initializer",
+      "unsafe_cleanup_on_not_proven_initialized_object",
+      "error_path_barrier_validation"
+    ],
+    "entry_points": [
+      "sma1307_setting_loaded"
+    ],
+    "data_flow_tracking": true,
+    "cross_file_analysis": false,
+    "suggestions": [
+      "First-draft detector should anchor on calls shaped like 'request_firmware(&ptr, ...)' where the return value is ignored and 'ptr' is a local pointer declared without an initializer.",
+      "Primary sinks should be patch-local consumptions of that pointer after the ignored call: null tests like 'if (!ptr)', cleanup calls like 'release_firmware(ptr)', and dereferences like 'ptr->size'.",
+      "Do not make the new 'if (ret)' guard a hard initial filter; use it as the positive fixed-pattern/barrier when comparing vulnerable and fixed code.",
+      "Treat 'release_firmware(ptr)' on the failure path as an especially strong sink because the patch explicitly deletes it from the path where 'ptr' is not proven assigned.",
+      "Local AST plus intra-procedural CFG/def-use tracking should be sufficient: track local declaration initialization state, output-argument call assignment proof via checked return value, and reachability to pointer consumers.",
+      "Cross-file analysis is not necessary for a first checker because all relevant declaration, call, guard, cleanup, return, and dereference evidence is inside sma1307_setting_loaded."
+    ]
+  },
+  "checker_name_suggestion": "UninitializedFirmwarePointerChecker",
+  "affected_functions": [
+    "sma1307_setting_loaded",
+    "request_firmware",
+    "dev_err",
+    "release_firmware",
+    "ERR_PTR"
+  ],
+  "key_functions": [
+    "sma1307_setting_loaded",
+    "request_firmware",
+    "dev_err",
+    "release_firmware",
+    "ERR_PTR"
+  ],
+  "patch_semantics": {
+    "added_guards": [
+      "if (ret) {"
+    ],
+    "added_api_calls": [
+      "request_firmware",
+      "dev_err",
+      "ERR_PTR"
+    ],
+    "removed_api_calls": [
+      "request_firmware",
+      "dev_err",
+      "release_firmware"
+    ],
+    "state_resets": [],
+    "lifecycle_changes": []
+  },
+  "analysis_backend": "llm",
+  "analysis_confidence": 0.94,
+  "analysis_rationale": "The patch changes sma1307_setting_loaded so the local pointer 'fw' is no longer tested or released unless request_firmware() reports success. Before the patch, 'const struct firmware *fw;' was declared without initialization, request_firmware(&fw, ...) was called without checking its return value, and the error path tested '!fw' and called release_firmware(fw). The commit message explicitly states that when firmware loading is disabled, 'fw' may be used uninitialized at 'if (!fw)', and the patch replaces the pointer-null check with 'ret = request_firmware(...)' followed by 'if (ret) return', preventing consumption of an unset firmware pointer.",
+  "llm_usage": {
+    "prompt_tokens": 4366,
+    "completion_tokens": 1229,
+    "total_tokens": 5595,
+    "call_count": 1,
+    "available": true,
+    "model": "gpt-5.5"
+  },
+  "patchweaver": {
+    "summary": "Patch suggests uninitialized_data_use semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=5, metadata refs=1.",
+    "patch_facts": [
+      {
+        "fact_type": "patch_overview",
+        "label": "Patch overview",
+        "attributes": {
+          "patch_path": "/anonymous/home/LLM-Native/research/knighter/e2/cases/05_c48a4497356f_Uninit_Data/patches/commit.patch",
+          "changed_files": [
+            "sound/soc/codecs/sma1307.c"
+          ],
+          "changed_file_count": 1,
+          "added_line_count": 5,
+          "deleted_line_count": 5
+        }
+      },
+      {
+        "fact_type": "vulnerability_patterns",
+        "label": "Vulnerability patterns inferred from patch",
+        "attributes": {
+          "patterns": [
+            "uninitialized_data_use"
+          ],
+          "descriptions": [
+            "A local output pointer passed to request_firmware() may remain uninitialized when the request fails or is compiled out, but the old code consumed that pointer in a null check and then passed it to release_firmware(). The fix uses the request_firmware() return code as the authoritative success/failure state and returns before any fw dereference or release on failure."
+          ]
+        }
+      },
+      {
+        "fact_type": "affected_functions",
+        "label": "Functions implicated by removed or fixed code",
+        "attributes": {
+          "functions": [
+            "ERR_PTR",
+            "dev_err",
+            "release_firmware",
+            "request_firmware",
+            "sma1307_setting_loaded"
+          ]
+        }
+      },
+      {
+        "fact_type": "detection_strategy",
+        "label": "Existing patch analysis detection strategy",
+        "attributes": {
+          "primary_pattern": "uninitialized_data_use",
+          "check_types": [
+            "local_uninitialized_pointer_use",
+            "ignored_return_value_from_output_parameter_initializer",
+            "unsafe_cleanup_on_not_proven_initialized_object",
+            "error_path_barrier_validation"
+          ],
+          "entry_points": [
+            "sma1307_setting_loaded"
+          ],
+          "data_flow_tracking": true,
+          "cross_file_analysis": false,
+          "suggestions": [
+            "First-draft detector should anchor on calls shaped like 'request_firmware(&ptr, ...)' where the return value is ignored and 'ptr' is a local pointer declared without an initializer.",
+            "Primary sinks should be patch-local consumptions of that pointer after the ignored call: null tests like 'if (!ptr)', cleanup calls like 'release_firmware(ptr)', and dereferences like 'ptr->size'.",
+            "Do not make the new 'if (ret)' guard a hard initial filter; use it as the positive fixed-pattern/barrier when comparing vulnerable and fixed code.",
+            "Treat 'release_firmware(ptr)' on the failure path as an especially strong sink because the patch explicitly deletes it from the path where 'ptr' is not proven assigned.",
+            "Local AST plus intra-procedural CFG/def-use tracking should be sufficient: track local declaration initialization state, output-argument call assignment proof via checked return value, and reachability to pointer consumers.",
+            "Cross-file analysis is not necessary for a first checker because all relevant declaration, call, guard, cleanup, return, and dereference evidence is inside sma1307_setting_loaded."
+          ]
+        }
+      },
+      {
+        "fact_type": "added_guards",
+        "label": "Patch introduces or strengthens guards",
+        "attributes": {
+          "guards": [
+            "if (ret) {"
+          ]
+        }
+      },
+      {
+        "fact_type": "fix_patterns",
+        "label": "Patch introduces reusable fix patterns",
+        "attributes": {
+          "patterns": [
+            "Store the return value from request_firmware(): 'ret = request_firmware(&fw, file, sma1307->dev);'",
+            "Use 'if (ret)' as the failure barrier instead of testing the potentially uninitialized output pointer",
+            "On failure, report the error using the return code via 'ERR_PTR(ret)' rather than consuming 'fw'",
+            "Remove 'release_firmware(fw)' from the failure path where 'fw' is not proven initialized",
+            "Return immediately after setting 'sma1307->set.status = false', so later 'fw->size' access is only reachable after successful request_firmware()"
+          ]
+        }
+      },
+      {
+        "fact_type": "added_api_calls",
+        "label": "Patch introduces or highlights API usage",
+        "attributes": {
+          "apis": [
+            "request_firmware",
+            "dev_err",
+            "ERR_PTR"
+          ]
+        }
+      },
+      {
+        "fact_type": "patch_intent",
+        "label": "Patch intent and commit-style summary",
+        "attributes": {
+          "summary": "commit c48a4497356f701f94f1951626637ae240af909e | Author: Arnd Bergmann <arnd@arndb.de>",
+          "keywords": [
+            "commit",
+            "c48a4497356f701f94f1951626637ae240af909e",
+            "author",
+            "arnd",
+            "bergmann",
+            "arndb"
+          ]
+        }
+      },
+      {
+        "fact_type": "external_references",
+        "label": "External references recovered from patch text",
+        "attributes": {
+          "cves": [],
+          "cwes": [],
+          "issues": [
+            "576c57e6b4c1"
+          ]
+        }
+      }
+    ],
+    "mechanism_graph": {
+      "summary": "Patch suggests uninitialized_data_use semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=5, metadata refs=1.",
+      "primary_patterns": [
+        "uninitialized_data_use"
+      ],
+      "nodes": [
+        {
+          "node_id": "patch",
+          "kind": "patch",
+          "label": "Security patch",
+          "attributes": {
+            "changed_files": [
+              "sound/soc/codecs/sma1307.c"
+            ]
+          }
+        },
+        {
+          "node_id": "file_0",
+          "kind": "file",
+          "label": "sound/soc/codecs/sma1307.c",
+          "attributes": {
+            "path": "sound/soc/codecs/sma1307.c",
+            "additions": 5,
+            "deletions": 5,
+            "hunks": 1
+          }
+        },
+        {
+          "node_id": "pattern_0",
+          "kind": "pattern",
+          "label": "uninitialized_data_use",
+          "attributes": {
+            "type": "uninitialized_data_use",
+            "description": "A local output pointer passed to request_firmware() may remain uninitialized when the request fails or is compiled out, but the old code consumed that pointer in a null check and then passed it to release_firmware(). The fix uses the request_firmware() return code as the authoritative success/failure state and returns before any fw dereference or release on failure.",
+            "trigger_conditions": [
+              "A local pointer is declared without initialization: 'const struct firmware *fw;'",
+              "The pointer is passed by address to an output-parameter API: 'request_firmware(&fw, file, sma1307->dev);'",
+              "The return value from the output-parameter API is ignored, so there is no authoritative proof that 'fw' was assigned",
+              "The same pointer is then consumed by a condition or cleanup call, such as 'if (!fw)' or 'release_firmware(fw)'",
+              "A later success path dereferences the pointer, such as '(fw->size)', relying on the earlier pointer-state check"
+            ],
+            "fix_patterns": [
+              "Store the return value from request_firmware(): 'ret = request_firmware(&fw, file, sma1307->dev);'",
+              "Use 'if (ret)' as the failure barrier instead of testing the potentially uninitialized output pointer",
+              "On failure, report the error using the return code via 'ERR_PTR(ret)' rather than consuming 'fw'",
+              "Remove 'release_firmware(fw)' from the failure path where 'fw' is not proven initialized",
+              "Return immediately after setting 'sma1307->set.status = false', so later 'fw->size' access is only reachable after successful request_firmware()"
+            ],
+            "affected_functions": [
+              "sma1307_setting_loaded",
+              "request_firmware",
+              "release_firmware",
+              "dev_err",
+              "ERR_PTR"
+            ],
+            "cross_file": false,
+            "source": "llm",
+            "confidence": 0.94,
+            "evidence_lines": [
+              "const struct firmware *fw;",
+              "-\trequest_firmware(&fw, file, sma1307->dev);",
+              "+\tret = request_firmware(&fw, file, sma1307->dev);",
+              "-\tif (!fw) {",
+              "+\tif (ret) {",
+              "-\t\trelease_firmware(fw);"
+            ]
+          }
+        },
+        {
+          "node_id": "func_1",
+          "kind": "function",
+          "label": "sma1307_setting_loaded",
+          "attributes": {
+            "function": "sma1307_setting_loaded"
+          }
+        },
+        {
+          "node_id": "func_2",
+          "kind": "function",
+          "label": "request_firmware",
+          "attributes": {
+            "function": "request_firmware"
+          }
+        },
+        {
+          "node_id": "func_3",
+          "kind": "function",
+          "label": "release_firmware",
+          "attributes": {
+            "function": "release_firmware"
+          }
+        },
+        {
+          "node_id": "func_4",
+          "kind": "function",
+          "label": "dev_err",
+          "attributes": {
+            "function": "dev_err"
+          }
+        },
+        {
+          "node_id": "func_5",
+          "kind": "function",
+          "label": "ERR_PTR",
+          "attributes": {
+            "function": "ERR_PTR"
+          }
+        },
+        {
+          "node_id": "guard_1",
+          "kind": "guard",
+          "label": "A local pointer is declared without initialization: 'const struct firmware *fw;'",
+          "attributes": {
+            "condition": "A local pointer is declared without initialization: 'const struct firmware *fw;'"
+          }
+        },
+        {
+          "node_id": "guard_2",
+          "kind": "guard",
+          "label": "The pointer is passed by address to an output-parameter API: 'request_firmware(&fw, file, sma1307->dev);'",
+          "attributes": {
+            "condition": "The pointer is passed by address to an output-parameter API: 'request_firmware(&fw, file, sma1307->dev);'"
+          }
+        },
+        {
+          "node_id": "guard_3",
+          "kind": "guard",
+          "label": "The return value from the output-parameter API is ignored, so there is no authoritative proof that 'fw' was assigned",
+          "attributes": {
+            "condition": "The return value from the output-parameter API is ignored, so there is no authoritative proof that 'fw' was assigned"
+          }
+        },
+        {
+          "node_id": "guard_4",
+          "kind": "guard",
+          "label": "The same pointer is then consumed by a condition or cleanup call, such as 'if (!fw)' or 'release_firmware(fw)'",
+          "attributes": {
+            "condition": "The same pointer is then consumed by a condition or cleanup call, such as 'if (!fw)' or 'release_firmware(fw)'"
+          }
+        },
+        {
+          "node_id": "guard_5",
+          "kind": "guard",
+          "label": "A later success path dereferences the pointer, such as '(fw->size)', relying on the earlier pointer-state check",
+          "attributes": {
+            "condition": "A later success path dereferences the pointer, such as '(fw->size)', relying on the earlier pointer-state check"
+          }
+        },
+        {
+          "node_id": "strategy",
+          "kind": "strategy",
+          "label": "uninitialized_data_use",
+          "attributes": {
+            "primary_pattern": "uninitialized_data_use",
+            "check_types": [
+              "local_uninitialized_pointer_use",
+              "ignored_return_value_from_output_parameter_initializer",
+              "unsafe_cleanup_on_not_proven_initialized_object",
+              "error_path_barrier_validation"
+            ],
+            "entry_points": [
+              "sma1307_setting_loaded"
+            ],
+            "data_flow_tracking": true,
+            "cross_file_analysis": false,
+            "suggestions": [
+              "First-draft detector should anchor on calls shaped like 'request_firmware(&ptr, ...)' where the return value is ignored and 'ptr' is a local pointer declared without an initializer.",
+              "Primary sinks should be patch-local consumptions of that pointer after the ignored call: null tests like 'if (!ptr)', cleanup calls like 'release_firmware(ptr)', and dereferences like 'ptr->size'.",
+              "Do not make the new 'if (ret)' guard a hard initial filter; use it as the positive fixed-pattern/barrier when comparing vulnerable and fixed code.",
+              "Treat 'release_firmware(ptr)' on the failure path as an especially strong sink because the patch explicitly deletes it from the path where 'ptr' is not proven assigned.",
+              "Local AST plus intra-procedural CFG/def-use tracking should be sufficient: track local declaration initialization state, output-argument call assignment proof via checked return value, and reachability to pointer consumers.",
+              "Cross-file analysis is not necessary for a first checker because all relevant declaration, call, guard, cleanup, return, and dereference evidence is inside sma1307_setting_loaded."
+            ]
+          }
+        },
+        {
+          "node_id": "guard_6",
+          "kind": "guard",
+          "label": "if (ret) {",
+          "attributes": {
+            "condition": "if (ret) {",
+            "source": "patch_fact"
+          }
+        },
+        {
+          "node_id": "fix_1",
+          "kind": "fix",
+          "label": "Store the return value from request_firmware(): 'ret = request_firmware(&fw, file, sma1307->dev);'",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "Store the return value from request_firmware(): 'ret = request_firmware(&fw, file, sma1307->dev);'"
+          }
+        },
+        {
+          "node_id": "fix_2",
+          "kind": "fix",
+          "label": "Use 'if (ret)' as the failure barrier instead of testing the potentially uninitialized output pointer",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "Use 'if (ret)' as the failure barrier instead of testing the potentially uninitialized output pointer"
+          }
+        },
+        {
+          "node_id": "fix_3",
+          "kind": "fix",
+          "label": "On failure, report the error using the return code via 'ERR_PTR(ret)' rather than consuming 'fw'",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "On failure, report the error using the return code via 'ERR_PTR(ret)' rather than consuming 'fw'"
+          }
+        },
+        {
+          "node_id": "fix_4",
+          "kind": "fix",
+          "label": "Remove 'release_firmware(fw)' from the failure path where 'fw' is not proven initialized",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "Remove 'release_firmware(fw)' from the failure path where 'fw' is not proven initialized"
+          }
+        },
+        {
+          "node_id": "fix_5",
+          "kind": "fix",
+          "label": "Return immediately after setting 'sma1307->set.status = false', so later 'fw->size' access is only reachable after successful request_firmware()",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "Return immediately after setting 'sma1307->set.status = false', so later 'fw->size' access is only reachable after successful request_firmware()"
+          }
+        },
+        {
+          "node_id": "fix_6",
+          "kind": "fix",
+          "label": "request_firmware",
+          "attributes": {
+            "kind": "added_api_calls",
+            "value": "request_firmware"
+          }
+        },
+        {
+          "node_id": "fix_7",
+          "kind": "fix",
+          "label": "dev_err",
+          "attributes": {
+            "kind": "added_api_calls",
+            "value": "dev_err"
+          }
+        },
+        {
+          "node_id": "fix_8",
+          "kind": "fix",
+          "label": "ERR_PTR",
+          "attributes": {
+            "kind": "added_api_calls",
+            "value": "ERR_PTR"
+          }
+        },
+        {
+          "node_id": "intent_0",
+          "kind": "intent",
+          "label": "commit c48a4497356f701f94f1951626637ae240af909e | Author: Arnd Bergmann <arnd@arndb.de>",
+          "attributes": {
+            "summary": "commit c48a4497356f701f94f1951626637ae240af909e | Author: Arnd Bergmann <arnd@arndb.de>",
+            "keywords": [
+              "commit",
+              "c48a4497356f701f94f1951626637ae240af909e",
+              "author",
+              "arnd",
+              "bergmann",
+              "arndb"
+            ]
+          }
+        },
+        {
+          "node_id": "commit_0",
+          "kind": "commit",
+          "label": "576c57e6b4c1",
+          "attributes": {
+            "issues": [
+              "576c57e6b4c1"
+            ]
+          }
+        }
+      ],
+      "edges": [
+        {
+          "source": "patch",
+          "target": "file_0",
+          "relation": "touches",
+          "confidence": 0.95
+        },
+        {
+          "source": "patch",
+          "target": "pattern_0",
+          "relation": "indicates",
+          "confidence": 0.9
+        },
+        {
+          "source": "pattern_0",
+          "target": "func_1",
+          "relation": "affects",
+          "confidence": 0.75
+        },
+        {
+          "source": "pattern_0",
+          "target": "func_2",
+          "relation": "affects",
+          "confidence": 0.75
+        },
+        {
+          "source": "pattern_0",
+          "target": "func_3",
+          "relation": "affects",
+          "confidence": 0.75
+        },
+        {
+          "source": "pattern_0",
+          "target": "func_4",
+          "relation": "affects",
+          "confidence": 0.75
+        },
+        {
+          "source": "pattern_0",
+          "target": "func_5",
+          "relation": "affects",
+          "confidence": 0.75
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_1",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_2",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_3",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_4",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_5",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "patch",
+          "target": "strategy",
+          "relation": "guides",
+          "confidence": 0.85
+        },
+        {
+          "source": "patch",
+          "target": "guard_6",
+          "relation": "adds_guard",
+          "confidence": 0.84
+        },
+        {
+          "source": "patch",
+          "target": "fix_1",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_2",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_3",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_4",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_5",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_6",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_7",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_8",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "intent_0",
+          "relation": "describes",
+          "confidence": 0.78
+        },
+        {
+          "source": "patch",
+          "target": "commit_0",
+          "relation": "tracked_by",
+          "confidence": 0.72
+        }
+      ]
+    },
+    "evidence_plan": {
+      "primary_pattern": "uninitialized_data_use",
+      "hypotheses": [
+        "The patch changes a data propagation condition that should generalize beyond the edited lines."
+      ],
+      "requirements": [
+        {
+          "evidence_type": "patch_fact",
+          "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+          "priority": 100,
+          "preferred_analyzers": [],
+          "confidence": 1.0,
+          "mechanism_refs": [
+            "patch"
+          ]
+        },
+        {
+          "evidence_type": "dataflow_candidate",
+          "reason": "Patch analysis requests data-flow tracking.",
+          "priority": 95,
+          "preferred_analyzers": [
+            "codeql"
+          ],
+          "confidence": 0.9,
+          "mechanism_refs": [
+            "strategy"
+          ]
+        },
+        {
+          "evidence_type": "call_chain",
+          "reason": "Interprocedural call-chain context is needed to generalize the fix pattern.",
+          "priority": 78,
+          "preferred_analyzers": [
+            "codeql"
+          ],
+          "confidence": 0.78,
+          "mechanism_refs": [
+            "strategy"
+          ]
+        }
+      ],
+      "recommended_analyzers": [
+        "codeql"
+      ],
+      "planner_notes": [
+        "Added guards detected in patch diff; path-sensitive evidence should stay near top priority.",
+        "Selected analyzers do not cover every planned evidence primitive."
+      ],
+      "coverage_gaps": [
+        "dataflow_candidate is not covered by selected analyzers ['csa']",
+        "call_chain is not covered by selected analyzers ['csa']"
+      ],
+      "uncertainty_budget": "medium",
+      "escalation_triggers": [
+        "metadata_available",
+        "selected_coverage_gap"
+      ]
+    },
+    "validation_feedback_history": [
+      {
+        "analyzer": "csa",
+        "phase": "knighter_e2_patch_local_baseline",
+        "summary": "Baseline validation (csa): Knighter基线扫描报告数=5, 人工确认bug=1, 人工非bug=1, 候选组=local_triage_manual_fp。漏洞版命中=true, 漏洞版patch-scoped告警数=2, 修复版误报数=1, fixed_silent=false, PDS=false. 这些数只表示patch-local语义验证门，不等同于Knighter full-kernel report_count/FPR统计。"
+      }
+    ],
+    "refinement_targets": {
+      "csa": {
+        "checker_name": "SAGenTestChecker",
+        "artifact_path": "/anonymous/home/LLM-Native/research/knighter/e2/cases/05_c48a4497356f_Uninit_Data/csa/SAGenTestChecker.cpp",
+        "artifact_kind": "checker_source",
+        "validation_summary": "Baseline validation (csa): Knighter基线扫描报告数=5, 人工确认bug=1, 人工非bug=1, 候选组=local_triage_manual_fp。漏洞版命中=true, 漏洞版patch-scoped告警数=2, 修复版误报数=1, fixed_silent=false, PDS=false. 这些数只表示patch-local语义验证门，不等同于Knighter full-kernel report_count/FPR统计。",
+        "refinement_summary": "Baseline validation (csa): Knighter基线扫描报告数=5, 人工确认bug=1, 人工非bug=1, 候选组=local_triage_manual_fp。漏洞版命中=true, 漏洞版patch-scoped告警数=2, 修复版误报数=1, fixed_silent=false, PDS=false. 这些数只表示patch-local语义验证门，不等同于Knighter full-kernel report_count/FPR统计。"
+      }
+    }
+  },
+  "knighter": {
+    "patch_local_screen1": {
+      "buggy_alerts": 2,
+      "fixed_alerts": 1,
+      "buggy_miss": false,
+      "fixed_noisy": true,
+      "poor_distinguishing": true,
+      "screen1_priority": "P0",
+      "screen1_reason": "fixed-side noisy",
+      "patch_related_targets": [
+        "sound/soc/codecs/sma1307.o"
+      ]
+    },
+    "baseline_validation_summary": "Baseline validation (csa): Knighter基线扫描报告数=5, 人工确认bug=1, 人工非bug=1, 候选组=local_triage_manual_fp。漏洞版命中=true, 漏洞版patch-scoped告警数=2, 修复版误报数=1, fixed_silent=false, PDS=false. 这些数只表示patch-local语义验证门，不等同于Knighter full-kernel report_count/FPR统计。"
+  },
+  "patch_path": "/anonymous/home/LLM-Native/research/knighter/e2/cases/05_c48a4497356f_Uninit_Data/patches/commit.patch",
+  "summary": "Patch suggests uninitialized_data_use semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=5, metadata refs=1.",
+  "patch_facts": [
+    {
+      "fact_type": "patch_overview",
+      "label": "Patch overview",
+      "attributes": {
+        "patch_path": "/anonymous/home/LLM-Native/research/knighter/e2/cases/05_c48a4497356f_Uninit_Data/patches/commit.patch",
+        "changed_files": [
+          "sound/soc/codecs/sma1307.c"
+        ],
+        "changed_file_count": 1,
+        "added_line_count": 5,
+        "deleted_line_count": 5
+      }
+    },
+    {
+      "fact_type": "vulnerability_patterns",
+      "label": "Vulnerability patterns inferred from patch",
+      "attributes": {
+        "patterns": [
+          "uninitialized_data_use"
+        ],
+        "descriptions": [
+          "A local output pointer passed to request_firmware() may remain uninitialized when the request fails or is compiled out, but the old code consumed that pointer in a null check and then passed it to release_firmware(). The fix uses the request_firmware() return code as the authoritative success/failure state and returns before any fw dereference or release on failure."
+        ]
+      }
+    },
+    {
+      "fact_type": "affected_functions",
+      "label": "Functions implicated by removed or fixed code",
+      "attributes": {
+        "functions": [
+          "ERR_PTR",
+          "dev_err",
+          "release_firmware",
+          "request_firmware",
+          "sma1307_setting_loaded"
+        ]
+      }
+    },
+    {
+      "fact_type": "detection_strategy",
+      "label": "Existing patch analysis detection strategy",
+      "attributes": {
+        "primary_pattern": "uninitialized_data_use",
+        "check_types": [
+          "local_uninitialized_pointer_use",
+          "ignored_return_value_from_output_parameter_initializer",
+          "unsafe_cleanup_on_not_proven_initialized_object",
+          "error_path_barrier_validation"
+        ],
+        "entry_points": [
+          "sma1307_setting_loaded"
+        ],
+        "data_flow_tracking": true,
+        "cross_file_analysis": false,
+        "suggestions": [
+          "First-draft detector should anchor on calls shaped like 'request_firmware(&ptr, ...)' where the return value is ignored and 'ptr' is a local pointer declared without an initializer.",
+          "Primary sinks should be patch-local consumptions of that pointer after the ignored call: null tests like 'if (!ptr)', cleanup calls like 'release_firmware(ptr)', and dereferences like 'ptr->size'.",
+          "Do not make the new 'if (ret)' guard a hard initial filter; use it as the positive fixed-pattern/barrier when comparing vulnerable and fixed code.",
+          "Treat 'release_firmware(ptr)' on the failure path as an especially strong sink because the patch explicitly deletes it from the path where 'ptr' is not proven assigned.",
+          "Local AST plus intra-procedural CFG/def-use tracking should be sufficient: track local declaration initialization state, output-argument call assignment proof via checked return value, and reachability to pointer consumers.",
+          "Cross-file analysis is not necessary for a first checker because all relevant declaration, call, guard, cleanup, return, and dereference evidence is inside sma1307_setting_loaded."
+        ]
+      }
+    },
+    {
+      "fact_type": "added_guards",
+      "label": "Patch introduces or strengthens guards",
+      "attributes": {
+        "guards": [
+          "if (ret) {"
+        ]
+      }
+    },
+    {
+      "fact_type": "fix_patterns",
+      "label": "Patch introduces reusable fix patterns",
+      "attributes": {
+        "patterns": [
+          "Store the return value from request_firmware(): 'ret = request_firmware(&fw, file, sma1307->dev);'",
+          "Use 'if (ret)' as the failure barrier instead of testing the potentially uninitialized output pointer",
+          "On failure, report the error using the return code via 'ERR_PTR(ret)' rather than consuming 'fw'",
+          "Remove 'release_firmware(fw)' from the failure path where 'fw' is not proven initialized",
+          "Return immediately after setting 'sma1307->set.status = false', so later 'fw->size' access is only reachable after successful request_firmware()"
+        ]
+      }
+    },
+    {
+      "fact_type": "added_api_calls",
+      "label": "Patch introduces or highlights API usage",
+      "attributes": {
+        "apis": [
+          "request_firmware",
+          "dev_err",
+          "ERR_PTR"
+        ]
+      }
+    },
+    {
+      "fact_type": "patch_intent",
+      "label": "Patch intent and commit-style summary",
+      "attributes": {
+        "summary": "commit c48a4497356f701f94f1951626637ae240af909e | Author: Arnd Bergmann <arnd@arndb.de>",
+        "keywords": [
+          "commit",
+          "c48a4497356f701f94f1951626637ae240af909e",
+          "author",
+          "arnd",
+          "bergmann",
+          "arndb"
+        ]
+      }
+    },
+    {
+      "fact_type": "external_references",
+      "label": "External references recovered from patch text",
+      "attributes": {
+        "cves": [],
+        "cwes": [],
+        "issues": [
+          "576c57e6b4c1"
+        ]
+      }
+    }
+  ],
+  "mechanism_graph": {
+    "summary": "Patch suggests uninitialized_data_use semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=5, metadata refs=1.",
+    "primary_patterns": [
+      "uninitialized_data_use"
+    ],
+    "nodes": [
+      {
+        "node_id": "patch",
+        "kind": "patch",
+        "label": "Security patch",
+        "attributes": {
+          "changed_files": [
+            "sound/soc/codecs/sma1307.c"
+          ]
+        }
+      },
+      {
+        "node_id": "file_0",
+        "kind": "file",
+        "label": "sound/soc/codecs/sma1307.c",
+        "attributes": {
+          "path": "sound/soc/codecs/sma1307.c",
+          "additions": 5,
+          "deletions": 5,
+          "hunks": 1
+        }
+      },
+      {
+        "node_id": "pattern_0",
+        "kind": "pattern",
+        "label": "uninitialized_data_use",
+        "attributes": {
+          "type": "uninitialized_data_use",
+          "description": "A local output pointer passed to request_firmware() may remain uninitialized when the request fails or is compiled out, but the old code consumed that pointer in a null check and then passed it to release_firmware(). The fix uses the request_firmware() return code as the authoritative success/failure state and returns before any fw dereference or release on failure.",
+          "trigger_conditions": [
+            "A local pointer is declared without initialization: 'const struct firmware *fw;'",
+            "The pointer is passed by address to an output-parameter API: 'request_firmware(&fw, file, sma1307->dev);'",
+            "The return value from the output-parameter API is ignored, so there is no authoritative proof that 'fw' was assigned",
+            "The same pointer is then consumed by a condition or cleanup call, such as 'if (!fw)' or 'release_firmware(fw)'",
+            "A later success path dereferences the pointer, such as '(fw->size)', relying on the earlier pointer-state check"
+          ],
+          "fix_patterns": [
+            "Store the return value from request_firmware(): 'ret = request_firmware(&fw, file, sma1307->dev);'",
+            "Use 'if (ret)' as the failure barrier instead of testing the potentially uninitialized output pointer",
+            "On failure, report the error using the return code via 'ERR_PTR(ret)' rather than consuming 'fw'",
+            "Remove 'release_firmware(fw)' from the failure path where 'fw' is not proven initialized",
+            "Return immediately after setting 'sma1307->set.status = false', so later 'fw->size' access is only reachable after successful request_firmware()"
+          ],
+          "affected_functions": [
+            "sma1307_setting_loaded",
+            "request_firmware",
+            "release_firmware",
+            "dev_err",
+            "ERR_PTR"
+          ],
+          "cross_file": false,
+          "source": "llm",
+          "confidence": 0.94,
+          "evidence_lines": [
+            "const struct firmware *fw;",
+            "-\trequest_firmware(&fw, file, sma1307->dev);",
+            "+\tret = request_firmware(&fw, file, sma1307->dev);",
+            "-\tif (!fw) {",
+            "+\tif (ret) {",
+            "-\t\trelease_firmware(fw);"
+          ]
+        }
+      },
+      {
+        "node_id": "func_1",
+        "kind": "function",
+        "label": "sma1307_setting_loaded",
+        "attributes": {
+          "function": "sma1307_setting_loaded"
+        }
+      },
+      {
+        "node_id": "func_2",
+        "kind": "function",
+        "label": "request_firmware",
+        "attributes": {
+          "function": "request_firmware"
+        }
+      },
+      {
+        "node_id": "func_3",
+        "kind": "function",
+        "label": "release_firmware",
+        "attributes": {
+          "function": "release_firmware"
+        }
+      },
+      {
+        "node_id": "func_4",
+        "kind": "function",
+        "label": "dev_err",
+        "attributes": {
+          "function": "dev_err"
+        }
+      },
+      {
+        "node_id": "func_5",
+        "kind": "function",
+        "label": "ERR_PTR",
+        "attributes": {
+          "function": "ERR_PTR"
+        }
+      },
+      {
+        "node_id": "guard_1",
+        "kind": "guard",
+        "label": "A local pointer is declared without initialization: 'const struct firmware *fw;'",
+        "attributes": {
+          "condition": "A local pointer is declared without initialization: 'const struct firmware *fw;'"
+        }
+      },
+      {
+        "node_id": "guard_2",
+        "kind": "guard",
+        "label": "The pointer is passed by address to an output-parameter API: 'request_firmware(&fw, file, sma1307->dev);'",
+        "attributes": {
+          "condition": "The pointer is passed by address to an output-parameter API: 'request_firmware(&fw, file, sma1307->dev);'"
+        }
+      },
+      {
+        "node_id": "guard_3",
+        "kind": "guard",
+        "label": "The return value from the output-parameter API is ignored, so there is no authoritative proof that 'fw' was assigned",
+        "attributes": {
+          "condition": "The return value from the output-parameter API is ignored, so there is no authoritative proof that 'fw' was assigned"
+        }
+      },
+      {
+        "node_id": "guard_4",
+        "kind": "guard",
+        "label": "The same pointer is then consumed by a condition or cleanup call, such as 'if (!fw)' or 'release_firmware(fw)'",
+        "attributes": {
+          "condition": "The same pointer is then consumed by a condition or cleanup call, such as 'if (!fw)' or 'release_firmware(fw)'"
+        }
+      },
+      {
+        "node_id": "guard_5",
+        "kind": "guard",
+        "label": "A later success path dereferences the pointer, such as '(fw->size)', relying on the earlier pointer-state check",
+        "attributes": {
+          "condition": "A later success path dereferences the pointer, such as '(fw->size)', relying on the earlier pointer-state check"
+        }
+      },
+      {
+        "node_id": "strategy",
+        "kind": "strategy",
+        "label": "uninitialized_data_use",
+        "attributes": {
+          "primary_pattern": "uninitialized_data_use",
+          "check_types": [
+            "local_uninitialized_pointer_use",
+            "ignored_return_value_from_output_parameter_initializer",
+            "unsafe_cleanup_on_not_proven_initialized_object",
+            "error_path_barrier_validation"
+          ],
+          "entry_points": [
+            "sma1307_setting_loaded"
+          ],
+          "data_flow_tracking": true,
+          "cross_file_analysis": false,
+          "suggestions": [
+            "First-draft detector should anchor on calls shaped like 'request_firmware(&ptr, ...)' where the return value is ignored and 'ptr' is a local pointer declared without an initializer.",
+            "Primary sinks should be patch-local consumptions of that pointer after the ignored call: null tests like 'if (!ptr)', cleanup calls like 'release_firmware(ptr)', and dereferences like 'ptr->size'.",
+            "Do not make the new 'if (ret)' guard a hard initial filter; use it as the positive fixed-pattern/barrier when comparing vulnerable and fixed code.",
+            "Treat 'release_firmware(ptr)' on the failure path as an especially strong sink because the patch explicitly deletes it from the path where 'ptr' is not proven assigned.",
+            "Local AST plus intra-procedural CFG/def-use tracking should be sufficient: track local declaration initialization state, output-argument call assignment proof via checked return value, and reachability to pointer consumers.",
+            "Cross-file analysis is not necessary for a first checker because all relevant declaration, call, guard, cleanup, return, and dereference evidence is inside sma1307_setting_loaded."
+          ]
+        }
+      },
+      {
+        "node_id": "guard_6",
+        "kind": "guard",
+        "label": "if (ret) {",
+        "attributes": {
+          "condition": "if (ret) {",
+          "source": "patch_fact"
+        }
+      },
+      {
+        "node_id": "fix_1",
+        "kind": "fix",
+        "label": "Store the return value from request_firmware(): 'ret = request_firmware(&fw, file, sma1307->dev);'",
+        "attributes": {
+          "kind": "fix_patterns",
+          "value": "Store the return value from request_firmware(): 'ret = request_firmware(&fw, file, sma1307->dev);'"
+        }
+      },
+      {
+        "node_id": "fix_2",
+        "kind": "fix",
+        "label": "Use 'if (ret)' as the failure barrier instead of testing the potentially uninitialized output pointer",
+        "attributes": {
+          "kind": "fix_patterns",
+          "value": "Use 'if (ret)' as the failure barrier instead of testing the potentially uninitialized output pointer"
+        }
+      },
+      {
+        "node_id": "fix_3",
+        "kind": "fix",
+        "label": "On failure, report the error using the return code via 'ERR_PTR(ret)' rather than consuming 'fw'",
+        "attributes": {
+          "kind": "fix_patterns",
+          "value": "On failure, report the error using the return code via 'ERR_PTR(ret)' rather than consuming 'fw'"
+        }
+      },
+      {
+        "node_id": "fix_4",
+        "kind": "fix",
+        "label": "Remove 'release_firmware(fw)' from the failure path where 'fw' is not proven initialized",
+        "attributes": {
+          "kind": "fix_patterns",
+          "value": "Remove 'release_firmware(fw)' from the failure path where 'fw' is not proven initialized"
+        }
+      },
+      {
+        "node_id": "fix_5",
+        "kind": "fix",
+        "label": "Return immediately after setting 'sma1307->set.status = false', so later 'fw->size' access is only reachable after successful request_firmware()",
+        "attributes": {
+          "kind": "fix_patterns",
+          "value": "Return immediately after setting 'sma1307->set.status = false', so later 'fw->size' access is only reachable after successful request_firmware()"
+        }
+      },
+      {
+        "node_id": "fix_6",
+        "kind": "fix",
+        "label": "request_firmware",
+        "attributes": {
+          "kind": "added_api_calls",
+          "value": "request_firmware"
+        }
+      },
+      {
+        "node_id": "fix_7",
+        "kind": "fix",
+        "label": "dev_err",
+        "attributes": {
+          "kind": "added_api_calls",
+          "value": "dev_err"
+        }
+      },
+      {
+        "node_id": "fix_8",
+        "kind": "fix",
+        "label": "ERR_PTR",
+        "attributes": {
+          "kind": "added_api_calls",
+          "value": "ERR_PTR"
+        }
+      },
+      {
+        "node_id": "intent_0",
+        "kind": "intent",
+        "label": "commit c48a4497356f701f94f1951626637ae240af909e | Author: Arnd Bergmann <arnd@arndb.de>",
+        "attributes": {
+          "summary": "commit c48a4497356f701f94f1951626637ae240af909e | Author: Arnd Bergmann <arnd@arndb.de>",
+          "keywords": [
+            "commit",
+            "c48a4497356f701f94f1951626637ae240af909e",
+            "author",
+            "arnd",
+            "bergmann",
+            "arndb"
+          ]
+        }
+      },
+      {
+        "node_id": "commit_0",
+        "kind": "commit",
+        "label": "576c57e6b4c1",
+        "attributes": {
+          "issues": [
+            "576c57e6b4c1"
+          ]
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "patch",
+        "target": "file_0",
+        "relation": "touches",
+        "confidence": 0.95
+      },
+      {
+        "source": "patch",
+        "target": "pattern_0",
+        "relation": "indicates",
+        "confidence": 0.9
+      },
+      {
+        "source": "pattern_0",
+        "target": "func_1",
+        "relation": "affects",
+        "confidence": 0.75
+      },
+      {
+        "source": "pattern_0",
+        "target": "func_2",
+        "relation": "affects",
+        "confidence": 0.75
+      },
+      {
+        "source": "pattern_0",
+        "target": "func_3",
+        "relation": "affects",
+        "confidence": 0.75
+      },
+      {
+        "source": "pattern_0",
+        "target": "func_4",
+        "relation": "affects",
+        "confidence": 0.75
+      },
+      {
+        "source": "pattern_0",
+        "target": "func_5",
+        "relation": "affects",
+        "confidence": 0.75
+      },
+      {
+        "source": "pattern_0",
+        "target": "guard_1",
+        "relation": "requires",
+        "confidence": 0.7
+      },
+      {
+        "source": "pattern_0",
+        "target": "guard_2",
+        "relation": "requires",
+        "confidence": 0.7
+      },
+      {
+        "source": "pattern_0",
+        "target": "guard_3",
+        "relation": "requires",
+        "confidence": 0.7
+      },
+      {
+        "source": "pattern_0",
+        "target": "guard_4",
+        "relation": "requires",
+        "confidence": 0.7
+      },
+      {
+        "source": "pattern_0",
+        "target": "guard_5",
+        "relation": "requires",
+        "confidence": 0.7
+      },
+      {
+        "source": "patch",
+        "target": "strategy",
+        "relation": "guides",
+        "confidence": 0.85
+      },
+      {
+        "source": "patch",
+        "target": "guard_6",
+        "relation": "adds_guard",
+        "confidence": 0.84
+      },
+      {
+        "source": "patch",
+        "target": "fix_1",
+        "relation": "introduces",
+        "confidence": 0.8
+      },
+      {
+        "source": "patch",
+        "target": "fix_2",
+        "relation": "introduces",
+        "confidence": 0.8
+      },
+      {
+        "source": "patch",
+        "target": "fix_3",
+        "relation": "introduces",
+        "confidence": 0.8
+      },
+      {
+        "source": "patch",
+        "target": "fix_4",
+        "relation": "introduces",
+        "confidence": 0.8
+      },
+      {
+        "source": "patch",
+        "target": "fix_5",
+        "relation": "introduces",
+        "confidence": 0.8
+      },
+      {
+        "source": "patch",
+        "target": "fix_6",
+        "relation": "introduces",
+        "confidence": 0.8
+      },
+      {
+        "source": "patch",
+        "target": "fix_7",
+        "relation": "introduces",
+        "confidence": 0.8
+      },
+      {
+        "source": "patch",
+        "target": "fix_8",
+        "relation": "introduces",
+        "confidence": 0.8
+      },
+      {
+        "source": "patch",
+        "target": "intent_0",
+        "relation": "describes",
+        "confidence": 0.78
+      },
+      {
+        "source": "patch",
+        "target": "commit_0",
+        "relation": "tracked_by",
+        "confidence": 0.72
+      }
+    ]
+  },
+  "evidence_plan": {
+    "primary_pattern": "uninitialized_data_use",
+    "hypotheses": [
+      "The patch changes a data propagation condition that should generalize beyond the edited lines."
+    ],
+    "requirements": [
+      {
+        "evidence_type": "patch_fact",
+        "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+        "priority": 100,
+        "preferred_analyzers": [],
+        "confidence": 1.0,
+        "mechanism_refs": [
+          "patch"
+        ]
+      },
+      {
+        "evidence_type": "dataflow_candidate",
+        "reason": "Patch analysis requests data-flow tracking.",
+        "priority": 95,
+        "preferred_analyzers": [
+          "codeql"
+        ],
+        "confidence": 0.9,
+        "mechanism_refs": [
+          "strategy"
+        ]
+      },
+      {
+        "evidence_type": "call_chain",
+        "reason": "Interprocedural call-chain context is needed to generalize the fix pattern.",
+        "priority": 78,
+        "preferred_analyzers": [
+          "codeql"
+        ],
+        "confidence": 0.78,
+        "mechanism_refs": [
+          "strategy"
+        ]
+      }
+    ],
+    "recommended_analyzers": [
+      "codeql"
+    ],
+    "planner_notes": [
+      "Added guards detected in patch diff; path-sensitive evidence should stay near top priority.",
+      "Selected analyzers do not cover every planned evidence primitive."
+    ],
+    "coverage_gaps": [
+      "dataflow_candidate is not covered by selected analyzers ['csa']",
+      "call_chain is not covered by selected analyzers ['csa']"
+    ],
+    "uncertainty_budget": "medium",
+    "escalation_triggers": [
+      "metadata_available",
+      "selected_coverage_gap"
+    ]
+  }
+}

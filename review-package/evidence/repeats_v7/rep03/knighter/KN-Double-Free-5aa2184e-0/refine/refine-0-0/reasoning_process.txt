@@ -1,0 +1,11 @@
+Refinment Plan:
+
+The false positive is caused by treating every `kfree()` argument that is not found in a `kzalloc()`-only map as invalid. `definer` is allocated by `kmemdup()` in `hws_definer_alloc()`, not `kzalloc()`, so the original checker never records it. The later ownership-release in `mlx5hws_definer_free()` is therefore incorrectly reported.
+
+The revised checker models the relevant kernel allocation family, including `kmemdup()`, and records both region-backed and symbolic allocation identities. More importantly, it retains a `false` state after release instead of removing the map entry. A warning is emitted only when the checker can prove that the same allocation was already freed. Untracked pointers are ignored because they may be caller-owned, stack-backed, NULL, allocated by an unmodeled wrapper, or intentionally released by a destructor.
+
+This preserves detection of the target bug: when the conversion helper allocates and subsequently frees `mt->fc` on its failing path, its state becomes released. The erroneous jump to `free_fc` then reaches a second `kfree(mt->fc)`, which is reported as a proven repeated release. The fixed `goto free_match_hl` path no longer reaches that second release.
+
+Refined Code:
+```cpp
+```

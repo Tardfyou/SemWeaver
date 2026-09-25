@@ -1,0 +1,1192 @@
+{
+  "records": [
+    {
+      "evidence_id": "csa_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/ethernet/intel/ice/ice_ptp.c",
+        "function": "ice_ptp_register_auxbus_driver"
+      },
+      "location": {
+        "line": 2863,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "ice_ptp_register_auxbus_driver adds patch barrier `!name` around aux_driver->name = name, aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name).",
+        "contract_type": "patch_barrier",
+        "same_call_binding": "tie the guard to the current downstream sink or protected state transition instead of any unrelated if-statement",
+        "trigger_contract": "report when a risky write proceeds without the patch-style barrier",
+        "silence_contract": "stay silent when the nearby guard proves the current write is blocked or bounded",
+        "guard_exprs": [
+          "!name"
+        ],
+        "removed_calls": [],
+        "added_calls": [],
+        "tracked_symbols": [
+          "name",
+          "ENOMEM"
+        ],
+        "widened_variables": [],
+        "state_resets": [],
+        "old_numeric_type": "",
+        "new_numeric_type": "",
+        "numeric_domain_change": "",
+        "arithmetic_operations": [],
+        "sink_calls": [
+          "aux_driver->name = name",
+          "aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name)"
+        ],
+        "buffer_fields": [
+          "aux_driver->name",
+          "aux_driver->id_table"
+        ],
+        "source_file": "drivers/net/ethernet/intel/ice/ice_ptp.c",
+        "function": "ice_ptp_register_auxbus_driver",
+        "source_excerpt": "2850: static int ice_ptp_register_auxbus_driver(struct ice_pf *pf)\n2851: {\n2852: \tstruct auxiliary_driver *aux_driver;\n2853: \tstruct ice_ptp *ptp;\n2854: \tstruct device *dev;\n2855: \tchar *name;\n2856: \tint err;\n2857: \n2858: \tptp = &pf->ptp;\n2859: \tdev = ice_pf_to_dev(pf);\n2860: \taux_driver = &ptp->ports_owner.aux_driver;\n2861: \tINIT_LIST_HEAD(&ptp->ports_owner.ports);\n2862: \tmutex_init(&ptp->ports_owner.lock);\n2863: \tname = devm_kasprintf(dev, GFP_KERNEL, \"ptp_aux_dev_%u_%u_clk%u\",\n2864: \t\t\t      pf->pdev->bus->number, PCI_SLOT(pf->pdev->devfn),\n2865: \t\t\t      ice_get_ptp_src_clock_index(&pf->hw));\n2866: \n2867: \taux_driver->name = name;\n2868: \taux_driver->shutdown = ice_ptp_auxbus_shutdown;\n2869: \taux_driver->suspend = ice_ptp_auxbus_suspend;\n2870: \taux_driver->remove = ice_ptp_auxbus_remove;\n2871: \taux_driver->resume = ice_ptp_auxbus_resume;\n2872: \taux_driver->probe = ice_ptp_auxbus_probe;\n2873: \taux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name);\n2874: \tif (!aux_driver->id_table)\n2875: \t\treturn -ENOMEM;\n2876: \n2877: \terr = auxiliary_driver_register(aux_driver);\n2878: \tif (err) {\n2879: \t\tdevm_kfree(dev, aux_driver->id_table);\n2880: \t\tdev_err(dev, \"Failed registering aux_driver, name <%s>\\n\",\n2881: \t\t\tname);\n2882: \t}\n2883: \n2884: \treturn err;\n2885: }",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:semantic-contract",
+        "confidence": 0.92,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "drivers/net/ethernet/intel/ice/ice_ptp.c",
+          "hunk_index": 0,
+          "source_line": 2863
+        },
+        "summary": "ice_ptp_register_auxbus_driver adds patch barrier `!name` around aux_driver->name = name, aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name).",
+        "statements": [
+          "if (!name)",
+          "return -ENOMEM;"
+        ],
+        "guards": [
+          "!name"
+        ],
+        "call_boundary": [
+          "aux_driver->name = name",
+          "aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name)"
+        ],
+        "call_edges": [
+          "ice_ptp_register_auxbus_driver -> aux_driver->name = name",
+          "ice_ptp_register_auxbus_driver -> aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name)"
+        ],
+        "state_transitions": [
+          "",
+          "report when a risky write proceeds without the patch-style barrier",
+          "stay silent when the nearby guard proves the current write is blocked or bounded"
+        ],
+        "api_terms": [
+          "aux_driver->name = name",
+          "aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name)"
+        ],
+        "related_symbols": [
+          "name",
+          "ENOMEM"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_semantic_slice_1",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/ethernet/intel/ice/ice_ptp.c",
+        "function": "ice_ptp_create_auxbus_device"
+      },
+      "location": {
+        "line": 3109,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "ice_ptp_create_auxbus_device adds patch barrier `!name` around aux_dev->name = name, dev_err.",
+        "contract_type": "patch_barrier",
+        "same_call_binding": "tie the guard to the current downstream sink or protected state transition instead of any unrelated if-statement",
+        "trigger_contract": "report when a risky write proceeds without the patch-style barrier",
+        "silence_contract": "stay silent when the nearby guard proves the current write is blocked or bounded",
+        "guard_exprs": [
+          "!name"
+        ],
+        "removed_calls": [],
+        "added_calls": [],
+        "tracked_symbols": [
+          "name",
+          "ENOMEM"
+        ],
+        "widened_variables": [],
+        "state_resets": [],
+        "old_numeric_type": "",
+        "new_numeric_type": "",
+        "numeric_domain_change": "",
+        "arithmetic_operations": [],
+        "sink_calls": [
+          "aux_dev->name = name",
+          "dev_err",
+          "devm_kfree"
+        ],
+        "buffer_fields": [
+          "aux_dev->name"
+        ],
+        "source_file": "drivers/net/ethernet/intel/ice/ice_ptp.c",
+        "function": "ice_ptp_create_auxbus_device",
+        "source_excerpt": "3094: static int ice_ptp_create_auxbus_device(struct ice_pf *pf)\n3095: {\n3096: \tstruct auxiliary_device *aux_dev;\n3097: \tstruct ice_ptp *ptp;\n3098: \tstruct device *dev;\n3099: \tchar *name;\n3100: \tint err;\n3101: \tu32 id;\n3102: \n3103: \tptp = &pf->ptp;\n3104: \tid = ptp->port.port_num;\n3105: \tdev = ice_pf_to_dev(pf);\n3106: \n3107: \taux_dev = &ptp->port.aux_dev;\n3108: \n3109: \tname = devm_kasprintf(dev, GFP_KERNEL, \"ptp_aux_dev_%u_%u_clk%u\",\n3110: \t\t\t      pf->pdev->bus->number, PCI_SLOT(pf->pdev->devfn),\n3111: \t\t\t      ice_get_ptp_src_clock_index(&pf->hw));\n3112: \n3113: \taux_dev->name = name;\n3114: \taux_dev->id = id;\n3115: \taux_dev->dev.release = ice_ptp_release_auxbus_device;\n3116: \taux_dev->dev.parent = dev;\n3117: \n3118: \terr = auxiliary_device_init(aux_dev);\n3119: \tif (err)\n3120: \t\tgoto aux_err;\n3121: \n3122: \terr = auxiliary_device_add(aux_dev);\n3123: \tif (err) {\n3124: \t\tauxiliary_device_uninit(aux_dev);\n3125: \t\tgoto aux_err;\n3126: \t}\n3127: \n3128: \treturn 0;\n3129: aux_err:\n3130: \tdev_err(dev, \"Failed to create PTP auxiliary bus device <%s>\\n\", name);\n3131: \tdevm_kfree(dev, name);\n3132: \treturn err;\n3133: }",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:semantic-contract",
+        "confidence": 0.92,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "drivers/net/ethernet/intel/ice/ice_ptp.c",
+          "hunk_index": 1,
+          "source_line": 3109
+        },
+        "summary": "ice_ptp_create_auxbus_device adds patch barrier `!name` around aux_dev->name = name, dev_err.",
+        "statements": [
+          "if (!name)",
+          "return -ENOMEM;"
+        ],
+        "guards": [
+          "!name"
+        ],
+        "call_boundary": [
+          "aux_dev->name = name",
+          "dev_err",
+          "devm_kfree"
+        ],
+        "call_edges": [
+          "ice_ptp_create_auxbus_device -> aux_dev->name = name",
+          "ice_ptp_create_auxbus_device -> dev_err",
+          "ice_ptp_create_auxbus_device -> devm_kfree"
+        ],
+        "state_transitions": [
+          "",
+          "report when a risky write proceeds without the patch-style barrier",
+          "stay silent when the nearby guard proves the current write is blocked or bounded"
+        ],
+        "api_terms": [
+          "aux_dev->name = name",
+          "dev_err",
+          "devm_kfree"
+        ],
+        "related_symbols": [
+          "name",
+          "ENOMEM"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/ethernet/intel/ice/ice_ptp.c",
+        "function": "ice_ptp_register_auxbus_driver"
+      },
+      "location": {
+        "line": 2863,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "!name",
+        "summary": "ice_ptp_register_auxbus_driver introduces patch guard `!name` before aux_driver->name = name, aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name).",
+        "state_before": [
+          "input(name)",
+          "input(ENOMEM)",
+          "buffer(aux_driver->name)",
+          "buffer(aux_driver->id_table)"
+        ],
+        "state_after": [
+          "guard(!name)",
+          "current_call(aux_driver->name = name)",
+          "current_call(aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name))"
+        ],
+        "functions": [
+          "ice_ptp_register_auxbus_driver"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "name",
+          "ENOMEM"
+        ],
+        "buffer_fields": [
+          "aux_driver->name",
+          "aux_driver->id_table"
+        ],
+        "call_targets": [
+          "aux_driver->name = name",
+          "aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name)"
+        ],
+        "call_edges": [
+          "ice_ptp_register_auxbus_driver -> aux_driver->name = name",
+          "ice_ptp_register_auxbus_driver -> aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name)"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "!name"
+        ],
+        "state_statements": [
+          "if (!name)",
+          "return -ENOMEM;"
+        ],
+        "compile_command_preview": "",
+        "source_file": "drivers/net/ethernet/intel/ice/ice_ptp.c",
+        "source_excerpt": "2850: static int ice_ptp_register_auxbus_driver(struct ice_pf *pf)\n2851: {\n2852: \tstruct auxiliary_driver *aux_driver;\n2853: \tstruct ice_ptp *ptp;\n2854: \tstruct device *dev;\n2855: \tchar *name;\n2856: \tint err;\n2857: \n2858: \tptp = &pf->ptp;\n2859: \tdev = ice_pf_to_dev(pf);\n2860: \taux_driver = &ptp->ports_owner.aux_driver;\n2861: \tINIT_LIST_HEAD(&ptp->ports_owner.ports);\n2862: \tmutex_init(&ptp->ports_owner.lock);\n2863: \tname = devm_kasprintf(dev, GFP_KERNEL, \"ptp_aux_dev_%u_%u_clk%u\",\n2864: \t\t\t      pf->pdev->bus->number, PCI_SLOT(pf->pdev->devfn),\n2865: \t\t\t      ice_get_ptp_src_clock_index(&pf->hw));\n2866: \n2867: \taux_driver->name = name;\n2868: \taux_driver->shutdown = ice_ptp_auxbus_shutdown;\n2869: \taux_driver->suspend = ice_ptp_auxbus_suspend;\n2870: \taux_driver->remove = ice_ptp_auxbus_remove;\n2871: \taux_driver->resume = ice_ptp_auxbus_resume;\n2872: \taux_driver->probe = ice_ptp_auxbus_probe;\n2873: \taux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name);\n2874: \tif (!aux_driver->id_table)\n2875: \t\treturn -ENOMEM;\n2876: \n2877: \terr = auxiliary_driver_register(aux_driver);\n2878: \tif (err) {\n2879: \t\tdevm_kfree(dev, aux_driver->id_table);\n2880: \t\tdev_err(dev, \"Failed registering aux_driver, name <%s>\\n\",\n2881: \t\t\tname);\n2882: \t}\n2883: \n2884: \treturn err;\n2885: }",
+        "summary_line": 2863,
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:path-guard",
+        "confidence": 0.92,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/net/ethernet/intel/ice/ice_ptp.c",
+          "hunk_index": 0,
+          "source_line": 2863
+        },
+        "summary": "ice_ptp_register_auxbus_driver introduces patch guard `!name` before aux_driver->name = name, aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name).",
+        "statements": [
+          "if (!name)",
+          "return -ENOMEM;"
+        ],
+        "guards": [
+          "!name"
+        ],
+        "call_boundary": [
+          "aux_driver->name = name",
+          "aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name)"
+        ],
+        "call_edges": [
+          "ice_ptp_register_auxbus_driver -> aux_driver->name = name",
+          "ice_ptp_register_auxbus_driver -> aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name)"
+        ],
+        "state_transitions": [
+          "guard(!name)",
+          "current_call(aux_driver->name = name)",
+          "current_call(aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name))"
+        ],
+        "api_terms": [
+          "aux_driver->name = name",
+          "aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name)"
+        ],
+        "related_symbols": [
+          "name",
+          "ENOMEM"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_guard_1",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/ethernet/intel/ice/ice_ptp.c",
+        "function": "ice_ptp_create_auxbus_device"
+      },
+      "location": {
+        "line": 3109,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "!name",
+        "summary": "ice_ptp_create_auxbus_device introduces patch guard `!name` before aux_dev->name = name, dev_err.",
+        "state_before": [
+          "input(name)",
+          "input(ENOMEM)",
+          "buffer(aux_dev->name)"
+        ],
+        "state_after": [
+          "guard(!name)",
+          "current_call(aux_dev->name = name)",
+          "current_call(dev_err)"
+        ],
+        "functions": [
+          "ice_ptp_create_auxbus_device"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "name",
+          "ENOMEM"
+        ],
+        "buffer_fields": [
+          "aux_dev->name"
+        ],
+        "call_targets": [
+          "aux_dev->name = name",
+          "dev_err",
+          "devm_kfree"
+        ],
+        "call_edges": [
+          "ice_ptp_create_auxbus_device -> aux_dev->name = name",
+          "ice_ptp_create_auxbus_device -> dev_err",
+          "ice_ptp_create_auxbus_device -> devm_kfree"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "!name"
+        ],
+        "state_statements": [
+          "if (!name)",
+          "return -ENOMEM;"
+        ],
+        "compile_command_preview": "",
+        "source_file": "drivers/net/ethernet/intel/ice/ice_ptp.c",
+        "source_excerpt": "3094: static int ice_ptp_create_auxbus_device(struct ice_pf *pf)\n3095: {\n3096: \tstruct auxiliary_device *aux_dev;\n3097: \tstruct ice_ptp *ptp;\n3098: \tstruct device *dev;\n3099: \tchar *name;\n3100: \tint err;\n3101: \tu32 id;\n3102: \n3103: \tptp = &pf->ptp;\n3104: \tid = ptp->port.port_num;\n3105: \tdev = ice_pf_to_dev(pf);\n3106: \n3107: \taux_dev = &ptp->port.aux_dev;\n3108: \n3109: \tname = devm_kasprintf(dev, GFP_KERNEL, \"ptp_aux_dev_%u_%u_clk%u\",\n3110: \t\t\t      pf->pdev->bus->number, PCI_SLOT(pf->pdev->devfn),\n3111: \t\t\t      ice_get_ptp_src_clock_index(&pf->hw));\n3112: \n3113: \taux_dev->name = name;\n3114: \taux_dev->id = id;\n3115: \taux_dev->dev.release = ice_ptp_release_auxbus_device;\n3116: \taux_dev->dev.parent = dev;\n3117: \n3118: \terr = auxiliary_device_init(aux_dev);\n3119: \tif (err)\n3120: \t\tgoto aux_err;\n3121: \n3122: \terr = auxiliary_device_add(aux_dev);\n3123: \tif (err) {\n3124: \t\tauxiliary_device_uninit(aux_dev);\n3125: \t\tgoto aux_err;\n3126: \t}\n3127: \n3128: \treturn 0;\n3129: aux_err:\n3130: \tdev_err(dev, \"Failed to create PTP auxiliary bus device <%s>\\n\", name);\n3131: \tdevm_kfree(dev, name);\n3132: \treturn err;\n3133: }",
+        "summary_line": 3109,
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:path-guard",
+        "confidence": 0.92,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/net/ethernet/intel/ice/ice_ptp.c",
+          "hunk_index": 1,
+          "source_line": 3109
+        },
+        "summary": "ice_ptp_create_auxbus_device introduces patch guard `!name` before aux_dev->name = name, dev_err.",
+        "statements": [
+          "if (!name)",
+          "return -ENOMEM;"
+        ],
+        "guards": [
+          "!name"
+        ],
+        "call_boundary": [
+          "aux_dev->name = name",
+          "dev_err",
+          "devm_kfree"
+        ],
+        "call_edges": [
+          "ice_ptp_create_auxbus_device -> aux_dev->name = name",
+          "ice_ptp_create_auxbus_device -> dev_err",
+          "ice_ptp_create_auxbus_device -> devm_kfree"
+        ],
+        "state_transitions": [
+          "guard(!name)",
+          "current_call(aux_dev->name = name)",
+          "current_call(dev_err)"
+        ],
+        "api_terms": [
+          "aux_dev->name = name",
+          "dev_err",
+          "devm_kfree"
+        ],
+        "related_symbols": [
+          "name",
+          "ENOMEM"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_guard_2",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/ethernet/intel/ice/ice_ptp.c",
+        "function": "ice_ptp_register_auxbus_driver"
+      },
+      "location": {
+        "line": 2863,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"Failed registering aux_driver, name <%s>\\n\" (ImplicitCastExpr, ArrayToPointerDecay, char *)) ? ... : ...",
+        "summary": "Analyzer CFG for ice_ptp_register_auxbus_driver in drivers/net/ethernet/intel/ice/ice_ptp.c: bindings: err = __auxiliary_driver_register (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct auxiliary_driver *, struct module *, const char *))(aux_driver (ImplicitCastExpr, LValueToRValue, struct auxiliary_driver *), ((struct module *)0 (CStyleCastExpr, NullToPointer, struct module *)), \"ice\" (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *)); aux_driver (ImplicitCastExpr, LValueToRValue, struct auxiliary_driver *)->id_table = ice_ptp_auxbus_create_id_table (ImplicitCastExpr, FunctionToPointerDecay, struct auxiliary_device_id *(*)(struct ice_pf *, const char *))(pf (ImplicitCastExpr, LValueToRValue, struct ice_pf *), name (ImplicitCastExpr, LValueToRValue, char *) (ImplicitCastExpr, NoOp, const char *)) (ImplicitCastExpr, NoOp, const struct auxiliary_device_id *) | branches: __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"Failed registering aux_driver, name <%s>\\n\" (ImplicitCastExpr, ArrayToPointerDecay, char *)) ? ... : ...; if __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"Failed registering aux_driver, name <%s>\\n\" (ImplicitCastExpr, ArrayToPointerDecay, char *)) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"\\0013\" (ImplicitCastExpr, ArrayToPointerDecay, char *)) | calls: ice_ptp_register_auxbus_driver -> INIT_LIST_HEAD; ice_ptp_register_auxbus_driver -> __mutex_init",
+        "state_before": [
+          "input(pf)",
+          "buffer(ptp->ports_owner)",
+          "buffer(pf->ptp)",
+          "sinks(ice_pf_to_dev, mutex_init)"
+        ],
+        "state_after": [
+          "cfg_binding(err = __auxiliary_driver_register (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct auxiliary_driver *, struct module *, const char *))(aux_driver (ImplicitCastExpr, LValueToRValue, struct auxiliary_driver *), ((struct module *)0 (CStyleCastExpr, NullToPointer, struct module *)), \"ice\" (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *)))",
+          "cfg_binding(aux_driver (ImplicitCastExpr, LValueToRValue, struct auxiliary_driver *)->id_table = ice_ptp_auxbus_create_id_table (ImplicitCastExpr, FunctionToPointerDecay, struct auxiliary_device_id *(*)(struct ice_pf *, const char *))(pf (ImplicitCastExpr, LValueToRValue, struct ice_pf *), name (ImplicitCastExpr, LValueToRValue, char *) (ImplicitCastExpr, NoOp, const char *)) (ImplicitCastExpr, NoOp, const struct auxiliary_device_id *))",
+          "cfg_branch(__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"Failed registering aux_driver, name <%s>\\n\" (ImplicitCastExpr, ArrayToPointerDecay, char *)) ? ... : ...)",
+          "cfg_branch(if __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"Failed registering aux_driver, name <%s>\\n\" (ImplicitCastExpr, ArrayToPointerDecay, char *)) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"\\0013\" (ImplicitCastExpr, ArrayToPointerDecay, char *)))"
+        ],
+        "functions": [
+          "ice_ptp_register_auxbus_driver"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "pf",
+          "ptp->ports_owner",
+          "pf->ptp",
+          "pf->pdev",
+          "bus->number",
+          "pf->hw",
+          "aux_driver->name"
+        ],
+        "buffer_fields": [
+          "ptp->ports_owner",
+          "pf->ptp",
+          "pf->pdev",
+          "bus->number",
+          "pf->hw",
+          "aux_driver->name"
+        ],
+        "call_targets": [
+          "ice_pf_to_dev",
+          "mutex_init",
+          "devm_kasprintf",
+          "ice_get_ptp_src_clock_index",
+          "ice_ptp_auxbus_create_id_table",
+          "auxiliary_driver_register",
+          "devm_kfree",
+          "dev_err"
+        ],
+        "call_edges": [
+          "ice_ptp_register_auxbus_driver -> INIT_LIST_HEAD",
+          "ice_ptp_register_auxbus_driver -> __mutex_init",
+          "ice_ptp_register_auxbus_driver -> devm_kasprintf",
+          "ice_ptp_register_auxbus_driver -> ice_get_ptp_src_clock_index",
+          "ice_ptp_register_auxbus_driver -> ice_ptp_auxbus_create_id_table",
+          "ice_ptp_register_auxbus_driver -> __auxiliary_driver_register"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "do ... while [B3.1]",
+          "static init _entry_ptr",
+          "[B9.15] ? ... : ...",
+          "[B12.5] ? ... : ...",
+          "static init _entry",
+          "if [B15.5] && [B14.5]"
+        ],
+        "resolved_branch_conditions": [
+          "__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"Failed registering aux_driver, name <%s>\\n\" (ImplicitCastExpr, ArrayToPointerDecay, char *)) ? ... : ...",
+          "if __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"Failed registering aux_driver, name <%s>\\n\" (ImplicitCastExpr, ArrayToPointerDecay, char *)) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"\\0013\" (ImplicitCastExpr, ArrayToPointerDecay, char *))",
+          "__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"Failed registering aux_driver, name <%s>\\n\" (ImplicitCastExpr, ArrayToPointerDecay, char *)) && ...",
+          "if !aux_driver (ImplicitCastExpr, LValueToRValue, struct auxiliary_driver *)->id_table (ImplicitCastExpr, LValueToRValue, const struct auxiliary_device_id *)",
+          "do ... while 0",
+          "static init _entry_ptr"
+        ],
+        "cfg_value_bindings": [
+          "err = __auxiliary_driver_register (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct auxiliary_driver *, struct module *, const char *))(aux_driver (ImplicitCastExpr, LValueToRValue, struct auxiliary_driver *), ((struct module *)0 (CStyleCastExpr, NullToPointer, struct module *)), \"ice\" (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *))",
+          "aux_driver (ImplicitCastExpr, LValueToRValue, struct auxiliary_driver *)->id_table = ice_ptp_auxbus_create_id_table (ImplicitCastExpr, FunctionToPointerDecay, struct auxiliary_device_id *(*)(struct ice_pf *, const char *))(pf (ImplicitCastExpr, LValueToRValue, struct ice_pf *), name (ImplicitCastExpr, LValueToRValue, char *) (ImplicitCastExpr, NoOp, const char *)) (ImplicitCastExpr, NoOp, const struct auxiliary_device_id *)",
+          "aux_driver = &ptp (ImplicitCastExpr, LValueToRValue, struct ice_ptp *)->ports_owner.aux_driver",
+          "aux_driver (ImplicitCastExpr, LValueToRValue, struct auxiliary_driver *)->name = name (ImplicitCastExpr, LValueToRValue, char *) (ImplicitCastExpr, NoOp, const char *)",
+          "aux_driver (ImplicitCastExpr, LValueToRValue, struct auxiliary_driver *)->resume = ice_ptp_auxbus_resume (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct auxiliary_device *))",
+          "aux_driver (ImplicitCastExpr, LValueToRValue, struct auxiliary_driver *)->remove = ice_ptp_auxbus_remove (ImplicitCastExpr, FunctionToPointerDecay, void (*)(struct auxiliary_device *))"
+        ],
+        "state_statements": [
+          "return [B1.2];",
+          "static const struct pi_entry *_entry_ptr __attribute__((used)) __attribute__((section(\".printk_index\"))) = &_entry;",
+          "{.fmt = [B9.2], .func = [B9.5], .file = [B9.8], .line = [B9.10], .level = [B6.2], .subsys_fmt_prefix = [B6.5]}",
+          "static const struct pi_entry _entry __attribute__((used)) = {.fmt = __builtin_constant_p(\"Failed registering aux_driver, name <%s>\\n\") ? (\"Failed registering aux_driver, name <%s>\\n\") : ((void *)0), .func = __func__, .file = \"/work/SemWeaver/artifacts/external/linux/drivers/net/ethernet/intel/ice/ice_ptp.c\", .line = 2881, .level = __builtin_constant_p(\"\\0013\") ? (\"\\0013\") : ((void *)0), .subsys_fmt_prefix = \"%s %s: \"};",
+          "devm_kfree",
+          "[B17.6]->id_table"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,drivers/net/ethernet/intel/ice/.ice_ptp.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/ua...",
+        "source_file": "drivers/net/ethernet/intel/ice/ice_ptp.c",
+        "source_excerpt": "2850: static int ice_ptp_register_auxbus_driver(struct ice_pf *pf)\n2851: {\n2852: \tstruct auxiliary_driver *aux_driver;\n2853: \tstruct ice_ptp *ptp;\n2854: \tstruct device *dev;\n2855: \tchar *name;\n2856: \tint err;\n2857: \n2858: \tptp = &pf->ptp;\n2859: \tdev = ice_pf_to_dev(pf);\n2860: \taux_driver = &ptp->ports_owner.aux_driver;\n2861: \tINIT_LIST_HEAD(&ptp->ports_owner.ports);\n2862: \tmutex_init(&ptp->ports_owner.lock);\n2863: \tname = devm_kasprintf(dev, GFP_KERNEL, \"ptp_aux_dev_%u_%u_clk%u\",\n2864: \t\t\t      pf->pdev->bus->number, PCI_SLOT(pf->pdev->devfn),\n2865: \t\t\t      ice_get_ptp_src_clock_index(&pf->hw));\n2866: \n2867: \taux_driver->name = name;\n2868: \taux_driver->shutdown = ice_ptp_auxbus_shutdown;\n2869: \taux_driver->suspend = ice_ptp_auxbus_suspend;\n2870: \taux_driver->remove = ice_ptp_auxbus_remove;\n2871: \taux_driver->resume = ice_ptp_auxbus_resume;\n2872: \taux_driver->probe = ice_ptp_auxbus_probe;\n2873: \taux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name);\n2874: \tif (!aux_driver->id_table)\n2875: \t\treturn -ENOMEM;\n2876: \n2877: \terr = auxiliary_driver_register(aux_driver);\n2878: \tif (err) {\n2879: \t\tdevm_kfree(dev, aux_driver->id_table);\n2880: \t\tdev_err(dev, \"Failed registering aux_driver, name <%s>\\n\",\n2881: \t\t\tname);\n2882: \t}\n2883: \n2884: \treturn err;\n2885: }",
+        "summary_line": 2863,
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/semweaver_treatment_evidence_cohort_v3/02_3027e7b15b02_Null_Pointer_Dereference/csa/patchweaver_runtime/csa_raw/drivers-net-ethernet-intel-ice-ice_ptp.c-ice_ptp_register_auxbus_driver.txt",
+        "raw_output_sha256": "3f0ecebae27d8dd3244c5445aff9e69c1b97d7d638eb9b33ee2c9c5c31e235a7",
+        "command_sha256": "704b2c1de001bbfa5a58cdb39956ad06f80f30bbe0f1fbb77eda2a2c871c84cb"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:debug-cfg",
+        "confidence": 0.92,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/net/ethernet/intel/ice/ice_ptp.c",
+          "hunk_index": 0,
+          "source_line": 2863
+        },
+        "summary": "Analyzer CFG for ice_ptp_register_auxbus_driver in drivers/net/ethernet/intel/ice/ice_ptp.c: bindings: err = __auxiliary_driver_register (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct auxiliary_driver *, struct module *, const char *))(aux_driver (ImplicitCastExpr, LValueToRValue, struct auxiliary_driver *), ((struct module *)0 (CStyleCastExpr, NullToPointer, struct module *)), \"ice\" (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *)); aux_driver (ImplicitCastExpr, LValueToRValue, struct auxiliary_driver *)->id_table = ice_ptp_auxbus_create_id_table (ImplicitCastExpr, FunctionToPointerDecay, struct auxiliary_device_id *(*)(struct ice_pf *, const char *))(pf (ImplicitCastExpr, LValueToRValue, struct ice_pf *), name (ImplicitCastExpr, LValueToRValue, char *) (ImplicitCastExpr, NoOp, const char *)) (ImplicitCastExpr, NoOp, const struct auxiliary_device_id *) | branches: __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"Failed registering aux_driver, name <%s>\\n\" (ImplicitCastExpr, ArrayToPointerDecay, char *)) ? ... : ...; if __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"Failed registering aux_driver, name <%s>\\n\" (ImplicitCastExpr, ArrayToPointerDecay, char *)) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"\\0013\" (ImplicitCastExpr, ArrayToPointerDecay, char *)) | calls: ice_ptp_register_auxbus_driver -> INIT_LIST_HEAD; ice_ptp_register_auxbus_driver -> __mutex_init",
+        "statements": [
+          "2850: static int ice_ptp_register_auxbus_driver(struct ice_pf *pf)",
+          "2851: {",
+          "2852: \tstruct auxiliary_driver *aux_driver;",
+          "2853: \tstruct ice_ptp *ptp;",
+          "2854: \tstruct device *dev;",
+          "2855: \tchar *name;"
+        ],
+        "guards": [
+          "__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"Failed registering aux_driver, name <%s>\\n\" (ImplicitCastExpr, ArrayToPointerDecay, char *)) ? ... : ...",
+          "if __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"Failed registering aux_driver, name <%s>\\n\" (ImplicitCastExpr, ArrayToPointerDecay, char *)) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"\\0013\" (ImplicitCastExpr, ArrayToPointerDecay, char *))",
+          "__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"Failed registering aux_driver, name <%s>\\n\" (ImplicitCastExpr, ArrayToPointerDecay, char *)) && ...",
+          "if !aux_driver (ImplicitCastExpr, LValueToRValue, struct auxiliary_driver *)->id_table (ImplicitCastExpr, LValueToRValue, const struct auxiliary_device_id *)"
+        ],
+        "call_boundary": [
+          "ice_pf_to_dev",
+          "mutex_init",
+          "devm_kasprintf",
+          "ice_get_ptp_src_clock_index",
+          "ice_ptp_auxbus_create_id_table",
+          "auxiliary_driver_register"
+        ],
+        "call_edges": [
+          "ice_ptp_register_auxbus_driver -> INIT_LIST_HEAD",
+          "ice_ptp_register_auxbus_driver -> __mutex_init",
+          "ice_ptp_register_auxbus_driver -> devm_kasprintf",
+          "ice_ptp_register_auxbus_driver -> ice_get_ptp_src_clock_index",
+          "ice_ptp_register_auxbus_driver -> ice_ptp_auxbus_create_id_table",
+          "ice_ptp_register_auxbus_driver -> __auxiliary_driver_register",
+          "ice_ptp_register_auxbus_driver -> devm_kfree",
+          "ice_ptp_register_auxbus_driver -> __builtin_constant_p"
+        ],
+        "state_transitions": [
+          "cfg_binding(err = __auxiliary_driver_register (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct auxiliary_driver *, struct module *, const char *))(aux_driver (ImplicitCastExpr, LValueToRValue, struct auxiliary_driver *), ((struct module *)0 (CStyleCastExpr, NullToPointer, struct module *)), \"ice\" (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *)))",
+          "cfg_binding(aux_driver (ImplicitCastExpr, LValueToRValue, struct auxiliary_driver *)->id_table = ice_ptp_auxbus_create_id_table (ImplicitCastExpr, FunctionToPointerDecay, struct auxiliary_device_id *(*)(struct ice_pf *, const char *))(pf (ImplicitCastExpr, LValueToRValue, struct ice_pf *), name (ImplicitCastExpr, LValueToRValue, char *) (ImplicitCastExpr, NoOp, const char *)) (ImplicitCastExpr, NoOp, const struct auxiliary_device_id *))",
+          "cfg_branch(__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"Failed registering aux_driver, name <%s>\\n\" (ImplicitCastExpr, ArrayToPointerDecay, char *)) ? ... : ...)",
+          "cfg_branch(if __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"Failed registering aux_driver, name <%s>\\n\" (ImplicitCastExpr, ArrayToPointerDecay, char *)) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"\\0013\" (ImplicitCastExpr, ArrayToPointerDecay, char *)))",
+          "return [B1.2];",
+          "static const struct pi_entry *_entry_ptr __attribute__((used)) __attribute__((section(\".printk_index\"))) = &_entry;"
+        ],
+        "api_terms": [
+          "INIT_LIST_HEAD",
+          "__mutex_init",
+          "devm_kasprintf",
+          "ice_get_ptp_src_clock_index",
+          "ice_ptp_auxbus_create_id_table",
+          "__auxiliary_driver_register"
+        ],
+        "related_symbols": [
+          "pf",
+          "ptp->ports_owner",
+          "pf->ptp",
+          "pf->pdev",
+          "bus->number",
+          "pf->hw"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_guard_3",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/ethernet/intel/ice/ice_ptp.c",
+        "function": "ice_ptp_create_auxbus_device"
+      },
+      "location": {
+        "line": 3109,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "if err (ImplicitCastExpr, LValueToRValue, int)",
+        "summary": "Analyzer CFG for ice_ptp_create_auxbus_device in drivers/net/ethernet/intel/ice/ice_ptp.c: bindings: err = auxiliary_device_init (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct auxiliary_device *))(aux_dev (ImplicitCastExpr, LValueToRValue, struct auxiliary_device *)); err = __auxiliary_device_add (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct auxiliary_device *, const char *))(aux_dev (ImplicitCastExpr, LValueToRValue, struct auxiliary_device *), \"ice\" (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *)) | branches: if err (ImplicitCastExpr, LValueToRValue, int); do ... while 0 | calls: ice_ptp_create_auxbus_device -> devm_kasprintf; ice_ptp_create_auxbus_device -> ice_get_ptp_src_clock_index",
+        "state_before": [
+          "input(pf)",
+          "buffer(pf->ptp)",
+          "buffer(ptp->port)",
+          "sinks(ice_pf_to_dev, devm_kasprintf)"
+        ],
+        "state_after": [
+          "cfg_binding(err = auxiliary_device_init (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct auxiliary_device *))(aux_dev (ImplicitCastExpr, LValueToRValue, struct auxiliary_device *)))",
+          "cfg_binding(err = __auxiliary_device_add (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct auxiliary_device *, const char *))(aux_dev (ImplicitCastExpr, LValueToRValue, struct auxiliary_device *), \"ice\" (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *)))",
+          "cfg_branch(if err (ImplicitCastExpr, LValueToRValue, int))",
+          "cfg_branch(do ... while 0)"
+        ],
+        "functions": [
+          "ice_ptp_create_auxbus_device"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "pf",
+          "pf->ptp",
+          "ptp->port",
+          "pf->pdev",
+          "bus->number",
+          "pf->hw",
+          "aux_dev->name"
+        ],
+        "buffer_fields": [
+          "pf->ptp",
+          "ptp->port",
+          "pf->pdev",
+          "bus->number",
+          "pf->hw",
+          "aux_dev->name"
+        ],
+        "call_targets": [
+          "ice_pf_to_dev",
+          "devm_kasprintf",
+          "ice_get_ptp_src_clock_index",
+          "auxiliary_device_init",
+          "auxiliary_device_add",
+          "auxiliary_device_uninit",
+          "dev_err",
+          "devm_kfree"
+        ],
+        "call_edges": [
+          "ice_ptp_create_auxbus_device -> devm_kasprintf",
+          "ice_ptp_create_auxbus_device -> ice_get_ptp_src_clock_index",
+          "ice_ptp_create_auxbus_device -> auxiliary_device_init",
+          "ice_ptp_create_auxbus_device -> __auxiliary_device_add",
+          "ice_ptp_create_auxbus_device -> auxiliary_device_uninit",
+          "ice_ptp_create_auxbus_device -> __builtin_constant_p"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "do ... while [B2.1]",
+          "static init _entry_ptr",
+          "[B8.15] ? ... : ...",
+          "[B11.5] ? ... : ...",
+          "static init _entry",
+          "if [B14.5] && [B13.5]"
+        ],
+        "resolved_branch_conditions": [
+          "if err (ImplicitCastExpr, LValueToRValue, int)",
+          "do ... while 0",
+          "static init _entry_ptr",
+          "__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"\\0013\" (ImplicitCastExpr, ArrayToPointerDecay, char *)) ? ... : ...",
+          "__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"Failed to create PTP auxiliary bus device <%s>\\n\" (ImplicitCastExpr, ArrayToPointerDecay, char *)) ? ... : ...",
+          "static init _entry"
+        ],
+        "cfg_value_bindings": [
+          "err = auxiliary_device_init (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct auxiliary_device *))(aux_dev (ImplicitCastExpr, LValueToRValue, struct auxiliary_device *))",
+          "err = __auxiliary_device_add (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct auxiliary_device *, const char *))(aux_dev (ImplicitCastExpr, LValueToRValue, struct auxiliary_device *), \"ice\" (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *))",
+          "name = devm_kasprintf (ImplicitCastExpr, FunctionToPointerDecay, char *(*)(struct device *, gfp_t, const char *, ...))(dev (ImplicitCastExpr, LValueToRValue, struct device *), (((gfp_t)(1024U | 2048U) (CStyleCastExpr, NoOp, gfp_t)) | ((gfp_t)64U (CStyleCastExpr, NoOp, gfp_t)) | ((gfp_t)128U (CStyleCastExpr, NoOp, gfp_t))), \"ptp_aux_dev_%u_%u_clk%u\" (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *), [B21.54]->pdev (ImplicitCastExpr, LValueToRValue, struct pci_dev *)->bus (ImplicitCastExpr, LValueToRValue, struct pci_bus *)->number (ImplicitCastExpr, LValueToRValue, unsigned char) (ImplicitCastExpr, IntegralCast, int), ((([B21.62] (ImplicitCastExpr, LValueToRValue, struct ice_pf *)->pdev (ImplicitCastExpr, LValueToRValue, struct pci_dev *)->devfn) (ImplicitCastExpr, LValueToRValue, unsigned int) >> 3) & 31 (ImplicitCastExpr, IntegralCast, unsigned int)), ice_get_ptp_src_clock_index (ImplicitCastExpr, FunctionToPointerDecay, u8 (*)(struct ice_hw *))(&pf (ImplicitCastExpr, LValueToRValue, struct ice_pf *)->hw) (ImplicitCastExpr, IntegralCast, int))",
+          "ptp = &pf (ImplicitCastExpr, LValueToRValue, struct ice_pf *)->ptp",
+          "aux_dev = &ptp (ImplicitCastExpr, LValueToRValue, struct ice_ptp *)->port.aux_dev",
+          "static const struct pi_entry *_entry_ptr __attribute__((used)) __attribute__((section(\".printk_index\"))) = &_entry;"
+        ],
+        "state_statements": [
+          "devm_kfree",
+          "return [B1.22];",
+          "static const struct pi_entry *_entry_ptr __attribute__((used)) __attribute__((section(\".printk_index\"))) = &_entry;",
+          "{.fmt = [B8.2], .func = [B8.5], .file = [B8.8], .line = [B8.10], .level = [B5.2], .subsys_fmt_prefix = [B5.5]}",
+          "static const struct pi_entry _entry __attribute__((used)) = {.fmt = __builtin_constant_p(\"Failed to create PTP auxiliary bus device <%s>\\n\") ? (\"Failed to create PTP auxiliary bus device <%s>\\n\") : ((void *)0), .func = __func__, .file = \"/work/SemWeaver/artifacts/external/linux/drivers/net/ethernet/intel/ice/ice_ptp.c\", .line = 3130, .level = __builtin_constant_p(\"\\0013\") ? (\"\\0013\") : ((void *)0), .subsys_fmt_prefix = \"%s %s: \"};",
+          "return [B17.1];"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,drivers/net/ethernet/intel/ice/.ice_ptp.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/ua...",
+        "source_file": "drivers/net/ethernet/intel/ice/ice_ptp.c",
+        "source_excerpt": "3094: static int ice_ptp_create_auxbus_device(struct ice_pf *pf)\n3095: {\n3096: \tstruct auxiliary_device *aux_dev;\n3097: \tstruct ice_ptp *ptp;\n3098: \tstruct device *dev;\n3099: \tchar *name;\n3100: \tint err;\n3101: \tu32 id;\n3102: \n3103: \tptp = &pf->ptp;\n3104: \tid = ptp->port.port_num;\n3105: \tdev = ice_pf_to_dev(pf);\n3106: \n3107: \taux_dev = &ptp->port.aux_dev;\n3108: \n3109: \tname = devm_kasprintf(dev, GFP_KERNEL, \"ptp_aux_dev_%u_%u_clk%u\",\n3110: \t\t\t      pf->pdev->bus->number, PCI_SLOT(pf->pdev->devfn),\n3111: \t\t\t      ice_get_ptp_src_clock_index(&pf->hw));\n3112: \n3113: \taux_dev->name = name;\n3114: \taux_dev->id = id;\n3115: \taux_dev->dev.release = ice_ptp_release_auxbus_device;\n3116: \taux_dev->dev.parent = dev;\n3117: \n3118: \terr = auxiliary_device_init(aux_dev);\n3119: \tif (err)\n3120: \t\tgoto aux_err;\n3121: \n3122: \terr = auxiliary_device_add(aux_dev);\n3123: \tif (err) {\n3124: \t\tauxiliary_device_uninit(aux_dev);\n3125: \t\tgoto aux_err;\n3126: \t}\n3127: \n3128: \treturn 0;\n3129: aux_err:\n3130: \tdev_err(dev, \"Failed to create PTP auxiliary bus device <%s>\\n\", name);\n3131: \tdevm_kfree(dev, name);\n3132: \treturn err;\n3133: }",
+        "summary_line": 3109,
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/semweaver_treatment_evidence_cohort_v3/02_3027e7b15b02_Null_Pointer_Dereference/csa/patchweaver_runtime/csa_raw/drivers-net-ethernet-intel-ice-ice_ptp.c-ice_ptp_create_auxbus_device.txt",
+        "raw_output_sha256": "3f0ecebae27d8dd3244c5445aff9e69c1b97d7d638eb9b33ee2c9c5c31e235a7",
+        "command_sha256": "704b2c1de001bbfa5a58cdb39956ad06f80f30bbe0f1fbb77eda2a2c871c84cb"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:debug-cfg",
+        "confidence": 0.92,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/net/ethernet/intel/ice/ice_ptp.c",
+          "hunk_index": 1,
+          "source_line": 3109
+        },
+        "summary": "Analyzer CFG for ice_ptp_create_auxbus_device in drivers/net/ethernet/intel/ice/ice_ptp.c: bindings: err = auxiliary_device_init (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct auxiliary_device *))(aux_dev (ImplicitCastExpr, LValueToRValue, struct auxiliary_device *)); err = __auxiliary_device_add (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct auxiliary_device *, const char *))(aux_dev (ImplicitCastExpr, LValueToRValue, struct auxiliary_device *), \"ice\" (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *)) | branches: if err (ImplicitCastExpr, LValueToRValue, int); do ... while 0 | calls: ice_ptp_create_auxbus_device -> devm_kasprintf; ice_ptp_create_auxbus_device -> ice_get_ptp_src_clock_index",
+        "statements": [
+          "3094: static int ice_ptp_create_auxbus_device(struct ice_pf *pf)",
+          "3095: {",
+          "3096: \tstruct auxiliary_device *aux_dev;",
+          "3097: \tstruct ice_ptp *ptp;",
+          "3098: \tstruct device *dev;",
+          "3099: \tchar *name;"
+        ],
+        "guards": [
+          "if err (ImplicitCastExpr, LValueToRValue, int)",
+          "do ... while 0",
+          "static init _entry_ptr",
+          "__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"\\0013\" (ImplicitCastExpr, ArrayToPointerDecay, char *)) ? ... : ..."
+        ],
+        "call_boundary": [
+          "ice_pf_to_dev",
+          "devm_kasprintf",
+          "ice_get_ptp_src_clock_index",
+          "auxiliary_device_init",
+          "auxiliary_device_add",
+          "auxiliary_device_uninit"
+        ],
+        "call_edges": [
+          "ice_ptp_create_auxbus_device -> devm_kasprintf",
+          "ice_ptp_create_auxbus_device -> ice_get_ptp_src_clock_index",
+          "ice_ptp_create_auxbus_device -> auxiliary_device_init",
+          "ice_ptp_create_auxbus_device -> __auxiliary_device_add",
+          "ice_ptp_create_auxbus_device -> auxiliary_device_uninit",
+          "ice_ptp_create_auxbus_device -> __builtin_constant_p",
+          "ice_ptp_create_auxbus_device -> _dev_err",
+          "ice_ptp_create_auxbus_device -> devm_kfree"
+        ],
+        "state_transitions": [
+          "cfg_binding(err = auxiliary_device_init (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct auxiliary_device *))(aux_dev (ImplicitCastExpr, LValueToRValue, struct auxiliary_device *)))",
+          "cfg_binding(err = __auxiliary_device_add (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct auxiliary_device *, const char *))(aux_dev (ImplicitCastExpr, LValueToRValue, struct auxiliary_device *), \"ice\" (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *)))",
+          "cfg_branch(if err (ImplicitCastExpr, LValueToRValue, int))",
+          "cfg_branch(do ... while 0)",
+          "devm_kfree",
+          "return [B1.22];"
+        ],
+        "api_terms": [
+          "devm_kasprintf",
+          "ice_get_ptp_src_clock_index",
+          "auxiliary_device_init",
+          "__auxiliary_device_add",
+          "auxiliary_device_uninit",
+          "__builtin_constant_p"
+        ],
+        "related_symbols": [
+          "pf",
+          "pf->ptp",
+          "ptp->port",
+          "pf->pdev",
+          "bus->number",
+          "pf->hw"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/ethernet/intel/ice/ice_ptp.c",
+        "function": "ice_ptp_register_auxbus_driver"
+      },
+      "location": {
+        "line": 2863,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "ice_ptp_register_auxbus_driver adds patch barrier `!name` around aux_driver->name = name, aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name).",
+        "state_before": [
+          "input(name)",
+          "input(ENOMEM)",
+          "buffer(aux_driver->name)",
+          "buffer(aux_driver->id_table)"
+        ],
+        "state_after": [
+          "guard(!name)",
+          "sink(aux_driver->name = name)",
+          "sink(aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name))"
+        ],
+        "functions": [
+          "ice_ptp_register_auxbus_driver"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "name",
+          "ENOMEM"
+        ],
+        "buffer_fields": [
+          "aux_driver->name",
+          "aux_driver->id_table"
+        ],
+        "call_targets": [
+          "aux_driver->name = name",
+          "aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name)"
+        ],
+        "call_edges": [
+          "ice_ptp_register_auxbus_driver -> aux_driver->name = name",
+          "ice_ptp_register_auxbus_driver -> aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name)"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "!name"
+        ],
+        "state_statements": [
+          "if (!name)",
+          "return -ENOMEM;"
+        ],
+        "return_statements": [],
+        "source_file": "drivers/net/ethernet/intel/ice/ice_ptp.c",
+        "source_excerpt": "2850: static int ice_ptp_register_auxbus_driver(struct ice_pf *pf)\n2851: {\n2852: \tstruct auxiliary_driver *aux_driver;\n2853: \tstruct ice_ptp *ptp;\n2854: \tstruct device *dev;\n2855: \tchar *name;\n2856: \tint err;\n2857: \n2858: \tptp = &pf->ptp;\n2859: \tdev = ice_pf_to_dev(pf);\n2860: \taux_driver = &ptp->ports_owner.aux_driver;\n2861: \tINIT_LIST_HEAD(&ptp->ports_owner.ports);\n2862: \tmutex_init(&ptp->ports_owner.lock);\n2863: \tname = devm_kasprintf(dev, GFP_KERNEL, \"ptp_aux_dev_%u_%u_clk%u\",\n2864: \t\t\t      pf->pdev->bus->number, PCI_SLOT(pf->pdev->devfn),\n2865: \t\t\t      ice_get_ptp_src_clock_index(&pf->hw));\n2866: \n2867: \taux_driver->name = name;\n2868: \taux_driver->shutdown = ice_ptp_auxbus_shutdown;\n2869: \taux_driver->suspend = ice_ptp_auxbus_suspend;\n2870: \taux_driver->remove = ice_ptp_auxbus_remove;\n2871: \taux_driver->resume = ice_ptp_auxbus_resume;\n2872: \taux_driver->probe = ice_ptp_auxbus_probe;\n2873: \taux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name);\n2874: \tif (!aux_driver->id_table)\n2875: \t\treturn -ENOMEM;\n2876: \n2877: \terr = auxiliary_driver_register(aux_driver);\n2878: \tif (err) {\n2879: \t\tdevm_kfree(dev, aux_driver->id_table);\n2880: \t\tdev_err(dev, \"Failed registering aux_driver, name <%s>\\n\",\n2881: \t\t\tname);\n2882: \t}\n2883: \n2884: \treturn err;\n2885: }",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:guarded-state",
+        "confidence": 0.9,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "drivers/net/ethernet/intel/ice/ice_ptp.c",
+          "hunk_index": 0,
+          "source_line": 2863
+        },
+        "summary": "ice_ptp_register_auxbus_driver adds patch barrier `!name` around aux_driver->name = name, aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name).",
+        "statements": [
+          "if (!name)",
+          "return -ENOMEM;"
+        ],
+        "guards": [
+          "!name"
+        ],
+        "call_boundary": [
+          "aux_driver->name = name",
+          "aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name)"
+        ],
+        "call_edges": [
+          "ice_ptp_register_auxbus_driver -> aux_driver->name = name",
+          "ice_ptp_register_auxbus_driver -> aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name)"
+        ],
+        "state_transitions": [
+          "guard(!name)",
+          "sink(aux_driver->name = name)",
+          "sink(aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name))"
+        ],
+        "api_terms": [
+          "aux_driver->name = name",
+          "aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name)"
+        ],
+        "related_symbols": [
+          "name",
+          "ENOMEM"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_state_1",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/ethernet/intel/ice/ice_ptp.c",
+        "function": "ice_ptp_create_auxbus_device"
+      },
+      "location": {
+        "line": 3109,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "ice_ptp_create_auxbus_device adds patch barrier `!name` around aux_dev->name = name, dev_err.",
+        "state_before": [
+          "input(name)",
+          "input(ENOMEM)",
+          "buffer(aux_dev->name)"
+        ],
+        "state_after": [
+          "guard(!name)",
+          "sink(aux_dev->name = name)",
+          "sink(dev_err)"
+        ],
+        "functions": [
+          "ice_ptp_create_auxbus_device"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "name",
+          "ENOMEM"
+        ],
+        "buffer_fields": [
+          "aux_dev->name"
+        ],
+        "call_targets": [
+          "aux_dev->name = name",
+          "dev_err",
+          "devm_kfree"
+        ],
+        "call_edges": [
+          "ice_ptp_create_auxbus_device -> aux_dev->name = name",
+          "ice_ptp_create_auxbus_device -> dev_err",
+          "ice_ptp_create_auxbus_device -> devm_kfree"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "!name"
+        ],
+        "state_statements": [
+          "if (!name)",
+          "return -ENOMEM;"
+        ],
+        "return_statements": [],
+        "source_file": "drivers/net/ethernet/intel/ice/ice_ptp.c",
+        "source_excerpt": "3094: static int ice_ptp_create_auxbus_device(struct ice_pf *pf)\n3095: {\n3096: \tstruct auxiliary_device *aux_dev;\n3097: \tstruct ice_ptp *ptp;\n3098: \tstruct device *dev;\n3099: \tchar *name;\n3100: \tint err;\n3101: \tu32 id;\n3102: \n3103: \tptp = &pf->ptp;\n3104: \tid = ptp->port.port_num;\n3105: \tdev = ice_pf_to_dev(pf);\n3106: \n3107: \taux_dev = &ptp->port.aux_dev;\n3108: \n3109: \tname = devm_kasprintf(dev, GFP_KERNEL, \"ptp_aux_dev_%u_%u_clk%u\",\n3110: \t\t\t      pf->pdev->bus->number, PCI_SLOT(pf->pdev->devfn),\n3111: \t\t\t      ice_get_ptp_src_clock_index(&pf->hw));\n3112: \n3113: \taux_dev->name = name;\n3114: \taux_dev->id = id;\n3115: \taux_dev->dev.release = ice_ptp_release_auxbus_device;\n3116: \taux_dev->dev.parent = dev;\n3117: \n3118: \terr = auxiliary_device_init(aux_dev);\n3119: \tif (err)\n3120: \t\tgoto aux_err;\n3121: \n3122: \terr = auxiliary_device_add(aux_dev);\n3123: \tif (err) {\n3124: \t\tauxiliary_device_uninit(aux_dev);\n3125: \t\tgoto aux_err;\n3126: \t}\n3127: \n3128: \treturn 0;\n3129: aux_err:\n3130: \tdev_err(dev, \"Failed to create PTP auxiliary bus device <%s>\\n\", name);\n3131: \tdevm_kfree(dev, name);\n3132: \treturn err;\n3133: }",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:guarded-state",
+        "confidence": 0.9,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "drivers/net/ethernet/intel/ice/ice_ptp.c",
+          "hunk_index": 1,
+          "source_line": 3109
+        },
+        "summary": "ice_ptp_create_auxbus_device adds patch barrier `!name` around aux_dev->name = name, dev_err.",
+        "statements": [
+          "if (!name)",
+          "return -ENOMEM;"
+        ],
+        "guards": [
+          "!name"
+        ],
+        "call_boundary": [
+          "aux_dev->name = name",
+          "dev_err",
+          "devm_kfree"
+        ],
+        "call_edges": [
+          "ice_ptp_create_auxbus_device -> aux_dev->name = name",
+          "ice_ptp_create_auxbus_device -> dev_err",
+          "ice_ptp_create_auxbus_device -> devm_kfree"
+        ],
+        "state_transitions": [
+          "guard(!name)",
+          "sink(aux_dev->name = name)",
+          "sink(dev_err)"
+        ],
+        "api_terms": [
+          "aux_dev->name = name",
+          "dev_err",
+          "devm_kfree"
+        ],
+        "related_symbols": [
+          "name",
+          "ENOMEM"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_0",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/ethernet/intel/ice/ice_ptp.c",
+        "function": "ice_ptp_register_auxbus_driver"
+      },
+      "location": {
+        "line": 2863,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "ice_ptp_register_auxbus_driver in drivers/net/ethernet/intel/ice/ice_ptp.c provides CSA-backed pointer/resource lifecycle context near line 2863",
+        "diagnostic_message": "",
+        "diagnostic_checker": "",
+        "state_before": [
+          "input(pf)",
+          "buffer(ptp->ports_owner)",
+          "buffer(pf->ptp)",
+          "sinks(ice_pf_to_dev, mutex_init)"
+        ],
+        "state_after": [
+          "operation(return [B1.2];)",
+          "operation(static const struct pi_entry *_entry_ptr __attribute__((used)) __attribute__((section(\".printk_index\"))) = &_entry;)",
+          "operation({.fmt = [B9.2], .func = [B9.5], .file = [B9.8], .line = [B9.10], .level = [B6.2], .subsys_fmt_prefix = [B6.5]})",
+          "operation(static const struct pi_entry _entry __attribute__((used)) = {.fmt = __builtin_constant_p(\"Failed registering aux_driver, name <%s>\\n\") ? (\"Failed registering aux_driver, name <%s>\\n\") : ((void *)0), .func = __func__, .file = \"/work/SemWeaver/artifacts/external/linux/drivers/net/ethernet/intel/ice/ice_ptp.c\", .line = 2881, .level = __builtin_constant_p(\"\\0013\") ? (\"\\0013\") : ((void *)0), .subsys_fmt_prefix = \"%s %s: \"};)"
+        ],
+        "functions": [
+          "ice_ptp_register_auxbus_driver"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "pf",
+          "name",
+          "ENOMEM"
+        ],
+        "buffer_fields": [
+          "ptp->ports_owner",
+          "pf->ptp",
+          "pf->pdev",
+          "bus->number",
+          "pf->hw",
+          "aux_driver->name"
+        ],
+        "call_targets": [
+          "ice_pf_to_dev",
+          "mutex_init",
+          "devm_kasprintf",
+          "ice_get_ptp_src_clock_index",
+          "ice_ptp_auxbus_create_id_table",
+          "auxiliary_driver_register"
+        ],
+        "call_edges": [
+          "ice_ptp_register_auxbus_driver -> INIT_LIST_HEAD",
+          "ice_ptp_register_auxbus_driver -> __mutex_init",
+          "ice_ptp_register_auxbus_driver -> devm_kasprintf",
+          "ice_ptp_register_auxbus_driver -> ice_get_ptp_src_clock_index",
+          "ice_ptp_register_auxbus_driver -> ice_ptp_auxbus_create_id_table",
+          "ice_ptp_register_auxbus_driver -> __auxiliary_driver_register"
+        ],
+        "state_statements": [
+          "return [B1.2];",
+          "static const struct pi_entry *_entry_ptr __attribute__((used)) __attribute__((section(\".printk_index\"))) = &_entry;",
+          "{.fmt = [B9.2], .func = [B9.5], .file = [B9.8], .line = [B9.10], .level = [B6.2], .subsys_fmt_prefix = [B6.5]}",
+          "static const struct pi_entry _entry __attribute__((used)) = {.fmt = __builtin_constant_p(\"Failed registering aux_driver, name <%s>\\n\") ? (\"Failed registering aux_driver, name <%s>\\n\") : ((void *)0), .func = __func__, .file = \"/work/SemWeaver/artifacts/external/linux/drivers/net/ethernet/intel/ice/ice_ptp.c\", .line = 2881, .level = __builtin_constant_p(\"\\0013\") ? (\"\\0013\") : ((void *)0), .subsys_fmt_prefix = \"%s %s: \"};",
+          "devm_kfree",
+          "[B17.6]->id_table"
+        ],
+        "source_file": "drivers/net/ethernet/intel/ice/ice_ptp.c",
+        "source_excerpt": "2850: static int ice_ptp_register_auxbus_driver(struct ice_pf *pf)\n2851: {\n2852: \tstruct auxiliary_driver *aux_driver;\n2853: \tstruct ice_ptp *ptp;\n2854: \tstruct device *dev;\n2855: \tchar *name;\n2856: \tint err;\n2857: \n2858: \tptp = &pf->ptp;\n2859: \tdev = ice_pf_to_dev(pf);\n2860: \taux_driver = &ptp->ports_owner.aux_driver;\n2861: \tINIT_LIST_HEAD(&ptp->ports_owner.ports);\n2862: \tmutex_init(&ptp->ports_owner.lock);\n2863: \tname = devm_kasprintf(dev, GFP_KERNEL, \"ptp_aux_dev_%u_%u_clk%u\",\n2864: \t\t\t      pf->pdev->bus->number, PCI_SLOT(pf->pdev->devfn),\n2865: \t\t\t      ice_get_ptp_src_clock_index(&pf->hw));\n2866: \n2867: \taux_driver->name = name;\n2868: \taux_driver->shutdown = ice_ptp_auxbus_shutdown;\n2869: \taux_driver->suspend = ice_ptp_auxbus_suspend;\n2870: \taux_driver->remove = ice_ptp_auxbus_remove;\n2871: \taux_driver->resume = ice_ptp_auxbus_resume;\n2872: \taux_driver->probe = ice_ptp_auxbus_probe;\n2873: \taux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name);\n2874: \tif (!aux_driver->id_table)\n2875: \t\treturn -ENOMEM;\n2876: \n2877: \terr = auxiliary_driver_register(aux_driver);\n2878: \tif (err) {\n2879: \t\tdevm_kfree(dev, aux_driver->id_table);\n2880: \t\tdev_err(dev, \"Failed registering aux_driver, name <%s>\\n\",\n2881: \t\t\tname);\n2882: \t}\n2883: \n2884: \treturn err;\n2885: }",
+        "coverage_status": "partial",
+        "operations": [
+          "return [B1.2];",
+          "static const struct pi_entry *_entry_ptr __attribute__((used)) __attribute__((section(\".printk_index\"))) = &_entry;",
+          "{.fmt = [B9.2], .func = [B9.5], .file = [B9.8], .line = [B9.10], .level = [B6.2], .subsys_fmt_prefix = [B6.5]}",
+          "static const struct pi_entry _entry __attribute__((used)) = {.fmt = __builtin_constant_p(\"Failed registering aux_driver, name <%s>\\n\") ? (\"Failed registering aux_driver, name <%s>\\n\") : ((void *)0), .func = __func__, .file = \"/work/SemWeaver/artifacts/external/linux/drivers/net/ethernet/intel/ice/ice_ptp.c\", .line = 2881, .level = __builtin_constant_p(\"\\0013\") ? (\"\\0013\") : ((void *)0), .subsys_fmt_prefix = \"%s %s: \"};",
+          "devm_kfree",
+          "[B17.6]->id_table"
+        ],
+        "acquisition_ops": [],
+        "release_ops": []
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.72,
+        "origin": "analyzer_output"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "drivers/net/ethernet/intel/ice/ice_ptp.c",
+          "hunk_index": 0,
+          "source_line": 2863
+        },
+        "summary": "ice_ptp_register_auxbus_driver in drivers/net/ethernet/intel/ice/ice_ptp.c provides CSA-backed pointer/resource lifecycle context near line 2863",
+        "statements": [
+          "2850: static int ice_ptp_register_auxbus_driver(struct ice_pf *pf)",
+          "2851: {",
+          "2852: \tstruct auxiliary_driver *aux_driver;",
+          "2853: \tstruct ice_ptp *ptp;",
+          "2854: \tstruct device *dev;",
+          "2855: \tchar *name;"
+        ],
+        "guards": [
+          "!aux_driver->id_table",
+          "err",
+          "!name",
+          "do ... while [B3.1]"
+        ],
+        "call_boundary": [
+          "ice_pf_to_dev",
+          "mutex_init",
+          "devm_kasprintf",
+          "ice_get_ptp_src_clock_index",
+          "ice_ptp_auxbus_create_id_table",
+          "auxiliary_driver_register"
+        ],
+        "call_edges": [
+          "ice_ptp_register_auxbus_driver -> INIT_LIST_HEAD",
+          "ice_ptp_register_auxbus_driver -> __mutex_init",
+          "ice_ptp_register_auxbus_driver -> devm_kasprintf",
+          "ice_ptp_register_auxbus_driver -> ice_get_ptp_src_clock_index",
+          "ice_ptp_register_auxbus_driver -> ice_ptp_auxbus_create_id_table",
+          "ice_ptp_register_auxbus_driver -> __auxiliary_driver_register"
+        ],
+        "state_transitions": [
+          "operation(return [B1.2];)",
+          "operation(static const struct pi_entry *_entry_ptr __attribute__((used)) __attribute__((section(\".printk_index\"))) = &_entry;)",
+          "operation({.fmt = [B9.2], .func = [B9.5], .file = [B9.8], .line = [B9.10], .level = [B6.2], .subsys_fmt_prefix = [B6.5]})",
+          "operation(static const struct pi_entry _entry __attribute__((used)) = {.fmt = __builtin_constant_p(\"Failed registering aux_driver, name <%s>\\n\") ? (\"Failed registering aux_driver, name <%s>\\n\") : ((void *)0), .func = __func__, .file = \"/work/SemWeaver/artifacts/external/linux/drivers/net/ethernet/intel/ice/ice_ptp.c\", .line = 2881, .level = __builtin_constant_p(\"\\0013\") ? (\"\\0013\") : ((void *)0), .subsys_fmt_prefix = \"%s %s: \"};)"
+        ],
+        "api_terms": [
+          "return [B1.2];",
+          "static const struct pi_entry *_entry_ptr __attribute__((used)) __attribute__((section(\".printk_index\"))) = &_entry;",
+          "{.fmt = [B9.2], .func = [B9.5], .file = [B9.8], .line = [B9.10], .level = [B6.2], .subsys_fmt_prefix = [B6.5]}",
+          "static const struct pi_entry _entry __attribute__((used)) = {.fmt = __builtin_constant_p(\"Failed registering aux_driver, name <%s>\\n\") ? (\"Failed registering aux_driver, name <%s>\\n\") : ((void *)0), .func = __func__, .file = \"/work/SemWeaver/artifacts/external/linux/drivers/net/ethernet/intel/ice/ice_ptp.c\", .line = 2881, .level = __builtin_constant_p(\"\\0013\") ? (\"\\0013\") : ((void *)0), .subsys_fmt_prefix = \"%s %s: \"};",
+          "devm_kfree",
+          "[B17.6]->id_table"
+        ],
+        "related_symbols": [
+          "pf",
+          "name",
+          "ENOMEM"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "collected_analyzers": [
+    "csa"
+  ],
+  "provenance_summary": {
+    "total_records": 9,
+    "origin_counts": {
+      "analyzer_internal": 2,
+      "analyzer_output": 1,
+      "source_derived": 6
+    },
+    "analyzer_internal_records": 2,
+    "analyzer_internal_fraction": 0.2222222222222222,
+    "analyzer_backed_records": 3,
+    "analyzer_backed_fraction": 0.3333333333333333,
+    "source_derived_records": 6,
+    "source_derived_fraction": 0.6666666666666666
+  }
+}

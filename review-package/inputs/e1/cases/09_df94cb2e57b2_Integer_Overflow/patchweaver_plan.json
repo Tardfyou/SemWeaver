@@ -1,0 +1,1168 @@
+{
+  "schema_version": 1,
+  "source": "prepare_e2_inputs.py",
+  "patch_path": "patches/commit.patch",
+  "validate_path": "/anonymous/home/LLM-Native/research/knighter/linux",
+  "knighter": {
+    "commit_id": "df94cb2e57b2cc539f325003e7abb76d3060d55b",
+    "bug_type": "Integer-Overflow",
+    "checker_id": "old:df94cb2e57b2cc539f325003e7abb76d3060d55b:checker7",
+    "candidate_group": "positive_scan_report_count",
+    "report_count": 120,
+    "manual_bugs": 0,
+    "manual_not_bugs": 0,
+    "patch_local_screen1": {
+      "buggy_alerts": 6,
+      "fixed_alerts": 5,
+      "buggy_miss": false,
+      "fixed_noisy": true,
+      "poor_distinguishing": true,
+      "screen1_priority": "P0",
+      "screen1_reason": "fixed-side noisy",
+      "patch_related_targets": [
+        "fs/bcachefs/buckets.o",
+        "fs/bcachefs/io_misc.o"
+      ]
+    },
+    "baseline_validation_summary": "Baseline validation (csa): Knighter基线扫描报告数=120, 人工确认bug=0, 人工非bug=0, 候选组=positive_scan_report_count。漏洞版命中=true, 漏洞版patch-scoped告警数=6, 修复版误报数=5, fixed_silent=false, PDS=false. 这些数只表示patch-local语义验证门，不等同于Knighter full-kernel report_count/FPR统计。"
+  },
+  "patchweaver": {
+    "refinement_evidence_bundles": {
+      "csa": {
+        "records": [
+          {
+            "evidence_id": "knighter_e2_patch_local_validation",
+            "type": "validation_outcome",
+            "analyzer": "csa",
+            "scope": {
+              "repo": "linux",
+              "file": "fs/bcachefs/buckets.o;fs/bcachefs/io_misc.o",
+              "function": "patch_local_validation"
+            },
+            "location": {
+              "line": 0,
+              "column": 0
+            },
+            "semantic_payload": {
+              "kind": "knighter_e2_patch_local",
+              "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=6, fixed_alerts=5, buggy_miss=false, fixed_noisy=true, pds=false, targets=fs/bcachefs/buckets.o;fs/bcachefs/io_misc.o.",
+              "commit_id": "df94cb2e57b2cc539f325003e7abb76d3060d55b",
+              "case_id": "09_df94cb2e57b2_Integer_Overflow",
+              "bug_type": "Integer-Overflow",
+              "candidate_group": "positive_scan_report_count",
+              "checker_id": "old:df94cb2e57b2cc539f325003e7abb76d3060d55b:checker7",
+              "checker_name": "SAGenTestChecker",
+              "patch_related_targets": [
+                "fs/bcachefs/buckets.o",
+                "fs/bcachefs/io_misc.o"
+              ],
+              "buggy_counts": {
+                "fs/bcachefs/buckets.o": 4,
+                "fs/bcachefs/io_misc.o": 2
+              },
+              "fixed_counts": {
+                "fs/bcachefs/buckets.o": 3,
+                "fs/bcachefs/io_misc.o": 2
+              },
+              "buggy_alerts": 6,
+              "fixed_alerts": 5,
+              "buggy_miss": false,
+              "fixed_noisy": true,
+              "pds": false,
+              "failure_mode": "fixed_noisy",
+              "repair_priority": "high",
+              "repair_action": "Add the patch-introduced guard/barrier/silence condition to reduce fixed-side alerts.",
+              "feedback_hint": "KNighter E2 strict patch-local baseline: buggy_alerts=6, fixed_alerts=5, buggy_miss=false, fixed_noisy=true, pds=false, targets=fs/bcachefs/buckets.o;fs/bcachefs/io_misc.o.",
+              "historical_reference": "Historical KNighter report_count=120, manual_bugs=0, manual_not_bugs=0; this is not the same metric as patch-local E2 validation.",
+              "patch_semantic_context": {
+                "patch_excerpt": "commit df94cb2e57b2cc539f325003e7abb76d3060d55b\nAuthor: Kent Overstreet <kent.overstreet@linux.dev>\nDate:   Fri Oct 27 17:19:31 2023 -0400\n\n    bcachefs: Fix an integer overflow\n    \n    Fixes:\n    \n    bcachefs (e7fdc10e-54a3-49d9-bd0c-390370889d84): disk usage increased 4294967296 more than 2823707312 sectors reserved)\n    transaction updates for __bchfs_fallocate journal seq 467859\n      update: btree=extents cached=0 bch2_trans_update+0x4e8/0x540\n        old u64s 5 type deleted 536925940:3559337304:4294967283 len 0 ver 0\n        new u64s 6 type reservation 536925940:3559337304:4294967283 len 3559337304 ver 0: generation 0 replicas 2\n      update: btree=inodes cached=1 bch2_extent_update_i_size_sectors+0x305/0x3b0\n        old u64s 19 type inode_v3 0:536925940:4294967283 len 0 ver 0: mode 100600 flags 15300000 journal_seq 467859 bi_size 0 bi_sectors 0 bi_version 0 bi_atime 40905301656446 bi_ctime 40905301656446 bi_mtime 40905301656446 bi_otime 40905301656446 bi_uid 0 bi_gid 0 bi_nlink 0 bi_generation 0 bi_dev 0 bi_data_checksum 0 bi_compression 0 bi_project 0 bi_background_compression 0 bi_data_replicas 0 bi_promote_target 0 bi_foreground_target 0 bi_background_target 0 bi_erasure_code 0 bi_fields_set 0 bi_dir 1879048193 bi_dir_offset 3384856038735393365 bi_subvol 0 bi_parent_subvol 0 bi_nocow 0\n        new u64s 19 type inode_v3 0:536925940:4294967283 len 0 ver 0: mode 100600 flags 15300000 journal_seq 467859 bi_size 0 bi_sectors 3559337304 bi_version 0 bi_atime 40905301656446 bi_ctime 40905301656446 bi_mtime 40905301656446 bi_otime 40905301656446 bi_uid 0 bi_gid 0 bi_nlink 0 bi_generation 0 bi_dev 0 bi_data_checksum 0 bi_compression 0 bi_project 0 bi_background_compression 0 bi_data_replicas 0 bi_promote_target 0 bi_foreground_target 0 bi_background_target 0 bi_erasure_code 0 bi_fields_set 0 bi_dir 1879048193 bi_dir_offset 3384856038735393365 bi_subvol 0 bi_parent_subvol 0 bi_nocow 0\n    \n    Kernel panic - not syncing: bcachefs (e7fdc10e-54a3-49d9-bd0c-390370889d84): panic after error\n    CPU: 4 PID: 5154 Comm: rsync Not tainted 6.5.9-gateway-gca1614174cc0-dirty #1\n    Hardware name: To Be Filled By O.E.M. To Be Filled By O.E.M./X570 Phantom Gaming 4, BIOS P4.20 08/02/2021\n    Call Trace:\n     <TASK>\n     dump_stack_lvl+0x5a/0x90\n     panic+0x105/0x300\n     ? console_unlock+0xf1/0x130\n     ? bch2_printbuf_exit+0x16/0x30\n     ? srso_return_thunk+0x5/0x10\n     bch2_inconsistent_error+0x6f/0x80\n     bch2_trans_fs_usage_apply+0x279/0x3d0\n     __bch2_trans_commit+0x112a/0x1df0\n     ? bch2_extent_update+0x13a/0x1d0\n     bch2_extent_update+0x13a/0x1d0\n     bch2_extent_fallocate+0x58e/0x740\n     bch2_fallocate_dispatch+0xb7c/0x1030\n     ? do_filp_open+0xa0/0x140\n     vfs_fallocate+0x18e/0x1d0\n     __x64_sys_fallocate+0x46/0x70\n     do_syscall_64+0x48/0xa0\n     ? exit_to_user_mode_prepare+0x4d/0xa0\n     entry_SYSCALL_64_after_hwframe+0x6e/0xd8\n    RIP: 0033:0x7fc85d91bbb3\n    Code: 64 89 02 b8 ff ff ff ff eb bd 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 00 80 3d 31 da 0d 00 00 49 89 ca 74 14 b8 1d 01 00 00 0f 05 <48> 3d 00 f0 ff ff 77 5d c3 0f 1f 40 00 48 83 ec 28 48 89 54 24 10\n    \n    Signed-off-by: Kent Overstreet <kent.overstreet@linux.dev>\n\ndiff --git a/fs/bcachefs/buckets.c b/fs/bcachefs/buckets.c\nindex 2acd727d3f9b..58d8c6ffd955 100644\n--- a/fs/bcachefs/buckets.c\n+++ b/fs/bcachefs/buckets.c\n@@ -1322,7 +1322,7 @@ int bch2_trans_fs_usage_apply(struct btree_trans *trans,\n \tstruct bch_fs *c = trans->c;\n \tstatic int warned_disk_usage = 0;\n \tbool warn = false;\n-\tunsigned disk_res_sectors = trans->disk_res ? trans->disk_res->sectors : 0;\n+\tu64 disk_res_sectors = trans->disk_res ? trans->disk_res->sectors : 0;\n \tstruct replicas_delta *d, *d2;\n \tstruct replicas_delta *top = (void *) deltas->d + deltas->used;\n \tstruct bch_fs_usage *dst;\n@@ -1381,7 +1381,7 @@ int bch2_trans_fs_usage_apply(struct btree_trans *trans,\n \n \tif (unlikely(warn) && !xchg(&warned_disk_usage, 1))\n \t\tbch2_trans_inconsistent(trans,\n-\t\t\t\t\t\"disk usage increased %lli more than %u sectors reserved)\",\n+\t\t\t\t\t\"disk usage increased %lli more than %llu sectors reserved)\",\n \t\t\t\t\tshould_not_have_added, disk_res_sectors);\n \treturn 0;\n need_mark:\ndiff --git a/fs/bcachefs/io_misc.c b/fs/bcachefs/io_misc.c\nindex 0979d5e05713..bebc11444ef5 100644\n--- a/fs/bcachefs/io_misc.c\n+++ b/fs/bcachefs/io_misc.c\n@@ -23,7 +23,7 @@\n int bch2_extent_fallocate(struct btree_trans *trans,\n \t\t\t  subvol_inum inum,\n \t\t\t  struct btree_iter *iter,\n-\t\t\t  unsigned sectors,\n+\t\t\t  u64 sectors,\n \t\t\t  struct bch_io_opts opts,\n \t\t\t  s64 *i_sectors_delta,\n \t\t\t  struct write_point_specifier write_point)\n@@ -105,7 +105,7 @@ int bch2_extent_fallocate(struct btree_trans *trans,\n \t\tif (ret)\n \t\t\tgoto err;\n \n-\t\tsectors = min(sectors, wp->sectors_free);\n+\t\tsectors = min_t(u64, sectors, wp->sectors_free);\n \t\tsectors_allocated = sectors;\n \n \t\tbch2_key_resize(&e->k, sectors);\ndiff --git a/fs/bcachefs/io_misc.h b/fs/bcachefs/io_misc.h\nindex c9e6ed40e1b8..9cb44a7c43c1 100644\n--- a/fs/bcachefs/io_misc.h\n+++ b/fs/bcachefs/io_misc.h\n@@ -3,7 +3,7 @@\n #define _BCACHEFS_IO_MISC_H\n \n int bch2_extent_fallocate(struct btree_trans *, subvol_inum, struct btree_iter *,\n-\t\t\t  unsigned, struct bch_io_opts, s64 *,\n+\t\t\t  u64, struct bch_io_opts, s64 *,\n \t\t\t  struct write_point_specifier);\n int bch2_fpunch_at(struct btree_trans *, struct btree_iter *,\n \t\t   subvol_inum, u64, s64 *);\n",
+                "patch_related_targets": [
+                  "fs/bcachefs/buckets.o",
+                  "fs/bcachefs/io_misc.o"
+                ],
+                "knighter_original_generation_plan_excerpt": "Your plan here\n\n1. No new program‐state maps are needed. This checker is purely static in nature—we’re only verifying that variables and format specifiers related to disk sectors are declared and used with the correct 64‐bit type.\n\n2. Use checkASTDecl to detect vulnerable integer declarations:\n • In the checkASTDecl callback, examine function and global variable declarations.\n • Look for declarations where the variable name (or parameter name) contains “sectors” (or similar) and its type is declared as “unsigned” (or unsigned int) rather than a 64‐bit type.\n • If such a declaration is found (for example in a function like bch2_trans_fs_usage_apply or in a parameter of bch2_extent_fallocate), emit a bug report with a short message such as “Disk sector count variable has insufficient width (use u64).”\n\n3. Use checkPostCall to catch mismatches in format specifiers:\n • In the checkPostCall callback, intercept calls to functions that log inconsistencies (for instance, with the name “bch2_trans_inconsistent”).\n • Retrieve the call’s argument that is the format string (using the provided AST functions and the utility function ExprHasName to extract source text).\n • Analyze the format string to see if it contains an improper specifier (e.g. “%u” instead of “%llu”) for a disk sector count.\n • If a mismatch is detected, report a bug with a concise message such as “Integer overflow risk: mismatched format specifier for disk sectors.”\n\n4. In both callbacks, generate bug reports using simple bug report creation (e.g. std::make_unique<BasicBugReport>) with a short, clear message.\n\nBy following these steps you will detect places where the arithmetic on disk sector counts is performed with a type that is too narrow and where the logging formats do not match the intended 64‐bit variable.",
+                "knighter_refined_plan_excerpt": "Your plan here\n\n1. No new program‐state maps are needed. This checker is purely static in nature—we’re only verifying that variables and format specifiers related to disk sectors are declared and used with the correct 64‐bit type.\n\n2. Use checkASTDecl to detect vulnerable integer declarations:\n • In the checkASTDecl callback, examine function and global variable declarations.\n • Look for declarations where the variable name (or parameter name) contains “sectors” (or similar) and its type is declared as “unsigned” (or unsigned int) rather than a 64‐bit type.\n • If such a declaration is found (for example in a function like bch2_trans_fs_usage_apply or in a parameter of bch2_extent_fallocate), emit a bug report with a short message such as “Disk sector count variable has insufficient width (use u64).”\n\n3. Use checkPostCall to catch mismatches in format specifiers:\n • In the checkPostCall callback, intercept calls to functions that log inconsistencies (for instance, with the name “bch2_trans_inconsistent”).\n • Retrieve the call’s argument that is the format string (using the provided AST functions and the utility function ExprHasName to extract source text).\n • Analyze the format string to see if it contains an improper specifier (e.g. “%u” instead of “%llu”) for a disk sector count.\n • If a mismatch is detected, report a bug with a concise message such as “Integer overflow risk: mismatched format specifier for disk sectors.”\n\n4. In both callbacks, generate bug reports using simple bug report creation (e.g. std::make_unique<BasicBugReport>) with a short, clear message.\n\nBy following these steps you will detect places where the arithmetic on disk sector counts is performed with a type that is too narrow and where the logging formats do not match the intended 64‐bit variable.",
+                "knighter_pattern_excerpt": "## Bug Pattern\n\nUsing integer types with insufficient width for arithmetic on disk sector counts, leading to integer overflow. In this case, variables representing the number of sectors (and comparisons/calculations involving them) were declared as 32-bit (unsigned) instead of a 64-bit type (u64). This mismatch can cause overflows when values exceed the 32‐bit range, and it also leads to mismatched format specifiers in logging, further compounding the issue.",
+                "knighter_generated_patch_excerpt": "## Patch Description\n\nbcachefs: Fix an integer overflow\n\nFixes:\n\nbcachefs (e7fdc10e-54a3-49d9-bd0c-390370889d84): disk usage increased 4294967296 more than 2823707312 sectors reserved)\ntransaction updates for __bchfs_fallocate journal seq 467859\n  update: btree=extents cached=0 bch2_trans_update+0x4e8/0x540\n    old u64s 5 type deleted 536925940:3559337304:4294967283 len 0 ver 0\n    new u64s 6 type reservation 536925940:3559337304:4294967283 len 3559337304 ver 0: generation 0 replicas 2\n  update: btree=inodes cached=1 bch2_extent_update_i_size_sectors+0x305/0x3b0\n    old u64s 19 type inode_v3 0:536925940:4294967283 len 0 ver 0: mode 100600 flags 15300000 journal_seq 467859 bi_size 0 bi_sectors 0 bi_version 0 bi_atime 40905301656446 bi_ctime 40905301656446 bi_mtime 40905301656446 bi_otime 40905301656446 bi_uid 0 bi_gid 0 bi_nlink 0 bi_generation 0 bi_dev 0 bi_data_checksum 0 bi_compression 0 bi_project 0 bi_background_compression 0 bi_data_replicas 0 bi_promote_target 0 bi_foreground_target 0 bi_background_target 0 bi_erasure_code 0 bi_fields_set 0 bi_dir 1879048193 bi_dir_offset 3384856038735393365 bi_subvol 0 bi_parent_subvol 0 bi_nocow 0\n    new u64s 19 type inode_v3 0:536925940:4294967283 len 0 ver 0: mode 100600 flags 15300000 journal_seq 467859 bi_size 0 bi_sectors 3559337304 bi_version 0 bi_atime 40905301656446 bi_ctime 40905301656446 bi_mtime 40905301656446 bi_otime 40905301656446 bi_uid 0 bi_gid 0 bi_nlink 0 bi_generation 0 bi_dev 0 bi_data_checksum 0 bi_compression 0 bi_project 0 bi_background_compression 0 bi_data_replicas 0 bi_promote_target 0 bi_foreground_target 0 bi_background_target 0 bi_erasure_code 0 bi_fields_set 0 bi_dir 1879048193 bi_dir_offset 3384856038735393365 bi_subvol 0 bi_parent_subvol 0 bi_nocow 0\n\nKernel panic - not syncing: bcachefs (e7fdc10e-54a3-49d9-bd0c-390370889d84): panic after error\nCPU: 4 PID: 5154 Comm: rsync Not tainted 6.5.9-gateway-gca1614174cc0-dirty #1\nHardware name: To Be Filled By O.E.M. To Be Filled By O.E.M./X570 Phantom Gaming 4, BIOS P4.20 08/02/2021\nCall Trace:\n <TASK>\n dump_stack_lvl+0x5a/0x90\n panic+0x105/0x300\n ? console_unlock+0xf1/0x130\n ? bch2_printbuf_exit+0x16/0x30\n ? srso_return_thunk+0x5/0x10\n bch2_inconsistent_error+0x6f/0x80\n bch2_trans_fs_usage_apply+0x279/0x3d0\n __bch2_trans_commit+0x112a/0x1df0\n ? bch2_extent_update+0x13a/0x1d0\n bch2_extent_update+0x13a/0x1d0\n bch2_extent_fallocate+0x58e/0x740\n bch2_fallocate_dispatch+0xb7c/0x1030\n ? do_filp_open+0xa0/0x140\n vfs_fallocate+0x18e/0x1d0\n __x64_sys_fallocate+0x46/0x70\n do_syscall_64+0x48/0xa0\n ? exit_to_user_mode_prepare+0x4d/0xa0\n entry_SYSCALL_64_after_hwframe+0x6e/0xd8\nRIP: 0033:0x7fc85d91bbb3\nCode: 64 89 02 b8 ff ff ff ff eb bd 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 00 80 3d 31 da 0d 00 00 49 89 ca 74 14 b8 1d 01 00 00 0f 05 <48> 3d 00 f0 ff ff 77 5d c3 0f 1f 40 00 48 83 ec 28 48 89 54 24 10\n\nSigned-off-by: Kent Overstreet <kent.overstreet@linux.dev>\n\n## Buggy Code\n\n```c\n// fs/bcachefs/buckets.c\nint bch2_trans_fs_usage_apply(struct btree_trans *trans,\n\t\t\t      struct replicas_delta_list *deltas)\n{\n\tstruct bch_fs *c = trans->c;\n\tstatic int warned_disk_usage = 0;\n\tbool warn = false;\n\tunsigned disk_res_sectors = trans->disk_res ? trans->disk_res->sectors : 0;\n\tstruct replicas_delta *d, *d2;\n\tstruct replicas_delta *top = (void *) deltas->d + deltas->used;\n\tstruct bch_fs_usage *dst;\n\ts64 added = 0, should_not_have_added;\n\tunsigned i;\n\n\tpercpu_down_read(&c->mark_lock);\n\tpreempt_disable();\n\tdst = fs_usage_ptr(c, trans->journal_res.seq, false);\n\n\tfor (d = deltas->d; d != top; d = replicas_delta_next(d)) {\n\t\tswitch (d->r.data_type) {\n\t\tcase BCH_DATA_btree:\n\t\tcase BCH_DATA_user:\n\t\tcase BCH_DATA_parity:\n\t\t\tadded += d->delta;\n\t\t}\n\n\t\tif (__update_replicas(c, dst, &d->r, d->delta))\n\t\t\tgoto need_mark;\n\t}\n\n\tdst->nr_inodes += deltas->nr_inodes;\n\n\tfor (i = 0; i < BCH_REPLICAS_MAX; i++) {\n\t\tadded\t\t\t\t+= deltas->persistent_reserved[i];\n\t\tdst->reserved\t\t\t+= deltas->persistent_reserved[i];\n\t\tdst->persistent_reserved[i]\t+= deltas->persistent_reserved[i];\n\t}\n\n\t/*\n\t * Not allowed to reduce sectors_available except by getting a\n\t * reservation:\n\t */\n\tshould_not_have_added = added - (s64) disk_res_sectors;\n\tif (unlikely(should_not_have_added > 0)) {\n\t\tu64 old, new, v = atomic64_read(&c->sectors_available);\n\n\t\tdo {\n\t\t\told = v;\n\t\t\tnew = max_t(s64, 0, old - should_not_have_added);\n\t\t} while ((v = atomic64_cmpxchg(&c->sectors_available,\n\t\t\t\t\t       old, new)) != old);\n\n\t\tadded -= should_not_have_added;\n\t\twarn = true;\n\t}\n\n\tif (added > 0) {\n\t\ttrans->disk_res->sectors -= added;\n\t\tthis_cpu_sub(*c->online_reserved, added);\n\t}\n\n\tpreempt_enable();\n\tpercpu_up_read(&c->mark_lock);\n\n\tif (unlikely(warn) && !xchg(&warned_disk_usage, 1))\n\t\tbch2_trans_inconsistent(trans,\n\t\t\t\t\t\"disk usage increased %lli more than %u sectors reserved)\",\n\t\t\t\t\tshould_not_have_added, disk_res_sectors);\n\treturn 0;\nneed_mark:\n\t/* revert changes: */\n\tfor (d2 = deltas->d; d2 != d; d2 = replicas_delta_next(d2))\n\t\tBUG_ON(__update_replicas(c, dst, &d2->r, -d2->delta));\n\n\tpreempt_enable();\n\tpercpu_up_read(&c->mark_lock);\n\treturn -1;\n}\n```\n```c\n// fs/bcachefs/io_misc.c\nint bch2_extent_fallocate(struct btree_trans *trans,\n\t\t\t  subvol_inum inum,\n\t\t\t  struct btree_iter *iter,\n\t\t\t  unsigned sectors,\n\t\t\t  struct bch_io_opts opts,\n\t\t\t  s64 *i_sectors_delta,\n\t\t\t  struct write_point_specifier write_point)\n{\n\tstruct bch_fs *c = trans->c;\n\tstruct disk_reservation disk_res = { 0 };\n\tstruct closure cl;\n\tstruct open_buckets open_buckets = { 0 };\n\tstruct bkey_s_c k;\n\tstruct bkey_buf old, new;\n\tunsigned sectors_allocated = 0;\n\tbool have_reservation = false;\n\tbool unwritten = opts.nocow &&\n\t    c->sb.version >= bcachefs_metadata_version_unwritten_extents;\n\tint ret;\n\n\tbch2_bkey_buf_init(&old);\n\tbch2_bkey_buf_init(&new);\n\tclosure_init_stack(&cl);\n\n\tk = bch2_btree_iter_peek_slot(iter);\n\tret = bkey_err(k);\n\tif (ret)\n\t\treturn ret;\n\n\tsectors = min_t(u64, sectors, k.k->p.offset - iter->pos.offset);\n\n\tif (!have_reservation) {\n\t\tunsigned new_replicas =\n\t\t\tmax(0, (int) opts.data_replicas -\n\t\t\t    (int) bch2_bkey_nr_ptrs_fully_allocated(k));\n\t\t/*\n\t\t * Get a disk reservation before (in the nocow case) calling\n\t\t * into the allocator:\n\t\t */\n\t\tret = bch2_disk_reservation_get(c, &disk_res, sectors, new_replicas, 0);\n\t\tif (unlikely(ret))\n\t\t\tgoto err;\n\n\t\tbch2_bkey_buf_reassemble(&old, c, k);\n\t}\n\n\tif (have_reservation) {\n\t\tif (!bch2_extents_match(k, bkey_i_to_s_c(old.k)))\n\t\t\tgoto err;\n\n\t\tbch2_key_resize(&new.k->k, sectors);\n\t} else if (!unwritten) {\n\t\tstruct bkey_i_reservation *reservation;\n\n\t\tbch2_bkey_buf_realloc(&new, c, sizeof(*reservation) / sizeof(u64));\n\t\treservation = bkey_reservation_init(new.k);\n\t\treservation->k.p = iter->pos;\n\t\tbch2_key_resize(&reservation->k, sectors);\n\t\treservation->v.nr_replicas = opts.data_replicas;\n\t} else {\n\t\tstruct bkey_i_extent *e;\n\t\tstruct bch_devs_list devs_have;\n\t\tstruct write_point *wp;\n\t\tstruct bch_extent_ptr *ptr;\n\n\t\tdevs_have.nr = 0;\n\n\t\tbch2_bkey_buf_realloc(&new, c, BKEY_EXTENT_U64s_MAX);\n\n\t\te = bkey_extent_init(new.k);\n\t\te->k.p = iter->pos;\n\n\t\tret = bch2_alloc_sectors_start_trans(trans,\n\t\t\t\topts.foreground_target,\n\t\t\t\tfalse,\n\t\t\t\twrite_point,\n\t\t\t\t&devs_have,\n\t\t\t\topts.data_replicas,\n\t\t\t\topts.data_replicas,\n\t\t\t\tBCH_WATERMARK_normal, 0, &cl, &wp);\n\t\tif (bch2_err_matches(ret, BCH_ERR_operation_blocked))\n\t\t\tret = -BCH_ERR_transaction_restart_nested;\n\t\tif (ret)\n\t\t\tgoto err;\n\n\t\tsectors = min(sectors, wp->sectors_free);\n\t\tsectors_allocated = sectors;\n\n\t\tbch2_key_resize(&e->k, sectors);\n\n\t\tbch2_open_bucket_get(c, wp, &open_buckets);\n\t\tbch2_alloc_sectors_append_ptrs(c, wp, &e->k_i, sectors, false);\n\t\tbch2_alloc_sectors_done(c, wp);\n\n\t\textent_for_each_ptr(extent_i_to_s(e), ptr)\n\t\t\tptr->unwritten = true;\n\t}\n\n\thave_reservation = true;\n\n\tret = bch2_extent_update(trans, inum, iter, new.k, &disk_res,\n\t\t\t\t 0, i_sectors_delta, true);\nerr:\n\tif (!ret && sectors_allocated)\n\t\tbch2_increment_clock(c, sectors_allocated, WRITE);\n\n\tbch2_open_buckets_put(c, &open_buckets);\n\tbch2_disk_reservation_put(c, &disk_res);\n\tbch2_bkey_buf_\n...[truncated]...",
+                "checker_source_summary": {
+                  "available": true,
+                  "callbacks_or_hooks": [
+                    "checkPostCall",
+                    "checkASTCodeBody"
+                  ],
+                  "notable_tokens": [
+                    "ret",
+                    "PathSensitiveBugReport",
+                    "SectorVarVisitor",
+                    "VisitVarDecl",
+                    "VisitParmVarDecl",
+                    "BuiltinType::UInt",
+                    "bch2_trans_inconsistent",
+                    "%u",
+                    "%llu"
+                  ],
+                  "source_excerpt": "// /external/upstream-study/SAGEN/result-0224-bugfail-multi-o3mini/test-Integer-Overflow-df94cb2e57b2cc539f325003e7abb76d3060d55b/checkers/checker7.cpp\n#include \"clang/AST/ASTContext.h\"\n#include \"clang/AST/Decl.h\"\n#include \"clang/AST/Expr.h\"\n#include \"clang/AST/RecursiveASTVisitor.h\"\n#include \"clang/Basic/SourceManager.h\"\n#include \"clang/Lex/Lexer.h\"\n// Removed include \"clang/StaticAnalyzer/Checkers/Checkers.h\" because it does not exist in Clang-18\n#include \"clang/StaticAnalyzer/Core/BugReporter/BugReporter.h\"\n#include \"clang/StaticAnalyzer/Core/BugReporter/BugType.h\"\n#include \"clang/StaticAnalyzer/Core/Checker.h\"\n#include \"clang/StaticAnalyzer/Core/PathSensitive/CallEvent.h\"\n#include \"clang/StaticAnalyzer/Core/PathSensitive/CheckerContext.h\"\n#include \"clang/StaticAnalyzer/Frontend/CheckerRegistry.h\"\n#include \"llvm/ADT/StringRef.h\"\n#include \"llvm/Support/raw_ostream.h\"\n#include \"clang/StaticAnalyzer/Checkers/utility.h\"\n#include <memory>\nusing namespace clang;\nusing namespace ento;\nnamespace {\n/// Helper class to recursively visit a function body looking for\n/// declarations of variables or parameters with names containing \"sector\"\n/// (case-insensitive) that are declared with an insufficient 32-bit type.\nclass SectorVarVisitor : public RecursiveASTVisitor<SectorVarVisitor> {\n  BugReporter &BR;\n  const CheckerBase *Checker;\npublic:\n  SectorVarVisitor(BugReporter &BR, const CheckerBase *Checker)\n    : BR(BR), Checker(Checker) {}\n  // Visit local variable declarations.\n  bool VisitVarDecl(VarDecl *VD) {\n    if (!VD->getIdentifier())\n      return true;\n    std::string VarName = VD->getNameAsString();\n    // Convert to lower-case.\n    for (auto &c : VarName)\n      c = tolower(c);\n    // Check if the variable name contains \"sector\"\n    if (VarName.find(\"sector\") == std::string::npos)\n      return true;\n    QualType QT = VD->getType().getCanonicalType();\n    // If the type is an unsigned int (typically 32-bit) then warn.\n    if (const BuiltinType *BT = dyn_cast<BuiltinType>(QT.getTypePtr())) {\n      // Check for \"unsigned int\" exactly.\n      if (BT->getKind() == BuiltinType::UInt) {\n        // Report a warning.\n        BugType *BTy = new BugType(Checker, \"Disk sector count variable width\",\n                                   \"Integer Overflow\");\n        SmallString<128> buf;\n        llvm::raw_svector_ostream os(buf);\n        os << \"Variable '\" << VD->getNameAsString()\n           << \"' has insufficient width (use u64 instead of unsigned int)\";\n        PathDiagnosticLocation DLoc = PathDiagnosticLocation::createBegin(VD, BR.getSourceManager());\n        auto Report = std::make_unique<BasicBugReport>(*BTy, os.str(), DLoc);\n        Report->addRange(VD->getSourceRange());\n        BR.emitReport(std::move(Report));\n      }\n    }\n    return true;\n  }\n  // Also visit parameter declarations.\n  bool VisitParmVarDecl(ParmVarDecl *PVD) {\n    if (!PVD->getIdentifier())\n      return true;\n    std::string ParamName = PVD->getNameAsString();\n    for (auto &c : ParamName)\n      c = tolower(c);\n    if (ParamName.find(\"sector\") == std::string::npos)\n      return true;\n    QualType QT = PVD->getType().getCanonicalType();\n    if (const BuiltinType *BT = dyn_cast<BuiltinType>(QT.getTypePtr())) {\n      if (BT->getKind() == BuiltinType::UInt) {\n        BugType *BTy = new BugType(Checker, \"Disk sector count parameter width\",\n                                   \"Integer Overflow\");\n        SmallString<128> buf;\n        llvm::raw_svector_ostream os(buf);\n        os << \"Parameter '\" << PVD->getNameAsString()\n           << \"' has insufficient width (use u64 instead of unsigned int)\";\n        PathDiagnosticLocation DLoc = PathDiagnosticLocation::createBegin(PVD, BR.getSourceManager());\n        auto Report = std::make_unique<BasicBugReport>(*BTy, os.str(), DLoc);\n        Report->addRange(PVD->getSourceRange());\n        BR.emitReport(std::move(Report));\n      }\n    }\n    return true;\n  }\n};\n/// Our checker class. We implement two callbacks:\n/// 1. checkASTCodeBody to examine function bodies (and indirectly, declarations)"
+                },
+                "buggy_report_index": {
+                  "report_dir": "research/knighter/e2/results/screen1_reports/09_df94cb2e57b2_Integer_Overflow/buggy",
+                  "index_available": true,
+                  "summary_lines": [
+                    "<h2>Bug Summary</h2><table>",
+                    "<thead><tr><td>Bug Type</td><td>Quantity</td><td class=\"sorttable_nosort\">Display?</td></tr></thead>",
+                    "<tr style=\"font-weight:bold\"><td class=\"SUMM_DESC\">All Bugs</td><td class=\"Q\">2</td><td><center><input type=\"checkbox\" id=\"AllBugsCheck\" onClick=\"CopyCheckedStateToCheckButtons(this);\" checked/></center></td></tr>",
+                    "<tr><td class=\"SUMM_DESC\">Disk sector count variable width</td><td class=\"Q\">2</td><td><center><input type=\"checkbox\" onClick=\"ToggleDisplay(this,'bt_integer_overflow_disk_sector_count_variable_width');\" checked/></center></td></tr>",
+                    "  <td class=\"Q\">Line</td>",
+                    "  <td class=\"Q\">Path Length</td>",
+                    "<tr class=\"bt_integer_overflow_disk_sector_count_variable_width\"><td class=\"DESC\">Integer Overflow</td><td class=\"DESC\">Disk sector count variable width</td><td>io_misc.c</td><td class=\"DESC\">unknown</td><td class=\"Q\">150</td><td class=\"Q\">1</td><td><a href=\"report-635798.html#EndPath\">View Report</a></td>",
+                    "<tr class=\"bt_integer_overflow_disk_sector_count_variable_width\"><td class=\"DESC\">Integer Overflow</td><td class=\"DESC\">Disk sector count variable width</td><td>io_misc.c</td><td class=\"DESC\">unknown</td><td class=\"Q\">37</td><td class=\"Q\">1</td><td><a href=\"report-c3c347.html#EndPath\">View Report</a></td>"
+                  ]
+                },
+                "fixed_report_index": {
+                  "report_dir": "research/knighter/e2/results/screen1_reports/09_df94cb2e57b2_Integer_Overflow/fixed",
+                  "index_available": true,
+                  "summary_lines": [
+                    "<h2>Bug Summary</h2><table>",
+                    "<thead><tr><td>Bug Type</td><td>Quantity</td><td class=\"sorttable_nosort\">Display?</td></tr></thead>",
+                    "<tr style=\"font-weight:bold\"><td class=\"SUMM_DESC\">All Bugs</td><td class=\"Q\">2</td><td><center><input type=\"checkbox\" id=\"AllBugsCheck\" onClick=\"CopyCheckedStateToCheckButtons(this);\" checked/></center></td></tr>",
+                    "<tr><td class=\"SUMM_DESC\">Disk sector count variable width</td><td class=\"Q\">2</td><td><center><input type=\"checkbox\" onClick=\"ToggleDisplay(this,'bt_integer_overflow_disk_sector_count_variable_width');\" checked/></center></td></tr>",
+                    "  <td class=\"Q\">Line</td>",
+                    "  <td class=\"Q\">Path Length</td>",
+                    "<tr class=\"bt_integer_overflow_disk_sector_count_variable_width\"><td class=\"DESC\">Integer Overflow</td><td class=\"DESC\">Disk sector count variable width</td><td>io_misc.c</td><td class=\"DESC\">unknown</td><td class=\"Q\">150</td><td class=\"Q\">1</td><td><a href=\"report-635798.html#EndPath\">View Report</a></td>",
+                    "<tr class=\"bt_integer_overflow_disk_sector_count_variable_width\"><td class=\"DESC\">Integer Overflow</td><td class=\"DESC\">Disk sector count variable width</td><td>io_misc.c</td><td class=\"DESC\">unknown</td><td class=\"Q\">37</td><td class=\"Q\">1</td><td><a href=\"report-c3c347.html#EndPath\">View Report</a></td>"
+                  ]
+                },
+                "refinement_guidance": [
+                  "Patch widens disk_res_sectors from unsigned to u64; fixed-side reports should be suppressed when the sector-count declaration is already 64-bit.",
+                  "Patch widens the bch2_extent_fallocate sectors parameter to u64; checker should distinguish this from remaining unrelated unsigned sector-like variables.",
+                  "Patch changes min(sectors, wp->sectors_free) to min_t(u64, ...), preserving the u64 arithmetic domain across the comparison.",
+                  "Patch aligns the bch2_trans_inconsistent format specifier with the widened u64 disk_res_sectors argument."
+                ]
+              },
+              "log_path": "/anonymous/home/LLM-Native/research/knighter/runs/knighter-v613/validation_20260616_192317/knighter_validation.log",
+              "output_root": "/anonymous/home/LLM-Native/research/knighter/runs/knighter-v613/validation_20260616_192317",
+              "archived_buggy_report_dir": "research/knighter/e2/results/screen1_reports/09_df94cb2e57b2_Integer_Overflow/buggy",
+              "archived_fixed_report_dir": "research/knighter/e2/results/screen1_reports/09_df94cb2e57b2_Integer_Overflow/fixed"
+            },
+            "provenance": {
+              "tool": "research/knighter/scripts/run_e2_patch_local_audit.py",
+              "artifact": "research/knighter/e2/results/screening/patch_local_baseline/09_df94cb2e57b2_Integer_Overflow/patch_local_result.json",
+              "confidence": 0.95
+            },
+            "evidence_slice": {}
+          },
+          {
+            "evidence_id": "knighter_historical_report_reference",
+            "type": "context_summary",
+            "analyzer": "csa",
+            "scope": {
+              "repo": "linux",
+              "file": "fs/bcachefs/buckets.o;fs/bcachefs/io_misc.o",
+              "function": "knighter_historical_reference"
+            },
+            "location": {
+              "line": 0,
+              "column": 0
+            },
+            "semantic_payload": {
+              "kind": "knighter_historical_reference",
+              "summary": "Historical KNighter report_count=120, manual_bugs=0, manual_not_bugs=0; this is not the same metric as patch-local E2 validation.",
+              "knighter_report_count": 120,
+              "knighter_manual_bugs": 0,
+              "knighter_manual_not_bugs": 0,
+              "metric_scope_note": "Historical KNighter report_count is not patch-local buggy/fixed validation."
+            },
+            "provenance": {
+              "tool": "KNighter old-version generated/checker-for-evaluation/refine",
+              "artifact": "commit_report_map.txt + triage_report.csv",
+              "confidence": 0.72
+            },
+            "evidence_slice": {}
+          },
+          {
+            "evidence_id": "knighter_e2_patch_fact",
+            "type": "patch_fact",
+            "analyzer": "csa",
+            "scope": {
+              "repo": "linux",
+              "file": "fs/bcachefs/buckets.c",
+              "function": "bch2_trans_fs_usage_apply"
+            },
+            "location": {
+              "line": 0,
+              "column": 0
+            },
+            "semantic_payload": {
+              "fact_type": "sector_count_width_widening",
+              "label": "Integer-Overflow",
+              "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=6, fixed_alerts=5, buggy_miss=false, fixed_noisy=true, pds=false, targets=fs/bcachefs/buckets.o;fs/bcachefs/io_misc.o.",
+              "attributes": {
+                "patterns": [
+                  "integer_overflow",
+                  "sector_count_width",
+                  "unsigned_to_u64"
+                ],
+                "functions": [
+                  "bch2_trans_fs_usage_apply",
+                  "bch2_extent_fallocate"
+                ],
+                "tracked_symbols": [
+                  "disk_res_sectors",
+                  "trans->disk_res->sectors",
+                  "sectors",
+                  "wp->sectors_free",
+                  "should_not_have_added"
+                ],
+                "fixed_noisy": true,
+                "buggy_miss": false
+              }
+            },
+            "provenance": {
+              "tool": "research/knighter/scripts/backfill_e2_refine_inputs.py",
+              "artifact": "research/knighter/e2/cases/09_df94cb2e57b2_Integer_Overflow/patches/commit.patch",
+              "confidence": 0.9
+            },
+            "evidence_slice": {
+              "kind": "patch_fact",
+              "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=6, fixed_alerts=5, buggy_miss=false, fixed_noisy=true, pds=false, targets=fs/bcachefs/buckets.o;fs/bcachefs/io_misc.o.",
+              "statements": [
+                "bcachefs (e7fdc10e-54a3-49d9-bd0c-390370889d84): disk usage increased 4294967296 more than 2823707312 sectors reserved)",
+                "update: btree=inodes cached=1 bch2_extent_update_i_size_sectors+0x305/0x3b0",
+                "old u64s 19 type inode_v3 0:536925940:4294967283 len 0 ver 0: mode 100600 flags 15300000 journal_seq 467859 bi_size 0 bi_sectors 0 bi_version 0 bi_atime 40905301656446 bi_ctime 40905301656446 bi_mtime 40905301656446 bi_otime 40905301656446 bi_uid 0 bi_gid 0 bi_nlink 0 bi_generation 0 bi_dev 0 bi_data_checksum 0 bi_compression 0 bi_project 0 bi_background_compression 0 bi_data_replicas 0 bi_promote_target 0 bi_foreground_target 0 bi_background_target 0 bi_erasure_code 0 bi_fields_set 0 bi_dir 1879048193 bi_dir_offset 3384856038735393365 bi_subvol 0 bi_parent_subvol 0 bi_nocow 0",
+                "new u64s 19 type inode_v3 0:536925940:4294967283 len 0 ver 0: mode 100600 flags 15300000 journal_seq 467859 bi_size 0 bi_sectors 3559337304 bi_version 0 bi_atime 40905301656446 bi_ctime 40905301656446 bi_mtime 40905301656446 bi_otime 40905301656446 bi_uid 0 bi_gid 0 bi_nlink 0 bi_generation 0 bi_dev 0 bi_data_checksum 0 bi_compression 0 bi_project 0 bi_background_compression 0 bi_data_replicas 0 bi_promote_target 0 bi_foreground_target 0 bi_background_target 0 bi_erasure_code 0 bi_fields_set 0 bi_dir 1879048193 bi_dir_offset 3384856038735393365 bi_subvol 0 bi_parent_subvol 0 bi_nocow 0",
+                "bch2_trans_fs_usage_apply+0x279/0x3d0",
+                "bch2_extent_fallocate+0x58e/0x740",
+                "int bch2_trans_fs_usage_apply(struct btree_trans *trans,",
+                "unsigned disk_res_sectors = trans->disk_res ? trans->disk_res->sectors : 0;",
+                "unsigned i;",
+                "* Not allowed to reduce sectors_available except by getting a",
+                "should_not_have_added = added - (s64) disk_res_sectors;",
+                "u64 old, new, v = atomic64_read(&c->sectors_available);"
+              ],
+              "api_terms": [
+                "ret",
+                "PathSensitiveBugReport",
+                "SectorVarVisitor",
+                "VisitVarDecl",
+                "VisitParmVarDecl",
+                "BuiltinType::UInt",
+                "bch2_trans_inconsistent",
+                "%u",
+                "%llu",
+                "ParmVarDecl",
+                "VarDecl",
+                "min_t",
+                "u64"
+              ],
+              "related_symbols": [
+                "disk_res_sectors",
+                "trans->disk_res->sectors",
+                "sectors",
+                "wp->sectors_free",
+                "should_not_have_added"
+              ],
+              "coverage_status": "patch-local",
+              "verifier": "research/knighter/scripts/backfill_e2_refine_inputs.py",
+              "extraction_method": "research/knighter/e2/cases/09_df94cb2e57b2_Integer_Overflow/patches/commit.patch"
+            }
+          },
+          {
+            "evidence_id": "knighter_e2_semantic_slice",
+            "type": "semantic_slice",
+            "analyzer": "csa",
+            "scope": {
+              "repo": "linux",
+              "file": "fs/bcachefs/buckets.c",
+              "function": "bch2_trans_fs_usage_apply"
+            },
+            "location": {
+              "line": 0,
+              "column": 0
+            },
+            "semantic_payload": {
+              "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=6, fixed_alerts=5, buggy_miss=false, fixed_noisy=true, pds=false, targets=fs/bcachefs/buckets.o;fs/bcachefs/io_misc.o.",
+              "tracked_symbols": [
+                "disk_res_sectors",
+                "trans->disk_res->sectors",
+                "sectors",
+                "wp->sectors_free",
+                "should_not_have_added"
+              ],
+              "source_excerpt": "## Patch Description\n\nbcachefs: Fix an integer overflow\n\nFixes:\n\nbcachefs (e7fdc10e-54a3-49d9-bd0c-390370889d84): disk usage increased 4294967296 more than 2823707312 sectors reserved)\ntransaction updates for __bchfs_fallocate journal seq 467859\n  update: btree=extents cached=0 bch2_trans_update+0x4e8/0x540\n    old u64s 5 type deleted 536925940:3559337304:4294967283 len 0 ver 0\n    new u64s 6 type reservation 536925940:3559337304:4294967283 len 3559337304 ver 0: generation 0 replicas 2\n  update: btree=inodes cached=1 bch2_extent_update_i_size_sectors+0x305/0x3b0\n    old u64s 19 type inode_v3 0:536925940:4294967283 len 0 ver 0: mode 100600 flags 15300000 journal_seq 467859 bi_size 0 bi_sectors 0 bi_version 0 bi_atime 40905301656446 bi_ctime 40905301656446 bi_mtime 40905301656446 bi_otime 40905301656446 bi_uid 0 bi_gid 0 bi_nlink 0 bi_generation 0 bi_dev 0 bi_data_checksum 0 bi_compression 0 bi_project 0 bi_background_compression 0 bi_data_replicas 0 bi_promote_target 0 bi_foreground_target 0 bi_background_target 0 bi_erasure_code 0 bi_fields_set 0 bi_dir 1879048193 bi_dir_offset 3384856038735393365 bi_subvol 0 bi_parent_subvol 0 bi_nocow 0\n    new u64s 19 type inode_v3 0:536925940:4294967283 len 0 ver 0: mode 100600 flags 15300000 journal_seq 467859 bi_size 0 bi_sectors 3559337304 bi_version 0 bi_atime 40905301656446 bi_ctime 40905301656446 bi_mtime 40905301656446 bi_otime 40905301656446 bi_uid 0 bi_gid 0 bi_nlink 0 bi_generation 0 bi_dev 0 bi_data_checksum 0 bi_compression 0 bi_project 0 bi_background_compression 0 bi_data_replicas 0 bi_promote_target 0 bi_foreground_target 0 bi_background_target 0 bi_erasure_code 0 bi_fields_set 0 bi_dir 1879048193 bi_dir_offset 3384856038735393365 bi_subvol 0 bi_parent_subvol 0 bi_nocow 0\n\nKernel panic - not syncing: bcachefs (e7fdc10e-54a3-49d9-bd0c-390370889d84): panic after error\nCPU: 4 PID: 5154 Comm: rsync Not tainted 6.5.9-gateway-gca1614174cc0-dirty #1\nHardware name: To Be Filled By O.E.M. To Be Filled By O.E.M./X570 Phantom Gaming 4, BIOS P4.20 08/02/2021\nCall Trace:\n <TASK>\n dump_stack_lvl+0x5a/0x90\n panic+0x105/0x300\n ? console_unlock+0xf1/0x130\n ? bch2_printbuf_exit+0x16/0x30\n ? srso_return_thunk+0x5/0x10\n bch2_inco",
+              "coverage_status": "patch-local"
+            },
+            "provenance": {
+              "tool": "research/knighter/scripts/backfill_e2_refine_inputs.py",
+              "artifact": "research/knighter/e2/cases/09_df94cb2e57b2_Integer_Overflow/patches/commit.patch",
+              "confidence": 0.9
+            },
+            "evidence_slice": {
+              "kind": "semantic_slice",
+              "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=6, fixed_alerts=5, buggy_miss=false, fixed_noisy=true, pds=false, targets=fs/bcachefs/buckets.o;fs/bcachefs/io_misc.o.",
+              "statements": [
+                "bcachefs (e7fdc10e-54a3-49d9-bd0c-390370889d84): disk usage increased 4294967296 more than 2823707312 sectors reserved)",
+                "update: btree=inodes cached=1 bch2_extent_update_i_size_sectors+0x305/0x3b0",
+                "old u64s 19 type inode_v3 0:536925940:4294967283 len 0 ver 0: mode 100600 flags 15300000 journal_seq 467859 bi_size 0 bi_sectors 0 bi_version 0 bi_atime 40905301656446 bi_ctime 40905301656446 bi_mtime 40905301656446 bi_otime 40905301656446 bi_uid 0 bi_gid 0 bi_nlink 0 bi_generation 0 bi_dev 0 bi_data_checksum 0 bi_compression 0 bi_project 0 bi_background_compression 0 bi_data_replicas 0 bi_promote_target 0 bi_foreground_target 0 bi_background_target 0 bi_erasure_code 0 bi_fields_set 0 bi_dir 1879048193 bi_dir_offset 3384856038735393365 bi_subvol 0 bi_parent_subvol 0 bi_nocow 0",
+                "new u64s 19 type inode_v3 0:536925940:4294967283 len 0 ver 0: mode 100600 flags 15300000 journal_seq 467859 bi_size 0 bi_sectors 3559337304 bi_version 0 bi_atime 40905301656446 bi_ctime 40905301656446 bi_mtime 40905301656446 bi_otime 40905301656446 bi_uid 0 bi_gid 0 bi_nlink 0 bi_generation 0 bi_dev 0 bi_data_checksum 0 bi_compression 0 bi_project 0 bi_background_compression 0 bi_data_replicas 0 bi_promote_target 0 bi_foreground_target 0 bi_background_target 0 bi_erasure_code 0 bi_fields_set 0 bi_dir 1879048193 bi_dir_offset 3384856038735393365 bi_subvol 0 bi_parent_subvol 0 bi_nocow 0",
+                "bch2_trans_fs_usage_apply+0x279/0x3d0",
+                "bch2_extent_fallocate+0x58e/0x740",
+                "int bch2_trans_fs_usage_apply(struct btree_trans *trans,",
+                "unsigned disk_res_sectors = trans->disk_res ? trans->disk_res->sectors : 0;",
+                "unsigned i;",
+                "* Not allowed to reduce sectors_available except by getting a",
+                "should_not_have_added = added - (s64) disk_res_sectors;",
+                "u64 old, new, v = atomic64_read(&c->sectors_available);"
+              ],
+              "guards": [
+                "sector-count variables and parameters must remain u64 when they can hold disk block counts",
+                "fixed disk_res_sectors declaration is u64, so the old unsigned-width warning must be silent",
+                "fixed bch2_extent_fallocate sectors parameter is u64 and min_t(u64, ...) preserves the comparison width",
+                "fixed bch2_trans_inconsistent format uses %llu for disk_res_sectors"
+              ],
+              "call_edges": [
+                "bch2_extent_fallocate -> bch2_key_resize(&e->k, sectors)",
+                "bch2_trans_fs_usage_apply -> bch2_trans_inconsistent(..., disk_res_sectors)"
+              ],
+              "state_transitions": [
+                "buggy: unsigned disk_res_sectors = trans->disk_res ? trans->disk_res->sectors : 0",
+                "fixed: u64 disk_res_sectors = trans->disk_res ? trans->disk_res->sectors : 0",
+                "buggy: bch2_extent_fallocate(..., unsigned sectors, ...)",
+                "fixed: bch2_extent_fallocate(..., u64 sectors, ...)",
+                "buggy: sectors = min(sectors, wp->sectors_free)",
+                "fixed: sectors = min_t(u64, sectors, wp->sectors_free)",
+                "buggy: format uses %u for disk_res_sectors",
+                "fixed: format uses %llu for disk_res_sectors"
+              ],
+              "api_terms": [
+                "ret",
+                "PathSensitiveBugReport",
+                "SectorVarVisitor",
+                "VisitVarDecl",
+                "VisitParmVarDecl",
+                "BuiltinType::UInt",
+                "bch2_trans_inconsistent",
+                "%u",
+                "%llu",
+                "ParmVarDecl",
+                "VarDecl",
+                "min_t",
+                "u64"
+              ],
+              "related_symbols": [
+                "disk_res_sectors",
+                "trans->disk_res->sectors",
+                "sectors",
+                "wp->sectors_free",
+                "should_not_have_added"
+              ],
+              "verifier": "research/knighter/scripts/backfill_e2_refine_inputs.py",
+              "extraction_method": "research/knighter/e2/cases/09_df94cb2e57b2_Integer_Overflow/patches/commit.patch",
+              "coverage_status": "patch-local"
+            }
+          },
+          {
+            "evidence_id": "knighter_e2_path_guard",
+            "type": "path_guard",
+            "analyzer": "csa",
+            "scope": {
+              "repo": "linux",
+              "file": "fs/bcachefs/buckets.c",
+              "function": "bch2_trans_fs_usage_apply"
+            },
+            "location": {
+              "line": 0,
+              "column": 0
+            },
+            "semantic_payload": {
+              "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=6, fixed_alerts=5, buggy_miss=false, fixed_noisy=true, pds=false, targets=fs/bcachefs/buckets.o;fs/bcachefs/io_misc.o.",
+              "guard_expr": "sector-count variables and parameters must remain u64 when they can hold disk block counts",
+              "state_before": [
+                "disk_res_sectors is stored in unsigned and may truncate trans->disk_res->sectors",
+                "bch2_extent_fallocate receives sectors as unsigned and min(sectors, wp->sectors_free) can preserve the narrow type",
+                "bch2_trans_inconsistent prints disk_res_sectors with %u"
+              ],
+              "state_after": [
+                "disk_res_sectors is u64 and matches the reserved-sector domain",
+                "bch2_extent_fallocate receives sectors as u64 and min_t(u64, ...) keeps both operands in the 64-bit domain",
+                "bch2_trans_inconsistent prints disk_res_sectors with %llu"
+              ],
+              "tracked_symbols": [
+                "disk_res_sectors",
+                "trans->disk_res->sectors",
+                "sectors",
+                "wp->sectors_free",
+                "should_not_have_added"
+              ]
+            },
+            "provenance": {
+              "tool": "research/knighter/scripts/backfill_e2_refine_inputs.py",
+              "artifact": "research/knighter/e2/cases/09_df94cb2e57b2_Integer_Overflow/patches/commit.patch",
+              "confidence": 0.9
+            },
+            "evidence_slice": {
+              "kind": "path_guard",
+              "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=6, fixed_alerts=5, buggy_miss=false, fixed_noisy=true, pds=false, targets=fs/bcachefs/buckets.o;fs/bcachefs/io_misc.o.",
+              "guards": [
+                "sector-count variables and parameters must remain u64 when they can hold disk block counts",
+                "fixed disk_res_sectors declaration is u64, so the old unsigned-width warning must be silent",
+                "fixed bch2_extent_fallocate sectors parameter is u64 and min_t(u64, ...) preserves the comparison width",
+                "fixed bch2_trans_inconsistent format uses %llu for disk_res_sectors"
+              ],
+              "state_transitions": [
+                "buggy: unsigned disk_res_sectors = trans->disk_res ? trans->disk_res->sectors : 0",
+                "fixed: u64 disk_res_sectors = trans->disk_res ? trans->disk_res->sectors : 0",
+                "buggy: bch2_extent_fallocate(..., unsigned sectors, ...)",
+                "fixed: bch2_extent_fallocate(..., u64 sectors, ...)",
+                "buggy: sectors = min(sectors, wp->sectors_free)",
+                "fixed: sectors = min_t(u64, sectors, wp->sectors_free)",
+                "buggy: format uses %u for disk_res_sectors",
+                "fixed: format uses %llu for disk_res_sectors"
+              ],
+              "related_symbols": [
+                "disk_res_sectors",
+                "trans->disk_res->sectors",
+                "sectors",
+                "wp->sectors_free",
+                "should_not_have_added"
+              ],
+              "verifier": "research/knighter/scripts/backfill_e2_refine_inputs.py",
+              "extraction_method": "research/knighter/e2/cases/09_df94cb2e57b2_Integer_Overflow/patches/commit.patch",
+              "coverage_status": "patch-local"
+            }
+          },
+          {
+            "evidence_id": "knighter_e2_allocation_lifecycle",
+            "type": "allocation_lifecycle",
+            "analyzer": "csa",
+            "scope": {
+              "repo": "linux",
+              "file": "fs/bcachefs/buckets.c",
+              "function": "bch2_trans_fs_usage_apply"
+            },
+            "location": {
+              "line": 0,
+              "column": 0
+            },
+            "semantic_payload": {
+              "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=6, fixed_alerts=5, buggy_miss=false, fixed_noisy=true, pds=false, targets=fs/bcachefs/buckets.o;fs/bcachefs/io_misc.o.",
+              "path": [
+                "buggy: unsigned disk_res_sectors = trans->disk_res ? trans->disk_res->sectors : 0",
+                "fixed: u64 disk_res_sectors = trans->disk_res ? trans->disk_res->sectors : 0",
+                "buggy: bch2_extent_fallocate(..., unsigned sectors, ...)",
+                "fixed: bch2_extent_fallocate(..., u64 sectors, ...)",
+                "buggy: sectors = min(sectors, wp->sectors_free)",
+                "fixed: sectors = min_t(u64, sectors, wp->sectors_free)",
+                "buggy: format uses %u for disk_res_sectors",
+                "fixed: format uses %llu for disk_res_sectors",
+                "bch2_extent_fallocate -> bch2_key_resize(&e->k, sectors)",
+                "bch2_trans_fs_usage_apply -> bch2_trans_inconsistent(..., disk_res_sectors)"
+              ],
+              "operations": [
+                "read reserved-sector count from trans->disk_res",
+                "store and propagate sector count in u64",
+                "compare sector counts with min_t(u64, ...)",
+                "log widened sector count with a matching 64-bit format"
+              ],
+              "acquisition_ops": [
+                "trans->disk_res->sectors",
+                "bch2_extent_fallocate sectors parameter"
+              ],
+              "release_ops": [],
+              "transition_ops": [
+                "unsigned-to-u64 widening",
+                "min_t(u64)",
+                "%u-to-%llu format widening"
+              ],
+              "state_before": [
+                "disk_res_sectors is stored in unsigned and may truncate trans->disk_res->sectors",
+                "bch2_extent_fallocate receives sectors as unsigned and min(sectors, wp->sectors_free) can preserve the narrow type",
+                "bch2_trans_inconsistent prints disk_res_sectors with %u"
+              ],
+              "state_after": [
+                "disk_res_sectors is u64 and matches the reserved-sector domain",
+                "bch2_extent_fallocate receives sectors as u64 and min_t(u64, ...) keeps both operands in the 64-bit domain",
+                "bch2_trans_inconsistent prints disk_res_sectors with %llu"
+              ]
+            },
+            "provenance": {
+              "tool": "research/knighter/scripts/backfill_e2_refine_inputs.py",
+              "artifact": "research/knighter/e2/cases/09_df94cb2e57b2_Integer_Overflow/patches/commit.patch",
+              "confidence": 0.9
+            },
+            "evidence_slice": {
+              "kind": "allocation_lifecycle",
+              "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=6, fixed_alerts=5, buggy_miss=false, fixed_noisy=true, pds=false, targets=fs/bcachefs/buckets.o;fs/bcachefs/io_misc.o.",
+              "statements": [
+                "bcachefs (e7fdc10e-54a3-49d9-bd0c-390370889d84): disk usage increased 4294967296 more than 2823707312 sectors reserved)",
+                "update: btree=inodes cached=1 bch2_extent_update_i_size_sectors+0x305/0x3b0",
+                "old u64s 19 type inode_v3 0:536925940:4294967283 len 0 ver 0: mode 100600 flags 15300000 journal_seq 467859 bi_size 0 bi_sectors 0 bi_version 0 bi_atime 40905301656446 bi_ctime 40905301656446 bi_mtime 40905301656446 bi_otime 40905301656446 bi_uid 0 bi_gid 0 bi_nlink 0 bi_generation 0 bi_dev 0 bi_data_checksum 0 bi_compression 0 bi_project 0 bi_background_compression 0 bi_data_replicas 0 bi_promote_target 0 bi_foreground_target 0 bi_background_target 0 bi_erasure_code 0 bi_fields_set 0 bi_dir 1879048193 bi_dir_offset 3384856038735393365 bi_subvol 0 bi_parent_subvol 0 bi_nocow 0",
+                "new u64s 19 type inode_v3 0:536925940:4294967283 len 0 ver 0: mode 100600 flags 15300000 journal_seq 467859 bi_size 0 bi_sectors 3559337304 bi_version 0 bi_atime 40905301656446 bi_ctime 40905301656446 bi_mtime 40905301656446 bi_otime 40905301656446 bi_uid 0 bi_gid 0 bi_nlink 0 bi_generation 0 bi_dev 0 bi_data_checksum 0 bi_compression 0 bi_project 0 bi_background_compression 0 bi_data_replicas 0 bi_promote_target 0 bi_foreground_target 0 bi_background_target 0 bi_erasure_code 0 bi_fields_set 0 bi_dir 1879048193 bi_dir_offset 3384856038735393365 bi_subvol 0 bi_parent_subvol 0 bi_nocow 0",
+                "bch2_trans_fs_usage_apply+0x279/0x3d0",
+                "bch2_extent_fallocate+0x58e/0x740",
+                "int bch2_trans_fs_usage_apply(struct btree_trans *trans,",
+                "unsigned disk_res_sectors = trans->disk_res ? trans->disk_res->sectors : 0;",
+                "unsigned i;",
+                "* Not allowed to reduce sectors_available except by getting a",
+                "should_not_have_added = added - (s64) disk_res_sectors;",
+                "u64 old, new, v = atomic64_read(&c->sectors_available);"
+              ],
+              "state_transitions": [
+                "buggy: unsigned disk_res_sectors = trans->disk_res ? trans->disk_res->sectors : 0",
+                "fixed: u64 disk_res_sectors = trans->disk_res ? trans->disk_res->sectors : 0",
+                "buggy: bch2_extent_fallocate(..., unsigned sectors, ...)",
+                "fixed: bch2_extent_fallocate(..., u64 sectors, ...)",
+                "buggy: sectors = min(sectors, wp->sectors_free)",
+                "fixed: sectors = min_t(u64, sectors, wp->sectors_free)",
+                "buggy: format uses %u for disk_res_sectors",
+                "fixed: format uses %llu for disk_res_sectors"
+              ],
+              "api_terms": [
+                "ret",
+                "PathSensitiveBugReport",
+                "SectorVarVisitor",
+                "VisitVarDecl",
+                "VisitParmVarDecl",
+                "BuiltinType::UInt",
+                "bch2_trans_inconsistent",
+                "%u",
+                "%llu",
+                "ParmVarDecl",
+                "VarDecl",
+                "min_t",
+                "u64"
+              ],
+              "related_symbols": [
+                "disk_res_sectors",
+                "trans->disk_res->sectors",
+                "sectors",
+                "wp->sectors_free",
+                "should_not_have_added"
+              ],
+              "verifier": "research/knighter/scripts/backfill_e2_refine_inputs.py",
+              "extraction_method": "research/knighter/e2/cases/09_df94cb2e57b2_Integer_Overflow/patches/commit.patch",
+              "coverage_status": "patch-local"
+            }
+          },
+          {
+            "evidence_id": "knighter_e2_call_chain",
+            "type": "call_chain",
+            "analyzer": "csa",
+            "scope": {
+              "repo": "linux",
+              "file": "fs/bcachefs/buckets.c",
+              "function": "bch2_trans_fs_usage_apply"
+            },
+            "location": {
+              "line": 0,
+              "column": 0
+            },
+            "semantic_payload": {
+              "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=6, fixed_alerts=5, buggy_miss=false, fixed_noisy=true, pds=false, targets=fs/bcachefs/buckets.o;fs/bcachefs/io_misc.o.",
+              "call_edges": [
+                "bch2_extent_fallocate -> bch2_key_resize(&e->k, sectors)",
+                "bch2_trans_fs_usage_apply -> bch2_trans_inconsistent(..., disk_res_sectors)"
+              ]
+            },
+            "provenance": {
+              "tool": "research/knighter/scripts/backfill_e2_refine_inputs.py",
+              "artifact": "research/knighter/e2/cases/09_df94cb2e57b2_Integer_Overflow/patches/commit.patch",
+              "confidence": 0.9
+            },
+            "evidence_slice": {
+              "kind": "call_chain",
+              "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=6, fixed_alerts=5, buggy_miss=false, fixed_noisy=true, pds=false, targets=fs/bcachefs/buckets.o;fs/bcachefs/io_misc.o.",
+              "call_edges": [
+                "bch2_extent_fallocate -> bch2_key_resize(&e->k, sectors)",
+                "bch2_trans_fs_usage_apply -> bch2_trans_inconsistent(..., disk_res_sectors)"
+              ],
+              "related_symbols": [
+                "disk_res_sectors",
+                "trans->disk_res->sectors",
+                "sectors",
+                "wp->sectors_free",
+                "should_not_have_added"
+              ],
+              "verifier": "research/knighter/scripts/backfill_e2_refine_inputs.py",
+              "extraction_method": "research/knighter/e2/cases/09_df94cb2e57b2_Integer_Overflow/patches/commit.patch",
+              "coverage_status": "patch-local"
+            }
+          }
+        ],
+        "missing_evidence": [],
+        "collected_analyzers": [
+          "csa"
+        ]
+      }
+    },
+    "validation_feedback": {
+      "records": [
+        {
+          "evidence_id": "knighter_e2_patch_local_validation",
+          "type": "validation_outcome",
+          "analyzer": "csa",
+          "scope": {
+            "repo": "linux",
+            "file": "fs/bcachefs/buckets.o;fs/bcachefs/io_misc.o",
+            "function": "patch_local_validation"
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "kind": "knighter_e2_patch_local",
+            "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=6, fixed_alerts=5, buggy_miss=false, fixed_noisy=true, pds=false, targets=fs/bcachefs/buckets.o;fs/bcachefs/io_misc.o.",
+            "commit_id": "df94cb2e57b2cc539f325003e7abb76d3060d55b",
+            "case_id": "09_df94cb2e57b2_Integer_Overflow",
+            "bug_type": "Integer-Overflow",
+            "candidate_group": "positive_scan_report_count",
+            "checker_id": "old:df94cb2e57b2cc539f325003e7abb76d3060d55b:checker7",
+            "checker_name": "SAGenTestChecker",
+            "patch_related_targets": [
+              "fs/bcachefs/buckets.o",
+              "fs/bcachefs/io_misc.o"
+            ],
+            "buggy_counts": {
+              "fs/bcachefs/buckets.o": 4,
+              "fs/bcachefs/io_misc.o": 2
+            },
+            "fixed_counts": {
+              "fs/bcachefs/buckets.o": 3,
+              "fs/bcachefs/io_misc.o": 2
+            },
+            "buggy_alerts": 6,
+            "fixed_alerts": 5,
+            "buggy_miss": false,
+            "fixed_noisy": true,
+            "pds": false,
+            "failure_mode": "fixed_noisy",
+            "repair_priority": "high",
+            "repair_action": "Add the patch-introduced guard/barrier/silence condition to reduce fixed-side alerts.",
+            "feedback_hint": "KNighter E2 strict patch-local baseline: buggy_alerts=6, fixed_alerts=5, buggy_miss=false, fixed_noisy=true, pds=false, targets=fs/bcachefs/buckets.o;fs/bcachefs/io_misc.o.",
+            "historical_reference": "Historical KNighter report_count=120, manual_bugs=0, manual_not_bugs=0; this is not the same metric as patch-local E2 validation.",
+            "patch_semantic_context": {
+              "patch_excerpt": "commit df94cb2e57b2cc539f325003e7abb76d3060d55b\nAuthor: Kent Overstreet <kent.overstreet@linux.dev>\nDate:   Fri Oct 27 17:19:31 2023 -0400\n\n    bcachefs: Fix an integer overflow\n    \n    Fixes:\n    \n    bcachefs (e7fdc10e-54a3-49d9-bd0c-390370889d84): disk usage increased 4294967296 more than 2823707312 sectors reserved)\n    transaction updates for __bchfs_fallocate journal seq 467859\n      update: btree=extents cached=0 bch2_trans_update+0x4e8/0x540\n        old u64s 5 type deleted 536925940:3559337304:4294967283 len 0 ver 0\n        new u64s 6 type reservation 536925940:3559337304:4294967283 len 3559337304 ver 0: generation 0 replicas 2\n      update: btree=inodes cached=1 bch2_extent_update_i_size_sectors+0x305/0x3b0\n        old u64s 19 type inode_v3 0:536925940:4294967283 len 0 ver 0: mode 100600 flags 15300000 journal_seq 467859 bi_size 0 bi_sectors 0 bi_version 0 bi_atime 40905301656446 bi_ctime 40905301656446 bi_mtime 40905301656446 bi_otime 40905301656446 bi_uid 0 bi_gid 0 bi_nlink 0 bi_generation 0 bi_dev 0 bi_data_checksum 0 bi_compression 0 bi_project 0 bi_background_compression 0 bi_data_replicas 0 bi_promote_target 0 bi_foreground_target 0 bi_background_target 0 bi_erasure_code 0 bi_fields_set 0 bi_dir 1879048193 bi_dir_offset 3384856038735393365 bi_subvol 0 bi_parent_subvol 0 bi_nocow 0\n        new u64s 19 type inode_v3 0:536925940:4294967283 len 0 ver 0: mode 100600 flags 15300000 journal_seq 467859 bi_size 0 bi_sectors 3559337304 bi_version 0 bi_atime 40905301656446 bi_ctime 40905301656446 bi_mtime 40905301656446 bi_otime 40905301656446 bi_uid 0 bi_gid 0 bi_nlink 0 bi_generation 0 bi_dev 0 bi_data_checksum 0 bi_compression 0 bi_project 0 bi_background_compression 0 bi_data_replicas 0 bi_promote_target 0 bi_foreground_target 0 bi_background_target 0 bi_erasure_code 0 bi_fields_set 0 bi_dir 1879048193 bi_dir_offset 3384856038735393365 bi_subvol 0 bi_parent_subvol 0 bi_nocow 0\n    \n    Kernel panic - not syncing: bcachefs (e7fdc10e-54a3-49d9-bd0c-390370889d84): panic after error\n    CPU: 4 PID: 5154 Comm: rsync Not tainted 6.5.9-gateway-gca1614174cc0-dirty #1\n    Hardware name: To Be Filled By O.E.M. To Be Filled By O.E.M./X570 Phantom Gaming 4, BIOS P4.20 08/02/2021\n    Call Trace:\n     <TASK>\n     dump_stack_lvl+0x5a/0x90\n     panic+0x105/0x300\n     ? console_unlock+0xf1/0x130\n     ? bch2_printbuf_exit+0x16/0x30\n     ? srso_return_thunk+0x5/0x10\n     bch2_inconsistent_error+0x6f/0x80\n     bch2_trans_fs_usage_apply+0x279/0x3d0\n     __bch2_trans_commit+0x112a/0x1df0\n     ? bch2_extent_update+0x13a/0x1d0\n     bch2_extent_update+0x13a/0x1d0\n     bch2_extent_fallocate+0x58e/0x740\n     bch2_fallocate_dispatch+0xb7c/0x1030\n     ? do_filp_open+0xa0/0x140\n     vfs_fallocate+0x18e/0x1d0\n     __x64_sys_fallocate+0x46/0x70\n     do_syscall_64+0x48/0xa0\n     ? exit_to_user_mode_prepare+0x4d/0xa0\n     entry_SYSCALL_64_after_hwframe+0x6e/0xd8\n    RIP: 0033:0x7fc85d91bbb3\n    Code: 64 89 02 b8 ff ff ff ff eb bd 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 00 80 3d 31 da 0d 00 00 49 89 ca 74 14 b8 1d 01 00 00 0f 05 <48> 3d 00 f0 ff ff 77 5d c3 0f 1f 40 00 48 83 ec 28 48 89 54 24 10\n    \n    Signed-off-by: Kent Overstreet <kent.overstreet@linux.dev>\n\ndiff --git a/fs/bcachefs/buckets.c b/fs/bcachefs/buckets.c\nindex 2acd727d3f9b..58d8c6ffd955 100644\n--- a/fs/bcachefs/buckets.c\n+++ b/fs/bcachefs/buckets.c\n@@ -1322,7 +1322,7 @@ int bch2_trans_fs_usage_apply(struct btree_trans *trans,\n \tstruct bch_fs *c = trans->c;\n \tstatic int warned_disk_usage = 0;\n \tbool warn = false;\n-\tunsigned disk_res_sectors = trans->disk_res ? trans->disk_res->sectors : 0;\n+\tu64 disk_res_sectors = trans->disk_res ? trans->disk_res->sectors : 0;\n \tstruct replicas_delta *d, *d2;\n \tstruct replicas_delta *top = (void *) deltas->d + deltas->used;\n \tstruct bch_fs_usage *dst;\n@@ -1381,7 +1381,7 @@ int bch2_trans_fs_usage_apply(struct btree_trans *trans,\n \n \tif (unlikely(warn) && !xchg(&warned_disk_usage, 1))\n \t\tbch2_trans_inconsistent(trans,\n-\t\t\t\t\t\"disk usage increased %lli more than %u sectors reserved)\",\n+\t\t\t\t\t\"disk usage increased %lli more than %llu sectors reserved)\",\n \t\t\t\t\tshould_not_have_added, disk_res_sectors);\n \treturn 0;\n need_mark:\ndiff --git a/fs/bcachefs/io_misc.c b/fs/bcachefs/io_misc.c\nindex 0979d5e05713..bebc11444ef5 100644\n--- a/fs/bcachefs/io_misc.c\n+++ b/fs/bcachefs/io_misc.c\n@@ -23,7 +23,7 @@\n int bch2_extent_fallocate(struct btree_trans *trans,\n \t\t\t  subvol_inum inum,\n \t\t\t  struct btree_iter *iter,\n-\t\t\t  unsigned sectors,\n+\t\t\t  u64 sectors,\n \t\t\t  struct bch_io_opts opts,\n \t\t\t  s64 *i_sectors_delta,\n \t\t\t  struct write_point_specifier write_point)\n@@ -105,7 +105,7 @@ int bch2_extent_fallocate(struct btree_trans *trans,\n \t\tif (ret)\n \t\t\tgoto err;\n \n-\t\tsectors = min(sectors, wp->sectors_free);\n+\t\tsectors = min_t(u64, sectors, wp->sectors_free);\n \t\tsectors_allocated = sectors;\n \n \t\tbch2_key_resize(&e->k, sectors);\ndiff --git a/fs/bcachefs/io_misc.h b/fs/bcachefs/io_misc.h\nindex c9e6ed40e1b8..9cb44a7c43c1 100644\n--- a/fs/bcachefs/io_misc.h\n+++ b/fs/bcachefs/io_misc.h\n@@ -3,7 +3,7 @@\n #define _BCACHEFS_IO_MISC_H\n \n int bch2_extent_fallocate(struct btree_trans *, subvol_inum, struct btree_iter *,\n-\t\t\t  unsigned, struct bch_io_opts, s64 *,\n+\t\t\t  u64, struct bch_io_opts, s64 *,\n \t\t\t  struct write_point_specifier);\n int bch2_fpunch_at(struct btree_trans *, struct btree_iter *,\n \t\t   subvol_inum, u64, s64 *);\n",
+              "patch_related_targets": [
+                "fs/bcachefs/buckets.o",
+                "fs/bcachefs/io_misc.o"
+              ],
+              "knighter_original_generation_plan_excerpt": "Your plan here\n\n1. No new program‐state maps are needed. This checker is purely static in nature—we’re only verifying that variables and format specifiers related to disk sectors are declared and used with the correct 64‐bit type.\n\n2. Use checkASTDecl to detect vulnerable integer declarations:\n • In the checkASTDecl callback, examine function and global variable declarations.\n • Look for declarations where the variable name (or parameter name) contains “sectors” (or similar) and its type is declared as “unsigned” (or unsigned int) rather than a 64‐bit type.\n • If such a declaration is found (for example in a function like bch2_trans_fs_usage_apply or in a parameter of bch2_extent_fallocate), emit a bug report with a short message such as “Disk sector count variable has insufficient width (use u64).”\n\n3. Use checkPostCall to catch mismatches in format specifiers:\n • In the checkPostCall callback, intercept calls to functions that log inconsistencies (for instance, with the name “bch2_trans_inconsistent”).\n • Retrieve the call’s argument that is the format string (using the provided AST functions and the utility function ExprHasName to extract source text).\n • Analyze the format string to see if it contains an improper specifier (e.g. “%u” instead of “%llu”) for a disk sector count.\n • If a mismatch is detected, report a bug with a concise message such as “Integer overflow risk: mismatched format specifier for disk sectors.”\n\n4. In both callbacks, generate bug reports using simple bug report creation (e.g. std::make_unique<BasicBugReport>) with a short, clear message.\n\nBy following these steps you will detect places where the arithmetic on disk sector counts is performed with a type that is too narrow and where the logging formats do not match the intended 64‐bit variable.",
+              "knighter_refined_plan_excerpt": "Your plan here\n\n1. No new program‐state maps are needed. This checker is purely static in nature—we’re only verifying that variables and format specifiers related to disk sectors are declared and used with the correct 64‐bit type.\n\n2. Use checkASTDecl to detect vulnerable integer declarations:\n • In the checkASTDecl callback, examine function and global variable declarations.\n • Look for declarations where the variable name (or parameter name) contains “sectors” (or similar) and its type is declared as “unsigned” (or unsigned int) rather than a 64‐bit type.\n • If such a declaration is found (for example in a function like bch2_trans_fs_usage_apply or in a parameter of bch2_extent_fallocate), emit a bug report with a short message such as “Disk sector count variable has insufficient width (use u64).”\n\n3. Use checkPostCall to catch mismatches in format specifiers:\n • In the checkPostCall callback, intercept calls to functions that log inconsistencies (for instance, with the name “bch2_trans_inconsistent”).\n • Retrieve the call’s argument that is the format string (using the provided AST functions and the utility function ExprHasName to extract source text).\n • Analyze the format string to see if it contains an improper specifier (e.g. “%u” instead of “%llu”) for a disk sector count.\n • If a mismatch is detected, report a bug with a concise message such as “Integer overflow risk: mismatched format specifier for disk sectors.”\n\n4. In both callbacks, generate bug reports using simple bug report creation (e.g. std::make_unique<BasicBugReport>) with a short, clear message.\n\nBy following these steps you will detect places where the arithmetic on disk sector counts is performed with a type that is too narrow and where the logging formats do not match the intended 64‐bit variable.",
+              "knighter_pattern_excerpt": "## Bug Pattern\n\nUsing integer types with insufficient width for arithmetic on disk sector counts, leading to integer overflow. In this case, variables representing the number of sectors (and comparisons/calculations involving them) were declared as 32-bit (unsigned) instead of a 64-bit type (u64). This mismatch can cause overflows when values exceed the 32‐bit range, and it also leads to mismatched format specifiers in logging, further compounding the issue.",
+              "knighter_generated_patch_excerpt": "## Patch Description\n\nbcachefs: Fix an integer overflow\n\nFixes:\n\nbcachefs (e7fdc10e-54a3-49d9-bd0c-390370889d84): disk usage increased 4294967296 more than 2823707312 sectors reserved)\ntransaction updates for __bchfs_fallocate journal seq 467859\n  update: btree=extents cached=0 bch2_trans_update+0x4e8/0x540\n    old u64s 5 type deleted 536925940:3559337304:4294967283 len 0 ver 0\n    new u64s 6 type reservation 536925940:3559337304:4294967283 len 3559337304 ver 0: generation 0 replicas 2\n  update: btree=inodes cached=1 bch2_extent_update_i_size_sectors+0x305/0x3b0\n    old u64s 19 type inode_v3 0:536925940:4294967283 len 0 ver 0: mode 100600 flags 15300000 journal_seq 467859 bi_size 0 bi_sectors 0 bi_version 0 bi_atime 40905301656446 bi_ctime 40905301656446 bi_mtime 40905301656446 bi_otime 40905301656446 bi_uid 0 bi_gid 0 bi_nlink 0 bi_generation 0 bi_dev 0 bi_data_checksum 0 bi_compression 0 bi_project 0 bi_background_compression 0 bi_data_replicas 0 bi_promote_target 0 bi_foreground_target 0 bi_background_target 0 bi_erasure_code 0 bi_fields_set 0 bi_dir 1879048193 bi_dir_offset 3384856038735393365 bi_subvol 0 bi_parent_subvol 0 bi_nocow 0\n    new u64s 19 type inode_v3 0:536925940:4294967283 len 0 ver 0: mode 100600 flags 15300000 journal_seq 467859 bi_size 0 bi_sectors 3559337304 bi_version 0 bi_atime 40905301656446 bi_ctime 40905301656446 bi_mtime 40905301656446 bi_otime 40905301656446 bi_uid 0 bi_gid 0 bi_nlink 0 bi_generation 0 bi_dev 0 bi_data_checksum 0 bi_compression 0 bi_project 0 bi_background_compression 0 bi_data_replicas 0 bi_promote_target 0 bi_foreground_target 0 bi_background_target 0 bi_erasure_code 0 bi_fields_set 0 bi_dir 1879048193 bi_dir_offset 3384856038735393365 bi_subvol 0 bi_parent_subvol 0 bi_nocow 0\n\nKernel panic - not syncing: bcachefs (e7fdc10e-54a3-49d9-bd0c-390370889d84): panic after error\nCPU: 4 PID: 5154 Comm: rsync Not tainted 6.5.9-gateway-gca1614174cc0-dirty #1\nHardware name: To Be Filled By O.E.M. To Be Filled By O.E.M./X570 Phantom Gaming 4, BIOS P4.20 08/02/2021\nCall Trace:\n <TASK>\n dump_stack_lvl+0x5a/0x90\n panic+0x105/0x300\n ? console_unlock+0xf1/0x130\n ? bch2_printbuf_exit+0x16/0x30\n ? srso_return_thunk+0x5/0x10\n bch2_inconsistent_error+0x6f/0x80\n bch2_trans_fs_usage_apply+0x279/0x3d0\n __bch2_trans_commit+0x112a/0x1df0\n ? bch2_extent_update+0x13a/0x1d0\n bch2_extent_update+0x13a/0x1d0\n bch2_extent_fallocate+0x58e/0x740\n bch2_fallocate_dispatch+0xb7c/0x1030\n ? do_filp_open+0xa0/0x140\n vfs_fallocate+0x18e/0x1d0\n __x64_sys_fallocate+0x46/0x70\n do_syscall_64+0x48/0xa0\n ? exit_to_user_mode_prepare+0x4d/0xa0\n entry_SYSCALL_64_after_hwframe+0x6e/0xd8\nRIP: 0033:0x7fc85d91bbb3\nCode: 64 89 02 b8 ff ff ff ff eb bd 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 00 80 3d 31 da 0d 00 00 49 89 ca 74 14 b8 1d 01 00 00 0f 05 <48> 3d 00 f0 ff ff 77 5d c3 0f 1f 40 00 48 83 ec 28 48 89 54 24 10\n\nSigned-off-by: Kent Overstreet <kent.overstreet@linux.dev>\n\n## Buggy Code\n\n```c\n// fs/bcachefs/buckets.c\nint bch2_trans_fs_usage_apply(struct btree_trans *trans,\n\t\t\t      struct replicas_delta_list *deltas)\n{\n\tstruct bch_fs *c = trans->c;\n\tstatic int warned_disk_usage = 0;\n\tbool warn = false;\n\tunsigned disk_res_sectors = trans->disk_res ? trans->disk_res->sectors : 0;\n\tstruct replicas_delta *d, *d2;\n\tstruct replicas_delta *top = (void *) deltas->d + deltas->used;\n\tstruct bch_fs_usage *dst;\n\ts64 added = 0, should_not_have_added;\n\tunsigned i;\n\n\tpercpu_down_read(&c->mark_lock);\n\tpreempt_disable();\n\tdst = fs_usage_ptr(c, trans->journal_res.seq, false);\n\n\tfor (d = deltas->d; d != top; d = replicas_delta_next(d)) {\n\t\tswitch (d->r.data_type) {\n\t\tcase BCH_DATA_btree:\n\t\tcase BCH_DATA_user:\n\t\tcase BCH_DATA_parity:\n\t\t\tadded += d->delta;\n\t\t}\n\n\t\tif (__update_replicas(c, dst, &d->r, d->delta))\n\t\t\tgoto need_mark;\n\t}\n\n\tdst->nr_inodes += deltas->nr_inodes;\n\n\tfor (i = 0; i < BCH_REPLICAS_MAX; i++) {\n\t\tadded\t\t\t\t+= deltas->persistent_reserved[i];\n\t\tdst->reserved\t\t\t+= deltas->persistent_reserved[i];\n\t\tdst->persistent_reserved[i]\t+= deltas->persistent_reserved[i];\n\t}\n\n\t/*\n\t * Not allowed to reduce sectors_available except by getting a\n\t * reservation:\n\t */\n\tshould_not_have_added = added - (s64) disk_res_sectors;\n\tif (unlikely(should_not_have_added > 0)) {\n\t\tu64 old, new, v = atomic64_read(&c->sectors_available);\n\n\t\tdo {\n\t\t\told = v;\n\t\t\tnew = max_t(s64, 0, old - should_not_have_added);\n\t\t} while ((v = atomic64_cmpxchg(&c->sectors_available,\n\t\t\t\t\t       old, new)) != old);\n\n\t\tadded -= should_not_have_added;\n\t\twarn = true;\n\t}\n\n\tif (added > 0) {\n\t\ttrans->disk_res->sectors -= added;\n\t\tthis_cpu_sub(*c->online_reserved, added);\n\t}\n\n\tpreempt_enable();\n\tpercpu_up_read(&c->mark_lock);\n\n\tif (unlikely(warn) && !xchg(&warned_disk_usage, 1))\n\t\tbch2_trans_inconsistent(trans,\n\t\t\t\t\t\"disk usage increased %lli more than %u sectors reserved)\",\n\t\t\t\t\tshould_not_have_added, disk_res_sectors);\n\treturn 0;\nneed_mark:\n\t/* revert changes: */\n\tfor (d2 = deltas->d; d2 != d; d2 = replicas_delta_next(d2))\n\t\tBUG_ON(__update_replicas(c, dst, &d2->r, -d2->delta));\n\n\tpreempt_enable();\n\tpercpu_up_read(&c->mark_lock);\n\treturn -1;\n}\n```\n```c\n// fs/bcachefs/io_misc.c\nint bch2_extent_fallocate(struct btree_trans *trans,\n\t\t\t  subvol_inum inum,\n\t\t\t  struct btree_iter *iter,\n\t\t\t  unsigned sectors,\n\t\t\t  struct bch_io_opts opts,\n\t\t\t  s64 *i_sectors_delta,\n\t\t\t  struct write_point_specifier write_point)\n{\n\tstruct bch_fs *c = trans->c;\n\tstruct disk_reservation disk_res = { 0 };\n\tstruct closure cl;\n\tstruct open_buckets open_buckets = { 0 };\n\tstruct bkey_s_c k;\n\tstruct bkey_buf old, new;\n\tunsigned sectors_allocated = 0;\n\tbool have_reservation = false;\n\tbool unwritten = opts.nocow &&\n\t    c->sb.version >= bcachefs_metadata_version_unwritten_extents;\n\tint ret;\n\n\tbch2_bkey_buf_init(&old);\n\tbch2_bkey_buf_init(&new);\n\tclosure_init_stack(&cl);\n\n\tk = bch2_btree_iter_peek_slot(iter);\n\tret = bkey_err(k);\n\tif (ret)\n\t\treturn ret;\n\n\tsectors = min_t(u64, sectors, k.k->p.offset - iter->pos.offset);\n\n\tif (!have_reservation) {\n\t\tunsigned new_replicas =\n\t\t\tmax(0, (int) opts.data_replicas -\n\t\t\t    (int) bch2_bkey_nr_ptrs_fully_allocated(k));\n\t\t/*\n\t\t * Get a disk reservation before (in the nocow case) calling\n\t\t * into the allocator:\n\t\t */\n\t\tret = bch2_disk_reservation_get(c, &disk_res, sectors, new_replicas, 0);\n\t\tif (unlikely(ret))\n\t\t\tgoto err;\n\n\t\tbch2_bkey_buf_reassemble(&old, c, k);\n\t}\n\n\tif (have_reservation) {\n\t\tif (!bch2_extents_match(k, bkey_i_to_s_c(old.k)))\n\t\t\tgoto err;\n\n\t\tbch2_key_resize(&new.k->k, sectors);\n\t} else if (!unwritten) {\n\t\tstruct bkey_i_reservation *reservation;\n\n\t\tbch2_bkey_buf_realloc(&new, c, sizeof(*reservation) / sizeof(u64));\n\t\treservation = bkey_reservation_init(new.k);\n\t\treservation->k.p = iter->pos;\n\t\tbch2_key_resize(&reservation->k, sectors);\n\t\treservation->v.nr_replicas = opts.data_replicas;\n\t} else {\n\t\tstruct bkey_i_extent *e;\n\t\tstruct bch_devs_list devs_have;\n\t\tstruct write_point *wp;\n\t\tstruct bch_extent_ptr *ptr;\n\n\t\tdevs_have.nr = 0;\n\n\t\tbch2_bkey_buf_realloc(&new, c, BKEY_EXTENT_U64s_MAX);\n\n\t\te = bkey_extent_init(new.k);\n\t\te->k.p = iter->pos;\n\n\t\tret = bch2_alloc_sectors_start_trans(trans,\n\t\t\t\topts.foreground_target,\n\t\t\t\tfalse,\n\t\t\t\twrite_point,\n\t\t\t\t&devs_have,\n\t\t\t\topts.data_replicas,\n\t\t\t\topts.data_replicas,\n\t\t\t\tBCH_WATERMARK_normal, 0, &cl, &wp);\n\t\tif (bch2_err_matches(ret, BCH_ERR_operation_blocked))\n\t\t\tret = -BCH_ERR_transaction_restart_nested;\n\t\tif (ret)\n\t\t\tgoto err;\n\n\t\tsectors = min(sectors, wp->sectors_free);\n\t\tsectors_allocated = sectors;\n\n\t\tbch2_key_resize(&e->k, sectors);\n\n\t\tbch2_open_bucket_get(c, wp, &open_buckets);\n\t\tbch2_alloc_sectors_append_ptrs(c, wp, &e->k_i, sectors, false);\n\t\tbch2_alloc_sectors_done(c, wp);\n\n\t\textent_for_each_ptr(extent_i_to_s(e), ptr)\n\t\t\tptr->unwritten = true;\n\t}\n\n\thave_reservation = true;\n\n\tret = bch2_extent_update(trans, inum, iter, new.k, &disk_res,\n\t\t\t\t 0, i_sectors_delta, true);\nerr:\n\tif (!ret && sectors_allocated)\n\t\tbch2_increment_clock(c, sectors_allocated, WRITE);\n\n\tbch2_open_buckets_put(c, &open_buckets);\n\tbch2_disk_reservation_put(c, &disk_res);\n\tbch2_bkey_buf_\n...[truncated]...",
+              "checker_source_summary": {
+                "available": true,
+                "callbacks_or_hooks": [
+                  "checkPostCall",
+                  "checkASTCodeBody"
+                ],
+                "notable_tokens": [
+                  "ret",
+                  "PathSensitiveBugReport",
+                  "SectorVarVisitor",
+                  "VisitVarDecl",
+                  "VisitParmVarDecl",
+                  "BuiltinType::UInt",
+                  "bch2_trans_inconsistent",
+                  "%u",
+                  "%llu"
+                ],
+                "source_excerpt": "// /external/upstream-study/SAGEN/result-0224-bugfail-multi-o3mini/test-Integer-Overflow-df94cb2e57b2cc539f325003e7abb76d3060d55b/checkers/checker7.cpp\n#include \"clang/AST/ASTContext.h\"\n#include \"clang/AST/Decl.h\"\n#include \"clang/AST/Expr.h\"\n#include \"clang/AST/RecursiveASTVisitor.h\"\n#include \"clang/Basic/SourceManager.h\"\n#include \"clang/Lex/Lexer.h\"\n// Removed include \"clang/StaticAnalyzer/Checkers/Checkers.h\" because it does not exist in Clang-18\n#include \"clang/StaticAnalyzer/Core/BugReporter/BugReporter.h\"\n#include \"clang/StaticAnalyzer/Core/BugReporter/BugType.h\"\n#include \"clang/StaticAnalyzer/Core/Checker.h\"\n#include \"clang/StaticAnalyzer/Core/PathSensitive/CallEvent.h\"\n#include \"clang/StaticAnalyzer/Core/PathSensitive/CheckerContext.h\"\n#include \"clang/StaticAnalyzer/Frontend/CheckerRegistry.h\"\n#include \"llvm/ADT/StringRef.h\"\n#include \"llvm/Support/raw_ostream.h\"\n#include \"clang/StaticAnalyzer/Checkers/utility.h\"\n#include <memory>\nusing namespace clang;\nusing namespace ento;\nnamespace {\n/// Helper class to recursively visit a function body looking for\n/// declarations of variables or parameters with names containing \"sector\"\n/// (case-insensitive) that are declared with an insufficient 32-bit type.\nclass SectorVarVisitor : public RecursiveASTVisitor<SectorVarVisitor> {\n  BugReporter &BR;\n  const CheckerBase *Checker;\npublic:\n  SectorVarVisitor(BugReporter &BR, const CheckerBase *Checker)\n    : BR(BR), Checker(Checker) {}\n  // Visit local variable declarations.\n  bool VisitVarDecl(VarDecl *VD) {\n    if (!VD->getIdentifier())\n      return true;\n    std::string VarName = VD->getNameAsString();\n    // Convert to lower-case.\n    for (auto &c : VarName)\n      c = tolower(c);\n    // Check if the variable name contains \"sector\"\n    if (VarName.find(\"sector\") == std::string::npos)\n      return true;\n    QualType QT = VD->getType().getCanonicalType();\n    // If the type is an unsigned int (typically 32-bit) then warn.\n    if (const BuiltinType *BT = dyn_cast<BuiltinType>(QT.getTypePtr())) {\n      // Check for \"unsigned int\" exactly.\n      if (BT->getKind() == BuiltinType::UInt) {\n        // Report a warning.\n        BugType *BTy = new BugType(Checker, \"Disk sector count variable width\",\n                                   \"Integer Overflow\");\n        SmallString<128> buf;\n        llvm::raw_svector_ostream os(buf);\n        os << \"Variable '\" << VD->getNameAsString()\n           << \"' has insufficient width (use u64 instead of unsigned int)\";\n        PathDiagnosticLocation DLoc = PathDiagnosticLocation::createBegin(VD, BR.getSourceManager());\n        auto Report = std::make_unique<BasicBugReport>(*BTy, os.str(), DLoc);\n        Report->addRange(VD->getSourceRange());\n        BR.emitReport(std::move(Report));\n      }\n    }\n    return true;\n  }\n  // Also visit parameter declarations.\n  bool VisitParmVarDecl(ParmVarDecl *PVD) {\n    if (!PVD->getIdentifier())\n      return true;\n    std::string ParamName = PVD->getNameAsString();\n    for (auto &c : ParamName)\n      c = tolower(c);\n    if (ParamName.find(\"sector\") == std::string::npos)\n      return true;\n    QualType QT = PVD->getType().getCanonicalType();\n    if (const BuiltinType *BT = dyn_cast<BuiltinType>(QT.getTypePtr())) {\n      if (BT->getKind() == BuiltinType::UInt) {\n        BugType *BTy = new BugType(Checker, \"Disk sector count parameter width\",\n                                   \"Integer Overflow\");\n        SmallString<128> buf;\n        llvm::raw_svector_ostream os(buf);\n        os << \"Parameter '\" << PVD->getNameAsString()\n           << \"' has insufficient width (use u64 instead of unsigned int)\";\n        PathDiagnosticLocation DLoc = PathDiagnosticLocation::createBegin(PVD, BR.getSourceManager());\n        auto Report = std::make_unique<BasicBugReport>(*BTy, os.str(), DLoc);\n        Report->addRange(PVD->getSourceRange());\n        BR.emitReport(std::move(Report));\n      }\n    }\n    return true;\n  }\n};\n/// Our checker class. We implement two callbacks:\n/// 1. checkASTCodeBody to examine function bodies (and indirectly, declarations)"
+              },
+              "buggy_report_index": {
+                "report_dir": "research/knighter/e2/results/screen1_reports/09_df94cb2e57b2_Integer_Overflow/buggy",
+                "index_available": true,
+                "summary_lines": [
+                  "<h2>Bug Summary</h2><table>",
+                  "<thead><tr><td>Bug Type</td><td>Quantity</td><td class=\"sorttable_nosort\">Display?</td></tr></thead>",
+                  "<tr style=\"font-weight:bold\"><td class=\"SUMM_DESC\">All Bugs</td><td class=\"Q\">2</td><td><center><input type=\"checkbox\" id=\"AllBugsCheck\" onClick=\"CopyCheckedStateToCheckButtons(this);\" checked/></center></td></tr>",
+                  "<tr><td class=\"SUMM_DESC\">Disk sector count variable width</td><td class=\"Q\">2</td><td><center><input type=\"checkbox\" onClick=\"ToggleDisplay(this,'bt_integer_overflow_disk_sector_count_variable_width');\" checked/></center></td></tr>",
+                  "  <td class=\"Q\">Line</td>",
+                  "  <td class=\"Q\">Path Length</td>",
+                  "<tr class=\"bt_integer_overflow_disk_sector_count_variable_width\"><td class=\"DESC\">Integer Overflow</td><td class=\"DESC\">Disk sector count variable width</td><td>io_misc.c</td><td class=\"DESC\">unknown</td><td class=\"Q\">150</td><td class=\"Q\">1</td><td><a href=\"report-635798.html#EndPath\">View Report</a></td>",
+                  "<tr class=\"bt_integer_overflow_disk_sector_count_variable_width\"><td class=\"DESC\">Integer Overflow</td><td class=\"DESC\">Disk sector count variable width</td><td>io_misc.c</td><td class=\"DESC\">unknown</td><td class=\"Q\">37</td><td class=\"Q\">1</td><td><a href=\"report-c3c347.html#EndPath\">View Report</a></td>"
+                ]
+              },
+              "fixed_report_index": {
+                "report_dir": "research/knighter/e2/results/screen1_reports/09_df94cb2e57b2_Integer_Overflow/fixed",
+                "index_available": true,
+                "summary_lines": [
+                  "<h2>Bug Summary</h2><table>",
+                  "<thead><tr><td>Bug Type</td><td>Quantity</td><td class=\"sorttable_nosort\">Display?</td></tr></thead>",
+                  "<tr style=\"font-weight:bold\"><td class=\"SUMM_DESC\">All Bugs</td><td class=\"Q\">2</td><td><center><input type=\"checkbox\" id=\"AllBugsCheck\" onClick=\"CopyCheckedStateToCheckButtons(this);\" checked/></center></td></tr>",
+                  "<tr><td class=\"SUMM_DESC\">Disk sector count variable width</td><td class=\"Q\">2</td><td><center><input type=\"checkbox\" onClick=\"ToggleDisplay(this,'bt_integer_overflow_disk_sector_count_variable_width');\" checked/></center></td></tr>",
+                  "  <td class=\"Q\">Line</td>",
+                  "  <td class=\"Q\">Path Length</td>",
+                  "<tr class=\"bt_integer_overflow_disk_sector_count_variable_width\"><td class=\"DESC\">Integer Overflow</td><td class=\"DESC\">Disk sector count variable width</td><td>io_misc.c</td><td class=\"DESC\">unknown</td><td class=\"Q\">150</td><td class=\"Q\">1</td><td><a href=\"report-635798.html#EndPath\">View Report</a></td>",
+                  "<tr class=\"bt_integer_overflow_disk_sector_count_variable_width\"><td class=\"DESC\">Integer Overflow</td><td class=\"DESC\">Disk sector count variable width</td><td>io_misc.c</td><td class=\"DESC\">unknown</td><td class=\"Q\">37</td><td class=\"Q\">1</td><td><a href=\"report-c3c347.html#EndPath\">View Report</a></td>"
+                ]
+              },
+              "refinement_guidance": [
+                "Patch widens disk_res_sectors from unsigned to u64; fixed-side reports should be suppressed when the sector-count declaration is already 64-bit.",
+                "Patch widens the bch2_extent_fallocate sectors parameter to u64; checker should distinguish this from remaining unrelated unsigned sector-like variables.",
+                "Patch changes min(sectors, wp->sectors_free) to min_t(u64, ...), preserving the u64 arithmetic domain across the comparison.",
+                "Patch aligns the bch2_trans_inconsistent format specifier with the widened u64 disk_res_sectors argument."
+              ]
+            },
+            "log_path": "/anonymous/home/LLM-Native/research/knighter/runs/knighter-v613/validation_20260616_192317/knighter_validation.log",
+            "output_root": "/anonymous/home/LLM-Native/research/knighter/runs/knighter-v613/validation_20260616_192317",
+            "archived_buggy_report_dir": "research/knighter/e2/results/screen1_reports/09_df94cb2e57b2_Integer_Overflow/buggy",
+            "archived_fixed_report_dir": "research/knighter/e2/results/screen1_reports/09_df94cb2e57b2_Integer_Overflow/fixed"
+          },
+          "provenance": {
+            "tool": "research/knighter/scripts/run_e2_patch_local_audit.py",
+            "artifact": "research/knighter/e2/results/screening/patch_local_baseline/09_df94cb2e57b2_Integer_Overflow/patch_local_result.json",
+            "confidence": 0.95
+          },
+          "evidence_slice": {}
+        },
+        {
+          "evidence_id": "knighter_historical_report_reference",
+          "type": "context_summary",
+          "analyzer": "csa",
+          "scope": {
+            "repo": "linux",
+            "file": "fs/bcachefs/buckets.o;fs/bcachefs/io_misc.o",
+            "function": "knighter_historical_reference"
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "kind": "knighter_historical_reference",
+            "summary": "Historical KNighter report_count=120, manual_bugs=0, manual_not_bugs=0; this is not the same metric as patch-local E2 validation.",
+            "knighter_report_count": 120,
+            "knighter_manual_bugs": 0,
+            "knighter_manual_not_bugs": 0,
+            "metric_scope_note": "Historical KNighter report_count is not patch-local buggy/fixed validation."
+          },
+          "provenance": {
+            "tool": "KNighter old-version generated/checker-for-evaluation/refine",
+            "artifact": "commit_report_map.txt + triage_report.csv",
+            "confidence": 0.72
+          },
+          "evidence_slice": {}
+        },
+        {
+          "evidence_id": "knighter_e2_patch_fact",
+          "type": "patch_fact",
+          "analyzer": "csa",
+          "scope": {
+            "repo": "linux",
+            "file": "fs/bcachefs/buckets.c",
+            "function": "bch2_trans_fs_usage_apply"
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "fact_type": "sector_count_width_widening",
+            "label": "Integer-Overflow",
+            "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=6, fixed_alerts=5, buggy_miss=false, fixed_noisy=true, pds=false, targets=fs/bcachefs/buckets.o;fs/bcachefs/io_misc.o.",
+            "attributes": {
+              "patterns": [
+                "integer_overflow",
+                "sector_count_width",
+                "unsigned_to_u64"
+              ],
+              "functions": [
+                "bch2_trans_fs_usage_apply",
+                "bch2_extent_fallocate"
+              ],
+              "tracked_symbols": [
+                "disk_res_sectors",
+                "trans->disk_res->sectors",
+                "sectors",
+                "wp->sectors_free",
+                "should_not_have_added"
+              ],
+              "fixed_noisy": true,
+              "buggy_miss": false
+            }
+          },
+          "provenance": {
+            "tool": "research/knighter/scripts/backfill_e2_refine_inputs.py",
+            "artifact": "research/knighter/e2/cases/09_df94cb2e57b2_Integer_Overflow/patches/commit.patch",
+            "confidence": 0.9
+          },
+          "evidence_slice": {
+            "kind": "patch_fact",
+            "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=6, fixed_alerts=5, buggy_miss=false, fixed_noisy=true, pds=false, targets=fs/bcachefs/buckets.o;fs/bcachefs/io_misc.o.",
+            "statements": [
+              "bcachefs (e7fdc10e-54a3-49d9-bd0c-390370889d84): disk usage increased 4294967296 more than 2823707312 sectors reserved)",
+              "update: btree=inodes cached=1 bch2_extent_update_i_size_sectors+0x305/0x3b0",
+              "old u64s 19 type inode_v3 0:536925940:4294967283 len 0 ver 0: mode 100600 flags 15300000 journal_seq 467859 bi_size 0 bi_sectors 0 bi_version 0 bi_atime 40905301656446 bi_ctime 40905301656446 bi_mtime 40905301656446 bi_otime 40905301656446 bi_uid 0 bi_gid 0 bi_nlink 0 bi_generation 0 bi_dev 0 bi_data_checksum 0 bi_compression 0 bi_project 0 bi_background_compression 0 bi_data_replicas 0 bi_promote_target 0 bi_foreground_target 0 bi_background_target 0 bi_erasure_code 0 bi_fields_set 0 bi_dir 1879048193 bi_dir_offset 3384856038735393365 bi_subvol 0 bi_parent_subvol 0 bi_nocow 0",
+              "new u64s 19 type inode_v3 0:536925940:4294967283 len 0 ver 0: mode 100600 flags 15300000 journal_seq 467859 bi_size 0 bi_sectors 3559337304 bi_version 0 bi_atime 40905301656446 bi_ctime 40905301656446 bi_mtime 40905301656446 bi_otime 40905301656446 bi_uid 0 bi_gid 0 bi_nlink 0 bi_generation 0 bi_dev 0 bi_data_checksum 0 bi_compression 0 bi_project 0 bi_background_compression 0 bi_data_replicas 0 bi_promote_target 0 bi_foreground_target 0 bi_background_target 0 bi_erasure_code 0 bi_fields_set 0 bi_dir 1879048193 bi_dir_offset 3384856038735393365 bi_subvol 0 bi_parent_subvol 0 bi_nocow 0",
+              "bch2_trans_fs_usage_apply+0x279/0x3d0",
+              "bch2_extent_fallocate+0x58e/0x740",
+              "int bch2_trans_fs_usage_apply(struct btree_trans *trans,",
+              "unsigned disk_res_sectors = trans->disk_res ? trans->disk_res->sectors : 0;",
+              "unsigned i;",
+              "* Not allowed to reduce sectors_available except by getting a",
+              "should_not_have_added = added - (s64) disk_res_sectors;",
+              "u64 old, new, v = atomic64_read(&c->sectors_available);"
+            ],
+            "api_terms": [
+              "ret",
+              "PathSensitiveBugReport",
+              "SectorVarVisitor",
+              "VisitVarDecl",
+              "VisitParmVarDecl",
+              "BuiltinType::UInt",
+              "bch2_trans_inconsistent",
+              "%u",
+              "%llu",
+              "ParmVarDecl",
+              "VarDecl",
+              "min_t",
+              "u64"
+            ],
+            "related_symbols": [
+              "disk_res_sectors",
+              "trans->disk_res->sectors",
+              "sectors",
+              "wp->sectors_free",
+              "should_not_have_added"
+            ],
+            "coverage_status": "patch-local",
+            "verifier": "research/knighter/scripts/backfill_e2_refine_inputs.py",
+            "extraction_method": "research/knighter/e2/cases/09_df94cb2e57b2_Integer_Overflow/patches/commit.patch"
+          }
+        },
+        {
+          "evidence_id": "knighter_e2_semantic_slice",
+          "type": "semantic_slice",
+          "analyzer": "csa",
+          "scope": {
+            "repo": "linux",
+            "file": "fs/bcachefs/buckets.c",
+            "function": "bch2_trans_fs_usage_apply"
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=6, fixed_alerts=5, buggy_miss=false, fixed_noisy=true, pds=false, targets=fs/bcachefs/buckets.o;fs/bcachefs/io_misc.o.",
+            "tracked_symbols": [
+              "disk_res_sectors",
+              "trans->disk_res->sectors",
+              "sectors",
+              "wp->sectors_free",
+              "should_not_have_added"
+            ],
+            "source_excerpt": "## Patch Description\n\nbcachefs: Fix an integer overflow\n\nFixes:\n\nbcachefs (e7fdc10e-54a3-49d9-bd0c-390370889d84): disk usage increased 4294967296 more than 2823707312 sectors reserved)\ntransaction updates for __bchfs_fallocate journal seq 467859\n  update: btree=extents cached=0 bch2_trans_update+0x4e8/0x540\n    old u64s 5 type deleted 536925940:3559337304:4294967283 len 0 ver 0\n    new u64s 6 type reservation 536925940:3559337304:4294967283 len 3559337304 ver 0: generation 0 replicas 2\n  update: btree=inodes cached=1 bch2_extent_update_i_size_sectors+0x305/0x3b0\n    old u64s 19 type inode_v3 0:536925940:4294967283 len 0 ver 0: mode 100600 flags 15300000 journal_seq 467859 bi_size 0 bi_sectors 0 bi_version 0 bi_atime 40905301656446 bi_ctime 40905301656446 bi_mtime 40905301656446 bi_otime 40905301656446 bi_uid 0 bi_gid 0 bi_nlink 0 bi_generation 0 bi_dev 0 bi_data_checksum 0 bi_compression 0 bi_project 0 bi_background_compression 0 bi_data_replicas 0 bi_promote_target 0 bi_foreground_target 0 bi_background_target 0 bi_erasure_code 0 bi_fields_set 0 bi_dir 1879048193 bi_dir_offset 3384856038735393365 bi_subvol 0 bi_parent_subvol 0 bi_nocow 0\n    new u64s 19 type inode_v3 0:536925940:4294967283 len 0 ver 0: mode 100600 flags 15300000 journal_seq 467859 bi_size 0 bi_sectors 3559337304 bi_version 0 bi_atime 40905301656446 bi_ctime 40905301656446 bi_mtime 40905301656446 bi_otime 40905301656446 bi_uid 0 bi_gid 0 bi_nlink 0 bi_generation 0 bi_dev 0 bi_data_checksum 0 bi_compression 0 bi_project 0 bi_background_compression 0 bi_data_replicas 0 bi_promote_target 0 bi_foreground_target 0 bi_background_target 0 bi_erasure_code 0 bi_fields_set 0 bi_dir 1879048193 bi_dir_offset 3384856038735393365 bi_subvol 0 bi_parent_subvol 0 bi_nocow 0\n\nKernel panic - not syncing: bcachefs (e7fdc10e-54a3-49d9-bd0c-390370889d84): panic after error\nCPU: 4 PID: 5154 Comm: rsync Not tainted 6.5.9-gateway-gca1614174cc0-dirty #1\nHardware name: To Be Filled By O.E.M. To Be Filled By O.E.M./X570 Phantom Gaming 4, BIOS P4.20 08/02/2021\nCall Trace:\n <TASK>\n dump_stack_lvl+0x5a/0x90\n panic+0x105/0x300\n ? console_unlock+0xf1/0x130\n ? bch2_printbuf_exit+0x16/0x30\n ? srso_return_thunk+0x5/0x10\n bch2_inco",
+            "coverage_status": "patch-local"
+          },
+          "provenance": {
+            "tool": "research/knighter/scripts/backfill_e2_refine_inputs.py",
+            "artifact": "research/knighter/e2/cases/09_df94cb2e57b2_Integer_Overflow/patches/commit.patch",
+            "confidence": 0.9
+          },
+          "evidence_slice": {
+            "kind": "semantic_slice",
+            "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=6, fixed_alerts=5, buggy_miss=false, fixed_noisy=true, pds=false, targets=fs/bcachefs/buckets.o;fs/bcachefs/io_misc.o.",
+            "statements": [
+              "bcachefs (e7fdc10e-54a3-49d9-bd0c-390370889d84): disk usage increased 4294967296 more than 2823707312 sectors reserved)",
+              "update: btree=inodes cached=1 bch2_extent_update_i_size_sectors+0x305/0x3b0",
+              "old u64s 19 type inode_v3 0:536925940:4294967283 len 0 ver 0: mode 100600 flags 15300000 journal_seq 467859 bi_size 0 bi_sectors 0 bi_version 0 bi_atime 40905301656446 bi_ctime 40905301656446 bi_mtime 40905301656446 bi_otime 40905301656446 bi_uid 0 bi_gid 0 bi_nlink 0 bi_generation 0 bi_dev 0 bi_data_checksum 0 bi_compression 0 bi_project 0 bi_background_compression 0 bi_data_replicas 0 bi_promote_target 0 bi_foreground_target 0 bi_background_target 0 bi_erasure_code 0 bi_fields_set 0 bi_dir 1879048193 bi_dir_offset 3384856038735393365 bi_subvol 0 bi_parent_subvol 0 bi_nocow 0",
+              "new u64s 19 type inode_v3 0:536925940:4294967283 len 0 ver 0: mode 100600 flags 15300000 journal_seq 467859 bi_size 0 bi_sectors 3559337304 bi_version 0 bi_atime 40905301656446 bi_ctime 40905301656446 bi_mtime 40905301656446 bi_otime 40905301656446 bi_uid 0 bi_gid 0 bi_nlink 0 bi_generation 0 bi_dev 0 bi_data_checksum 0 bi_compression 0 bi_project 0 bi_background_compression 0 bi_data_replicas 0 bi_promote_target 0 bi_foreground_target 0 bi_background_target 0 bi_erasure_code 0 bi_fields_set 0 bi_dir 1879048193 bi_dir_offset 3384856038735393365 bi_subvol 0 bi_parent_subvol 0 bi_nocow 0",
+              "bch2_trans_fs_usage_apply+0x279/0x3d0",
+              "bch2_extent_fallocate+0x58e/0x740",
+              "int bch2_trans_fs_usage_apply(struct btree_trans *trans,",
+              "unsigned disk_res_sectors = trans->disk_res ? trans->disk_res->sectors : 0;",
+              "unsigned i;",
+              "* Not allowed to reduce sectors_available except by getting a",
+              "should_not_have_added = added - (s64) disk_res_sectors;",
+              "u64 old, new, v = atomic64_read(&c->sectors_available);"
+            ],
+            "guards": [
+              "sector-count variables and parameters must remain u64 when they can hold disk block counts",
+              "fixed disk_res_sectors declaration is u64, so the old unsigned-width warning must be silent",
+              "fixed bch2_extent_fallocate sectors parameter is u64 and min_t(u64, ...) preserves the comparison width",
+              "fixed bch2_trans_inconsistent format uses %llu for disk_res_sectors"
+            ],
+            "call_edges": [
+              "bch2_extent_fallocate -> bch2_key_resize(&e->k, sectors)",
+              "bch2_trans_fs_usage_apply -> bch2_trans_inconsistent(..., disk_res_sectors)"
+            ],
+            "state_transitions": [
+              "buggy: unsigned disk_res_sectors = trans->disk_res ? trans->disk_res->sectors : 0",
+              "fixed: u64 disk_res_sectors = trans->disk_res ? trans->disk_res->sectors : 0",
+              "buggy: bch2_extent_fallocate(..., unsigned sectors, ...)",
+              "fixed: bch2_extent_fallocate(..., u64 sectors, ...)",
+              "buggy: sectors = min(sectors, wp->sectors_free)",
+              "fixed: sectors = min_t(u64, sectors, wp->sectors_free)",
+              "buggy: format uses %u for disk_res_sectors",
+              "fixed: format uses %llu for disk_res_sectors"
+            ],
+            "api_terms": [
+              "ret",
+              "PathSensitiveBugReport",
+              "SectorVarVisitor",
+              "VisitVarDecl",
+              "VisitParmVarDecl",
+              "BuiltinType::UInt",
+              "bch2_trans_inconsistent",
+              "%u",
+              "%llu",
+              "ParmVarDecl",
+              "VarDecl",
+              "min_t",
+              "u64"
+            ],
+            "related_symbols": [
+              "disk_res_sectors",
+              "trans->disk_res->sectors",
+              "sectors",
+              "wp->sectors_free",
+              "should_not_have_added"
+            ],
+            "verifier": "research/knighter/scripts/backfill_e2_refine_inputs.py",
+            "extraction_method": "research/knighter/e2/cases/09_df94cb2e57b2_Integer_Overflow/patches/commit.patch",
+            "coverage_status": "patch-local"
+          }
+        },
+        {
+          "evidence_id": "knighter_e2_path_guard",
+          "type": "path_guard",
+          "analyzer": "csa",
+          "scope": {
+            "repo": "linux",
+            "file": "fs/bcachefs/buckets.c",
+            "function": "bch2_trans_fs_usage_apply"
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=6, fixed_alerts=5, buggy_miss=false, fixed_noisy=true, pds=false, targets=fs/bcachefs/buckets.o;fs/bcachefs/io_misc.o.",
+            "guard_expr": "sector-count variables and parameters must remain u64 when they can hold disk block counts",
+            "state_before": [
+              "disk_res_sectors is stored in unsigned and may truncate trans->disk_res->sectors",
+              "bch2_extent_fallocate receives sectors as unsigned and min(sectors, wp->sectors_free) can preserve the narrow type",
+              "bch2_trans_inconsistent prints disk_res_sectors with %u"
+            ],
+            "state_after": [
+              "disk_res_sectors is u64 and matches the reserved-sector domain",
+              "bch2_extent_fallocate receives sectors as u64 and min_t(u64, ...) keeps both operands in the 64-bit domain",
+              "bch2_trans_inconsistent prints disk_res_sectors with %llu"
+            ],
+            "tracked_symbols": [
+              "disk_res_sectors",
+              "trans->disk_res->sectors",
+              "sectors",
+              "wp->sectors_free",
+              "should_not_have_added"
+            ]
+          },
+          "provenance": {
+            "tool": "research/knighter/scripts/backfill_e2_refine_inputs.py",
+            "artifact": "research/knighter/e2/cases/09_df94cb2e57b2_Integer_Overflow/patches/commit.patch",
+            "confidence": 0.9
+          },
+          "evidence_slice": {
+            "kind": "path_guard",
+            "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=6, fixed_alerts=5, buggy_miss=false, fixed_noisy=true, pds=false, targets=fs/bcachefs/buckets.o;fs/bcachefs/io_misc.o.",
+            "guards": [
+              "sector-count variables and parameters must remain u64 when they can hold disk block counts",
+              "fixed disk_res_sectors declaration is u64, so the old unsigned-width warning must be silent",
+              "fixed bch2_extent_fallocate sectors parameter is u64 and min_t(u64, ...) preserves the comparison width",
+              "fixed bch2_trans_inconsistent format uses %llu for disk_res_sectors"
+            ],
+            "state_transitions": [
+              "buggy: unsigned disk_res_sectors = trans->disk_res ? trans->disk_res->sectors : 0",
+              "fixed: u64 disk_res_sectors = trans->disk_res ? trans->disk_res->sectors : 0",
+              "buggy: bch2_extent_fallocate(..., unsigned sectors, ...)",
+              "fixed: bch2_extent_fallocate(..., u64 sectors, ...)",
+              "buggy: sectors = min(sectors, wp->sectors_free)",
+              "fixed: sectors = min_t(u64, sectors, wp->sectors_free)",
+              "buggy: format uses %u for disk_res_sectors",
+              "fixed: format uses %llu for disk_res_sectors"
+            ],
+            "related_symbols": [
+              "disk_res_sectors",
+              "trans->disk_res->sectors",
+              "sectors",
+              "wp->sectors_free",
+              "should_not_have_added"
+            ],
+            "verifier": "research/knighter/scripts/backfill_e2_refine_inputs.py",
+            "extraction_method": "research/knighter/e2/cases/09_df94cb2e57b2_Integer_Overflow/patches/commit.patch",
+            "coverage_status": "patch-local"
+          }
+        },
+        {
+          "evidence_id": "knighter_e2_allocation_lifecycle",
+          "type": "allocation_lifecycle",
+          "analyzer": "csa",
+          "scope": {
+            "repo": "linux",
+            "file": "fs/bcachefs/buckets.c",
+            "function": "bch2_trans_fs_usage_apply"
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=6, fixed_alerts=5, buggy_miss=false, fixed_noisy=true, pds=false, targets=fs/bcachefs/buckets.o;fs/bcachefs/io_misc.o.",
+            "path": [
+              "buggy: unsigned disk_res_sectors = trans->disk_res ? trans->disk_res->sectors : 0",
+              "fixed: u64 disk_res_sectors = trans->disk_res ? trans->disk_res->sectors : 0",
+              "buggy: bch2_extent_fallocate(..., unsigned sectors, ...)",
+              "fixed: bch2_extent_fallocate(..., u64 sectors, ...)",
+              "buggy: sectors = min(sectors, wp->sectors_free)",
+              "fixed: sectors = min_t(u64, sectors, wp->sectors_free)",
+              "buggy: format uses %u for disk_res_sectors",
+              "fixed: format uses %llu for disk_res_sectors",
+              "bch2_extent_fallocate -> bch2_key_resize(&e->k, sectors)",
+              "bch2_trans_fs_usage_apply -> bch2_trans_inconsistent(..., disk_res_sectors)"
+            ],
+            "operations": [
+              "read reserved-sector count from trans->disk_res",
+              "store and propagate sector count in u64",
+              "compare sector counts with min_t(u64, ...)",
+              "log widened sector count with a matching 64-bit format"
+            ],
+            "acquisition_ops": [
+              "trans->disk_res->sectors",
+              "bch2_extent_fallocate sectors parameter"
+            ],
+            "release_ops": [],
+            "transition_ops": [
+              "unsigned-to-u64 widening",
+              "min_t(u64)",
+              "%u-to-%llu format widening"
+            ],
+            "state_before": [
+              "disk_res_sectors is stored in unsigned and may truncate trans->disk_res->sectors",
+              "bch2_extent_fallocate receives sectors as unsigned and min(sectors, wp->sectors_free) can preserve the narrow type",
+              "bch2_trans_inconsistent prints disk_res_sectors with %u"
+            ],
+            "state_after": [
+              "disk_res_sectors is u64 and matches the reserved-sector domain",
+              "bch2_extent_fallocate receives sectors as u64 and min_t(u64, ...) keeps both operands in the 64-bit domain",
+              "bch2_trans_inconsistent prints disk_res_sectors with %llu"
+            ]
+          },
+          "provenance": {
+            "tool": "research/knighter/scripts/backfill_e2_refine_inputs.py",
+            "artifact": "research/knighter/e2/cases/09_df94cb2e57b2_Integer_Overflow/patches/commit.patch",
+            "confidence": 0.9
+          },
+          "evidence_slice": {
+            "kind": "allocation_lifecycle",
+            "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=6, fixed_alerts=5, buggy_miss=false, fixed_noisy=true, pds=false, targets=fs/bcachefs/buckets.o;fs/bcachefs/io_misc.o.",
+            "statements": [
+              "bcachefs (e7fdc10e-54a3-49d9-bd0c-390370889d84): disk usage increased 4294967296 more than 2823707312 sectors reserved)",
+              "update: btree=inodes cached=1 bch2_extent_update_i_size_sectors+0x305/0x3b0",
+              "old u64s 19 type inode_v3 0:536925940:4294967283 len 0 ver 0: mode 100600 flags 15300000 journal_seq 467859 bi_size 0 bi_sectors 0 bi_version 0 bi_atime 40905301656446 bi_ctime 40905301656446 bi_mtime 40905301656446 bi_otime 40905301656446 bi_uid 0 bi_gid 0 bi_nlink 0 bi_generation 0 bi_dev 0 bi_data_checksum 0 bi_compression 0 bi_project 0 bi_background_compression 0 bi_data_replicas 0 bi_promote_target 0 bi_foreground_target 0 bi_background_target 0 bi_erasure_code 0 bi_fields_set 0 bi_dir 1879048193 bi_dir_offset 3384856038735393365 bi_subvol 0 bi_parent_subvol 0 bi_nocow 0",
+              "new u64s 19 type inode_v3 0:536925940:4294967283 len 0 ver 0: mode 100600 flags 15300000 journal_seq 467859 bi_size 0 bi_sectors 3559337304 bi_version 0 bi_atime 40905301656446 bi_ctime 40905301656446 bi_mtime 40905301656446 bi_otime 40905301656446 bi_uid 0 bi_gid 0 bi_nlink 0 bi_generation 0 bi_dev 0 bi_data_checksum 0 bi_compression 0 bi_project 0 bi_background_compression 0 bi_data_replicas 0 bi_promote_target 0 bi_foreground_target 0 bi_background_target 0 bi_erasure_code 0 bi_fields_set 0 bi_dir 1879048193 bi_dir_offset 3384856038735393365 bi_subvol 0 bi_parent_subvol 0 bi_nocow 0",
+              "bch2_trans_fs_usage_apply+0x279/0x3d0",
+              "bch2_extent_fallocate+0x58e/0x740",
+              "int bch2_trans_fs_usage_apply(struct btree_trans *trans,",
+              "unsigned disk_res_sectors = trans->disk_res ? trans->disk_res->sectors : 0;",
+              "unsigned i;",
+              "* Not allowed to reduce sectors_available except by getting a",
+              "should_not_have_added = added - (s64) disk_res_sectors;",
+              "u64 old, new, v = atomic64_read(&c->sectors_available);"
+            ],
+            "state_transitions": [
+              "buggy: unsigned disk_res_sectors = trans->disk_res ? trans->disk_res->sectors : 0",
+              "fixed: u64 disk_res_sectors = trans->disk_res ? trans->disk_res->sectors : 0",
+              "buggy: bch2_extent_fallocate(..., unsigned sectors, ...)",
+              "fixed: bch2_extent_fallocate(..., u64 sectors, ...)",
+              "buggy: sectors = min(sectors, wp->sectors_free)",
+              "fixed: sectors = min_t(u64, sectors, wp->sectors_free)",
+              "buggy: format uses %u for disk_res_sectors",
+              "fixed: format uses %llu for disk_res_sectors"
+            ],
+            "api_terms": [
+              "ret",
+              "PathSensitiveBugReport",
+              "SectorVarVisitor",
+              "VisitVarDecl",
+              "VisitParmVarDecl",
+              "BuiltinType::UInt",
+              "bch2_trans_inconsistent",
+              "%u",
+              "%llu",
+              "ParmVarDecl",
+              "VarDecl",
+              "min_t",
+              "u64"
+            ],
+            "related_symbols": [
+              "disk_res_sectors",
+              "trans->disk_res->sectors",
+              "sectors",
+              "wp->sectors_free",
+              "should_not_have_added"
+            ],
+            "verifier": "research/knighter/scripts/backfill_e2_refine_inputs.py",
+            "extraction_method": "research/knighter/e2/cases/09_df94cb2e57b2_Integer_Overflow/patches/commit.patch",
+            "coverage_status": "patch-local"
+          }
+        },
+        {
+          "evidence_id": "knighter_e2_call_chain",
+          "type": "call_chain",
+          "analyzer": "csa",
+          "scope": {
+            "repo": "linux",
+            "file": "fs/bcachefs/buckets.c",
+            "function": "bch2_trans_fs_usage_apply"
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=6, fixed_alerts=5, buggy_miss=false, fixed_noisy=true, pds=false, targets=fs/bcachefs/buckets.o;fs/bcachefs/io_misc.o.",
+            "call_edges": [
+              "bch2_extent_fallocate -> bch2_key_resize(&e->k, sectors)",
+              "bch2_trans_fs_usage_apply -> bch2_trans_inconsistent(..., disk_res_sectors)"
+            ]
+          },
+          "provenance": {
+            "tool": "research/knighter/scripts/backfill_e2_refine_inputs.py",
+            "artifact": "research/knighter/e2/cases/09_df94cb2e57b2_Integer_Overflow/patches/commit.patch",
+            "confidence": 0.9
+          },
+          "evidence_slice": {
+            "kind": "call_chain",
+            "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=6, fixed_alerts=5, buggy_miss=false, fixed_noisy=true, pds=false, targets=fs/bcachefs/buckets.o;fs/bcachefs/io_misc.o.",
+            "call_edges": [
+              "bch2_extent_fallocate -> bch2_key_resize(&e->k, sectors)",
+              "bch2_trans_fs_usage_apply -> bch2_trans_inconsistent(..., disk_res_sectors)"
+            ],
+            "related_symbols": [
+              "disk_res_sectors",
+              "trans->disk_res->sectors",
+              "sectors",
+              "wp->sectors_free",
+              "should_not_have_added"
+            ],
+            "verifier": "research/knighter/scripts/backfill_e2_refine_inputs.py",
+            "extraction_method": "research/knighter/e2/cases/09_df94cb2e57b2_Integer_Overflow/patches/commit.patch",
+            "coverage_status": "patch-local"
+          }
+        }
+      ],
+      "missing_evidence": [],
+      "collected_analyzers": [
+        "csa"
+      ]
+    },
+    "validation_feedback_history": [
+      {
+        "analyzer": "csa",
+        "phase": "knighter_e2_patch_local_baseline",
+        "summary": "Baseline validation (csa): Knighter基线扫描报告数=120, 人工确认bug=0, 人工非bug=0, 候选组=positive_scan_report_count。漏洞版命中=true, 漏洞版patch-scoped告警数=6, 修复版误报数=5, fixed_silent=false, PDS=false. 这些数只表示patch-local语义验证门，不等同于Knighter full-kernel report_count/FPR统计。"
+      }
+    ]
+  }
+}

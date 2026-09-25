@@ -1,0 +1,183 @@
+{
+  "schema_version": 1,
+  "method": "semweaver_no_internal_evidence_ablation",
+  "evidence_mode": "no_internal",
+  "origin_gate_enabled": false,
+  "case_id": "05_c48a4497356f_Uninit_Data",
+  "model": "gpt-5.6-terra",
+  "provider": "openai_compatible",
+  "wire_api": "responses",
+  "reasoning_effort": "high",
+  "max_iterations": 1,
+  "max_tokens_per_call": 16000,
+  "request_timeout_seconds": 600,
+  "wrapper_max_retries": 0,
+  "inline_semantic_validation": false,
+  "external_paired_validation_required": true,
+  "internal_evidence_preloaded": false,
+  "evidence_requests_disabled": true,
+  "compile_after_each_edit": true,
+  "llm_exchange_log": "/work/artifacts/fse_revision/repeats_v7/rep03/no_internal/05_c48a4497356f_Uninit_Data/attempt-03/llm_exchanges.jsonl",
+  "llm_exchange_log_sha256": "6e7aec6e3c6968a0245274d3041890cef76efb0a923cecf2e6fa58dced64c1e6",
+  "preloaded_internal_evidence_ids": [],
+  "patch_sha256": "88577ccef2ea0f7785c41e7c9e30fd044f50386307bfb39e4d939042bcbcc1fe",
+  "original_checker_sha256": "dd8f1d5546cf13facd255b307e81f6e5c1ce803e20d5d3ca6660d69fc11a2e6a",
+  "starting_checker_sha256": "1981c242911b7238a1e1a928c06676ca0986399cc298623894320c1ea747967e",
+  "evidence_bundle_sha256": "2ad162e2d52b465d81d0344cf92748bcc7b7bc4ba9b5d1f150d7eea342bb3031",
+  "visible_evidence_sha256": "fc99258f671361c50e3b029c4bfba1619124126435da488caef4bbada652bab8",
+  "visible_evidence_record_count": 0,
+  "frozen_source_revision": "c48a4497356f701f94f1951626637ae240af909e^",
+  "frozen_source_hashes": {
+    "sound/soc/codecs/sma1307.c": "fdf32174c391f65eb4652123331158f7ff94d1e33106b8493220c98bcde17808"
+  },
+  "feedback_result_sha256": null,
+  "feedback_run_manifest_sha256": "3a6a7b5c66a20f5798f82c50e234606351b8b0a0cc9fa7aeeaa7110895053b60",
+  "feedback_candidate_sha256": "1981c242911b7238a1e1a928c06676ca0986399cc298623894320c1ea747967e",
+  "feedback_kind": "failed_tool",
+  "candidate_sha256": "c1b652b1aba515beb2e22e8ce05f95f90fc60d38a4b8fdca6e758043290a8c38",
+  "candidate_changed": true,
+  "success": false,
+  "agent_success": false,
+  "iterations": 1,
+  "compile_attempts": 1,
+  "error_message": "达到最大精炼轮次 (1)",
+  "final_message": "达到最大精炼轮次，仍未通过本地验证。",
+  "output_path": "",
+  "elapsed_seconds": 25.619908094406128,
+  "llm_usage": {
+    "prompt_tokens": 12547,
+    "completion_tokens": 568,
+    "total_tokens": 13115,
+    "call_count": 1,
+    "available": true,
+    "model": "gpt-5.6-terra",
+    "phases": 1
+  },
+  "llm_usage_by_phase": {
+    "decide": {
+      "prompt_tokens": 12547,
+      "completion_tokens": 568,
+      "total_tokens": 13115,
+      "call_count": 1,
+      "available": true,
+      "model": "gpt-5.6-terra"
+    }
+  },
+  "artifact_review": {
+    "artifact_path": "/work/artifacts/fse_revision/repeats_v7/rep03/no_internal/05_c48a4497356f_Uninit_Data/attempt-03/SAGenTestChecker.cpp",
+    "analyzer": "csa",
+    "review_mode": "refine",
+    "findings": [],
+    "warnings": []
+  },
+  "failure_type": "compile_failure",
+  "latest_failure_title": "apply_patch.compile_candidate",
+  "latest_failure_text": "ERROR: 编译失败: 2 个错误, 0 个警告\n/work/artifacts/fse_revision/repeats_v7/rep03/no_internal/05_c48a4497356f_Uninit_Data/attempt-03/SAGenTestChecker.cpp:49:23: error: cannot initialize a variable of type 'const FunctionDecl *' with an rvalue of type 'const Decl *'\n   49 |   const FunctionDecl *Callee = Call.getDecl();\n      |                       ^        ~~~~~~~~~~~~~~\n/work/artifacts/fse_revision/repeats_v7/rep03/no_internal/05_c48a4497356f_Uninit_Data/attempt-03/SAGenTestChecker.cpp:73:33: error: no matching member function for call to 'set'\n   73 |   C.addTransition(C.getState()->set<RequestFwMap>(MR, *Status));\n      |                   ~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~\n/usr/lib/llvm-18/include/clang/StaticAnalyzer/Core/PathSensitive/ProgramState.h:874:31: note: candidate function template not viable: no known conversion from 'const SymExpr' to 'typename ProgramStateTrait<RequestFwMap>::value_type' (aka 'const clang::ento::SymExpr *') for 2nd argument; remove *\n  874 | ProgramStateRef ProgramState::set(typename ProgramStateTrait<T>::key_type K,\n      |                               ^\n  875 |                             typename ProgramStateTrait<T>::value_type E) const {\n      |                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n/usr/lib/llvm-18/include/clang/StaticAnalyzer/Core/PathSensitive/ProgramState.h:869:31: note: candidate function template not viable: requires single argument 'D', but 2 arguments were provided\n  869 | ProgramStateRef ProgramState::set(typename ProgramStateTrait<T>::data_type D) const {\n      |                               ^   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n/usr/lib/llvm-18/include/clang/StaticAnalyzer/Core/PathSensitive/ProgramState.h:880:31: note: candidate function template not viable: requires 3 arguments, but 2 were provided\n  880 | ProgramStateRef ProgramState::set(typename ProgramStateTrait<T>::key_type K,\n      |                               ^   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n  881 |                             typename ProgramStateTrait<T>::value_type E,\n      |                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n  882 |                             typename ProgramStateTrait<T>::context_type C) const {\n      |                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n2 errors generated.",
+  "tool_history": [
+    {
+      "tool_name": "read_file",
+      "success": true,
+      "error": "",
+      "metadata": {
+        "path": "/work/artifacts/fse_revision/repeats_v7/rep03/no_internal/05_c48a4497356f_Uninit_Data/attempt-03/SAGenTestChecker.cpp",
+        "length": 4497,
+        "lines": 123
+      }
+    },
+    {
+      "tool_name": "read_file",
+      "success": true,
+      "error": "",
+      "metadata": {
+        "path": "/work/artifacts/research/experiment/e1/05_c48a4497356f_Uninit_Data/patches/commit.patch",
+        "length": 1882,
+        "lines": 49
+      }
+    },
+    {
+      "tool_name": "read_file",
+      "success": true,
+      "error": "",
+      "metadata": {
+        "path": "/work/artifacts/fse_revision/repeats_v7/rep03/no_internal/05_c48a4497356f_Uninit_Data/attempt-03/frozen_source/sound/soc/codecs/sma1307.c",
+        "length": 58488,
+        "lines": 2050
+      }
+    },
+    {
+      "tool_name": "review_artifact",
+      "success": true,
+      "error": "",
+      "metadata": {
+        "artifact_path": "/work/artifacts/fse_revision/repeats_v7/rep03/no_internal/05_c48a4497356f_Uninit_Data/attempt-03/SAGenTestChecker.cpp",
+        "analyzer": "csa",
+        "review_mode": "refine",
+        "findings": [],
+        "warnings": []
+      }
+    },
+    {
+      "tool_name": "lsp_validate",
+      "success": true,
+      "error": "",
+      "metadata": {
+        "check_level": "quick",
+        "errors": 0
+      }
+    },
+    {
+      "tool_name": "review_artifact",
+      "success": true,
+      "error": "",
+      "metadata": {
+        "artifact_path": "/work/artifacts/fse_revision/repeats_v7/rep03/no_internal/05_c48a4497356f_Uninit_Data/attempt-03/SAGenTestChecker.cpp",
+        "analyzer": "csa",
+        "review_mode": "refine",
+        "findings": [],
+        "warnings": []
+      }
+    },
+    {
+      "tool_name": "apply_patch",
+      "success": true,
+      "error": "",
+      "metadata": {
+        "path": "/work/artifacts/fse_revision/repeats_v7/rep03/no_internal/05_c48a4497356f_Uninit_Data/attempt-03/SAGenTestChecker.cpp",
+        "target_path": "/work/artifacts/fse_revision/repeats_v7/rep03/no_internal/05_c48a4497356f_Uninit_Data/attempt-03/SAGenTestChecker.cpp",
+        "source_path": "/work/artifacts/fse_revision/repeats_v7/rep03/no_internal/05_c48a4497356f_Uninit_Data/attempt-03/SAGenTestChecker.cpp",
+        "patched_content": "// /external/upstream-study/SAGEN/result-0224-bugfail-multi-o3mini/test-Uninit-Data-c48a4497356f701f94f1951626637ae240af909e/checkers/checker7.cpp\n#include \"clang/StaticAnalyzer/Core/BugReporter/BugReporter.h\"\n#include \"clang/StaticAnalyzer/Core/BugReporter/BugType.h\"\n#include \"clang/StaticAnalyzer/Checkers/Taint.h\"\n#include \"clang/StaticAnalyzer/Core/Checker.h\"\n#include \"clang/StaticAnalyzer/Core/PathSensitive/CallEvent.h\"\n#include \"clang/StaticAnalyzer/Core/PathSensitive/CheckerContext.h\"\n#include \"clang/StaticAnalyzer/Core/PathSensitive/Environment.h\"\n#include \"clang/StaticAnalyzer/Core/PathSensitive/ProgramState.h\"\n#include \"clang/StaticAnalyzer/Core/PathSensitive/ProgramStateTrait.h\"\n#include \"clang/StaticAnalyzer/Core/PathSensitive/SymExpr.h\"\n#include \"clang/StaticAnalyzer/Frontend/CheckerRegistry.h\"\n#include \"clang/AST/RecursiveASTVisitor.h\"\n#include \"clang/AST/StmtVisitor.h\"\n#include \"llvm/Support/raw_ostream.h\"\n#include \"clang/StaticAnalyzer/Checkers/utility.h\"\n#include \"clang/Lex/Lexer.h\"\n\nusing namespace clang;\nusing namespace ento;\nusing namespace taint;\n\n// Store each request_firmware() output slot with the status symbol returned by\n// the same call until that status is constrained to the success value.\nREGISTER_MAP_WITH_PROGRAMSTATE(RequestFwMap, const MemRegion*, SymbolRef)\n\nnamespace {\n\nclass SAGenTestChecker : public Checker< check::PostCall, check::Location,\n                                        eval::Assume > {\n  mutable std::unique_ptr<BugType> BT;\n\npublic:\n  SAGenTestChecker() : BT(new BugType(this, \"Unchecked return value of request_firmware()\")) {}\n\n  void checkPostCall(const CallEvent &Call, CheckerContext &C) const;\n  void checkLocation(SVal Loc, bool IsLoad, const Stmt *S,\n                     CheckerContext &C) const;\n  ProgramStateRef evalAssume(ProgramStateRef State, SVal Cond,\n                             bool Assumption) const;\n};\n\nvoid SAGenTestChecker::checkPostCall(const CallEvent &Call, CheckerContext &C) const {\n  const Expr *OriginExpr = Call.getOriginExpr();\n  const CallExpr *CE = dyn_cast_or_null<CallExpr>(OriginExpr);\n  if (!CE || !ExprHasName(OriginExpr, \"request_firmware\", C))\n    return;\n\n  const FunctionDecl *Callee = Call.getDecl();\n  if (!Callee || CE->getNumArgs() < 1 || Callee->getNumParams() < 1)\n    return;\n\n  QualType OutputParamType = Callee->getParamDecl(0)->getType();\n  if (!OutputParamType->isPointerType() ||\n      !OutputParamType->getPointeeType()->isPointerType())\n    return;\n\n  const Expr *FirstArg = CE->getArg(0);\n  const UnaryOperator *AddressOf =\n      dyn_cast<UnaryOperator>(FirstArg->IgnoreParenImpCasts());\n  if (!AddressOf || AddressOf->getOpcode() != UO_AddrOf)\n    return;\n\n  const MemRegion *MR = getMemRegionFromExpr(FirstArg, C);\n  auto Status = Call.getReturnValue().getAsSymbol();\n  if (!MR || !Status)\n    return;\n\n  MR = MR->getBaseRegion();\n  if (!MR)\n    return;\n\n  C.addTransition(C.getState()->set<RequestFwMap>(MR, *Status));\n}\n\nvoid SAGenTestChecker::checkLocation(SVal Loc, bool IsLoad, const Stmt *S,\n                                     CheckerContext &C) const {\n  if (!IsLoad)\n    return;\n\n  const MemRegion *MR = Loc.getAsRegion();\n  if (!MR)\n    return;\n\n  MR = MR->getBaseRegion();\n  if (!MR || !C.getState()->get<RequestFwMap>(MR))\n    return;\n\n  ExplodedNode *N = C.generateNonFatalErrorNode();\n  if (!N)\n    return;\n\n  auto Report = std::make_unique<PathSensitiveBugReport>(\n      *BT, \"request_firmware() output used before its return status is proven successful\", N);\n  if (S)\n    Report->addRange(S->getSourceRange());\n  C.emitReport(std::move(Report));\n  C.addTransition(C.getState()->remove<RequestFwMap>(MR));\n}\n\nProgramStateRef SAGenTestChecker::evalAssume(ProgramStateRef State, SVal Cond,\n                                             bool Assumption) const {\n  for (const auto &Entry : State->get<RequestFwMap>()) {\n    const llvm::APSInt *Status =\n        State->getConstraintManager().getSymVal(State, Entry.second);\n    if (Status && Status->isZero())\n      State = State->remove<RequestFwMap>(Entry.first);\n  }\n  return State;\n}\n\n} // end anonymous namespace\n\nextern \"C\" void clang_registerCheckers(CheckerRegistry &registry) {\n  registry.addChecker<SAGenTestChecker>(\n      \"custom.SAGenTestChecker\", \n      \"Detects when the firmware pointer returned by request_firmware() is directly checked instead of verifying its error code\",\n      \"\");\n}\n\nextern \"C\" const char clang_analyzerAPIVersionString[] =\n    CLANG_ANALYZER_API_VERSION_STRING;\n",
+        "length": 4493,
+        "lines": 123,
+        "hunks": 2,
+        "added_lines": 2,
+        "removed_lines": 2,
+        "engine": "patch_ng",
+        "engine_note": "",
+        "attempt_errors": [],
+        "version_path": "/work/artifacts/fse_revision/repeats_v7/rep03/no_internal/05_c48a4497356f_Uninit_Data/attempt-03/versions/SAGenTestChecker_patch_v001.cpp"
+      }
+    },
+    {
+      "tool_name": "read_file",
+      "success": true,
+      "error": "",
+      "metadata": {
+        "path": "/work/artifacts/fse_revision/repeats_v7/rep03/no_internal/05_c48a4497356f_Uninit_Data/attempt-03/SAGenTestChecker.cpp",
+        "length": 4493,
+        "lines": 123
+      }
+    },
+    {
+      "tool_name": "compile_checker",
+      "success": false,
+      "error": "编译失败: 2 个错误, 0 个警告",
+      "metadata": {
+        "source_file": "/work/artifacts/fse_revision/repeats_v7/rep03/no_internal/05_c48a4497356f_Uninit_Data/attempt-03/SAGenTestChecker.cpp",
+        "error_count": 2,
+        "warning_count": 0,
+        "checker_name": "SAGenTestChecker"
+      }
+    }
+  ],
+  "event_count": 26
+}

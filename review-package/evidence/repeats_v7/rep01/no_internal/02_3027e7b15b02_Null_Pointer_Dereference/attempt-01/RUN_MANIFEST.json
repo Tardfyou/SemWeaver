@@ -1,0 +1,183 @@
+{
+  "schema_version": 1,
+  "method": "semweaver_no_internal_evidence_ablation",
+  "evidence_mode": "no_internal",
+  "origin_gate_enabled": false,
+  "case_id": "02_3027e7b15b02_Null_Pointer_Dereference",
+  "model": "gpt-5.6-terra",
+  "provider": "openai_compatible",
+  "wire_api": "responses",
+  "reasoning_effort": "high",
+  "max_iterations": 1,
+  "max_tokens_per_call": 16000,
+  "request_timeout_seconds": 1800,
+  "wrapper_max_retries": 0,
+  "inline_semantic_validation": false,
+  "external_paired_validation_required": true,
+  "internal_evidence_preloaded": false,
+  "evidence_requests_disabled": true,
+  "compile_after_each_edit": true,
+  "llm_exchange_log": "/work/artifacts/fse_revision/repeats_v7/rep01/no_internal/02_3027e7b15b02_Null_Pointer_Dereference/attempt-01/llm_exchanges.jsonl",
+  "llm_exchange_log_sha256": "659f079b2bbd978eb933e2dfd97874c42d4d2e99cf2a72c57a0ad91dc44a04e3",
+  "preloaded_internal_evidence_ids": [],
+  "patch_sha256": "365fc6280acb4aa9c94e1499bb2a0df13e5e202bfb5e2c6f878740ab1b74ab2b",
+  "original_checker_sha256": "7c7867c6ae15176a96b64e517f1a5a24bf006fdbbbac75353a051b0bf4af9070",
+  "starting_checker_sha256": "7c7867c6ae15176a96b64e517f1a5a24bf006fdbbbac75353a051b0bf4af9070",
+  "evidence_bundle_sha256": "eb1df4f02ac586d3ca4229e866f746a2f9e71312c93adbe5efc5dc6cbad73f0c",
+  "visible_evidence_sha256": "fc99258f671361c50e3b029c4bfba1619124126435da488caef4bbada652bab8",
+  "visible_evidence_record_count": 0,
+  "frozen_source_revision": "3027e7b15b02d2d37e3f82d6b8404f6d37e3b8cf^",
+  "frozen_source_hashes": {
+    "drivers/net/ethernet/intel/ice/ice_ptp.c": "6c5bdfb9e3bfefac41b8d6a892c6aca084784cdf51942bf5a277a79742c8f638"
+  },
+  "feedback_result_sha256": null,
+  "feedback_run_manifest_sha256": null,
+  "feedback_candidate_sha256": null,
+  "feedback_kind": null,
+  "candidate_sha256": "f005b29051380297069407d367d1d16fc2a354110b3e9b3d8947bb69c198f014",
+  "candidate_changed": true,
+  "success": false,
+  "agent_success": false,
+  "iterations": 1,
+  "compile_attempts": 1,
+  "error_message": "达到最大精炼轮次 (1)",
+  "final_message": "达到最大精炼轮次，仍未通过本地验证。",
+  "output_path": "",
+  "elapsed_seconds": 164.40566182136536,
+  "llm_usage": {
+    "prompt_tokens": 13851,
+    "completion_tokens": 8120,
+    "total_tokens": 21971,
+    "call_count": 1,
+    "available": true,
+    "model": "gpt-5.6-terra",
+    "phases": 1
+  },
+  "llm_usage_by_phase": {
+    "decide": {
+      "prompt_tokens": 13851,
+      "completion_tokens": 8120,
+      "total_tokens": 21971,
+      "call_count": 1,
+      "available": true,
+      "model": "gpt-5.6-terra"
+    }
+  },
+  "artifact_review": {
+    "artifact_path": "/work/artifacts/fse_revision/repeats_v7/rep01/no_internal/02_3027e7b15b02_Null_Pointer_Dereference/attempt-01/SAGenTestChecker.cpp",
+    "analyzer": "csa",
+    "review_mode": "refine",
+    "findings": [],
+    "warnings": []
+  },
+  "failure_type": "compile_failure",
+  "latest_failure_title": "apply_patch.compile_candidate",
+  "latest_failure_text": "ERROR: 编译失败: 2 个错误, 0 个警告\n/work/artifacts/fse_revision/repeats_v7/rep01/no_internal/02_3027e7b15b02_Null_Pointer_Dereference/attempt-01/SAGenTestChecker.cpp:159:30: error: no matching member function for call to 'getSVal'\n  159 |   SVal PointerValue = State->getSVal(MR, C.getLocationContext());\n      |                       ~~~~~~~^~~~~~~\n/usr/lib/llvm-18/include/clang/StaticAnalyzer/Core/PathSensitive/ProgramState.h:828:27: note: candidate function not viable: no known conversion from 'const LocationContext *' to 'QualType' for 2nd argument\n  828 | inline SVal ProgramState::getSVal(const MemRegion* R, QualType T) const {\n      |                           ^                           ~~~~~~~~~~\n/usr/lib/llvm-18/include/clang/StaticAnalyzer/Core/PathSensitive/ProgramState.h:805:27: note: candidate function not viable: no known conversion from 'const MemRegion *' to 'const Stmt *' for 1st argument\n  805 | inline SVal ProgramState::getSVal(const Stmt *Ex,\n      |                           ^       ~~~~~~~~~~~~~~\n/usr/lib/llvm-18/include/clang/StaticAnalyzer/Core/PathSensitive/ProgramState.h:380:8: note: candidate function not viable: no known conversion from 'const MemRegion *' to 'Loc' for 1st argument\n  380 |   SVal getSVal(Loc LV, QualType T = QualType()) const;\n      |        ^       ~~~~~~\n/work/artifacts/fse_revision/repeats_v7/rep01/no_internal/02_3027e7b15b02_Null_Pointer_Dereference/attempt-01/SAGenTestChecker.cpp:160:38: error: no matching member function for call to 'assume'\n  160 |   ProgramStateRef NullState = State->assume(PointerValue, false);\n      |                               ~~~~~~~^~~~~~\n/usr/lib/llvm-18/include/clang/StaticAnalyzer/Core/PathSensitive/ProgramState.h:706:38: note: candidate function not viable: no known conversion from 'SVal' to 'DefinedOrUnknownSVal' for 1st argument\n  706 | inline ProgramStateRef ProgramState::assume(DefinedOrUnknownSVal Cond,\n      |                                      ^      ~~~~~~~~~~~~~~~~~~~~~~~~~\n/usr/lib/llvm-18/include/clang/StaticAnalyzer/Core/PathSensitive/ProgramState.h:716:15: note: candidate function not viable: requires single argument 'Cond', but 2 arguments were provided\n  716 | ProgramState::assume(DefinedOrUnknownSVal Cond) const {\n      |               ^      ~~~~~~~~~~~~~~~~~~~~~~~~~\n2 errors generated.",
+  "tool_history": [
+    {
+      "tool_name": "read_file",
+      "success": true,
+      "error": "",
+      "metadata": {
+        "path": "/work/artifacts/fse_revision/repeats_v7/rep01/no_internal/02_3027e7b15b02_Null_Pointer_Dereference/attempt-01/SAGenTestChecker.cpp",
+        "length": 9047,
+        "lines": 235
+      }
+    },
+    {
+      "tool_name": "read_file",
+      "success": true,
+      "error": "",
+      "metadata": {
+        "path": "/work/artifacts/research/experiment/e1/02_3027e7b15b02_Null_Pointer_Dereference/patches/commit.patch",
+        "length": 1754,
+        "lines": 41
+      }
+    },
+    {
+      "tool_name": "read_file",
+      "success": true,
+      "error": "",
+      "metadata": {
+        "path": "/work/artifacts/fse_revision/repeats_v7/rep01/no_internal/02_3027e7b15b02_Null_Pointer_Dereference/attempt-01/frozen_source/drivers/net/ethernet/intel/ice/ice_ptp.c",
+        "length": 90321,
+        "lines": 3283
+      }
+    },
+    {
+      "tool_name": "review_artifact",
+      "success": true,
+      "error": "",
+      "metadata": {
+        "artifact_path": "/work/artifacts/fse_revision/repeats_v7/rep01/no_internal/02_3027e7b15b02_Null_Pointer_Dereference/attempt-01/SAGenTestChecker.cpp",
+        "analyzer": "csa",
+        "review_mode": "refine",
+        "findings": [],
+        "warnings": []
+      }
+    },
+    {
+      "tool_name": "lsp_validate",
+      "success": true,
+      "error": "",
+      "metadata": {
+        "check_level": "quick",
+        "errors": 0
+      }
+    },
+    {
+      "tool_name": "review_artifact",
+      "success": true,
+      "error": "",
+      "metadata": {
+        "artifact_path": "/work/artifacts/fse_revision/repeats_v7/rep01/no_internal/02_3027e7b15b02_Null_Pointer_Dereference/attempt-01/SAGenTestChecker.cpp",
+        "analyzer": "csa",
+        "review_mode": "refine",
+        "findings": [],
+        "warnings": []
+      }
+    },
+    {
+      "tool_name": "apply_patch",
+      "success": true,
+      "error": "",
+      "metadata": {
+        "path": "/work/artifacts/fse_revision/repeats_v7/rep01/no_internal/02_3027e7b15b02_Null_Pointer_Dereference/attempt-01/SAGenTestChecker.cpp",
+        "target_path": "/work/artifacts/fse_revision/repeats_v7/rep01/no_internal/02_3027e7b15b02_Null_Pointer_Dereference/attempt-01/SAGenTestChecker.cpp",
+        "source_path": "/work/artifacts/fse_revision/repeats_v7/rep01/no_internal/02_3027e7b15b02_Null_Pointer_Dereference/attempt-01/SAGenTestChecker.cpp",
+        "patched_content": "// /external/upstream-study/SAGEN/result-0224-bugfail-multi-o3mini/test-Null-Pointer-Dereference-3027e7b15b02d2d37e3f82d6b8404f6d37e3b8cf/checkers/checker2.cpp\n#include \"clang/StaticAnalyzer/Core/BugReporter/BugReporter.h\"\n#include \"clang/StaticAnalyzer/Core/BugReporter/BugType.h\"\n#include \"clang/StaticAnalyzer/Checkers/Taint.h\"\n#include \"clang/StaticAnalyzer/Core/Checker.h\"\n#include \"clang/StaticAnalyzer/Core/PathSensitive/CallEvent.h\"\n#include \"clang/StaticAnalyzer/Core/PathSensitive/CheckerContext.h\"\n#include \"clang/StaticAnalyzer/Core/PathSensitive/Environment.h\"\n#include \"clang/StaticAnalyzer/Core/PathSensitive/ProgramState.h\"\n#include \"clang/StaticAnalyzer/Core/PathSensitive/ProgramStateTrait.h\"\n#include \"clang/StaticAnalyzer/Core/PathSensitive/SymExpr.h\"\n#include \"clang/StaticAnalyzer/Frontend/CheckerRegistry.h\"\n#include \"clang/AST/RecursiveASTVisitor.h\"\n#include \"clang/AST/StmtVisitor.h\"\n#include \"clang/AST/ParentMapContext.h\"\n#include \"llvm/Support/raw_ostream.h\"\n#include \"clang/StaticAnalyzer/Checkers/utility.h\"\n\n// Additional necessary includes\n#include \"clang/Lex/Lexer.h\"\n#include \"clang/Basic/LangOptions.h\"\n\nusing namespace clang;\nusing namespace ento;\nusing namespace taint;\n\n// Tracks regions whose values originate from a fallible devm_kasprintf call.\nREGISTER_MAP_WITH_PROGRAMSTATE(PotentiallyNullPtrMap, const MemRegion*, bool)\n\nnamespace {\n\nstatic bool isNullGuardOperand(const Stmt *S, ASTContext &Ctx) {\n  const Stmt *Current = S;\n  while (Current) {\n    auto Parents = Ctx.getParents(*Current);\n    if (Parents.empty())\n      return false;\n\n    const Stmt *Parent = Parents[0].get<Stmt>();\n    if (!Parent)\n      return false;\n\n    if (isa<ParenExpr>(Parent) || isa<ImplicitCastExpr>(Parent) ||\n        isa<CStyleCastExpr>(Parent)) {\n      Current = Parent;\n      continue;\n    }\n\n    if (const auto *UO = dyn_cast<UnaryOperator>(Parent))\n      return UO->getOpcode() == UO_LNot;\n\n    if (const auto *BO = dyn_cast<BinaryOperator>(Parent)) {\n      if (BO->getOpcode() != BO_EQ && BO->getOpcode() != BO_NE)\n        return false;\n      const Expr *Other = BO->getLHS() == Current ? BO->getRHS()\n                                                   : BO->getLHS();\n      return Other->IgnoreParenImpCasts()->isNullPointerConstant(\n          Ctx, Expr::NPC_ValueDependentIsNull);\n    }\n\n    if (const auto *IS = dyn_cast<IfStmt>(Parent))\n      return IS->getCond() == Current;\n    if (const auto *WS = dyn_cast<WhileStmt>(Parent))\n      return WS->getCond() == Current;\n    if (const auto *FS = dyn_cast<ForStmt>(Parent))\n      return FS->getCond() == Current;\n    if (const auto *DS = dyn_cast<DoStmt>(Parent))\n      return DS->getCond() == Current;\n\n    return false;\n  }\n  return false;\n}\n\nclass SAGenTestChecker : public Checker<\n    check::PostCall, // For intercepting devm_kasprintf return values.\n    check::Bind,     // For propagating the pointer's fallibility state.\n    check::Location  // For catching potentially-null pointer uses.\n    > {\n  mutable std::unique_ptr<BugType> BT;\n  \npublic:\n  SAGenTestChecker() : BT(new BugType(this, \"Unchecked devm_kasprintf return\", \"Null Dereference\")) {}\n\n  // Callback: After a function call is evaluated.\n  void checkPostCall(const CallEvent &Call, CheckerContext &C) const;\n\n  // Callback: When an assignment (binding) occurs.\n  void checkBind(SVal Loc, SVal Val, const Stmt *StoreE, CheckerContext &C) const;\n\n  // Callback: When a memory location is accessed (load or store).\n  void checkLocation(SVal Loc, bool IsLoad, const Stmt *S, CheckerContext &C) const;\n\nprivate:\n  // Helper for reporting the bug.\n  void reportUncheckedUse(const Stmt *S, CheckerContext &C) const;\n};\n\n/// checkPostCall - Intercept calls to devm_kasprintf. If the function is called,\n/// mark its returned memory region as \"unchecked\" (false) in PossibleNullPtrMap.\nvoid SAGenTestChecker::checkPostCall(const CallEvent &Call, CheckerContext &C) const {\n  const Expr *OriginExpr = Call.getOriginExpr();\n  if (!OriginExpr)\n    return;\n  \n  // Use the utility function to check if this call is to devm_kasprintf.\n  if (!ExprHasName(OriginExpr, \"devm_kasprintf\", C))\n    return;\n  \n  // Retrieve the memory region for the returned pointer.\n  const MemRegion *MR = getMemRegionFromExpr(OriginExpr, C);\n  if (!MR)\n    return;\n  MR = MR->getBaseRegion();\n  if (!MR)\n    return;\n  \n  ProgramStateRef State = C.getState();\n  State = State->set<PotentiallyNullPtrMap>(MR, true);\n  C.addTransition(State);\n}\n\n/// checkBind - Propagate the fallible-result origin across pointer assignments.\nvoid SAGenTestChecker::checkBind(SVal Loc, SVal Val, const Stmt *StoreE,\n                                 CheckerContext &C) const {\n  ProgramStateRef State = C.getState();\n  const MemRegion *LHSReg = Loc.getAsRegion();\n  const MemRegion *RHSReg = Val.getAsRegion();\n  if (!LHSReg || !RHSReg)\n    return;\n\n  LHSReg = LHSReg->getBaseRegion();\n  RHSReg = RHSReg->getBaseRegion();\n  if (!LHSReg || !RHSReg)\n    return;\n\n  if (!State->get<PotentiallyNullPtrMap>(RHSReg))\n    return;\n\n  State = State->set<PotentiallyNullPtrMap>(LHSReg, true);\n  C.addTransition(State);\n}\n\n/// checkLocation - Report a use only when the tracked value may still be NULL.\nvoid SAGenTestChecker::checkLocation(SVal Loc, bool IsLoad, const Stmt *S,\n                                     CheckerContext &C) const {\n  const MemRegion *MR = Loc.getAsRegion();\n  if (!MR || isNullGuardOperand(S, C.getASTContext()))\n    return;\n\n  MR = MR->getBaseRegion();\n  if (!MR)\n    return;\n\n  ProgramStateRef State = C.getState();\n  if (!State->get<PotentiallyNullPtrMap>(MR))\n    return;\n\n  SVal PointerValue = State->getSVal(MR, C.getLocationContext());\n  ProgramStateRef NullState = State->assume(PointerValue, false);\n  if (NullState)\n    reportUncheckedUse(S, C);\n}\n\n/// reportUncheckedUse - Generate a bug report when an unchecked devm_kasprintf\n/// pointer is dereferenced.\nvoid SAGenTestChecker::reportUncheckedUse(const Stmt *S, CheckerContext &C) const {\n  ExplodedNode *N = C.generateNonFatalErrorNode();\n  if (!N)\n    return;\n  auto Report = std::make_unique<PathSensitiveBugReport>(\n      *BT, \"Unchecked devm_kasprintf return value used\", N);\n  Report->addRange(S->getSourceRange());\n  C.emitReport(std::move(Report));\n}\n\n} // end anonymous namespace\n\nextern \"C\" void clang_registerCheckers(CheckerRegistry &registry) {\n  registry.addChecker<SAGenTestChecker>(\n      \"custom.SAGenTestChecker\", \n      \"Detects use of devm_kasprintf return value without NULL checking\",\n      \"\");\n}\n\nextern \"C\" const char clang_analyzerAPIVersionString[] =\n    CLANG_ANALYZER_API_VERSION_STRING;\n",
+        "length": 6595,
+        "lines": 188,
+        "hunks": 4,
+        "added_lines": 79,
+        "removed_lines": 126,
+        "engine": "patch_ng",
+        "engine_note": "",
+        "attempt_errors": [],
+        "version_path": "/work/artifacts/fse_revision/repeats_v7/rep01/no_internal/02_3027e7b15b02_Null_Pointer_Dereference/attempt-01/versions/SAGenTestChecker_patch_v001.cpp"
+      }
+    },
+    {
+      "tool_name": "read_file",
+      "success": true,
+      "error": "",
+      "metadata": {
+        "path": "/work/artifacts/fse_revision/repeats_v7/rep01/no_internal/02_3027e7b15b02_Null_Pointer_Dereference/attempt-01/SAGenTestChecker.cpp",
+        "length": 6595,
+        "lines": 188
+      }
+    },
+    {
+      "tool_name": "compile_checker",
+      "success": false,
+      "error": "编译失败: 2 个错误, 0 个警告",
+      "metadata": {
+        "source_file": "/work/artifacts/fse_revision/repeats_v7/rep01/no_internal/02_3027e7b15b02_Null_Pointer_Dereference/attempt-01/SAGenTestChecker.cpp",
+        "error_count": 2,
+        "warning_count": 0,
+        "checker_name": "SAGenTestChecker"
+      }
+    }
+  ],
+  "event_count": 26
+}

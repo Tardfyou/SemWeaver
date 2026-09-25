@@ -1,0 +1,11 @@
+Refinment Plan:
+
+1. The false positive occurs because the checker treats every `X > RDS_MSG_RX_DGRAM_TRACE_MAX` comparison as an array-index check. At line 417, `trace.rx_traces` is a scalar count used as the loop bound, not an index. Allowing it to equal the array capacity is correct.
+2. Require the left operand to be an actual `ArraySubscriptExpr`, such as `trace.rx_trace_pos[i]`, before reporting.
+3. Confirm that the RHS evaluates to the capacity of the array being accessed. This preserves detection of the target buggy condition, where `trace.rx_trace_pos[i] > RDS_MSG_RX_DGRAM_TRACE_MAX` incorrectly permits an array-position value equal to the array capacity.
+4. Use a `ProgramState` set to avoid duplicate reports when the same branch condition is revisited on multiple paths or loop iterations.
+5. Keep `>=` checks unreported. Dynamic/VLA/pointer-based arrays are conservatively ignored because their extent cannot be established reliably from this local AST pattern.
+
+Refined Code:
+```cpp
+```

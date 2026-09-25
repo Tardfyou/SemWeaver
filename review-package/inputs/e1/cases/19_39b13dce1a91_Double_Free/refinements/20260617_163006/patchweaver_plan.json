@@ -1,0 +1,987 @@
+{
+  "files_changed": [
+    "drivers/firmware/arm_scmi/driver.c"
+  ],
+  "file_details": [
+    {
+      "path": "drivers/firmware/arm_scmi/driver.c",
+      "additions": 1,
+      "deletions": 3,
+      "hunks": 1
+    }
+  ],
+  "vulnerability_patterns": [
+    {
+      "type": "double_free",
+      "description": "Before the patch, failure of devm_add_action_or_reset() consumed dbg with scmi_debugfs_common_cleanup as a registered reset action and then the error branch explicitly called scmi_debugfs_common_cleanup(dbg) again, allowing the same resources owned by dbg, including dbg->name according to the patch context, to be freed twice. After the patch, the failure path returns NULL immediately and relies only on devm_add_action_or_reset()'s reset action to perform cleanup once.",
+      "trigger_conditions": [
+        "In scmi_debugfs_common_setup(), devm_add_action_or_reset(info->dev, scmi_debugfs_common_cleanup, dbg) returns failure.",
+        "The same cleanup callback and same object argument, scmi_debugfs_common_cleanup and dbg, are passed to devm_add_action_or_reset().",
+        "The failure branch also explicitly calls scmi_debugfs_common_cleanup(dbg) before returning.",
+        "The cleanup callback releases resources associated with dbg, so invoking it twice on the same dbg can release the same memory twice."
+      ],
+      "fix_patterns": [
+        "Remove the explicit scmi_debugfs_common_cleanup(dbg) call from the devm_add_action_or_reset() failure branch.",
+        "Keep the early return NULL after devm_add_action_or_reset() failure so the setup function stops without a second cleanup invocation.",
+        "Rely on devm_add_action_or_reset() to run scmi_debugfs_common_cleanup on failure instead of manually duplicating the cleanup action."
+      ],
+      "affected_functions": [
+        "scmi_debugfs_common_setup",
+        "scmi_debugfs_common_cleanup"
+      ],
+      "cross_file": false,
+      "source": "llm",
+      "confidence": 0.95,
+      "evidence_lines": [
+        "if (devm_add_action_or_reset(info->dev,",
+        "scmi_debugfs_common_cleanup, dbg))",
+        "-\t\tscmi_debugfs_common_cleanup(dbg);",
+        "+\t\treturn NULL;",
+        "Remove the redundant scmi_debugfs_common_cleanup() to fix this problem.",
+        "When devm_add_action_or_reset() fails, scmi_debugfs_common_cleanup() will run twice which causes double free of 'dbg->name'."
+      ]
+    }
+  ],
+  "cross_file_dependencies": [],
+  "detection_strategy": {
+    "primary_pattern": "double_free",
+    "check_types": [
+      "local_ast",
+      "local_cfg",
+      "resource_lifecycle"
+    ],
+    "entry_points": [
+      "drivers/firmware/arm_scmi/driver.c:scmi_debugfs_common_setup",
+      "drivers/firmware/arm_scmi/driver.c:scmi_debugfs_common_cleanup"
+    ],
+    "data_flow_tracking": false,
+    "cross_file_analysis": false,
+    "suggestions": [
+      "First-draft detector should anchor on a call to devm_add_action_or_reset(dev, cleanup_fn, arg) used as an if-condition or error-check, where the failure branch directly calls cleanup_fn(arg).",
+      "The most precise patch-local sink is the deleted explicit call scmi_debugfs_common_cleanup(dbg), not the return NULL or formatting change.",
+      "Model devm_add_action_or_reset() as a barrier/reset API that invokes the supplied cleanup callback with the supplied argument on failure; then flag duplicate manual cleanup of the same callback and same argument on that failure path.",
+      "Use local AST plus local CFG within the affected function first; no cross-file analysis is needed for the initial checker because the callback and argument identity are visible at the call site.",
+      "Treat exact callback identity and exact argument identity as strong first-pass conditions; details of what scmi_debugfs_common_cleanup frees, such as dbg->name, can be a secondary refinement rather than a required initial match.",
+      "Do not require a separate free() call in the same function; the vulnerability is duplicated cleanup callback execution, where the actual free may be inside the callback."
+    ]
+  },
+  "checker_name_suggestion": "DevmAddActionOrResetDoubleCleanupChecker",
+  "affected_functions": [
+    "scmi_debugfs_common_setup",
+    "scmi_debugfs_common_cleanup"
+  ],
+  "key_functions": [
+    "scmi_debugfs_common_setup",
+    "scmi_debugfs_common_cleanup"
+  ],
+  "patch_semantics": {
+    "added_guards": [],
+    "added_api_calls": [],
+    "removed_api_calls": [
+      "scmi_debugfs_common_cleanup"
+    ],
+    "state_resets": [],
+    "lifecycle_changes": []
+  },
+  "analysis_backend": "llm",
+  "analysis_confidence": 0.95,
+  "analysis_rationale": "The patch removes an explicit call to scmi_debugfs_common_cleanup(dbg) from the error branch of devm_add_action_or_reset(info->dev, scmi_debugfs_common_cleanup, dbg). devm_add_action_or_reset() already invokes the cleanup action on failure, so the old branch caused the same cleanup callback to run once via devm_add_action_or_reset failure handling and once explicitly before returning NULL. The concrete dangerous operation removed by the patch is the redundant scmi_debugfs_common_cleanup(dbg) call in scmi_debugfs_common_setup().",
+  "llm_usage": {
+    "prompt_tokens": 4152,
+    "completion_tokens": 1138,
+    "total_tokens": 5290,
+    "call_count": 1,
+    "available": true,
+    "model": "gpt-5.5"
+  },
+  "patchweaver": {
+    "summary": "Patch suggests double_free semantics across 1 file(s); added guards=0, removed risky operations=0, fix patterns=3, metadata refs=1.",
+    "patch_facts": [
+      {
+        "fact_type": "patch_overview",
+        "label": "Patch overview",
+        "attributes": {
+          "patch_path": "/anonymous/home/LLM-Native/research/knighter/e2/cases/19_39b13dce1a91_Double_Free/patches/commit.patch",
+          "changed_files": [
+            "drivers/firmware/arm_scmi/driver.c"
+          ],
+          "changed_file_count": 1,
+          "added_line_count": 1,
+          "deleted_line_count": 3
+        }
+      },
+      {
+        "fact_type": "vulnerability_patterns",
+        "label": "Vulnerability patterns inferred from patch",
+        "attributes": {
+          "patterns": [
+            "double_free"
+          ],
+          "descriptions": [
+            "Before the patch, failure of devm_add_action_or_reset() consumed dbg with scmi_debugfs_common_cleanup as a registered reset action and then the error branch explicitly called scmi_debugfs_common_cleanup(dbg) again, allowing the same resources owned by dbg, including dbg->name according to the patch context, to be freed twice. After the patch, the failure path returns NULL immediately and relies only on devm_add_action_or_reset()'s reset action to perform cleanup once."
+          ]
+        }
+      },
+      {
+        "fact_type": "affected_functions",
+        "label": "Functions implicated by removed or fixed code",
+        "attributes": {
+          "functions": [
+            "scmi_debugfs_common_cleanup",
+            "scmi_debugfs_common_setup"
+          ]
+        }
+      },
+      {
+        "fact_type": "detection_strategy",
+        "label": "Existing patch analysis detection strategy",
+        "attributes": {
+          "primary_pattern": "double_free",
+          "check_types": [
+            "local_ast",
+            "local_cfg",
+            "resource_lifecycle"
+          ],
+          "entry_points": [
+            "drivers/firmware/arm_scmi/driver.c:scmi_debugfs_common_setup",
+            "drivers/firmware/arm_scmi/driver.c:scmi_debugfs_common_cleanup"
+          ],
+          "data_flow_tracking": false,
+          "cross_file_analysis": false,
+          "suggestions": [
+            "First-draft detector should anchor on a call to devm_add_action_or_reset(dev, cleanup_fn, arg) used as an if-condition or error-check, where the failure branch directly calls cleanup_fn(arg).",
+            "The most precise patch-local sink is the deleted explicit call scmi_debugfs_common_cleanup(dbg), not the return NULL or formatting change.",
+            "Model devm_add_action_or_reset() as a barrier/reset API that invokes the supplied cleanup callback with the supplied argument on failure; then flag duplicate manual cleanup of the same callback and same argument on that failure path.",
+            "Use local AST plus local CFG within the affected function first; no cross-file analysis is needed for the initial checker because the callback and argument identity are visible at the call site.",
+            "Treat exact callback identity and exact argument identity as strong first-pass conditions; details of what scmi_debugfs_common_cleanup frees, such as dbg->name, can be a secondary refinement rather than a required initial match.",
+            "Do not require a separate free() call in the same function; the vulnerability is duplicated cleanup callback execution, where the actual free may be inside the callback."
+          ]
+        }
+      },
+      {
+        "fact_type": "fix_patterns",
+        "label": "Patch introduces reusable fix patterns",
+        "attributes": {
+          "patterns": [
+            "Remove the explicit scmi_debugfs_common_cleanup(dbg) call from the devm_add_action_or_reset() failure branch.",
+            "Keep the early return NULL after devm_add_action_or_reset() failure so the setup function stops without a second cleanup invocation.",
+            "Rely on devm_add_action_or_reset() to run scmi_debugfs_common_cleanup on failure instead of manually duplicating the cleanup action."
+          ]
+        }
+      },
+      {
+        "fact_type": "patch_intent",
+        "label": "Patch intent and commit-style summary",
+        "attributes": {
+          "summary": "commit 39b13dce1a91cdfc3bec9238f9e89094551bd428 | Author: Su Hui <suhui@nfschina.com>",
+          "keywords": [
+            "commit",
+            "b13dce1a91cdfc3bec9238f9e89094551bd428",
+            "author",
+            "suhui",
+            "nfschina"
+          ]
+        }
+      },
+      {
+        "fact_type": "external_references",
+        "label": "External references recovered from patch text",
+        "attributes": {
+          "cves": [],
+          "cwes": [],
+          "issues": [
+            "c3d4aed763ce"
+          ]
+        }
+      }
+    ],
+    "mechanism_graph": {
+      "summary": "Patch suggests double_free semantics across 1 file(s); added guards=0, removed risky operations=0, fix patterns=3, metadata refs=1.",
+      "primary_patterns": [
+        "double_free"
+      ],
+      "nodes": [
+        {
+          "node_id": "patch",
+          "kind": "patch",
+          "label": "Security patch",
+          "attributes": {
+            "changed_files": [
+              "drivers/firmware/arm_scmi/driver.c"
+            ]
+          }
+        },
+        {
+          "node_id": "file_0",
+          "kind": "file",
+          "label": "drivers/firmware/arm_scmi/driver.c",
+          "attributes": {
+            "path": "drivers/firmware/arm_scmi/driver.c",
+            "additions": 1,
+            "deletions": 3,
+            "hunks": 1
+          }
+        },
+        {
+          "node_id": "pattern_0",
+          "kind": "pattern",
+          "label": "double_free",
+          "attributes": {
+            "type": "double_free",
+            "description": "Before the patch, failure of devm_add_action_or_reset() consumed dbg with scmi_debugfs_common_cleanup as a registered reset action and then the error branch explicitly called scmi_debugfs_common_cleanup(dbg) again, allowing the same resources owned by dbg, including dbg->name according to the patch context, to be freed twice. After the patch, the failure path returns NULL immediately and relies only on devm_add_action_or_reset()'s reset action to perform cleanup once.",
+            "trigger_conditions": [
+              "In scmi_debugfs_common_setup(), devm_add_action_or_reset(info->dev, scmi_debugfs_common_cleanup, dbg) returns failure.",
+              "The same cleanup callback and same object argument, scmi_debugfs_common_cleanup and dbg, are passed to devm_add_action_or_reset().",
+              "The failure branch also explicitly calls scmi_debugfs_common_cleanup(dbg) before returning.",
+              "The cleanup callback releases resources associated with dbg, so invoking it twice on the same dbg can release the same memory twice."
+            ],
+            "fix_patterns": [
+              "Remove the explicit scmi_debugfs_common_cleanup(dbg) call from the devm_add_action_or_reset() failure branch.",
+              "Keep the early return NULL after devm_add_action_or_reset() failure so the setup function stops without a second cleanup invocation.",
+              "Rely on devm_add_action_or_reset() to run scmi_debugfs_common_cleanup on failure instead of manually duplicating the cleanup action."
+            ],
+            "affected_functions": [
+              "scmi_debugfs_common_setup",
+              "scmi_debugfs_common_cleanup"
+            ],
+            "cross_file": false,
+            "source": "llm",
+            "confidence": 0.95,
+            "evidence_lines": [
+              "if (devm_add_action_or_reset(info->dev,",
+              "scmi_debugfs_common_cleanup, dbg))",
+              "-\t\tscmi_debugfs_common_cleanup(dbg);",
+              "+\t\treturn NULL;",
+              "Remove the redundant scmi_debugfs_common_cleanup() to fix this problem.",
+              "When devm_add_action_or_reset() fails, scmi_debugfs_common_cleanup() will run twice which causes double free of 'dbg->name'."
+            ]
+          }
+        },
+        {
+          "node_id": "func_1",
+          "kind": "function",
+          "label": "scmi_debugfs_common_setup",
+          "attributes": {
+            "function": "scmi_debugfs_common_setup"
+          }
+        },
+        {
+          "node_id": "func_2",
+          "kind": "function",
+          "label": "scmi_debugfs_common_cleanup",
+          "attributes": {
+            "function": "scmi_debugfs_common_cleanup"
+          }
+        },
+        {
+          "node_id": "guard_1",
+          "kind": "guard",
+          "label": "In scmi_debugfs_common_setup(), devm_add_action_or_reset(info->dev, scmi_debugfs_common_cleanup, dbg) returns failure.",
+          "attributes": {
+            "condition": "In scmi_debugfs_common_setup(), devm_add_action_or_reset(info->dev, scmi_debugfs_common_cleanup, dbg) returns failure."
+          }
+        },
+        {
+          "node_id": "guard_2",
+          "kind": "guard",
+          "label": "The same cleanup callback and same object argument, scmi_debugfs_common_cleanup and dbg, are passed to devm_add_action_or_reset().",
+          "attributes": {
+            "condition": "The same cleanup callback and same object argument, scmi_debugfs_common_cleanup and dbg, are passed to devm_add_action_or_reset()."
+          }
+        },
+        {
+          "node_id": "guard_3",
+          "kind": "guard",
+          "label": "The failure branch also explicitly calls scmi_debugfs_common_cleanup(dbg) before returning.",
+          "attributes": {
+            "condition": "The failure branch also explicitly calls scmi_debugfs_common_cleanup(dbg) before returning."
+          }
+        },
+        {
+          "node_id": "guard_4",
+          "kind": "guard",
+          "label": "The cleanup callback releases resources associated with dbg, so invoking it twice on the same dbg can release the same memory twice.",
+          "attributes": {
+            "condition": "The cleanup callback releases resources associated with dbg, so invoking it twice on the same dbg can release the same memory twice."
+          }
+        },
+        {
+          "node_id": "strategy",
+          "kind": "strategy",
+          "label": "double_free",
+          "attributes": {
+            "primary_pattern": "double_free",
+            "check_types": [
+              "local_ast",
+              "local_cfg",
+              "resource_lifecycle"
+            ],
+            "entry_points": [
+              "drivers/firmware/arm_scmi/driver.c:scmi_debugfs_common_setup",
+              "drivers/firmware/arm_scmi/driver.c:scmi_debugfs_common_cleanup"
+            ],
+            "data_flow_tracking": false,
+            "cross_file_analysis": false,
+            "suggestions": [
+              "First-draft detector should anchor on a call to devm_add_action_or_reset(dev, cleanup_fn, arg) used as an if-condition or error-check, where the failure branch directly calls cleanup_fn(arg).",
+              "The most precise patch-local sink is the deleted explicit call scmi_debugfs_common_cleanup(dbg), not the return NULL or formatting change.",
+              "Model devm_add_action_or_reset() as a barrier/reset API that invokes the supplied cleanup callback with the supplied argument on failure; then flag duplicate manual cleanup of the same callback and same argument on that failure path.",
+              "Use local AST plus local CFG within the affected function first; no cross-file analysis is needed for the initial checker because the callback and argument identity are visible at the call site.",
+              "Treat exact callback identity and exact argument identity as strong first-pass conditions; details of what scmi_debugfs_common_cleanup frees, such as dbg->name, can be a secondary refinement rather than a required initial match.",
+              "Do not require a separate free() call in the same function; the vulnerability is duplicated cleanup callback execution, where the actual free may be inside the callback."
+            ]
+          }
+        },
+        {
+          "node_id": "fix_1",
+          "kind": "fix",
+          "label": "Remove the explicit scmi_debugfs_common_cleanup(dbg) call from the devm_add_action_or_reset() failure branch.",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "Remove the explicit scmi_debugfs_common_cleanup(dbg) call from the devm_add_action_or_reset() failure branch."
+          }
+        },
+        {
+          "node_id": "fix_2",
+          "kind": "fix",
+          "label": "Keep the early return NULL after devm_add_action_or_reset() failure so the setup function stops without a second cleanup invocation.",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "Keep the early return NULL after devm_add_action_or_reset() failure so the setup function stops without a second cleanup invocation."
+          }
+        },
+        {
+          "node_id": "fix_3",
+          "kind": "fix",
+          "label": "Rely on devm_add_action_or_reset() to run scmi_debugfs_common_cleanup on failure instead of manually duplicating the cleanup action.",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "Rely on devm_add_action_or_reset() to run scmi_debugfs_common_cleanup on failure instead of manually duplicating the cleanup action."
+          }
+        },
+        {
+          "node_id": "intent_0",
+          "kind": "intent",
+          "label": "commit 39b13dce1a91cdfc3bec9238f9e89094551bd428 | Author: Su Hui <suhui@nfschina.com>",
+          "attributes": {
+            "summary": "commit 39b13dce1a91cdfc3bec9238f9e89094551bd428 | Author: Su Hui <suhui@nfschina.com>",
+            "keywords": [
+              "commit",
+              "b13dce1a91cdfc3bec9238f9e89094551bd428",
+              "author",
+              "suhui",
+              "nfschina"
+            ]
+          }
+        },
+        {
+          "node_id": "commit_0",
+          "kind": "commit",
+          "label": "c3d4aed763ce",
+          "attributes": {
+            "issues": [
+              "c3d4aed763ce"
+            ]
+          }
+        }
+      ],
+      "edges": [
+        {
+          "source": "patch",
+          "target": "file_0",
+          "relation": "touches",
+          "confidence": 0.95
+        },
+        {
+          "source": "patch",
+          "target": "pattern_0",
+          "relation": "indicates",
+          "confidence": 0.9
+        },
+        {
+          "source": "pattern_0",
+          "target": "func_1",
+          "relation": "affects",
+          "confidence": 0.75
+        },
+        {
+          "source": "pattern_0",
+          "target": "func_2",
+          "relation": "affects",
+          "confidence": 0.75
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_1",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_2",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_3",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_4",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "patch",
+          "target": "strategy",
+          "relation": "guides",
+          "confidence": 0.85
+        },
+        {
+          "source": "patch",
+          "target": "fix_1",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_2",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_3",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "intent_0",
+          "relation": "describes",
+          "confidence": 0.78
+        },
+        {
+          "source": "patch",
+          "target": "commit_0",
+          "relation": "tracked_by",
+          "confidence": 0.72
+        }
+      ]
+    },
+    "evidence_plan": {
+      "primary_pattern": "double_free",
+      "hypotheses": [
+        "The patch likely changes a resource lifecycle or stale-state transition."
+      ],
+      "requirements": [
+        {
+          "evidence_type": "patch_fact",
+          "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+          "priority": 100,
+          "preferred_analyzers": [],
+          "confidence": 1.0,
+          "mechanism_refs": [
+            "patch"
+          ]
+        },
+        {
+          "evidence_type": "allocation_lifecycle",
+          "reason": "Lifetime-sensitive bug family requires allocation/free reasoning.",
+          "priority": 92,
+          "preferred_analyzers": [
+            "csa"
+          ],
+          "confidence": 0.92,
+          "mechanism_refs": [
+            "pattern_0"
+          ]
+        },
+        {
+          "evidence_type": "state_transition",
+          "reason": "Need local state transitions around free/delete and later uses.",
+          "priority": 89,
+          "preferred_analyzers": [
+            "csa"
+          ],
+          "confidence": 0.88,
+          "mechanism_refs": [
+            "pattern_0"
+          ]
+        }
+      ],
+      "recommended_analyzers": [
+        "csa"
+      ],
+      "planner_notes": [],
+      "coverage_gaps": [],
+      "uncertainty_budget": "medium",
+      "escalation_triggers": [
+        "metadata_available"
+      ]
+    },
+    "validation_feedback_history": [
+      {
+        "analyzer": "csa",
+        "phase": "knighter_e2_patch_local_baseline",
+        "summary": "Baseline validation (csa): Knighter基线扫描报告数=1, 人工确认bug=1, 人工非bug=0, 候选组=positive_scan_report_count。漏洞版命中=true, 漏洞版patch-scoped告警数=2, 修复版误报数=1, fixed_silent=false, PDS=false. 这些数只表示patch-local语义验证门，不等同于Knighter full-kernel report_count/FPR统计。"
+      }
+    ],
+    "refinement_targets": {
+      "csa": {
+        "checker_name": "SAGenTestChecker",
+        "artifact_path": "/anonymous/home/LLM-Native/research/knighter/e2/cases/19_39b13dce1a91_Double_Free/csa/SAGenTestChecker.cpp",
+        "artifact_kind": "checker_source",
+        "validation_summary": "Baseline validation (csa): Knighter基线扫描报告数=1, 人工确认bug=1, 人工非bug=0, 候选组=positive_scan_report_count。漏洞版命中=true, 漏洞版patch-scoped告警数=2, 修复版误报数=1, fixed_silent=false, PDS=false. 这些数只表示patch-local语义验证门，不等同于Knighter full-kernel report_count/FPR统计。",
+        "refinement_summary": "Baseline validation (csa): Knighter基线扫描报告数=1, 人工确认bug=1, 人工非bug=0, 候选组=positive_scan_report_count。漏洞版命中=true, 漏洞版patch-scoped告警数=2, 修复版误报数=1, fixed_silent=false, PDS=false. 这些数只表示patch-local语义验证门，不等同于Knighter full-kernel report_count/FPR统计。"
+      }
+    }
+  },
+  "knighter": {
+    "patch_local_screen1": {
+      "buggy_alerts": 2,
+      "fixed_alerts": 1,
+      "buggy_miss": false,
+      "fixed_noisy": true,
+      "poor_distinguishing": true,
+      "screen1_priority": "P0",
+      "screen1_reason": "fixed-side noisy",
+      "patch_related_targets": [
+        "drivers/firmware/arm_scmi/driver.o"
+      ]
+    },
+    "baseline_validation_summary": "Baseline validation (csa): Knighter基线扫描报告数=1, 人工确认bug=1, 人工非bug=0, 候选组=positive_scan_report_count。漏洞版命中=true, 漏洞版patch-scoped告警数=2, 修复版误报数=1, fixed_silent=false, PDS=false. 这些数只表示patch-local语义验证门，不等同于Knighter full-kernel report_count/FPR统计。"
+  },
+  "patch_path": "/anonymous/home/LLM-Native/research/knighter/e2/cases/19_39b13dce1a91_Double_Free/patches/commit.patch",
+  "summary": "Patch suggests double_free semantics across 1 file(s); added guards=0, removed risky operations=0, fix patterns=3, metadata refs=1.",
+  "patch_facts": [
+    {
+      "fact_type": "patch_overview",
+      "label": "Patch overview",
+      "attributes": {
+        "patch_path": "/anonymous/home/LLM-Native/research/knighter/e2/cases/19_39b13dce1a91_Double_Free/patches/commit.patch",
+        "changed_files": [
+          "drivers/firmware/arm_scmi/driver.c"
+        ],
+        "changed_file_count": 1,
+        "added_line_count": 1,
+        "deleted_line_count": 3
+      }
+    },
+    {
+      "fact_type": "vulnerability_patterns",
+      "label": "Vulnerability patterns inferred from patch",
+      "attributes": {
+        "patterns": [
+          "double_free"
+        ],
+        "descriptions": [
+          "Before the patch, failure of devm_add_action_or_reset() consumed dbg with scmi_debugfs_common_cleanup as a registered reset action and then the error branch explicitly called scmi_debugfs_common_cleanup(dbg) again, allowing the same resources owned by dbg, including dbg->name according to the patch context, to be freed twice. After the patch, the failure path returns NULL immediately and relies only on devm_add_action_or_reset()'s reset action to perform cleanup once."
+        ]
+      }
+    },
+    {
+      "fact_type": "affected_functions",
+      "label": "Functions implicated by removed or fixed code",
+      "attributes": {
+        "functions": [
+          "scmi_debugfs_common_cleanup",
+          "scmi_debugfs_common_setup"
+        ]
+      }
+    },
+    {
+      "fact_type": "detection_strategy",
+      "label": "Existing patch analysis detection strategy",
+      "attributes": {
+        "primary_pattern": "double_free",
+        "check_types": [
+          "local_ast",
+          "local_cfg",
+          "resource_lifecycle"
+        ],
+        "entry_points": [
+          "drivers/firmware/arm_scmi/driver.c:scmi_debugfs_common_setup",
+          "drivers/firmware/arm_scmi/driver.c:scmi_debugfs_common_cleanup"
+        ],
+        "data_flow_tracking": false,
+        "cross_file_analysis": false,
+        "suggestions": [
+          "First-draft detector should anchor on a call to devm_add_action_or_reset(dev, cleanup_fn, arg) used as an if-condition or error-check, where the failure branch directly calls cleanup_fn(arg).",
+          "The most precise patch-local sink is the deleted explicit call scmi_debugfs_common_cleanup(dbg), not the return NULL or formatting change.",
+          "Model devm_add_action_or_reset() as a barrier/reset API that invokes the supplied cleanup callback with the supplied argument on failure; then flag duplicate manual cleanup of the same callback and same argument on that failure path.",
+          "Use local AST plus local CFG within the affected function first; no cross-file analysis is needed for the initial checker because the callback and argument identity are visible at the call site.",
+          "Treat exact callback identity and exact argument identity as strong first-pass conditions; details of what scmi_debugfs_common_cleanup frees, such as dbg->name, can be a secondary refinement rather than a required initial match.",
+          "Do not require a separate free() call in the same function; the vulnerability is duplicated cleanup callback execution, where the actual free may be inside the callback."
+        ]
+      }
+    },
+    {
+      "fact_type": "fix_patterns",
+      "label": "Patch introduces reusable fix patterns",
+      "attributes": {
+        "patterns": [
+          "Remove the explicit scmi_debugfs_common_cleanup(dbg) call from the devm_add_action_or_reset() failure branch.",
+          "Keep the early return NULL after devm_add_action_or_reset() failure so the setup function stops without a second cleanup invocation.",
+          "Rely on devm_add_action_or_reset() to run scmi_debugfs_common_cleanup on failure instead of manually duplicating the cleanup action."
+        ]
+      }
+    },
+    {
+      "fact_type": "patch_intent",
+      "label": "Patch intent and commit-style summary",
+      "attributes": {
+        "summary": "commit 39b13dce1a91cdfc3bec9238f9e89094551bd428 | Author: Su Hui <suhui@nfschina.com>",
+        "keywords": [
+          "commit",
+          "b13dce1a91cdfc3bec9238f9e89094551bd428",
+          "author",
+          "suhui",
+          "nfschina"
+        ]
+      }
+    },
+    {
+      "fact_type": "external_references",
+      "label": "External references recovered from patch text",
+      "attributes": {
+        "cves": [],
+        "cwes": [],
+        "issues": [
+          "c3d4aed763ce"
+        ]
+      }
+    }
+  ],
+  "mechanism_graph": {
+    "summary": "Patch suggests double_free semantics across 1 file(s); added guards=0, removed risky operations=0, fix patterns=3, metadata refs=1.",
+    "primary_patterns": [
+      "double_free"
+    ],
+    "nodes": [
+      {
+        "node_id": "patch",
+        "kind": "patch",
+        "label": "Security patch",
+        "attributes": {
+          "changed_files": [
+            "drivers/firmware/arm_scmi/driver.c"
+          ]
+        }
+      },
+      {
+        "node_id": "file_0",
+        "kind": "file",
+        "label": "drivers/firmware/arm_scmi/driver.c",
+        "attributes": {
+          "path": "drivers/firmware/arm_scmi/driver.c",
+          "additions": 1,
+          "deletions": 3,
+          "hunks": 1
+        }
+      },
+      {
+        "node_id": "pattern_0",
+        "kind": "pattern",
+        "label": "double_free",
+        "attributes": {
+          "type": "double_free",
+          "description": "Before the patch, failure of devm_add_action_or_reset() consumed dbg with scmi_debugfs_common_cleanup as a registered reset action and then the error branch explicitly called scmi_debugfs_common_cleanup(dbg) again, allowing the same resources owned by dbg, including dbg->name according to the patch context, to be freed twice. After the patch, the failure path returns NULL immediately and relies only on devm_add_action_or_reset()'s reset action to perform cleanup once.",
+          "trigger_conditions": [
+            "In scmi_debugfs_common_setup(), devm_add_action_or_reset(info->dev, scmi_debugfs_common_cleanup, dbg) returns failure.",
+            "The same cleanup callback and same object argument, scmi_debugfs_common_cleanup and dbg, are passed to devm_add_action_or_reset().",
+            "The failure branch also explicitly calls scmi_debugfs_common_cleanup(dbg) before returning.",
+            "The cleanup callback releases resources associated with dbg, so invoking it twice on the same dbg can release the same memory twice."
+          ],
+          "fix_patterns": [
+            "Remove the explicit scmi_debugfs_common_cleanup(dbg) call from the devm_add_action_or_reset() failure branch.",
+            "Keep the early return NULL after devm_add_action_or_reset() failure so the setup function stops without a second cleanup invocation.",
+            "Rely on devm_add_action_or_reset() to run scmi_debugfs_common_cleanup on failure instead of manually duplicating the cleanup action."
+          ],
+          "affected_functions": [
+            "scmi_debugfs_common_setup",
+            "scmi_debugfs_common_cleanup"
+          ],
+          "cross_file": false,
+          "source": "llm",
+          "confidence": 0.95,
+          "evidence_lines": [
+            "if (devm_add_action_or_reset(info->dev,",
+            "scmi_debugfs_common_cleanup, dbg))",
+            "-\t\tscmi_debugfs_common_cleanup(dbg);",
+            "+\t\treturn NULL;",
+            "Remove the redundant scmi_debugfs_common_cleanup() to fix this problem.",
+            "When devm_add_action_or_reset() fails, scmi_debugfs_common_cleanup() will run twice which causes double free of 'dbg->name'."
+          ]
+        }
+      },
+      {
+        "node_id": "func_1",
+        "kind": "function",
+        "label": "scmi_debugfs_common_setup",
+        "attributes": {
+          "function": "scmi_debugfs_common_setup"
+        }
+      },
+      {
+        "node_id": "func_2",
+        "kind": "function",
+        "label": "scmi_debugfs_common_cleanup",
+        "attributes": {
+          "function": "scmi_debugfs_common_cleanup"
+        }
+      },
+      {
+        "node_id": "guard_1",
+        "kind": "guard",
+        "label": "In scmi_debugfs_common_setup(), devm_add_action_or_reset(info->dev, scmi_debugfs_common_cleanup, dbg) returns failure.",
+        "attributes": {
+          "condition": "In scmi_debugfs_common_setup(), devm_add_action_or_reset(info->dev, scmi_debugfs_common_cleanup, dbg) returns failure."
+        }
+      },
+      {
+        "node_id": "guard_2",
+        "kind": "guard",
+        "label": "The same cleanup callback and same object argument, scmi_debugfs_common_cleanup and dbg, are passed to devm_add_action_or_reset().",
+        "attributes": {
+          "condition": "The same cleanup callback and same object argument, scmi_debugfs_common_cleanup and dbg, are passed to devm_add_action_or_reset()."
+        }
+      },
+      {
+        "node_id": "guard_3",
+        "kind": "guard",
+        "label": "The failure branch also explicitly calls scmi_debugfs_common_cleanup(dbg) before returning.",
+        "attributes": {
+          "condition": "The failure branch also explicitly calls scmi_debugfs_common_cleanup(dbg) before returning."
+        }
+      },
+      {
+        "node_id": "guard_4",
+        "kind": "guard",
+        "label": "The cleanup callback releases resources associated with dbg, so invoking it twice on the same dbg can release the same memory twice.",
+        "attributes": {
+          "condition": "The cleanup callback releases resources associated with dbg, so invoking it twice on the same dbg can release the same memory twice."
+        }
+      },
+      {
+        "node_id": "strategy",
+        "kind": "strategy",
+        "label": "double_free",
+        "attributes": {
+          "primary_pattern": "double_free",
+          "check_types": [
+            "local_ast",
+            "local_cfg",
+            "resource_lifecycle"
+          ],
+          "entry_points": [
+            "drivers/firmware/arm_scmi/driver.c:scmi_debugfs_common_setup",
+            "drivers/firmware/arm_scmi/driver.c:scmi_debugfs_common_cleanup"
+          ],
+          "data_flow_tracking": false,
+          "cross_file_analysis": false,
+          "suggestions": [
+            "First-draft detector should anchor on a call to devm_add_action_or_reset(dev, cleanup_fn, arg) used as an if-condition or error-check, where the failure branch directly calls cleanup_fn(arg).",
+            "The most precise patch-local sink is the deleted explicit call scmi_debugfs_common_cleanup(dbg), not the return NULL or formatting change.",
+            "Model devm_add_action_or_reset() as a barrier/reset API that invokes the supplied cleanup callback with the supplied argument on failure; then flag duplicate manual cleanup of the same callback and same argument on that failure path.",
+            "Use local AST plus local CFG within the affected function first; no cross-file analysis is needed for the initial checker because the callback and argument identity are visible at the call site.",
+            "Treat exact callback identity and exact argument identity as strong first-pass conditions; details of what scmi_debugfs_common_cleanup frees, such as dbg->name, can be a secondary refinement rather than a required initial match.",
+            "Do not require a separate free() call in the same function; the vulnerability is duplicated cleanup callback execution, where the actual free may be inside the callback."
+          ]
+        }
+      },
+      {
+        "node_id": "fix_1",
+        "kind": "fix",
+        "label": "Remove the explicit scmi_debugfs_common_cleanup(dbg) call from the devm_add_action_or_reset() failure branch.",
+        "attributes": {
+          "kind": "fix_patterns",
+          "value": "Remove the explicit scmi_debugfs_common_cleanup(dbg) call from the devm_add_action_or_reset() failure branch."
+        }
+      },
+      {
+        "node_id": "fix_2",
+        "kind": "fix",
+        "label": "Keep the early return NULL after devm_add_action_or_reset() failure so the setup function stops without a second cleanup invocation.",
+        "attributes": {
+          "kind": "fix_patterns",
+          "value": "Keep the early return NULL after devm_add_action_or_reset() failure so the setup function stops without a second cleanup invocation."
+        }
+      },
+      {
+        "node_id": "fix_3",
+        "kind": "fix",
+        "label": "Rely on devm_add_action_or_reset() to run scmi_debugfs_common_cleanup on failure instead of manually duplicating the cleanup action.",
+        "attributes": {
+          "kind": "fix_patterns",
+          "value": "Rely on devm_add_action_or_reset() to run scmi_debugfs_common_cleanup on failure instead of manually duplicating the cleanup action."
+        }
+      },
+      {
+        "node_id": "intent_0",
+        "kind": "intent",
+        "label": "commit 39b13dce1a91cdfc3bec9238f9e89094551bd428 | Author: Su Hui <suhui@nfschina.com>",
+        "attributes": {
+          "summary": "commit 39b13dce1a91cdfc3bec9238f9e89094551bd428 | Author: Su Hui <suhui@nfschina.com>",
+          "keywords": [
+            "commit",
+            "b13dce1a91cdfc3bec9238f9e89094551bd428",
+            "author",
+            "suhui",
+            "nfschina"
+          ]
+        }
+      },
+      {
+        "node_id": "commit_0",
+        "kind": "commit",
+        "label": "c3d4aed763ce",
+        "attributes": {
+          "issues": [
+            "c3d4aed763ce"
+          ]
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "patch",
+        "target": "file_0",
+        "relation": "touches",
+        "confidence": 0.95
+      },
+      {
+        "source": "patch",
+        "target": "pattern_0",
+        "relation": "indicates",
+        "confidence": 0.9
+      },
+      {
+        "source": "pattern_0",
+        "target": "func_1",
+        "relation": "affects",
+        "confidence": 0.75
+      },
+      {
+        "source": "pattern_0",
+        "target": "func_2",
+        "relation": "affects",
+        "confidence": 0.75
+      },
+      {
+        "source": "pattern_0",
+        "target": "guard_1",
+        "relation": "requires",
+        "confidence": 0.7
+      },
+      {
+        "source": "pattern_0",
+        "target": "guard_2",
+        "relation": "requires",
+        "confidence": 0.7
+      },
+      {
+        "source": "pattern_0",
+        "target": "guard_3",
+        "relation": "requires",
+        "confidence": 0.7
+      },
+      {
+        "source": "pattern_0",
+        "target": "guard_4",
+        "relation": "requires",
+        "confidence": 0.7
+      },
+      {
+        "source": "patch",
+        "target": "strategy",
+        "relation": "guides",
+        "confidence": 0.85
+      },
+      {
+        "source": "patch",
+        "target": "fix_1",
+        "relation": "introduces",
+        "confidence": 0.8
+      },
+      {
+        "source": "patch",
+        "target": "fix_2",
+        "relation": "introduces",
+        "confidence": 0.8
+      },
+      {
+        "source": "patch",
+        "target": "fix_3",
+        "relation": "introduces",
+        "confidence": 0.8
+      },
+      {
+        "source": "patch",
+        "target": "intent_0",
+        "relation": "describes",
+        "confidence": 0.78
+      },
+      {
+        "source": "patch",
+        "target": "commit_0",
+        "relation": "tracked_by",
+        "confidence": 0.72
+      }
+    ]
+  },
+  "evidence_plan": {
+    "primary_pattern": "double_free",
+    "hypotheses": [
+      "The patch likely changes a resource lifecycle or stale-state transition."
+    ],
+    "requirements": [
+      {
+        "evidence_type": "patch_fact",
+        "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+        "priority": 100,
+        "preferred_analyzers": [],
+        "confidence": 1.0,
+        "mechanism_refs": [
+          "patch"
+        ]
+      },
+      {
+        "evidence_type": "allocation_lifecycle",
+        "reason": "Lifetime-sensitive bug family requires allocation/free reasoning.",
+        "priority": 92,
+        "preferred_analyzers": [
+          "csa"
+        ],
+        "confidence": 0.92,
+        "mechanism_refs": [
+          "pattern_0"
+        ]
+      },
+      {
+        "evidence_type": "state_transition",
+        "reason": "Need local state transitions around free/delete and later uses.",
+        "priority": 89,
+        "preferred_analyzers": [
+          "csa"
+        ],
+        "confidence": 0.88,
+        "mechanism_refs": [
+          "pattern_0"
+        ]
+      }
+    ],
+    "recommended_analyzers": [
+      "csa"
+    ],
+    "planner_notes": [],
+    "coverage_gaps": [],
+    "uncertainty_budget": "medium",
+    "escalation_triggers": [
+      "metadata_available"
+    ]
+  }
+}

@@ -1,0 +1,89 @@
+We evaluate \toolname's patch-related false-positive reduction and its sensitivity to verified analyzer-internal records.  The scope is paired patch revisions and related build objects, not whole-kernel bug discovery.
+
+\subsection{Research Questions}
+
+\textbf{RQ1: KNighter-derived checkers.} Can \toolname improve strict patch discrimination for external CSA checkers derived from KNighter artifacts?
+
+\textbf{RQ2: Cross-backend feasibility and provenance.} Which detector formats can the layer process, and what can the historical independent-generator data support once manual construction and missing lineage are accounted for?
+
+\textbf{RQ3: Evidence sensitivity.} What changes when strict analyzer-internal records are withheld under an otherwise matched feedback protocol?
+
+\subsection{Subjects}
+
+We distinguish E1 (KNighter-derived Linux CSA checkers), E2 (historical cross-backend feasibility), and E3 (evidence sensitivity).  The old five-case, single-run model study is retained in the artifact but excluded from effectiveness claims.
+
+We start from the frozen, materialized 39-checker KNighter evaluation cohort, not only cases selected for refinement; this is \emph{not} the universe of all checker candidates.  After correcting a failed-analyzer validation for memory-leak commit \texttt{27834971}, 27 checkers already satisfy PDS and 12 have a vulnerable-side hit but remain fixed-noisy.  The 12 are the complete observed fixed-noisy stratum \emph{within this cohort}, not a random or held-out sample.  Their baseline PDS of $0/12$ is definitional; it is \emph{not} KNighter's refinement performance.  We retain the 39-checker denominator for portfolio-level reporting, and separately report the fixed-noisy stratum to measure how often the post-synthesis layer can remove its observed warnings.
+The frozen 39 include six local-triage, 17 positive-scan-selected, and 16 valid-but-no-local-report candidates across ten bug families; they are not a random sample.  In a separate inventory of 286 generated artifacts, 45 carried an older \texttt{score\_valid} flag, 35 overlapping the 39.  All ten non-overlapping final-checker files were empty, so we explicitly substituted hash-bound repaired files and replayed the same paired object scope.  Five already meet PDS, two are fixed-noisy, and three miss the vulnerable target; all ten executed.  The resulting 49-commit union is a screening extension, \emph{not} the 12-case matched-treatment denominator.
+
+E2 supplied CSA and CodeQL detectors from an independent generator on ten patches.  Its historical 20-row table mixes automatic and manual or skipped artifacts, so it establishes interface feasibility only, not cross-generator effectiveness; immutable generator/checker lineage remains required.
+
+Historical E3 selected five cases and one decode per cell; it is exploratory.  The new full-12-case E3 uses three decodes per arm under matched checker, model, validation scope, and per-case call ceiling.  These are repeated decodes on the \emph{same} 12 subjects, not 36 independent cases.
+
+There is no separate LLM mechanism classifier to score: the available preflight maps patch/analysis facts to prioritized requirements using fixed rules, while the editor can request roles in the general workflow.  The strict CSA comparison freezes the internal view and disables such requests.  We therefore do not report classifier accuracy or claim that the fixed rule priorities are optimal.  A routing-sensitivity study would hold checker, model, and budget fixed while perturbing visible roles; the historical five-case ablation is not such a study.
+
+\subsection{Metrics}
+
+The primary metric is \emph{patch-discriminating success} (PDS): a detector must report the target behavior on the vulnerable revision and emit no target warning on the fixed revision.  We write PDS over a detector $D$, patch $P$, and validation scope $V$:
+\begin{equation}
+\begin{aligned}
+H_v(D,P,V) &= \mathbb{1}[\mathrm{alerts}(D,V_{\mathrm{vuln}},P)>0],\\
+S_f(D,P,V) &= \mathbb{1}[\mathrm{alerts}(D,V_{\mathrm{fix}},P)=0],\\
+\mathrm{PDS}(D,P,V) &= H_v(D,P,V) \land S_f(D,P,V).
+\end{aligned}
+\label{eq:pds}
+\end{equation}
+We report both components: \emph{buggy hit} for target preservation on the vulnerable side, and \emph{fixed silent} for silence under the same fixed-side scope.  A detector that becomes fixed-side silent by losing the vulnerable-side target is counted as validity loss, not success.  Table~\ref{tab:terminology} summarizes the evaluation terms and acceptance criteria.
+
+\begin{table}[t]
+  \centering
+  \footnotesize
+  \setlength{\tabcolsep}{3pt}
+  \caption{Evaluation terms and acceptance criteria.}
+  \label{tab:terminology}
+  \begin{tabular}{@{}p{0.17\columnwidth}p{0.43\columnwidth}p{0.12\columnwidth}p{0.18\columnwidth}@{}}
+    \toprule
+    Term & Definition & Success? & Why \\
+    \midrule
+    Buggy hit & checker reports the target on the vulnerable version & needed & target preservation \\
+    Fixed silent & no target alert on the fixed version & not alone & may over-prune \\
+    PDS & buggy hit $\wedge$ fixed silent & \textbf{yes} & semantic discrimination \\
+    Validity loss & fixed silent but vulnerable hit lost & no & over-pruning \\
+    Fixed-noisy & buggy hit but fixed side not silent & no & target failure mode \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+The refinement gate accepts a candidate $D'$ only when it changes the baseline detector, remains executable for the backend, and satisfies PDS:
+\begin{equation}
+\begin{aligned}
+\mathrm{Accept}(D',D) ={}& \mathrm{Changed}(D',D)\land \mathrm{AnalyzerOK}(D')\\
+&{}\land \mathrm{PDS}(D',P,V).
+\end{aligned}
+\label{eq:accept}
+\end{equation}
+
+All conditions use the same PDS definition and track vulnerable-side loss.  E1 counts come from object-level \texttt{scan-build} logs over patch-related build objects.
+We separately report a static artifact-review finding as a checker-quality dimension.  A compilable candidate is still scanned on both revisions even if review flags its mechanism: review failure does not turn an executable PDS observation into missing data.  We report both behavior-only PDS and the subset that also passes review.
+
+For the full 39-checker portfolio, we additionally binarize each checker/revision pair as a target hit.  Each vulnerable revision is one positive and its fixed revision one negative; thus precision, recall, and $F_1=2TP/(2TP+FP+FN)$ have a denominator of 78 \emph{patch-version decisions}, not individual analyzer alerts or unseen vulnerability sites.  We report PDS and fixed-side alert burden alongside this secondary measure because repeated alerts within an object are not independent examples.  Failed analyzer executions are unscored rather than converted into false negatives.
+
+\subsection{Experimental Environment}
+
+The historical experiments ran on an x86-64 machine with an Intel Core i7-14700K CPU exposed as 16 logical CPUs and 15~GiB RAM, using Python 3.10.12.  The later matched reruns use Python 3.12.3 in the pinned Clang 18 container; both arms of each rerun use the same interpreter and toolchain.  CSA uses Clang/LLVM 18.1.8 and \texttt{scan-build}.  CodeQL uses CodeQL 2.23.5 for C/C++.  Linux experiments use Linux \texttt{v6.13} with \texttt{allyesconfig} for Clang/LLD 18.1.8.  We keep the same patch-local validation scope for each baseline/refined pair and record manifests, logs, evidence bundles, and final reports.
+
+\textbf{Use of generative AI in the research workflow.}
+LLMs generated starting checkers in KNighter/E2 and edit checkers in \toolname; evidence requirements and priorities are deterministic.  An AI coding assistant (Codex) also assisted with experiment-driver implementation, audit/analysis scripts, and manuscript drafting.  It supplied no ground-truth PDS labels: pinned source, compilation, paired analyzer runs, and the target-preserving rule determine reported outcomes.  Manual completions are separate.  The artifact retains model settings, prompts, exchanges, candidate code, and script digests; a floating model alias is not an immutable revision.  AI-assisted research code and interpretations remain subject to author verification before submission.
+
+\subsection{Baselines and Variants}
+
+The comparison holds the starting detector fixed: the unmodified checker measures reduction, and KNighter's actual output-feedback loop is the closest prior refinement baseline.  Only the within-\toolname native/no-internal contrast probes the added evidence.  Both methods use the same 12 starting checkers, model, patch/revision scope, per-case call ceiling, and independent postvalidation.  The 39-checker portfolio retains already-discriminating checkers under PDS-only adoption; historical follow-up outcomes remain separate.
+
+The unmodified detector is the before/after reference (KNighter-derived CSA in E1, independent-generator CSA/CodeQL in E2).  E1 also runs KNighter's own refinement loop; manual completions never enter automatic results.
+
+Historical E3 named three evidence levels: full bundle, no-analyzer-native, and validation-only.  However, a retrospective strict-origin audit found no genuinely internal records in those original E1 bundles, so its five-case contrast cannot isolate internal evidence.  A new matched ablation uses the provenance-audited bundles: the native arm receives hash-bound Clang CFG/call-graph records, while the no-internal arm receives no such records but keeps the same checker, patch, source context, feedback, model, call cap, and validator.  We do not use the historical five-case numbers as proof of native-evidence contribution.
+
+Historical runs used other models and are not pooled.  The matched comparison uses GPT-5.6-terra at high reasoning effort in all three arms.  The old 19-call one-pass and unequal-budget conditions remain development diagnostics.
+
+\subsection{Protocol}
+
+E1 uses \texttt{scan-build} counts on patch-related objects.  We run KNighter's actual report-triage, repair, compiler-repair, and validation loop first.  In each repeat, both \toolname arms inherit its \emph{actual per-case model-call count} as a frozen ceiling.  \toolname makes at most one model call before each independent compile and paired replay, feeding hash-bound failures into a next permitted call.  The arms differ only in verified internal CFG/call-graph availability; successes stop early.  Provider interruptions are excluded, not checker failures; none entered the completed repeats.  E2 and historical five-case studies remain separate.  The artifact retains English templates, frozen inputs, rendered exchanges, analyzer outputs, provenance, and decisions.

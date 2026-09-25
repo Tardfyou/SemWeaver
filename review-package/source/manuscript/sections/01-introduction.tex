@@ -1,0 +1,48 @@
+Static analysis is a cornerstone of software security assurance for systems code.
+Tools such as CodeQL~\cite{codeqlDocs} and Clang Static Analyzer (CSA)~\cite{clangsaDocs} detect vulnerabilities by checking source code against predefined rules without executing it~\cite{engler2001bugs,bessey2010coverity,calcagno2015infer,sadowski2015tricorder}.
+The effectiveness of these tools depends on the quality of their vulnerability checkers, each of which must encode the semantic conditions (path guards, state invariants, data-flow relations, and API contracts) that distinguish a real bug from safe code.
+Writing such checkers by hand requires deep expertise in both the target codebase and the analysis framework, making manual authoring expensive, slow, and difficult to scale.
+
+LLM-based patch-driven synthesis offers a promising alternative.
+In this paradigm, a security patch serves as a compact before/after specification: the LLM consumes the patch and synthesizes a reusable checker that should fire on the vulnerable revision but remain silent on the fixed revision.
+KNighter~\cite{yang2025knighter}, a representative system, has demonstrated that this approach can produce compilable and executable CSA checkers from historical Linux kernel fixes.
+
+However, the resulting checkers may be semantically inadequate.
+A security patch is inherently underspecified: a one-line \texttt{goto}-target change may encode an ownership barrier, a widened cast may encode a range guard, and a moved \texttt{free} may encode a lifetime invariant.
+A checker that captures only the syntactic shape of the edit, without encoding the underlying semantic condition, can fire on both the vulnerable and fixed revisions.
+After na\"ive refinement, the checker may instead lose the vulnerable-side trigger entirely, a failure mode we call over-pruning.
+In both cases the root cause is the same: the checker learned the syntactic edit but not the semantic condition it enforces.
+
+Current refinement strategies, including KNighter's own iterative loop, attempt to address this problem by operating at the output level~\cite{yang2025knighter,madaan2023selfrefine,shinn2023reflexion}.
+They run the checker on both revisions, observe whether it fires on the wrong side, and feed this behavioral signal back to the LLM.
+Such feedback reveals the symptom (``the fixed side still warns'') but does not diagnose the cause: it cannot tell the LLM whether the missing predicate is a path guard, a cleanup barrier, an ownership transition, or an API contract.
+The LLM must therefore guess the missing semantic condition, reducing refinement to prompt-level retry.
+
+We make a narrower observation: \textbf{some patch-relevant program structure is available in analyzer-produced intermediate representations} but is not ordinarily surfaced to the refinement loop.
+Path-sensitive analyzers such as CSA internally track branch guards, symbolic states, memory regions, and lifetime events during checker execution~\cite{clangsaDocs}.
+Relational query engines such as CodeQL maintain databases of data-flow edges, call-graph relations, type hierarchies, and API-usage patterns~\cite{avgustinov2016ql,codeqlDocs}.
+These representations can suggest candidate predicates, but a CFG edge or call relation is not by itself a proof of path feasibility or checker correctness.
+
+Exploiting these intermediate results, however, is not straightforward.
+A single CSA run can produce hundreds of path-sensitive states, and a CodeQL database exposes thousands of relational tuples.
+Feeding all of them into the refinement prompt overwhelms the context window, dilutes the relevant facts with noise, and makes it harder for the model to identify the specific predicate that needs to be added.
+The challenge is to select and present only the evidence that is relevant to the particular semantic gap in the checker under refinement.
+
+We present \toolname, a post-synthesis checker editor guided by provenance-labelled analyzer context.
+\toolname is designed as a plug-in post-generation layer that is independent of the upstream LLM generator, treating any generated checker (from KNighter or another pipeline) as an artifact to be refined rather than regenerated.
+The framework addresses the evidence-selection challenge through three mechanisms.
+First, a rule-guided preflight extracts patch facts (e.g., guards, type widening, and affected calls) and prioritizes evidence requirements by inferred mechanism.  The editor may request role views in the general workflow; the strict CSA comparison instead freezes its patch-scoped view before editing.
+For instance, a cleanup-edge patch triggers collection of path-guard and lifetime evidence from CSA, while a bounds patch triggers guard, flow, and API-usage evidence from CodeQL.
+Second, backend outputs, patch facts, source context, and validation feedback are normalized into a compact bundle with typed records, giving the editor a structured edit target (``add the patch-introduced cleanup barrier while preserving the freed-object transition'') instead of a vague behavioral symptom (``fixed side still warns'').
+Third, a strict target-preserving gate accepts a refinement only when the refined checker both preserves the vulnerable-side trigger and eliminates the fixed-side warnings, preventing over-pruning by construction.
+
+We evaluate \toolname across three settings.
+We screen all 39 materialized KNighter-derived Linux CSA checkers: 12 are fixed-noisy and form the refinement stratum, while already-discriminating checkers remain in the portfolio denominator.  The selected stratum's initial 0/12 is definitional, not a KNighter refinement baseline.  A historical follow-up has five automatic PDS edits, six manual completions, and one loss, but predates strict analyzer-internal evidence.  In three later, matched full-feedback repeats, the actual KNighter loop reaches 3, 2, and 6 PDS on the 12 cases; provenance-gated \toolname reaches 6, 5, and 7, retaining fewer fixed-side alerts in each repeat under PDS-only adoption.  The no-internal arm reaches 3 each time.  These are descriptive results on the same selected cases, not significant per-repeat superiority or unseen-code generalization; historical cross-backend and one-run model results remain exploratory.
+
+This paper makes the following contributions:
+\begin{itemize}
+  \item We identify the gap between output-level behavioral feedback and analyzer-internal semantic evidence for checker refinement, and formulate the problem of target-preserving semantic refinement for LLM-generated vulnerability checkers.
+  \item We present \toolname, a plug-in refinement layer that organizes provenance-labelled analyzer representations, analyzer outputs, patch and source context, and validation feedback into a compact semantic evidence bundle; the strict CSA comparison freezes the available view rather than evaluating adaptive routing.
+  % \item We design a strict target-preserving validation gate that prevents over-pruning, and demonstrate its necessity through ablation.
+  \item We provide a denominator-complete audit of KNighter-derived Linux checkers and separate historical, matched-budget, cross-backend, ablation, and failure-analysis results by their provenance and inferential scope.
+\end{itemize}

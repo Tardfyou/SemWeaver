@@ -1,0 +1,20 @@
+\begin{algorithm}[t]
+  \caption{Example Algorithm}
+  \label{alg:example}
+  \begin{algorithmic}[1]
+    \Require Input data $D = \{(x_i, y_i)\}_{i=1}^{N}$, model $M$
+    \Ensure Trained model $M^*$
+    \State Initialize model parameters $\theta$
+    \For{epoch $= 1$ to $E$}
+      \For{each mini-batch $B \subset D$}
+        \State Compute loss $\mathcal{L}(\theta; B)$
+        \State Update $\theta \leftarrow \theta - \eta \nabla_\theta \mathcal{L}$
+      \EndFor
+      \State Evaluate on validation set
+      \If{validation metric improves}
+        \State Save checkpoint $M^* \leftarrow M$
+      \EndIf
+    \EndFor
+    \State \Return $M^*$
+  \end{algorithmic}
+\end{algorithm}

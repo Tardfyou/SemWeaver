@@ -1,0 +1,1124 @@
+{
+  "records": [
+    {
+      "evidence_id": "pf_000",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/rds/af_rds.c",
+        "function": "rds_recv_track_latency"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "patch_overview",
+        "label": "Patch overview",
+        "attributes": {
+          "patch_path": "/anonymous/home/LLM-Native/research/knighter/e2/cases/23_13e788deb734_Out_of_Bound/patches/commit.patch",
+          "changed_files": [
+            "net/rds/af_rds.c"
+          ],
+          "changed_file_count": 1,
+          "added_line_count": 1,
+          "deleted_line_count": 1
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "patch_overview",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_001",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/rds/af_rds.c",
+        "function": "rds_recv_track_latency"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "vulnerability_patterns",
+        "label": "Vulnerability patterns inferred from patch",
+        "attributes": {
+          "patterns": [
+            "out_of_bounds_array_index"
+          ],
+          "descriptions": [
+            "An off-by-one bounds check allowed trace.rx_trace_pos[i] == RDS_MSG_RX_DGRAM_TRACE_MAX to pass validation. That boundary value is outside the valid index range for arrays sized RDS_MSG_RX_DGRAM_TRACE_MAX, and later trace consumers may use the stored value as or to derive an array index."
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "vulnerability_patterns",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_002",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/rds/af_rds.c",
+        "function": "rds_recv_track_latency"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "affected_functions",
+        "label": "Functions implicated by removed or fixed code",
+        "attributes": {
+          "functions": [
+            "rds_recv_track_latency"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "affected_functions",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_003",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/rds/af_rds.c",
+        "function": "rds_recv_track_latency"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "detection_strategy",
+        "label": "Existing patch analysis detection strategy",
+        "attributes": {
+          "primary_pattern": "out_of_bounds_array_index",
+          "check_types": [
+            "off_by_one_upper_bound_validation",
+            "array_index_range_validation",
+            "validated_value_later_used_as_index",
+            "boundary_value_accepted_by_strict_greater_check"
+          ],
+          "entry_points": [
+            "rds_recv_track_latency"
+          ],
+          "data_flow_tracking": true,
+          "cross_file_analysis": false,
+          "suggestions": [
+            "First-draft detector should anchor on the patch-local guard shape: 'if (value > MAX)' guarding a value that is later accepted as an index-like position, where valid values are expected to be '< MAX'.",
+            "Use 'trace.rx_trace_pos[i]' and 'RDS_MSG_RX_DGRAM_TRACE_MAX' as the minimal patch-local anchors; the important semantic delta is rejecting equality with the max constant.",
+            "Do not make the newly added '>=' guard a hard negative filter in the first draft; instead, report pre-fix strict '>' checks against array-size or max-count constants when the value can be stored or propagated.",
+            "Treat the reset-and-return path 'rs->rs_rx_traces = 0; return -EFAULT;' as the barrier that should execute for both greater-than and equal-to-max values.",
+            "A local AST/CFG check is enough to find the changed validation bug in rds_recv_track_latency; data-flow tracking is useful only to connect the accepted trace position to later index consumers such as rds_cmsg_recv.",
+            "Cross-file analysis is not required for a first patch-local checker, although a second-stage refinement may follow trace.rx_trace_pos[i] into rs->rs_rx_trace[i] and then into receive trace array indexing."
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "detection_strategy",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_004",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/rds/af_rds.c",
+        "function": "rds_recv_track_latency"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "added_guards",
+        "label": "Patch introduces or strengthens guards",
+        "attributes": {
+          "guards": [
+            "if (trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX) {"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "added_guards",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_005",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/rds/af_rds.c",
+        "function": "rds_recv_track_latency"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "fix_patterns",
+        "label": "Patch introduces reusable fix patterns",
+        "attributes": {
+          "patterns": [
+            "change the guard to 'trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX'",
+            "on boundary violation, reset 'rs->rs_rx_traces = 0' and return '-EFAULT'",
+            "block the exact upper-bound value before it can be stored into the socket receive trace configuration"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "fix_patterns",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_006",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/rds/af_rds.c",
+        "function": "rds_recv_track_latency"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "patch_intent",
+        "label": "Patch intent and commit-style summary",
+        "attributes": {
+          "summary": "commit 13e788deb7348cc88df34bed736c3b3b9927ea52 | Author: Sharath Srinivasan <sharath.srinivasan@oracle.com>",
+          "keywords": [
+            "commit",
+            "e788deb7348cc88df34bed736c3b3b9927ea52",
+            "author",
+            "sharath",
+            "srinivasan",
+            "oracle"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "patch_intent",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_007",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/rds/af_rds.c",
+        "function": "rds_recv_track_latency"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "external_references",
+        "label": "External references recovered from patch text",
+        "attributes": {
+          "cves": [],
+          "cwes": [],
+          "issues": [
+            "3289025aedc0",
+            "1"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "external_references",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "csa_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/rds/af_rds.c",
+        "function": "rds_recv_track_latency"
+      },
+      "location": {
+        "line": 419,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "net/rds/af_rds.c adds patch barrier `trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX` around rs->rs_rx_traces = trace.rx_traces.",
+        "contract_type": "patch_barrier",
+        "same_call_binding": "tie the guard to the current downstream sink or protected state transition instead of any unrelated if-statement",
+        "trigger_contract": "report when a risky write proceeds without the patch-style barrier",
+        "silence_contract": "stay silent when the nearby guard proves the current write is blocked or bounded",
+        "guard_exprs": [
+          "trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX"
+        ],
+        "removed_calls": [],
+        "added_calls": [],
+        "tracked_symbols": [
+          "trace",
+          "rx_trace_pos",
+          "i",
+          "RDS_MSG_RX_DGRAM_TRACE_MAX"
+        ],
+        "widened_variables": [],
+        "state_resets": [],
+        "old_numeric_type": "",
+        "new_numeric_type": "",
+        "numeric_domain_change": "",
+        "arithmetic_operations": [],
+        "sink_calls": [
+          "rs->rs_rx_traces = trace.rx_traces"
+        ],
+        "buffer_fields": [
+          "rs->rs_rx_traces"
+        ],
+        "source_file": "net/rds/af_rds.c",
+        "function": "",
+        "source_excerpt": "390: \t\treturn -EFAULT;\n391: \n392: \tvalbool = val ? 1 : 0;\n393: \n394: \tif (optname == SO_TIMESTAMP_NEW)\n395: \t\tsock_set_flag(sk, SOCK_TSTAMP_NEW);\n396: \n397: \tif (valbool)\n398: \t\tsock_set_flag(sk, SOCK_RCVTSTAMP);\n399: \telse\n400: \t\tsock_reset_flag(sk, SOCK_RCVTSTAMP);\n401: \n402: \treturn 0;\n403: }\n404: \n405: static int rds_recv_track_latency(struct rds_sock *rs, sockptr_t optval,\n406: \t\t\t\t  int optlen)\n407: {\n408: \tstruct rds_rx_trace_so trace;\n409: \tint i;\n410: \n411: \tif (optlen != sizeof(struct rds_rx_trace_so))\n412: \t\treturn -EFAULT;\n413: \n414: \tif (copy_from_sockptr(&trace, optval, sizeof(trace)))\n415: \t\treturn -EFAULT;\n416: \n417: \tif (trace.rx_traces > RDS_MSG_RX_DGRAM_TRACE_MAX)\n418: \t\treturn -EFAULT;\n419: \n420: \trs->rs_rx_traces = trace.rx_traces;\n421: \tfor (i = 0; i < rs->rs_rx_traces; i++) {\n422: \t\tif (trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX) {\n423: \t\t\trs->rs_rx_traces = 0;\n424: \t\t\treturn -EFAULT;\n425: \t\t}\n426: \t\trs->rs_rx_trace[i] = trace.rx_trace_pos[i];\n427: \t}\n428: \n429: \treturn 0;\n430: }\n431: \n432: static int rds_setsockopt(struct socket *sock, int level, int optname,\n433: \t\t\t  sockptr_t optval, unsigned int optlen)\n434: {\n435: \tstruct rds_sock *rs = rds_sk_to_rs(sock->sk);\n436: \tint ret;\n437: \n438: \tif (level != SOL_RDS) {\n439: \t\tret = -ENOPROTOOPT;\n440: \t\tgoto out;\n441: \t}\n442: \n443: \tswitch (optname) {\n444: \tcase RDS_CANCEL_SENT_TO:\n445: \t\tret = rds_cancel_sent_to(rs, optval, optlen);\n446: \t\tbreak;\n447: \tcase RDS_GET_MR:\n448: \t\tret = rds_get_mr(rs, optval, optlen);\n449: \t\tbreak;\n450: \tcase RDS_GET_MR_FOR_DEST:\n451: \t\tret = rds_get_mr_for_dest(rs, optval, optlen);\n452: \t\tbreak;\n453: \tcase RDS_FREE_MR:\n454: \t\tret = rds_free_mr(rs, optval, optlen);",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:semantic-contract",
+        "confidence": 0.92
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "net/rds/af_rds.c",
+          "hunk_index": 0,
+          "source_line": 419
+        },
+        "summary": "net/rds/af_rds.c adds patch barrier `trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX` around rs->rs_rx_traces = trace.rx_traces.",
+        "statements": [
+          "if (trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX) {"
+        ],
+        "guards": [
+          "trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX"
+        ],
+        "call_boundary": [
+          "rs->rs_rx_traces = trace.rx_traces"
+        ],
+        "call_edges": [],
+        "state_transitions": [
+          "",
+          "report when a risky write proceeds without the patch-style barrier",
+          "stay silent when the nearby guard proves the current write is blocked or bounded"
+        ],
+        "api_terms": [
+          "rs->rs_rx_traces = trace.rx_traces"
+        ],
+        "related_symbols": [
+          "trace",
+          "rx_trace_pos",
+          "i",
+          "RDS_MSG_RX_DGRAM_TRACE_MAX"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/rds/af_rds.c",
+        "function": "rds_recv_track_latency"
+      },
+      "location": {
+        "line": 419,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX",
+        "summary": "net/rds/af_rds.c introduces patch guard `trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX` before rs->rs_rx_traces = trace.rx_traces.",
+        "state_before": [
+          "input(trace)",
+          "input(rx_trace_pos)",
+          "buffer(rs->rs_rx_traces)"
+        ],
+        "state_after": [
+          "guard(trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX)",
+          "current_call(rs->rs_rx_traces = trace.rx_traces)"
+        ],
+        "functions": [],
+        "globals": [],
+        "tracked_symbols": [
+          "trace",
+          "rx_trace_pos",
+          "i",
+          "RDS_MSG_RX_DGRAM_TRACE_MAX"
+        ],
+        "buffer_fields": [
+          "rs->rs_rx_traces"
+        ],
+        "call_targets": [
+          "rs->rs_rx_traces = trace.rx_traces"
+        ],
+        "call_edges": [],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX"
+        ],
+        "state_statements": [
+          "if (trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX) {"
+        ],
+        "compile_command_preview": "",
+        "source_file": "net/rds/af_rds.c",
+        "source_excerpt": "390: \t\treturn -EFAULT;\n391: \n392: \tvalbool = val ? 1 : 0;\n393: \n394: \tif (optname == SO_TIMESTAMP_NEW)\n395: \t\tsock_set_flag(sk, SOCK_TSTAMP_NEW);\n396: \n397: \tif (valbool)\n398: \t\tsock_set_flag(sk, SOCK_RCVTSTAMP);\n399: \telse\n400: \t\tsock_reset_flag(sk, SOCK_RCVTSTAMP);\n401: \n402: \treturn 0;\n403: }\n404: \n405: static int rds_recv_track_latency(struct rds_sock *rs, sockptr_t optval,\n406: \t\t\t\t  int optlen)\n407: {\n408: \tstruct rds_rx_trace_so trace;\n409: \tint i;\n410: \n411: \tif (optlen != sizeof(struct rds_rx_trace_so))\n412: \t\treturn -EFAULT;\n413: \n414: \tif (copy_from_sockptr(&trace, optval, sizeof(trace)))\n415: \t\treturn -EFAULT;\n416: \n417: \tif (trace.rx_traces > RDS_MSG_RX_DGRAM_TRACE_MAX)\n418: \t\treturn -EFAULT;\n419: \n420: \trs->rs_rx_traces = trace.rx_traces;\n421: \tfor (i = 0; i < rs->rs_rx_traces; i++) {\n422: \t\tif (trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX) {\n423: \t\t\trs->rs_rx_traces = 0;\n424: \t\t\treturn -EFAULT;\n425: \t\t}\n426: \t\trs->rs_rx_trace[i] = trace.rx_trace_pos[i];\n427: \t}\n428: \n429: \treturn 0;\n430: }\n431: \n432: static int rds_setsockopt(struct socket *sock, int level, int optname,\n433: \t\t\t  sockptr_t optval, unsigned int optlen)\n434: {\n435: \tstruct rds_sock *rs = rds_sk_to_rs(sock->sk);\n436: \tint ret;\n437: \n438: \tif (level != SOL_RDS) {\n439: \t\tret = -ENOPROTOOPT;\n440: \t\tgoto out;\n441: \t}\n442: \n443: \tswitch (optname) {\n444: \tcase RDS_CANCEL_SENT_TO:\n445: \t\tret = rds_cancel_sent_to(rs, optval, optlen);\n446: \t\tbreak;\n447: \tcase RDS_GET_MR:\n448: \t\tret = rds_get_mr(rs, optval, optlen);\n449: \t\tbreak;\n450: \tcase RDS_GET_MR_FOR_DEST:\n451: \t\tret = rds_get_mr_for_dest(rs, optval, optlen);\n452: \t\tbreak;\n453: \tcase RDS_FREE_MR:\n454: \t\tret = rds_free_mr(rs, optval, optlen);",
+        "summary_line": 419,
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:path-guard",
+        "confidence": 0.92
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "net/rds/af_rds.c",
+          "hunk_index": 0,
+          "source_line": 419
+        },
+        "summary": "net/rds/af_rds.c introduces patch guard `trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX` before rs->rs_rx_traces = trace.rx_traces.",
+        "statements": [
+          "if (trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX) {"
+        ],
+        "guards": [
+          "trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX"
+        ],
+        "call_boundary": [
+          "rs->rs_rx_traces = trace.rx_traces"
+        ],
+        "call_edges": [],
+        "state_transitions": [
+          "guard(trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX)",
+          "current_call(rs->rs_rx_traces = trace.rx_traces)"
+        ],
+        "api_terms": [
+          "rs->rs_rx_traces = trace.rx_traces"
+        ],
+        "related_symbols": [
+          "trace",
+          "rx_trace_pos",
+          "i",
+          "RDS_MSG_RX_DGRAM_TRACE_MAX"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/rds/af_rds.c",
+        "function": "rds_recv_track_latency"
+      },
+      "location": {
+        "line": 419,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "net/rds/af_rds.c adds patch barrier `trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX` around rs->rs_rx_traces = trace.rx_traces.",
+        "state_before": [
+          "input(trace)",
+          "input(rx_trace_pos)",
+          "buffer(rs->rs_rx_traces)"
+        ],
+        "state_after": [
+          "guard(trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX)",
+          "sink(rs->rs_rx_traces = trace.rx_traces)"
+        ],
+        "functions": [],
+        "globals": [],
+        "tracked_symbols": [
+          "trace",
+          "rx_trace_pos",
+          "i",
+          "RDS_MSG_RX_DGRAM_TRACE_MAX"
+        ],
+        "buffer_fields": [
+          "rs->rs_rx_traces"
+        ],
+        "call_targets": [
+          "rs->rs_rx_traces = trace.rx_traces"
+        ],
+        "call_edges": [],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX"
+        ],
+        "state_statements": [
+          "if (trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX) {"
+        ],
+        "return_statements": [],
+        "source_file": "net/rds/af_rds.c",
+        "source_excerpt": "390: \t\treturn -EFAULT;\n391: \n392: \tvalbool = val ? 1 : 0;\n393: \n394: \tif (optname == SO_TIMESTAMP_NEW)\n395: \t\tsock_set_flag(sk, SOCK_TSTAMP_NEW);\n396: \n397: \tif (valbool)\n398: \t\tsock_set_flag(sk, SOCK_RCVTSTAMP);\n399: \telse\n400: \t\tsock_reset_flag(sk, SOCK_RCVTSTAMP);\n401: \n402: \treturn 0;\n403: }\n404: \n405: static int rds_recv_track_latency(struct rds_sock *rs, sockptr_t optval,\n406: \t\t\t\t  int optlen)\n407: {\n408: \tstruct rds_rx_trace_so trace;\n409: \tint i;\n410: \n411: \tif (optlen != sizeof(struct rds_rx_trace_so))\n412: \t\treturn -EFAULT;\n413: \n414: \tif (copy_from_sockptr(&trace, optval, sizeof(trace)))\n415: \t\treturn -EFAULT;\n416: \n417: \tif (trace.rx_traces > RDS_MSG_RX_DGRAM_TRACE_MAX)\n418: \t\treturn -EFAULT;\n419: \n420: \trs->rs_rx_traces = trace.rx_traces;\n421: \tfor (i = 0; i < rs->rs_rx_traces; i++) {\n422: \t\tif (trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX) {\n423: \t\t\trs->rs_rx_traces = 0;\n424: \t\t\treturn -EFAULT;\n425: \t\t}\n426: \t\trs->rs_rx_trace[i] = trace.rx_trace_pos[i];\n427: \t}\n428: \n429: \treturn 0;\n430: }\n431: \n432: static int rds_setsockopt(struct socket *sock, int level, int optname,\n433: \t\t\t  sockptr_t optval, unsigned int optlen)\n434: {\n435: \tstruct rds_sock *rs = rds_sk_to_rs(sock->sk);\n436: \tint ret;\n437: \n438: \tif (level != SOL_RDS) {\n439: \t\tret = -ENOPROTOOPT;\n440: \t\tgoto out;\n441: \t}\n442: \n443: \tswitch (optname) {\n444: \tcase RDS_CANCEL_SENT_TO:\n445: \t\tret = rds_cancel_sent_to(rs, optval, optlen);\n446: \t\tbreak;\n447: \tcase RDS_GET_MR:\n448: \t\tret = rds_get_mr(rs, optval, optlen);\n449: \t\tbreak;\n450: \tcase RDS_GET_MR_FOR_DEST:\n451: \t\tret = rds_get_mr_for_dest(rs, optval, optlen);\n452: \t\tbreak;\n453: \tcase RDS_FREE_MR:\n454: \t\tret = rds_free_mr(rs, optval, optlen);",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:guarded-state",
+        "confidence": 0.9
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "net/rds/af_rds.c",
+          "hunk_index": 0,
+          "source_line": 419
+        },
+        "summary": "net/rds/af_rds.c adds patch barrier `trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX` around rs->rs_rx_traces = trace.rx_traces.",
+        "statements": [
+          "if (trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX) {"
+        ],
+        "guards": [
+          "trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX"
+        ],
+        "call_boundary": [
+          "rs->rs_rx_traces = trace.rx_traces"
+        ],
+        "call_edges": [],
+        "state_transitions": [
+          "guard(trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX)",
+          "sink(rs->rs_rx_traces = trace.rx_traces)"
+        ],
+        "api_terms": [
+          "rs->rs_rx_traces = trace.rx_traces"
+        ],
+        "related_symbols": [
+          "trace",
+          "rx_trace_pos",
+          "i",
+          "RDS_MSG_RX_DGRAM_TRACE_MAX"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_0",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/rds/af_rds.c",
+        "function": "rds_recv_track_latency"
+      },
+      "location": {
+        "line": 422,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "rds_recv_track_latency in net/rds/af_rds.c provides CSA-backed pointer/resource lifecycle context near line 422",
+        "diagnostic_message": "",
+        "diagnostic_checker": "",
+        "state_before": [
+          "buffer(rs->rs_rx_traces)",
+          "buffer(rs->rs_rx_trace)",
+          "sinks(sock_set_flag, sock_reset_flag)"
+        ],
+        "state_after": [
+          "operation(for (i = 0; i < rs->rs_rx_traces; i++) {)"
+        ],
+        "functions": [
+          "rds_recv_track_latency"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "trace",
+          "rx_trace_pos",
+          "i",
+          "RDS_MSG_RX_DGRAM_TRACE_MAX"
+        ],
+        "buffer_fields": [
+          "rs->rs_rx_traces",
+          "rs->rs_rx_trace",
+          "sock->sk"
+        ],
+        "call_targets": [
+          "sock_set_flag",
+          "sock_reset_flag",
+          "rds_recv_track_latency",
+          "rds_setsockopt",
+          "rds_sk_to_rs",
+          "rds_cancel_sent_to"
+        ],
+        "call_edges": [],
+        "state_statements": [
+          "for (i = 0; i < rs->rs_rx_traces; i++) {"
+        ],
+        "source_file": "net/rds/af_rds.c",
+        "source_excerpt": "390: \t\treturn -EFAULT;\n391: \n392: \tvalbool = val ? 1 : 0;\n393: \n394: \tif (optname == SO_TIMESTAMP_NEW)\n395: \t\tsock_set_flag(sk, SOCK_TSTAMP_NEW);\n396: \n397: \tif (valbool)\n398: \t\tsock_set_flag(sk, SOCK_RCVTSTAMP);\n399: \telse\n400: \t\tsock_reset_flag(sk, SOCK_RCVTSTAMP);\n401: \n402: \treturn 0;\n403: }\n404: \n405: static int rds_recv_track_latency(struct rds_sock *rs, sockptr_t optval,\n406: \t\t\t\t  int optlen)\n407: {\n408: \tstruct rds_rx_trace_so trace;\n409: \tint i;\n410: \n411: \tif (optlen != sizeof(struct rds_rx_trace_so))\n412: \t\treturn -EFAULT;\n413: \n414: \tif (copy_from_sockptr(&trace, optval, sizeof(trace)))\n415: \t\treturn -EFAULT;\n416: \n417: \tif (trace.rx_traces > RDS_MSG_RX_DGRAM_TRACE_MAX)\n418: \t\treturn -EFAULT;\n419: \n420: \trs->rs_rx_traces = trace.rx_traces;\n421: \tfor (i = 0; i < rs->rs_rx_traces; i++) {\n422: \t\tif (trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX) {\n423: \t\t\trs->rs_rx_traces = 0;\n424: \t\t\treturn -EFAULT;\n425: \t\t}\n426: \t\trs->rs_rx_trace[i] = trace.rx_trace_pos[i];\n427: \t}\n428: \n429: \treturn 0;\n430: }\n431: \n432: static int rds_setsockopt(struct socket *sock, int level, int optname,\n433: \t\t\t  sockptr_t optval, unsigned int optlen)\n434: {\n435: \tstruct rds_sock *rs = rds_sk_to_rs(sock->sk);\n436: \tint ret;\n437: \n438: \tif (level != SOL_RDS) {\n439: \t\tret = -ENOPROTOOPT;\n440: \t\tgoto out;\n441: \t}\n442: \n443: \tswitch (optname) {\n444: \tcase RDS_CANCEL_SENT_TO:\n445: \t\tret = rds_cancel_sent_to(rs, optval, optlen);\n446: \t\tbreak;\n447: \tcase RDS_GET_MR:\n448: \t\tret = rds_get_mr(rs, optval, optlen);\n449: \t\tbreak;\n450: \tcase RDS_GET_MR_FOR_DEST:\n451: \t\tret = rds_get_mr_for_dest(rs, optval, optlen);\n452: \t\tbreak;\n453: \tcase RDS_FREE_MR:\n454: \t\tret = rds_free_mr(rs, optval, optlen);",
+        "coverage_status": "partial",
+        "operations": [
+          "for (i = 0; i < rs->rs_rx_traces; i++) {"
+        ],
+        "acquisition_ops": [],
+        "release_ops": []
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.72
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "net/rds/af_rds.c",
+          "hunk_index": 0,
+          "source_line": 422
+        },
+        "summary": "rds_recv_track_latency in net/rds/af_rds.c provides CSA-backed pointer/resource lifecycle context near line 422",
+        "statements": [
+          "390: \t\treturn -EFAULT;",
+          "391:",
+          "392: \tvalbool = val ? 1 : 0;",
+          "393:",
+          "394: \tif (optname == SO_TIMESTAMP_NEW)",
+          "395: \t\tsock_set_flag(sk, SOCK_TSTAMP_NEW);"
+        ],
+        "guards": [
+          "optname == SO_TIMESTAMP_NEW",
+          "valbool",
+          "optlen != sizeof(struct rds_rx_trace_so)",
+          "copy_from_sockptr(&trace, optval, sizeof(trace))"
+        ],
+        "call_boundary": [
+          "sock_set_flag",
+          "sock_reset_flag",
+          "rds_recv_track_latency",
+          "rds_setsockopt",
+          "rds_sk_to_rs",
+          "rds_cancel_sent_to"
+        ],
+        "call_edges": [],
+        "state_transitions": [
+          "operation(for (i = 0; i < rs->rs_rx_traces; i++) {)"
+        ],
+        "api_terms": [
+          "for (i = 0; i < rs->rs_rx_traces; i++) {",
+          "sock_set_flag",
+          "sock_reset_flag",
+          "rds_recv_track_latency",
+          "rds_setsockopt",
+          "rds_sk_to_rs"
+        ],
+        "related_symbols": [
+          "trace",
+          "rx_trace_pos",
+          "i",
+          "RDS_MSG_RX_DGRAM_TRACE_MAX"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      }
+    },
+    {
+      "evidence_id": "knighter_e2_patch_local_validation",
+      "type": "validation_outcome",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "linux",
+        "file": "net/rds/af_rds.o",
+        "function": "patch_local_validation"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "kind": "knighter_e2_patch_local",
+        "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=2, fixed_alerts=1, buggy_miss=false, fixed_noisy=true, pds=false, targets=net/rds/af_rds.o.",
+        "commit_id": "13e788deb7348cc88df34bed736c3b3b9927ea52",
+        "case_id": "23_13e788deb734_Out_of_Bound",
+        "bug_type": "Out-of-Bound",
+        "candidate_group": "positive_scan_report_count",
+        "checker_id": "old:13e788deb7348cc88df34bed736c3b3b9927ea52:checker0",
+        "checker_name": "SAGenTestChecker",
+        "patch_related_targets": [
+          "net/rds/af_rds.o"
+        ],
+        "buggy_counts": {
+          "net/rds/af_rds.o": 2
+        },
+        "fixed_counts": {
+          "net/rds/af_rds.o": 1
+        },
+        "buggy_alerts": 2,
+        "fixed_alerts": 1,
+        "buggy_miss": false,
+        "fixed_noisy": true,
+        "pds": false,
+        "failure_mode": "fixed_noisy",
+        "repair_priority": "high",
+        "repair_action": "Add the patch-introduced guard/barrier/silence condition to reduce fixed-side alerts.",
+        "feedback_hint": "KNighter E2 strict patch-local baseline: buggy_alerts=2, fixed_alerts=1, buggy_miss=false, fixed_noisy=true, pds=false, targets=net/rds/af_rds.o.",
+        "historical_reference": "Historical KNighter report_count=1, manual_bugs=1, manual_not_bugs=0; this is not the same metric as patch-local E2 validation.",
+        "patch_semantic_context": {
+          "patch_excerpt": "commit 13e788deb7348cc88df34bed736c3b3b9927ea52\nAuthor: Sharath Srinivasan <sharath.srinivasan@oracle.com>\nDate:   Fri Jan 19 17:48:39 2024 -0800\n\n    net/rds: Fix UBSAN: array-index-out-of-bounds in rds_cmsg_recv\n    \n    Syzcaller UBSAN crash occurs in rds_cmsg_recv(),\n    which reads inc->i_rx_lat_trace[j + 1] with index 4 (3 + 1),\n    but with array size of 4 (RDS_RX_MAX_TRACES).\n    Here 'j' is assigned from rs->rs_rx_trace[i] and in-turn from\n    trace.rx_trace_pos[i] in rds_recv_track_latency(),\n    with both arrays sized 3 (RDS_MSG_RX_DGRAM_TRACE_MAX). So fix the\n    off-by-one bounds check in rds_recv_track_latency() to prevent\n    a potential crash in rds_cmsg_recv().\n    \n    Found by syzcaller:\n    =================================================================\n    UBSAN: array-index-out-of-bounds in net/rds/recv.c:585:39\n    index 4 is out of range for type 'u64 [4]'\n    CPU: 1 PID: 8058 Comm: syz-executor228 Not tainted 6.6.0-gd2f51b3516da #1\n    Hardware name: QEMU Standard PC (i440FX + PIIX, 1996),\n    BIOS 1.15.0-1 04/01/2014\n    Call Trace:\n     <TASK>\n     __dump_stack lib/dump_stack.c:88 [inline]\n     dump_stack_lvl+0x136/0x150 lib/dump_stack.c:106\n     ubsan_epilogue lib/ubsan.c:217 [inline]\n     __ubsan_handle_out_of_bounds+0xd5/0x130 lib/ubsan.c:348\n     rds_cmsg_recv+0x60d/0x700 net/rds/recv.c:585\n     rds_recvmsg+0x3fb/0x1610 net/rds/recv.c:716\n     sock_recvmsg_nosec net/socket.c:1044 [inline]\n     sock_recvmsg+0xe2/0x160 net/socket.c:1066\n     __sys_recvfrom+0x1b6/0x2f0 net/socket.c:2246\n     __do_sys_recvfrom net/socket.c:2264 [inline]\n     __se_sys_recvfrom net/socket.c:2260 [inline]\n     __x64_sys_recvfrom+0xe0/0x1b0 net/socket.c:2260\n     do_syscall_x64 arch/x86/entry/common.c:51 [inline]\n     do_syscall_64+0x40/0x110 arch/x86/entry/common.c:82\n     entry_SYSCALL_64_after_hwframe+0x63/0x6b\n    ==================================================================\n    \n    Fixes: 3289025aedc0 (\"RDS: add receive message trace used by application\")\n    Reported-by: Chenyuan Yang <chenyuan0y@gmail.com>\n    Closes: https://lore.kernel.org/linux-rdma/CALGdzuoVdq-wtQ4Az9iottBqC5cv9ZhcE5q8N7LfYFvkRsOVcw@mail.gmail.com/\n    Signed-off-by: Sharath Srinivasan <sharath.srinivasan@oracle.com>\n    Reviewed-by: Simon Horman <horms@kernel.org>\n    Signed-off-by: David S. Miller <davem@davemloft.net>\n\ndiff --git a/net/rds/af_rds.c b/net/rds/af_rds.c\nindex 01c4cdfef45d..8435a20968ef 100644\n--- a/net/rds/af_rds.c\n+++ b/net/rds/af_rds.c\n@@ -419,7 +419,7 @@ static int rds_recv_track_latency(struct rds_sock *rs, sockptr_t optval,\n \n \trs->rs_rx_traces = trace.rx_traces;\n \tfor (i = 0; i < rs->rs_rx_traces; i++) {\n-\t\tif (trace.rx_trace_pos[i] > RDS_MSG_RX_DGRAM_TRACE_MAX) {\n+\t\tif (trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX) {\n \t\t\trs->rs_rx_traces = 0;\n \t\t\treturn -EFAULT;\n \t\t}\n",
+          "patch_related_targets": [
+            "net/rds/af_rds.o"
+          ],
+          "knighter_original_generation_plan_excerpt": "Your plan is as follows:\n\n1. Decide on program states:  \n • No custom program state maps are needed for this checker because the bug can be detected by analyzing condition expressions in real time.\n\n2. Choose the callback function:  \n • Use the checkBranchCondition callback to hook on if statement conditions, since we need to inspect the boundary-check expression.\n\n3. Implement checkBranchCondition:  \n a. In checkBranchCondition, analyze the condition expression.  \n b. Use the utility function findSpecificTypeInChildren<BinaryOperator> to search for a binary operator within the condition.  \n c. If a binary operator is found and its operator type is “>”, inspect its right-hand operand.  \n d. Use the provided utility function ExprHasName to determine if the right-hand expression’s source text contains the macro name \"RDS_MSG_RX_DGRAM_TRACE_MAX\" (or the corresponding target macro). This indicates the boundary constant is being used in the check.  \n e. If the condition uses “>” instead of “>=” with the macro constant, then this is likely the off-by-one error.\n\n4. Report the bug:  \n • If the above pattern is detected, immediately generate a bug report.  \n • Use a short message such as \"Off-by-one error: incorrect array index boundary check\" and report it using std::make_unique<PathSensitiveBugReport> (or BasicBugReport).\n\nThis simple four-step plan—hooking the branch condition, identifying the problematic “>” check involving the macro constant, and reporting a concise bug message—should let you write the required checker with minimal complexity.",
+          "knighter_refined_plan_excerpt": "Your plan is as follows:\n\n1. Decide on program states:  \n • No custom program state maps are needed for this checker because the bug can be detected by analyzing condition expressions in real time.\n\n2. Choose the callback function:  \n • Use the checkBranchCondition callback to hook on if statement conditions, since we need to inspect the boundary-check expression.\n\n3. Implement checkBranchCondition:  \n a. In checkBranchCondition, analyze the condition expression.  \n b. Use the utility function findSpecificTypeInChildren<BinaryOperator> to search for a binary operator within the condition.  \n c. If a binary operator is found and its operator type is “>”, inspect its right-hand operand.  \n d. Use the provided utility function ExprHasName to determine if the right-hand expression’s source text contains the macro name \"RDS_MSG_RX_DGRAM_TRACE_MAX\" (or the corresponding target macro). This indicates the boundary constant is being used in the check.  \n e. If the condition uses “>” instead of “>=” with the macro constant, then this is likely the off-by-one error.\n\n4. Report the bug:  \n • If the above pattern is detected, immediately generate a bug report.  \n • Use a short message such as \"Off-by-one error: incorrect array index boundary check\" and report it using std::make_unique<PathSensitiveBugReport> (or BasicBugReport).\n\nThis simple four-step plan—hooking the branch condition, identifying the problematic “>” check involving the macro constant, and reporting a concise bug message—should let you write the required checker with minimal complexity.",
+          "knighter_pattern_excerpt": "## Bug Pattern\n\nThe bug pattern is an off-by-one error in array index validation. The code mistakenly uses a '>' comparison instead of '>=' when checking whether an index is within bounds. This allows an index equal to the maximum valid index (since arrays are 0-indexed) to pass the check, potentially leading to an out-of-bounds access. This pattern frequently occurs in scenarios where user-supplied or derived indices are validated using an incorrect boundary condition.",
+          "knighter_generated_patch_excerpt": "## Patch Description\n\nnet/rds: Fix UBSAN: array-index-out-of-bounds in rds_cmsg_recv\n\nSyzcaller UBSAN crash occurs in rds_cmsg_recv(),\nwhich reads inc->i_rx_lat_trace[j + 1] with index 4 (3 + 1),\nbut with array size of 4 (RDS_RX_MAX_TRACES).\nHere 'j' is assigned from rs->rs_rx_trace[i] and in-turn from\ntrace.rx_trace_pos[i] in rds_recv_track_latency(),\nwith both arrays sized 3 (RDS_MSG_RX_DGRAM_TRACE_MAX). So fix the\noff-by-one bounds check in rds_recv_track_latency() to prevent\na potential crash in rds_cmsg_recv().\n\nFound by syzcaller:\n=================================================================\nUBSAN: array-index-out-of-bounds in net/rds/recv.c:585:39\nindex 4 is out of range for type 'u64 [4]'\nCPU: 1 PID: 8058 Comm: syz-executor228 Not tainted 6.6.0-gd2f51b3516da #1\nHardware name: QEMU Standard PC (i440FX + PIIX, 1996),\nBIOS 1.15.0-1 04/01/2014\nCall Trace:\n <TASK>\n __dump_stack lib/dump_stack.c:88 [inline]\n dump_stack_lvl+0x136/0x150 lib/dump_stack.c:106\n ubsan_epilogue lib/ubsan.c:217 [inline]\n __ubsan_handle_out_of_bounds+0xd5/0x130 lib/ubsan.c:348\n rds_cmsg_recv+0x60d/0x700 net/rds/recv.c:585\n rds_recvmsg+0x3fb/0x1610 net/rds/recv.c:716\n sock_recvmsg_nosec net/socket.c:1044 [inline]\n sock_recvmsg+0xe2/0x160 net/socket.c:1066\n __sys_recvfrom+0x1b6/0x2f0 net/socket.c:2246\n __do_sys_recvfrom net/socket.c:2264 [inline]\n __se_sys_recvfrom net/socket.c:2260 [inline]\n __x64_sys_recvfrom+0xe0/0x1b0 net/socket.c:2260\n do_syscall_x64 arch/x86/entry/common.c:51 [inline]\n do_syscall_64+0x40/0x110 arch/x86/entry/common.c:82\n entry_SYSCALL_64_after_hwframe+0x63/0x6b\n==================================================================\n\nFixes: 3289025aedc0 (\"RDS: add receive message trace used by application\")\nReported-by: Chenyuan Yang <chenyuan0y@gmail.com>\nCloses: https://lore.kernel.org/linux-rdma/CALGdzuoVdq-wtQ4Az9iottBqC5cv9ZhcE5q8N7LfYFvkRsOVcw@mail.gmail.com/\nSigned-off-by: Sharath Srinivasan <sharath.srinivasan@oracle.com>\nReviewed-by: Simon Horman <horms@kernel.org>\nSigned-off-by: David S. Miller <davem@davemloft.net>\n\n## Buggy Code\n\n```c\n// net/rds/af_rds.c\nstatic int rds_recv_track_latency(struct rds_sock *rs, sockptr_t optval,\n\t\t\t\t  int optlen)\n{\n\tstruct rds_rx_trace_so trace;\n\tint i;\n\n\tif (optlen != sizeof(struct rds_rx_trace_so))\n\t\treturn -EFAULT;\n\n\tif (copy_from_sockptr(&trace, optval, sizeof(trace)))\n\t\treturn -EFAULT;\n\n\tif (trace.rx_traces > RDS_MSG_RX_DGRAM_TRACE_MAX)\n\t\treturn -EFAULT;\n\n\trs->rs_rx_traces = trace.rx_traces;\n\tfor (i = 0; i < rs->rs_rx_traces; i++) {\n\t\tif (trace.rx_trace_pos[i] > RDS_MSG_RX_DGRAM_TRACE_MAX) {\n\t\t\trs->rs_rx_traces = 0;\n\t\t\treturn -EFAULT;\n\t\t}\n\t\trs->rs_rx_trace[i] = trace.rx_trace_pos[i];\n\t}\n\n\treturn 0;\n}\n```\n\n## Bug Fix Patch\n\n```diff\ndiff --git a/net/rds/af_rds.c b/net/rds/af_rds.c\nindex 01c4cdfef45d..8435a20968ef 100644\n--- a/net/rds/af_rds.c\n+++ b/net/rds/af_rds.c\n@@ -419,7 +419,7 @@ static int rds_recv_track_latency(struct rds_sock *rs, sockptr_t optval,\n \n \trs->rs_rx_traces = trace.rx_traces;\n \tfor (i = 0; i < rs->rs_rx_traces; i++) {\n-\t\tif (trace.rx_trace_pos[i] > RDS_MSG_RX_DGRAM_TRACE_MAX) {\n+\t\tif (trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX) {\n \t\t\trs->rs_rx_traces = 0;\n \t\t\treturn -EFAULT;\n \t\t}\n```\n\n",
+          "checker_source_summary": {
+            "available": true,
+            "callbacks_or_hooks": [
+              "checkBranchCondition"
+            ],
+            "notable_tokens": [
+              "ret",
+              "PathSensitiveBugReport",
+              "checkBranchCondition",
+              "ExprHasName"
+            ],
+            "source_excerpt": "// /external/upstream-study/SAGEN/result-0224-bugfail-multi-o3mini/test-Out-of-Bound-13e788deb7348cc88df34bed736c3b3b9927ea52/checkers/checker0.cpp\n#include \"clang/StaticAnalyzer/Core/BugReporter/BugReporter.h\"\n#include \"clang/StaticAnalyzer/Core/BugReporter/BugType.h\"\n#include \"clang/StaticAnalyzer/Checkers/Taint.h\"\n#include \"clang/StaticAnalyzer/Core/Checker.h\"\n#include \"clang/StaticAnalyzer/Core/PathSensitive/CallEvent.h\"\n#include \"clang/StaticAnalyzer/Core/PathSensitive/CheckerContext.h\"\n#include \"clang/StaticAnalyzer/Core/PathSensitive/Environment.h\"\n#include \"clang/StaticAnalyzer/Core/PathSensitive/ProgramState.h\"\n#include \"clang/StaticAnalyzer/Core/PathSensitive/ProgramStateTrait.h\"\n#include \"clang/StaticAnalyzer/Core/PathSensitive/SymExpr.h\"\n#include \"clang/StaticAnalyzer/Frontend/CheckerRegistry.h\"\n#include \"clang/AST/RecursiveASTVisitor.h\"\n#include \"clang/AST/StmtVisitor.h\"\n#include \"llvm/Support/raw_ostream.h\"\n#include \"clang/StaticAnalyzer/Checkers/utility.h\"\n#include \"clang/Lex/Lexer.h\"  // For Lexer::getSourceText\n#include <memory>\nusing namespace clang;\nusing namespace ento;\nusing namespace taint;\nnamespace {\nclass SAGenTestChecker : public Checker<check::BranchCondition> {\n  mutable std::unique_ptr<BugType> BT;\npublic:\n  SAGenTestChecker()\n      : BT(new BugType(this, \"Off-by-one array index boundary check\", \"Array Bounds\")) {}\n  // This callback inspects branch conditions for incorrect boundary checks.\n  void checkBranchCondition(const Stmt *Condition, CheckerContext &C) const;\nprivate:\n  // Helper function to report the bug.\n  void reportBug(const Stmt *Condition, CheckerContext &C) const;\n};\nvoid SAGenTestChecker::checkBranchCondition(const Stmt *Condition, CheckerContext &C) const {\n  if (!Condition)\n    return;\n  // Look downward in the condition expression tree for a binary operator.\n  const BinaryOperator *BOp = findSpecificTypeInChildren<BinaryOperator>(Condition);\n  if (!BOp)\n    return;\n  // We are interested in a '>' comparison instead of '>='.\n  if (BOp->getOpcode() != BO_GT)\n    return;\n  // Retrieve the right-hand side expression of the operator.\n  const Expr *RHS = BOp->getRHS();\n  if (!RHS)\n    return;\n  // Use the utility function to check if the RHS contains the macro name.\n  if (!ExprHasName(RHS, \"RDS_MSG_RX_DGRAM_TRACE_MAX\", C))\n    return;\n  // The condition uses \">\" with the boundary constant, which is likely an off-by-one error.\n  reportBug(Condition, C);\n}\nvoid SAGenTestChecker::reportBug(const Stmt *Condition, CheckerContext &C) const {\n  // Generate a non-fatal error node.\n  ExplodedNode *N = C.generateNonFatalErrorNode();\n  if (!N)\n    return;\n  // Emit a concise bug report indicating the off-by-one error.\n  auto Report = std::make_unique<PathSensitiveBugReport>(\n      *BT, \"Off-by-one error: incorrect array index boundary check\", N);\n  Report->addRange(Condition->getSourceRange());\n  C.emitReport(std::move(Report));\n}\n} // end anonymous namespace\nextern \"C\" void clang_registerCheckers(CheckerRegistry &registry) {\n  registry.addChecker<SAGenTestChecker>(\n      \"custom.SAGenTestChecker\",\n      \"Detects off-by-one error in array index boundary check\",\n      \"\");\n}\nextern \"C\" const char clang_analyzerAPIVersionString[] =\n    CLANG_ANALYZER_API_VERSION_STRING;"
+          },
+          "buggy_report_index": {
+            "report_dir": "research/knighter/e2/results/screen1_reports/23_13e788deb734_Out_of_Bound/buggy",
+            "index_available": true,
+            "summary_lines": [
+              "<h2>Bug Summary</h2><table>",
+              "<thead><tr><td>Bug Type</td><td>Quantity</td><td class=\"sorttable_nosort\">Display?</td></tr></thead>",
+              "<tr style=\"font-weight:bold\"><td class=\"SUMM_DESC\">All Bugs</td><td class=\"Q\">2</td><td><center><input type=\"checkbox\" id=\"AllBugsCheck\" onClick=\"CopyCheckedStateToCheckButtons(this);\" checked/></center></td></tr>",
+              "<tr><td class=\"SUMM_DESC\">Off-by-one array index boundary check</td><td class=\"Q\">2</td><td><center><input type=\"checkbox\" onClick=\"ToggleDisplay(this,'bt_array_bounds_off-by-one_array_index_boundary_check');\" checked/></center></td></tr>",
+              "  <td class=\"Q\">Line</td>",
+              "  <td class=\"Q\">Path Length</td>",
+              "<tr class=\"bt_array_bounds_off-by-one_array_index_boundary_check\"><td class=\"DESC\">Array Bounds</td><td class=\"DESC\">Off-by-one array index boundary check</td><td>af_rds.c</td><td class=\"DESC\">rds_recv_track_latency</td><td class=\"Q\">417</td><td class=\"Q\">10</td><td><a href=\"report-3e76a0.html#EndPath\">View Report</a></td>",
+              "<tr class=\"bt_array_bounds_off-by-one_array_index_boundary_check\"><td class=\"DESC\">Array Bounds</td><td class=\"DESC\">Off-by-one array index boundary check</td><td>af_rds.c</td><td class=\"DESC\">rds_recv_track_latency</td><td class=\"Q\">422</td><td class=\"Q\">15</td><td><a href=\"report-dbf2ec.html#EndPath\">View Report</a></td>"
+            ]
+          },
+          "fixed_report_index": {
+            "report_dir": "research/knighter/e2/results/screen1_reports/23_13e788deb734_Out_of_Bound/fixed",
+            "index_available": true,
+            "summary_lines": [
+              "<h2>Bug Summary</h2><table>",
+              "<thead><tr><td>Bug Type</td><td>Quantity</td><td class=\"sorttable_nosort\">Display?</td></tr></thead>",
+              "<tr style=\"font-weight:bold\"><td class=\"SUMM_DESC\">All Bugs</td><td class=\"Q\">1</td><td><center><input type=\"checkbox\" id=\"AllBugsCheck\" onClick=\"CopyCheckedStateToCheckButtons(this);\" checked/></center></td></tr>",
+              "<tr><td class=\"SUMM_DESC\">Off-by-one array index boundary check</td><td class=\"Q\">1</td><td><center><input type=\"checkbox\" onClick=\"ToggleDisplay(this,'bt_array_bounds_off-by-one_array_index_boundary_check');\" checked/></center></td></tr>",
+              "  <td class=\"Q\">Line</td>",
+              "  <td class=\"Q\">Path Length</td>",
+              "<tr class=\"bt_array_bounds_off-by-one_array_index_boundary_check\"><td class=\"DESC\">Array Bounds</td><td class=\"DESC\">Off-by-one array index boundary check</td><td>af_rds.c</td><td class=\"DESC\">rds_recv_track_latency</td><td class=\"Q\">417</td><td class=\"Q\">10</td><td><a href=\"report-3e76a0.html#EndPath\">View Report</a></td>"
+            ]
+          },
+          "refinement_guidance": []
+        },
+        "log_path": "/anonymous/home/LLM-Native/research/knighter/runs/knighter-v613/validation_20260616_202857/knighter_validation.log",
+        "output_root": "/anonymous/home/LLM-Native/research/knighter/runs/knighter-v613/validation_20260616_202857",
+        "archived_buggy_report_dir": "research/knighter/e2/results/screen1_reports/23_13e788deb734_Out_of_Bound/buggy",
+        "archived_fixed_report_dir": "research/knighter/e2/results/screen1_reports/23_13e788deb734_Out_of_Bound/fixed"
+      },
+      "provenance": {
+        "tool": "research/knighter/scripts/run_e2_patch_local_audit.py",
+        "artifact": "research/knighter/e2/results/screening/patch_local_baseline/23_13e788deb734_Out_of_Bound/patch_local_result.json",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "knighter_historical_report_reference",
+      "type": "context_summary",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "linux",
+        "file": "net/rds/af_rds.o",
+        "function": "knighter_historical_reference"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "kind": "knighter_historical_reference",
+        "summary": "Historical KNighter report_count=1, manual_bugs=1, manual_not_bugs=0; this is not the same metric as patch-local E2 validation.",
+        "knighter_report_count": 1,
+        "knighter_manual_bugs": 1,
+        "knighter_manual_not_bugs": 0,
+        "metric_scope_note": "Historical KNighter report_count is not patch-local buggy/fixed validation."
+      },
+      "provenance": {
+        "tool": "KNighter old-version generated/checker-for-evaluation/refine",
+        "artifact": "commit_report_map.txt + triage_report.csv",
+        "confidence": 0.72
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "knighter_e2_patch_fact",
+      "type": "patch_fact",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "linux",
+        "file": "net/rds/af_rds.c",
+        "function": "amdgpu_dm_crtc_secure_display_create_contexts"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "allocation_loop_bound_consistency",
+        "label": "Out-of-Bound",
+        "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=2, fixed_alerts=1, buggy_miss=false, fixed_noisy=true, pds=false, targets=net/rds/af_rds.o.",
+        "attributes": {
+          "patterns": [
+            "out_of_bounds_access",
+            "array_bound_mismatch",
+            "allocation_size_vs_iteration_bound"
+          ],
+          "functions": [
+            "amdgpu_dm_fini",
+            "amdgpu_dm_crtc_configure_crc_source",
+            "amdgpu_dm_crtc_secure_display_create_contexts"
+          ],
+          "tracked_symbols": [
+            "secure_display_ctxs",
+            "AMDGPU_MAX_CRTCS",
+            "adev->dm.dc->caps.max_links",
+            "adev->mode_info.num_crtc",
+            "i"
+          ],
+          "fixed_noisy": true,
+          "buggy_miss": false
+        }
+      },
+      "provenance": {
+        "tool": "research/knighter/scripts/backfill_e2_refine_inputs.py",
+        "artifact": "research/knighter/e2/cases/23_13e788deb734_Out_of_Bound/patches/commit.patch",
+        "confidence": 0.9
+      },
+      "evidence_slice": {
+        "kind": "patch_fact",
+        "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=2, fixed_alerts=1, buggy_miss=false, fixed_noisy=true, pds=false, targets=net/rds/af_rds.o.",
+        "statements": [
+          "index 4 is out of range for type 'u64 [4]'"
+        ],
+        "api_terms": [
+          "ret",
+          "PathSensitiveBugReport",
+          "checkBranchCondition",
+          "ExprHasName",
+          "kcalloc",
+          "INIT_WORK",
+          "flush_work",
+          "secure_display_ctxs[i]",
+          "AMDGPU_MAX_CRTCS",
+          "caps.max_links",
+          "mode_info.num_crtc"
+        ],
+        "related_symbols": [
+          "secure_display_ctxs",
+          "AMDGPU_MAX_CRTCS",
+          "adev->dm.dc->caps.max_links",
+          "adev->mode_info.num_crtc",
+          "i"
+        ],
+        "coverage_status": "patch-local",
+        "verifier": "research/knighter/scripts/backfill_e2_refine_inputs.py",
+        "extraction_method": "research/knighter/e2/cases/23_13e788deb734_Out_of_Bound/patches/commit.patch"
+      }
+    },
+    {
+      "evidence_id": "knighter_e2_semantic_slice",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "linux",
+        "file": "net/rds/af_rds.c",
+        "function": "amdgpu_dm_crtc_secure_display_create_contexts"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=2, fixed_alerts=1, buggy_miss=false, fixed_noisy=true, pds=false, targets=net/rds/af_rds.o.",
+        "tracked_symbols": [
+          "secure_display_ctxs",
+          "AMDGPU_MAX_CRTCS",
+          "adev->dm.dc->caps.max_links",
+          "adev->mode_info.num_crtc",
+          "i"
+        ],
+        "source_excerpt": "## Patch Description\n\nnet/rds: Fix UBSAN: array-index-out-of-bounds in rds_cmsg_recv\n\nSyzcaller UBSAN crash occurs in rds_cmsg_recv(),\nwhich reads inc->i_rx_lat_trace[j + 1] with index 4 (3 + 1),\nbut with array size of 4 (RDS_RX_MAX_TRACES).\nHere 'j' is assigned from rs->rs_rx_trace[i] and in-turn from\ntrace.rx_trace_pos[i] in rds_recv_track_latency(),\nwith both arrays sized 3 (RDS_MSG_RX_DGRAM_TRACE_MAX). So fix the\noff-by-one bounds check in rds_recv_track_latency() to prevent\na potential crash in rds_cmsg_recv().\n\nFound by syzcaller:\n=================================================================\nUBSAN: array-index-out-of-bounds in net/rds/recv.c:585:39\nindex 4 is out of range for type 'u64 [4]'\nCPU: 1 PID: 8058 Comm: syz-executor228 Not tainted 6.6.0-gd2f51b3516da #1\nHardware name: QEMU Standard PC (i440FX + PIIX, 1996),\nBIOS 1.15.0-1 04/01/2014\nCall Trace:\n <TASK>\n __dump_stack lib/dump_stack.c:88 [inline]\n dump_stack_lvl+0x136/0x150 lib/dump_stack.c:106\n ubsan_epilogue lib/ubsan.c:217 [inline]\n __ubsan_handle_out_of_bounds+0xd5/0x130 lib/ubsan.c:348\n rds_cmsg_recv+0x60d/0x700 net/rds/recv.c:585\n rds_recvmsg+0x3fb/0x1610 net/rds/recv.c:716\n sock_recvmsg_nosec net/socket.c:1044 [inline]\n sock_recvmsg+0xe2/0x160 net/socket.c:1066\n __sys_recvfrom+0x1b6/0x2f0 net/socket.c:2246\n __do_sys_recvfrom net/socket.c:2264 [inline]\n __se_sys_recvfrom net/socket.c:2260 [inline]\n __x64_sys_recvfrom+0xe0/0x1b0 net/socket.c:2260\n do_syscall_x64 arch/x86/entry/common.c:51 [inline]\n do_syscall_64+0x40/0x110 arch/x86/entry/common.c:82\n entry_SYSCALL_64_after_hwframe+0x63/0x6b\n==================================================================\n\nFixes: 3289025aedc0 (\"RDS: add receive message trace used by application\")\nReported-by: Chenyuan Yang <chenyuan0y@gmail.com>\nCloses: https://lore.kernel.org/linux-rdma/CALGdzuoVdq-wtQ4Az9iottBqC5cv9ZhcE5q8N7LfYFvkRsOVcw@mail.gmail.com/\nSigned-off-by: Sharath Srinivasan <sharath.srinivasan@oracle.com>\nReviewed-by: Simon Horman <horms@kernel.org>\nSigned-off-by: David S. Miller <davem@davemloft.net>\n\n## Buggy Code\n\n```c\n// net/rds/af_rds.c\nstatic int rds_recv_track_latency(struct rds_sock *rs, sockptr_t optval,\n\t\t\t\t  int optlen)\n{\n\tstruct r",
+        "coverage_status": "patch-local"
+      },
+      "provenance": {
+        "tool": "research/knighter/scripts/backfill_e2_refine_inputs.py",
+        "artifact": "research/knighter/e2/cases/23_13e788deb734_Out_of_Bound/patches/commit.patch",
+        "confidence": 0.9
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=2, fixed_alerts=1, buggy_miss=false, fixed_noisy=true, pds=false, targets=net/rds/af_rds.o.",
+        "statements": [
+          "index 4 is out of range for type 'u64 [4]'"
+        ],
+        "guards": [
+          "fixed loops over secure_display_ctxs use adev->mode_info.num_crtc",
+          "fixed allocation size for secure_display_ctxs is adev->mode_info.num_crtc",
+          "buggy loops use adev->dm.dc->caps.max_links to index secure_display_ctxs",
+          "buggy allocation uses AMDGPU_MAX_CRTCS while consumers may iterate to max_links"
+        ],
+        "call_edges": [
+          "amdgpu_dm_crtc_secure_display_create_contexts -> kcalloc secure_display_ctxs",
+          "amdgpu_dm_crtc_secure_display_create_contexts -> INIT_WORK secure_display_ctxs[i]",
+          "amdgpu_dm_fini -> flush_work secure_display_ctxs[i]",
+          "amdgpu_dm_crtc_configure_crc_source -> flush_work secure_display_ctxs[i]"
+        ],
+        "state_transitions": [
+          "buggy: kcalloc(AMDGPU_MAX_CRTCS, sizeof(struct secure_display_context), GFP_KERNEL)",
+          "fixed: kcalloc(adev->mode_info.num_crtc, sizeof(struct secure_display_context), GFP_KERNEL)",
+          "buggy: for (i = 0; i < adev->dm.dc->caps.max_links; i++) secure_display_ctxs[i]",
+          "fixed: for (i = 0; i < adev->mode_info.num_crtc; i++) secure_display_ctxs[i]"
+        ],
+        "api_terms": [
+          "ret",
+          "PathSensitiveBugReport",
+          "checkBranchCondition",
+          "ExprHasName",
+          "kcalloc",
+          "INIT_WORK",
+          "flush_work",
+          "secure_display_ctxs[i]",
+          "AMDGPU_MAX_CRTCS",
+          "caps.max_links",
+          "mode_info.num_crtc"
+        ],
+        "related_symbols": [
+          "secure_display_ctxs",
+          "AMDGPU_MAX_CRTCS",
+          "adev->dm.dc->caps.max_links",
+          "adev->mode_info.num_crtc",
+          "i"
+        ],
+        "verifier": "research/knighter/scripts/backfill_e2_refine_inputs.py",
+        "extraction_method": "research/knighter/e2/cases/23_13e788deb734_Out_of_Bound/patches/commit.patch",
+        "coverage_status": "patch-local"
+      }
+    },
+    {
+      "evidence_id": "knighter_e2_path_guard",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "linux",
+        "file": "net/rds/af_rds.c",
+        "function": "amdgpu_dm_crtc_secure_display_create_contexts"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=2, fixed_alerts=1, buggy_miss=false, fixed_noisy=true, pds=false, targets=net/rds/af_rds.o.",
+        "guard_expr": "for (i = 0; i < adev->mode_info.num_crtc; i++)",
+        "state_before": [
+          "secure_display_ctxs is allocated with AMDGPU_MAX_CRTCS elements",
+          "secure_display_ctxs[i] is consumed in loops bounded by adev->dm.dc->caps.max_links",
+          "max_links may exceed the number of allocated secure_display_ctxs entries"
+        ],
+        "state_after": [
+          "secure_display_ctxs is allocated with adev->mode_info.num_crtc elements",
+          "all patch-local secure_display_ctxs[i] loops use adev->mode_info.num_crtc",
+          "allocation size and iteration bound share the same authoritative CRTC count"
+        ],
+        "tracked_symbols": [
+          "secure_display_ctxs",
+          "AMDGPU_MAX_CRTCS",
+          "adev->dm.dc->caps.max_links",
+          "adev->mode_info.num_crtc",
+          "i"
+        ]
+      },
+      "provenance": {
+        "tool": "research/knighter/scripts/backfill_e2_refine_inputs.py",
+        "artifact": "research/knighter/e2/cases/23_13e788deb734_Out_of_Bound/patches/commit.patch",
+        "confidence": 0.9
+      },
+      "evidence_slice": {
+        "kind": "path_guard",
+        "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=2, fixed_alerts=1, buggy_miss=false, fixed_noisy=true, pds=false, targets=net/rds/af_rds.o.",
+        "guards": [
+          "fixed loops over secure_display_ctxs use adev->mode_info.num_crtc",
+          "fixed allocation size for secure_display_ctxs is adev->mode_info.num_crtc",
+          "buggy loops use adev->dm.dc->caps.max_links to index secure_display_ctxs",
+          "buggy allocation uses AMDGPU_MAX_CRTCS while consumers may iterate to max_links"
+        ],
+        "state_transitions": [
+          "buggy: kcalloc(AMDGPU_MAX_CRTCS, sizeof(struct secure_display_context), GFP_KERNEL)",
+          "fixed: kcalloc(adev->mode_info.num_crtc, sizeof(struct secure_display_context), GFP_KERNEL)",
+          "buggy: for (i = 0; i < adev->dm.dc->caps.max_links; i++) secure_display_ctxs[i]",
+          "fixed: for (i = 0; i < adev->mode_info.num_crtc; i++) secure_display_ctxs[i]"
+        ],
+        "related_symbols": [
+          "secure_display_ctxs",
+          "AMDGPU_MAX_CRTCS",
+          "adev->dm.dc->caps.max_links",
+          "adev->mode_info.num_crtc",
+          "i"
+        ],
+        "verifier": "research/knighter/scripts/backfill_e2_refine_inputs.py",
+        "extraction_method": "research/knighter/e2/cases/23_13e788deb734_Out_of_Bound/patches/commit.patch",
+        "coverage_status": "patch-local"
+      }
+    },
+    {
+      "evidence_id": "knighter_e2_allocation_lifecycle",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "linux",
+        "file": "net/rds/af_rds.c",
+        "function": "amdgpu_dm_crtc_secure_display_create_contexts"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=2, fixed_alerts=1, buggy_miss=false, fixed_noisy=true, pds=false, targets=net/rds/af_rds.o.",
+        "path": [
+          "buggy: kcalloc(AMDGPU_MAX_CRTCS, sizeof(struct secure_display_context), GFP_KERNEL)",
+          "fixed: kcalloc(adev->mode_info.num_crtc, sizeof(struct secure_display_context), GFP_KERNEL)",
+          "buggy: for (i = 0; i < adev->dm.dc->caps.max_links; i++) secure_display_ctxs[i]",
+          "fixed: for (i = 0; i < adev->mode_info.num_crtc; i++) secure_display_ctxs[i]",
+          "amdgpu_dm_crtc_secure_display_create_contexts -> kcalloc secure_display_ctxs",
+          "amdgpu_dm_crtc_secure_display_create_contexts -> INIT_WORK secure_display_ctxs[i]",
+          "amdgpu_dm_fini -> flush_work secure_display_ctxs[i]",
+          "amdgpu_dm_crtc_configure_crc_source -> flush_work secure_display_ctxs[i]"
+        ],
+        "operations": [
+          "allocate secure_display_ctxs",
+          "initialize secure_display_ctxs[i]",
+          "flush secure_display_ctxs[i] work items",
+          "align allocation count and loop bound"
+        ],
+        "acquisition_ops": [
+          "kcalloc(... secure_display_context ...)"
+        ],
+        "release_ops": [
+          "kfree(adev->dm.secure_display_ctxs)"
+        ],
+        "transition_ops": [
+          "AMDGPU_MAX_CRTCS to mode_info.num_crtc",
+          "caps.max_links to mode_info.num_crtc"
+        ],
+        "state_before": [
+          "secure_display_ctxs is allocated with AMDGPU_MAX_CRTCS elements",
+          "secure_display_ctxs[i] is consumed in loops bounded by adev->dm.dc->caps.max_links",
+          "max_links may exceed the number of allocated secure_display_ctxs entries"
+        ],
+        "state_after": [
+          "secure_display_ctxs is allocated with adev->mode_info.num_crtc elements",
+          "all patch-local secure_display_ctxs[i] loops use adev->mode_info.num_crtc",
+          "allocation size and iteration bound share the same authoritative CRTC count"
+        ]
+      },
+      "provenance": {
+        "tool": "research/knighter/scripts/backfill_e2_refine_inputs.py",
+        "artifact": "research/knighter/e2/cases/23_13e788deb734_Out_of_Bound/patches/commit.patch",
+        "confidence": 0.9
+      },
+      "evidence_slice": {
+        "kind": "allocation_lifecycle",
+        "summary": "KNighter E2 strict patch-local baseline: buggy_alerts=2, fixed_alerts=1, buggy_miss=false, fixed_noisy=true, pds=false, targets=net/rds/af_rds.o.",
+        "statements": [
+          "index 4 is out of range for type 'u64 [4]'"
+        ],
+        "state_transitions": [
+          "buggy: kcalloc(AMDGPU_MAX_CRTCS, sizeof(struct secure_display_context), GFP_KERNEL)",
+          "fixed: kcalloc(adev->mode_info.num_crtc, sizeof(struct secure_display_context), GFP_KERNEL)",
+          "buggy: for (i = 0; i < adev->dm.dc->caps.max_links; i++) secure_display_ctxs[i]",
+          "fixed: for (i = 0; i < adev->mode_info.num_crtc; i++) secure_display_ctxs[i]"
+        ],
+        "api_terms": [
+          "ret",
+          "PathSensitiveBugReport",
+          "checkBranchCondition",
+          "ExprHasName",
+          "kcalloc",
+          "INIT_WORK",
+          "flush_work",
+          "secure_display_ctxs[i]",
+          "AMDGPU_MAX_CRTCS",
+          "caps.max_links",
+          "mode_info.num_crtc"
+        ],
+        "related_symbols": [
+          "secure_display_ctxs",
+          "AMDGPU_MAX_CRTCS",
+          "adev->dm.dc->caps.max_links",
+          "adev->mode_info.num_crtc",
+          "i"
+        ],
+        "verifier": "research/knighter/scripts/backfill_e2_refine_inputs.py",
+        "extraction_method": "research/knighter/e2/cases/23_13e788deb734_Out_of_Bound/patches/commit.patch",
+        "coverage_status": "patch-local"
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "collected_analyzers": [
+    "csa",
+    "patch"
+  ]
+}

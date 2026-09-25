@@ -1,0 +1,20 @@
+Refinment Plan:
+
+The false positive has two causes:
+
+1. The checker records only that `fw` was written by `request_firmware()`, but it never associates that output pointer with the call's integer return value. Therefore, `if (ret) return;` cannot establish that subsequent paths have `ret == 0`.
+2. `findSpecificTypeInChildren<DeclRefExpr>()` is too broad. For `if ((fw->size) < ...)`, it finds the `fw` nested inside `fw->size` and incorrectly treats a member access as a direct null/pointer check.
+
+The refined checker:
+
+- Tracks the symbolic return value of each `request_firmware()` call together with its exact output storage region.
+- Tracks conditions that test that symbolic return value, including `if (ret)`, `if (!ret)`, `ret == 0`, `ret != 0`, `ret < 0`, and `ret >= 0`.
+- Uses `evalAssume()` to mark the output pointer as verified only on the branch where the request return value is known to be successful.
+- Reports only direct pointer tests such as `if (!fw)`, `if (fw)`, or `if (fw == NULL)`. It does not treat `fw->size`, `fw->data`, or other member dereferences as pointer checks.
+- Clears tracking when the output pointer storage is subsequently assigned, avoiding stale state after `fw` is overwritten.
+
+This still detects the target buggy form because `request_firmware(&fw, ...)` followed by `if (!fw)` has no preceding successful-return path state.
+
+Refined Code:
+```cpp
+```

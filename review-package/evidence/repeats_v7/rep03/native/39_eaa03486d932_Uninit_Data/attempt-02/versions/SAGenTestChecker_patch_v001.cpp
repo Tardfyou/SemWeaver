@@ -1,0 +1,120 @@
+// /external/upstream-study/SAGEN/result-0224-bugfail-multi-o3mini/test-Uninit-Data-eaa03486d932572dfd1c5f64f9dfebe572ad88c0/checkers/checker4.cpp
+#include "clang/StaticAnalyzer/Core/BugReporter/BugReporter.h"
+#include "clang/StaticAnalyzer/Core/BugReporter/BugType.h"
+#include "clang/StaticAnalyzer/Checkers/Taint.h"
+#include "clang/StaticAnalyzer/Core/Checker.h"
+#include "clang/StaticAnalyzer/Core/PathSensitive/CallEvent.h"
+#include "clang/StaticAnalyzer/Core/PathSensitive/CheckerContext.h"
+#include "clang/StaticAnalyzer/Core/PathSensitive/Environment.h"
+#include "clang/StaticAnalyzer/Core/PathSensitive/MemRegion.h"
+#include "clang/StaticAnalyzer/Core/PathSensitive/ProgramState.h"
+#include "clang/StaticAnalyzer/Core/PathSensitive/ProgramStateTrait.h"
+#include "clang/StaticAnalyzer/Core/PathSensitive/SymExpr.h"
+#include "clang/StaticAnalyzer/Frontend/CheckerRegistry.h"
+#include "clang/AST/RecursiveASTVisitor.h"
+#include "clang/AST/StmtVisitor.h"
+#include "llvm/Support/raw_ostream.h"
+#include "clang/StaticAnalyzer/Checkers/utility.h"
+
+#include "clang/AST/Decl.h"
+#include "clang/AST/Expr.h"
+
+using namespace clang;
+using namespace ento;
+using namespace taint;
+
+// Program state map for local scalar initialization.
+// The mapping: VarDecl* -> bool (true means initialized, false means uninitialized).
+REGISTER_MAP_WITH_PROGRAMSTATE(UninitVarMap, const VarDecl*, bool)
+
+namespace {
+
+class SAGenTestChecker : public Checker<check::PostStmt<DeclStmt>,
+                                          check::Bind,
+                                          check::PreStmt<ReturnStmt>> {
+  mutable std::unique_ptr<BugType> BT;
+
+public:
+  SAGenTestChecker() 
+      : BT(new BugType(this, "Uninitialized Variable", "Uninitialized ret usage")) {}
+
+  // Called after a declaration statement is processed.
+  void checkPostStmt(const DeclStmt *DS, CheckerContext &C) const;
+
+  // Called when a value is bound to local storage.
+  void checkBind(SVal Loc, SVal Val, const Stmt *S, CheckerContext &C) const;
+
+  // Called before a return statement is processed.
+  void checkPreStmt(const ReturnStmt *RS, CheckerContext &C) const;
+};
+
+// checkPostStmt: Records uninitialized local scalar declarations.
+void SAGenTestChecker::checkPostStmt(const DeclStmt *DS, CheckerContext &C) const {
+  ProgramStateRef State = C.getState();
+  for (const Decl *D : DS->decls()) {
+    if (const VarDecl *VD = dyn_cast<VarDecl>(D)) {
+      if (!VD->hasInit() && VD->getType()->isScalarType())
+        State = State->set<UninitVarMap>(VD, false);
+    }
+  }
+  C.addTransition(State);
+}
+
+// checkBind: Marks a tracked local initialized when its storage is written.
+void SAGenTestChecker::checkBind(SVal Loc, SVal Val, const Stmt *S,
+                                 CheckerContext &C) const {
+  ProgramStateRef State = C.getState();
+  if (const auto *VR = dyn_cast_or_null<VarRegion>(Loc.getAsRegion())) {
+    const VarDecl *VD = VR->getDecl();
+    bool IsUninitializedDeclaration = false;
+    if (const auto *DS = dyn_cast_or_null<DeclStmt>(S)) {
+      for (const Decl *D : DS->decls()) {
+        if (D == VD && !VD->hasInit()) {
+          IsUninitializedDeclaration = true;
+          break;
+        }
+      }
+    }
+    if (!IsUninitializedDeclaration && State->get<UninitVarMap>(VD))
+      State = State->set<UninitVarMap>(VD, true);
+  }
+  C.addTransition(State);
+}
+
+// checkPreStmt: Called before a ReturnStmt is processed.
+// Report a direct return of a local scalar that remains uninitialized.
+void SAGenTestChecker::checkPreStmt(const ReturnStmt *RS, CheckerContext &C) const {
+  ProgramStateRef State = C.getState();
+  const Expr *retExpr = RS->getRetValue();
+  if (!retExpr)
+    return;
+
+  retExpr = retExpr->IgnoreImplicit();
+  if (const DeclRefExpr *DRE = dyn_cast<DeclRefExpr>(retExpr)) {
+    if (const VarDecl *VD = dyn_cast<VarDecl>(DRE->getDecl())) {
+      const bool *Initialized = State->get<UninitVarMap>(VD);
+      if (Initialized && !(*Initialized)) {
+        ExplodedNode *N = C.generateNonFatalErrorNode();
+        if (!N)
+          return;
+        auto report = std::make_unique<PathSensitiveBugReport>(
+            *BT, "Uninitialized local variable returned", N);
+        report->addRange(retExpr->getSourceRange());
+        C.emitReport(std::move(report));
+      }
+    }
+  }
+  C.addTransition(State);
+}
+
+} // end anonymous namespace
+
+extern "C" void clang_registerCheckers(CheckerRegistry &registry) {
+  registry.addChecker<SAGenTestChecker>(
+      "custom.SAGenTestChecker", 
+      "Detects usage of uninitialized local variable 'ret'", 
+      "");
+}
+
+extern "C" const char clang_analyzerAPIVersionString[] =
+    CLANG_ANALYZER_API_VERSION_STRING;

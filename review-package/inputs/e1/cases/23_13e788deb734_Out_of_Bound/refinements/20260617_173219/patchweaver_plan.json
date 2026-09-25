@@ -1,0 +1,1022 @@
+{
+  "files_changed": [
+    "net/rds/af_rds.c"
+  ],
+  "file_details": [
+    {
+      "path": "net/rds/af_rds.c",
+      "additions": 1,
+      "deletions": 1,
+      "hunks": 1
+    }
+  ],
+  "vulnerability_patterns": [
+    {
+      "type": "out_of_bounds_array_index",
+      "description": "An off-by-one bounds check allowed trace.rx_trace_pos[i] == RDS_MSG_RX_DGRAM_TRACE_MAX to pass validation. That boundary value is outside the valid index range for arrays sized RDS_MSG_RX_DGRAM_TRACE_MAX, and later trace consumers may use the stored value as or to derive an array index.",
+      "trigger_conditions": [
+        "rds_recv_track_latency iterates 'for (i = 0; i < rs->rs_rx_traces; i++)' and validates each trace.rx_trace_pos[i]",
+        "pre-patch guard rejects only 'trace.rx_trace_pos[i] > RDS_MSG_RX_DGRAM_TRACE_MAX'",
+        "trace.rx_trace_pos[i] equal to RDS_MSG_RX_DGRAM_TRACE_MAX is accepted instead of causing 'rs->rs_rx_traces = 0; return -EFAULT;'",
+        "the accepted value can propagate into receive trace state and be consumed as an index or index-derived value by later receive-message trace handling"
+      ],
+      "fix_patterns": [
+        "change the guard to 'trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX'",
+        "on boundary violation, reset 'rs->rs_rx_traces = 0' and return '-EFAULT'",
+        "block the exact upper-bound value before it can be stored into the socket receive trace configuration"
+      ],
+      "affected_functions": [
+        "rds_recv_track_latency"
+      ],
+      "cross_file": false,
+      "source": "llm",
+      "confidence": 0.92,
+      "evidence_lines": [
+        "net/rds/af_rds.c:419: static int rds_recv_track_latency(struct rds_sock *rs, sockptr_t optval,",
+        "rs->rs_rx_traces = trace.rx_traces;",
+        "for (i = 0; i < rs->rs_rx_traces; i++) {",
+        "-\t\tif (trace.rx_trace_pos[i] > RDS_MSG_RX_DGRAM_TRACE_MAX) {",
+        "+\t\tif (trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX) {",
+        "rs->rs_rx_traces = 0;"
+      ]
+    }
+  ],
+  "cross_file_dependencies": [],
+  "detection_strategy": {
+    "primary_pattern": "out_of_bounds_array_index",
+    "check_types": [
+      "off_by_one_upper_bound_validation",
+      "array_index_range_validation",
+      "validated_value_later_used_as_index",
+      "boundary_value_accepted_by_strict_greater_check"
+    ],
+    "entry_points": [
+      "rds_recv_track_latency"
+    ],
+    "data_flow_tracking": true,
+    "cross_file_analysis": false,
+    "suggestions": [
+      "First-draft detector should anchor on the patch-local guard shape: 'if (value > MAX)' guarding a value that is later accepted as an index-like position, where valid values are expected to be '< MAX'.",
+      "Use 'trace.rx_trace_pos[i]' and 'RDS_MSG_RX_DGRAM_TRACE_MAX' as the minimal patch-local anchors; the important semantic delta is rejecting equality with the max constant.",
+      "Do not make the newly added '>=' guard a hard negative filter in the first draft; instead, report pre-fix strict '>' checks against array-size or max-count constants when the value can be stored or propagated.",
+      "Treat the reset-and-return path 'rs->rs_rx_traces = 0; return -EFAULT;' as the barrier that should execute for both greater-than and equal-to-max values.",
+      "A local AST/CFG check is enough to find the changed validation bug in rds_recv_track_latency; data-flow tracking is useful only to connect the accepted trace position to later index consumers such as rds_cmsg_recv.",
+      "Cross-file analysis is not required for a first patch-local checker, although a second-stage refinement may follow trace.rx_trace_pos[i] into rs->rs_rx_trace[i] and then into receive trace array indexing."
+    ]
+  },
+  "checker_name_suggestion": "OffByOneTraceIndexBoundsChecker",
+  "affected_functions": [
+    "rds_recv_track_latency"
+  ],
+  "key_functions": [
+    "rds_recv_track_latency"
+  ],
+  "patch_semantics": {
+    "added_guards": [
+      "if (trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX) {"
+    ],
+    "added_api_calls": [],
+    "removed_api_calls": [],
+    "state_resets": [],
+    "lifecycle_changes": []
+  },
+  "analysis_backend": "llm",
+  "analysis_confidence": 0.92,
+  "analysis_rationale": "The patch changes a single bounds guard in net/rds/af_rds.c:rds_recv_track_latency from '>' to '>=' for trace.rx_trace_pos[i] against RDS_MSG_RX_DGRAM_TRACE_MAX. Before the patch, a value equal to RDS_MSG_RX_DGRAM_TRACE_MAX was accepted and stored through the receive-trace state, enabling a later consumer to use an invalid trace index. The commit text explicitly ties this accepted boundary value to an out-of-bounds read in rds_cmsg_recv via inc->i_rx_lat_trace[j + 1].",
+  "llm_usage": {
+    "prompt_tokens": 4664,
+    "completion_tokens": 1239,
+    "total_tokens": 5903,
+    "call_count": 1,
+    "available": true,
+    "model": "gpt-5.5"
+  },
+  "patchweaver": {
+    "summary": "Patch suggests out_of_bounds_array_index semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=3, metadata refs=2.",
+    "patch_facts": [
+      {
+        "fact_type": "patch_overview",
+        "label": "Patch overview",
+        "attributes": {
+          "patch_path": "/anonymous/home/LLM-Native/research/knighter/e2/cases/23_13e788deb734_Out_of_Bound/patches/commit.patch",
+          "changed_files": [
+            "net/rds/af_rds.c"
+          ],
+          "changed_file_count": 1,
+          "added_line_count": 1,
+          "deleted_line_count": 1
+        }
+      },
+      {
+        "fact_type": "vulnerability_patterns",
+        "label": "Vulnerability patterns inferred from patch",
+        "attributes": {
+          "patterns": [
+            "out_of_bounds_array_index"
+          ],
+          "descriptions": [
+            "An off-by-one bounds check allowed trace.rx_trace_pos[i] == RDS_MSG_RX_DGRAM_TRACE_MAX to pass validation. That boundary value is outside the valid index range for arrays sized RDS_MSG_RX_DGRAM_TRACE_MAX, and later trace consumers may use the stored value as or to derive an array index."
+          ]
+        }
+      },
+      {
+        "fact_type": "affected_functions",
+        "label": "Functions implicated by removed or fixed code",
+        "attributes": {
+          "functions": [
+            "rds_recv_track_latency"
+          ]
+        }
+      },
+      {
+        "fact_type": "detection_strategy",
+        "label": "Existing patch analysis detection strategy",
+        "attributes": {
+          "primary_pattern": "out_of_bounds_array_index",
+          "check_types": [
+            "off_by_one_upper_bound_validation",
+            "array_index_range_validation",
+            "validated_value_later_used_as_index",
+            "boundary_value_accepted_by_strict_greater_check"
+          ],
+          "entry_points": [
+            "rds_recv_track_latency"
+          ],
+          "data_flow_tracking": true,
+          "cross_file_analysis": false,
+          "suggestions": [
+            "First-draft detector should anchor on the patch-local guard shape: 'if (value > MAX)' guarding a value that is later accepted as an index-like position, where valid values are expected to be '< MAX'.",
+            "Use 'trace.rx_trace_pos[i]' and 'RDS_MSG_RX_DGRAM_TRACE_MAX' as the minimal patch-local anchors; the important semantic delta is rejecting equality with the max constant.",
+            "Do not make the newly added '>=' guard a hard negative filter in the first draft; instead, report pre-fix strict '>' checks against array-size or max-count constants when the value can be stored or propagated.",
+            "Treat the reset-and-return path 'rs->rs_rx_traces = 0; return -EFAULT;' as the barrier that should execute for both greater-than and equal-to-max values.",
+            "A local AST/CFG check is enough to find the changed validation bug in rds_recv_track_latency; data-flow tracking is useful only to connect the accepted trace position to later index consumers such as rds_cmsg_recv.",
+            "Cross-file analysis is not required for a first patch-local checker, although a second-stage refinement may follow trace.rx_trace_pos[i] into rs->rs_rx_trace[i] and then into receive trace array indexing."
+          ]
+        }
+      },
+      {
+        "fact_type": "added_guards",
+        "label": "Patch introduces or strengthens guards",
+        "attributes": {
+          "guards": [
+            "if (trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX) {"
+          ]
+        }
+      },
+      {
+        "fact_type": "fix_patterns",
+        "label": "Patch introduces reusable fix patterns",
+        "attributes": {
+          "patterns": [
+            "change the guard to 'trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX'",
+            "on boundary violation, reset 'rs->rs_rx_traces = 0' and return '-EFAULT'",
+            "block the exact upper-bound value before it can be stored into the socket receive trace configuration"
+          ]
+        }
+      },
+      {
+        "fact_type": "patch_intent",
+        "label": "Patch intent and commit-style summary",
+        "attributes": {
+          "summary": "commit 13e788deb7348cc88df34bed736c3b3b9927ea52 | Author: Sharath Srinivasan <sharath.srinivasan@oracle.com>",
+          "keywords": [
+            "commit",
+            "e788deb7348cc88df34bed736c3b3b9927ea52",
+            "author",
+            "sharath",
+            "srinivasan",
+            "oracle"
+          ]
+        }
+      },
+      {
+        "fact_type": "external_references",
+        "label": "External references recovered from patch text",
+        "attributes": {
+          "cves": [],
+          "cwes": [],
+          "issues": [
+            "3289025aedc0",
+            "1"
+          ]
+        }
+      }
+    ],
+    "mechanism_graph": {
+      "summary": "Patch suggests out_of_bounds_array_index semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=3, metadata refs=2.",
+      "primary_patterns": [
+        "out_of_bounds_array_index"
+      ],
+      "nodes": [
+        {
+          "node_id": "patch",
+          "kind": "patch",
+          "label": "Security patch",
+          "attributes": {
+            "changed_files": [
+              "net/rds/af_rds.c"
+            ]
+          }
+        },
+        {
+          "node_id": "file_0",
+          "kind": "file",
+          "label": "net/rds/af_rds.c",
+          "attributes": {
+            "path": "net/rds/af_rds.c",
+            "additions": 1,
+            "deletions": 1,
+            "hunks": 1
+          }
+        },
+        {
+          "node_id": "pattern_0",
+          "kind": "pattern",
+          "label": "out_of_bounds_array_index",
+          "attributes": {
+            "type": "out_of_bounds_array_index",
+            "description": "An off-by-one bounds check allowed trace.rx_trace_pos[i] == RDS_MSG_RX_DGRAM_TRACE_MAX to pass validation. That boundary value is outside the valid index range for arrays sized RDS_MSG_RX_DGRAM_TRACE_MAX, and later trace consumers may use the stored value as or to derive an array index.",
+            "trigger_conditions": [
+              "rds_recv_track_latency iterates 'for (i = 0; i < rs->rs_rx_traces; i++)' and validates each trace.rx_trace_pos[i]",
+              "pre-patch guard rejects only 'trace.rx_trace_pos[i] > RDS_MSG_RX_DGRAM_TRACE_MAX'",
+              "trace.rx_trace_pos[i] equal to RDS_MSG_RX_DGRAM_TRACE_MAX is accepted instead of causing 'rs->rs_rx_traces = 0; return -EFAULT;'",
+              "the accepted value can propagate into receive trace state and be consumed as an index or index-derived value by later receive-message trace handling"
+            ],
+            "fix_patterns": [
+              "change the guard to 'trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX'",
+              "on boundary violation, reset 'rs->rs_rx_traces = 0' and return '-EFAULT'",
+              "block the exact upper-bound value before it can be stored into the socket receive trace configuration"
+            ],
+            "affected_functions": [
+              "rds_recv_track_latency"
+            ],
+            "cross_file": false,
+            "source": "llm",
+            "confidence": 0.92,
+            "evidence_lines": [
+              "net/rds/af_rds.c:419: static int rds_recv_track_latency(struct rds_sock *rs, sockptr_t optval,",
+              "rs->rs_rx_traces = trace.rx_traces;",
+              "for (i = 0; i < rs->rs_rx_traces; i++) {",
+              "-\t\tif (trace.rx_trace_pos[i] > RDS_MSG_RX_DGRAM_TRACE_MAX) {",
+              "+\t\tif (trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX) {",
+              "rs->rs_rx_traces = 0;"
+            ]
+          }
+        },
+        {
+          "node_id": "func_1",
+          "kind": "function",
+          "label": "rds_recv_track_latency",
+          "attributes": {
+            "function": "rds_recv_track_latency"
+          }
+        },
+        {
+          "node_id": "guard_1",
+          "kind": "guard",
+          "label": "rds_recv_track_latency iterates 'for (i = 0; i < rs->rs_rx_traces; i++)' and validates each trace.rx_trace_pos[i]",
+          "attributes": {
+            "condition": "rds_recv_track_latency iterates 'for (i = 0; i < rs->rs_rx_traces; i++)' and validates each trace.rx_trace_pos[i]"
+          }
+        },
+        {
+          "node_id": "guard_2",
+          "kind": "guard",
+          "label": "pre-patch guard rejects only 'trace.rx_trace_pos[i] > RDS_MSG_RX_DGRAM_TRACE_MAX'",
+          "attributes": {
+            "condition": "pre-patch guard rejects only 'trace.rx_trace_pos[i] > RDS_MSG_RX_DGRAM_TRACE_MAX'"
+          }
+        },
+        {
+          "node_id": "guard_3",
+          "kind": "guard",
+          "label": "trace.rx_trace_pos[i] equal to RDS_MSG_RX_DGRAM_TRACE_MAX is accepted instead of causing 'rs->rs_rx_traces = 0; return -EFAULT;'",
+          "attributes": {
+            "condition": "trace.rx_trace_pos[i] equal to RDS_MSG_RX_DGRAM_TRACE_MAX is accepted instead of causing 'rs->rs_rx_traces = 0; return -EFAULT;'"
+          }
+        },
+        {
+          "node_id": "guard_4",
+          "kind": "guard",
+          "label": "the accepted value can propagate into receive trace state and be consumed as an index or index-derived value by later receive-message trace handling",
+          "attributes": {
+            "condition": "the accepted value can propagate into receive trace state and be consumed as an index or index-derived value by later receive-message trace handling"
+          }
+        },
+        {
+          "node_id": "strategy",
+          "kind": "strategy",
+          "label": "out_of_bounds_array_index",
+          "attributes": {
+            "primary_pattern": "out_of_bounds_array_index",
+            "check_types": [
+              "off_by_one_upper_bound_validation",
+              "array_index_range_validation",
+              "validated_value_later_used_as_index",
+              "boundary_value_accepted_by_strict_greater_check"
+            ],
+            "entry_points": [
+              "rds_recv_track_latency"
+            ],
+            "data_flow_tracking": true,
+            "cross_file_analysis": false,
+            "suggestions": [
+              "First-draft detector should anchor on the patch-local guard shape: 'if (value > MAX)' guarding a value that is later accepted as an index-like position, where valid values are expected to be '< MAX'.",
+              "Use 'trace.rx_trace_pos[i]' and 'RDS_MSG_RX_DGRAM_TRACE_MAX' as the minimal patch-local anchors; the important semantic delta is rejecting equality with the max constant.",
+              "Do not make the newly added '>=' guard a hard negative filter in the first draft; instead, report pre-fix strict '>' checks against array-size or max-count constants when the value can be stored or propagated.",
+              "Treat the reset-and-return path 'rs->rs_rx_traces = 0; return -EFAULT;' as the barrier that should execute for both greater-than and equal-to-max values.",
+              "A local AST/CFG check is enough to find the changed validation bug in rds_recv_track_latency; data-flow tracking is useful only to connect the accepted trace position to later index consumers such as rds_cmsg_recv.",
+              "Cross-file analysis is not required for a first patch-local checker, although a second-stage refinement may follow trace.rx_trace_pos[i] into rs->rs_rx_trace[i] and then into receive trace array indexing."
+            ]
+          }
+        },
+        {
+          "node_id": "guard_5",
+          "kind": "guard",
+          "label": "if (trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX) {",
+          "attributes": {
+            "condition": "if (trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX) {",
+            "source": "patch_fact"
+          }
+        },
+        {
+          "node_id": "fix_1",
+          "kind": "fix",
+          "label": "change the guard to 'trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX'",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "change the guard to 'trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX'"
+          }
+        },
+        {
+          "node_id": "fix_2",
+          "kind": "fix",
+          "label": "on boundary violation, reset 'rs->rs_rx_traces = 0' and return '-EFAULT'",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "on boundary violation, reset 'rs->rs_rx_traces = 0' and return '-EFAULT'"
+          }
+        },
+        {
+          "node_id": "fix_3",
+          "kind": "fix",
+          "label": "block the exact upper-bound value before it can be stored into the socket receive trace configuration",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "block the exact upper-bound value before it can be stored into the socket receive trace configuration"
+          }
+        },
+        {
+          "node_id": "intent_0",
+          "kind": "intent",
+          "label": "commit 13e788deb7348cc88df34bed736c3b3b9927ea52 | Author: Sharath Srinivasan <sharath.srinivasan@oracle.com>",
+          "attributes": {
+            "summary": "commit 13e788deb7348cc88df34bed736c3b3b9927ea52 | Author: Sharath Srinivasan <sharath.srinivasan@oracle.com>",
+            "keywords": [
+              "commit",
+              "e788deb7348cc88df34bed736c3b3b9927ea52",
+              "author",
+              "sharath",
+              "srinivasan",
+              "oracle"
+            ]
+          }
+        },
+        {
+          "node_id": "commit_0",
+          "kind": "commit",
+          "label": "3289025aedc0, 1",
+          "attributes": {
+            "issues": [
+              "3289025aedc0",
+              "1"
+            ]
+          }
+        }
+      ],
+      "edges": [
+        {
+          "source": "patch",
+          "target": "file_0",
+          "relation": "touches",
+          "confidence": 0.95
+        },
+        {
+          "source": "patch",
+          "target": "pattern_0",
+          "relation": "indicates",
+          "confidence": 0.9
+        },
+        {
+          "source": "pattern_0",
+          "target": "func_1",
+          "relation": "affects",
+          "confidence": 0.75
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_1",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_2",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_3",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_4",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "patch",
+          "target": "strategy",
+          "relation": "guides",
+          "confidence": 0.85
+        },
+        {
+          "source": "patch",
+          "target": "guard_5",
+          "relation": "adds_guard",
+          "confidence": 0.84
+        },
+        {
+          "source": "patch",
+          "target": "fix_1",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_2",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_3",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "intent_0",
+          "relation": "describes",
+          "confidence": 0.78
+        },
+        {
+          "source": "patch",
+          "target": "commit_0",
+          "relation": "tracked_by",
+          "confidence": 0.72
+        }
+      ]
+    },
+    "evidence_plan": {
+      "primary_pattern": "out_of_bounds_array_index",
+      "hypotheses": [
+        "The patch changes a data propagation condition that should generalize beyond the edited lines."
+      ],
+      "requirements": [
+        {
+          "evidence_type": "patch_fact",
+          "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+          "priority": 100,
+          "preferred_analyzers": [],
+          "confidence": 1.0,
+          "mechanism_refs": [
+            "patch"
+          ]
+        },
+        {
+          "evidence_type": "dataflow_candidate",
+          "reason": "Patch analysis requests data-flow tracking.",
+          "priority": 95,
+          "preferred_analyzers": [
+            "codeql"
+          ],
+          "confidence": 0.9,
+          "mechanism_refs": [
+            "strategy"
+          ]
+        },
+        {
+          "evidence_type": "call_chain",
+          "reason": "Interprocedural call-chain context is needed to generalize the fix pattern.",
+          "priority": 78,
+          "preferred_analyzers": [
+            "codeql"
+          ],
+          "confidence": 0.78,
+          "mechanism_refs": [
+            "strategy"
+          ]
+        }
+      ],
+      "recommended_analyzers": [
+        "codeql"
+      ],
+      "planner_notes": [
+        "Added guards detected in patch diff; path-sensitive evidence should stay near top priority.",
+        "Selected analyzers do not cover every planned evidence primitive."
+      ],
+      "coverage_gaps": [
+        "dataflow_candidate is not covered by selected analyzers ['csa']",
+        "call_chain is not covered by selected analyzers ['csa']"
+      ],
+      "uncertainty_budget": "medium",
+      "escalation_triggers": [
+        "metadata_available",
+        "selected_coverage_gap"
+      ]
+    },
+    "validation_feedback_history": [
+      {
+        "analyzer": "csa",
+        "phase": "knighter_e2_patch_local_baseline",
+        "summary": "Baseline validation (csa): Knighter基线扫描报告数=1, 人工确认bug=1, 人工非bug=0, 候选组=positive_scan_report_count。漏洞版命中=true, 漏洞版patch-scoped告警数=2, 修复版误报数=1, fixed_silent=false, PDS=false. 这些数只表示patch-local语义验证门，不等同于Knighter full-kernel report_count/FPR统计。"
+      }
+    ],
+    "refinement_targets": {
+      "csa": {
+        "checker_name": "SAGenTestChecker",
+        "artifact_path": "/anonymous/home/LLM-Native/research/knighter/e2/cases/23_13e788deb734_Out_of_Bound/csa/SAGenTestChecker.cpp",
+        "artifact_kind": "checker_source",
+        "validation_summary": "Baseline validation (csa): Knighter基线扫描报告数=1, 人工确认bug=1, 人工非bug=0, 候选组=positive_scan_report_count。漏洞版命中=true, 漏洞版patch-scoped告警数=2, 修复版误报数=1, fixed_silent=false, PDS=false. 这些数只表示patch-local语义验证门，不等同于Knighter full-kernel report_count/FPR统计。",
+        "refinement_summary": "Baseline validation (csa): Knighter基线扫描报告数=1, 人工确认bug=1, 人工非bug=0, 候选组=positive_scan_report_count。漏洞版命中=true, 漏洞版patch-scoped告警数=2, 修复版误报数=1, fixed_silent=false, PDS=false. 这些数只表示patch-local语义验证门，不等同于Knighter full-kernel report_count/FPR统计。"
+      }
+    }
+  },
+  "knighter": {
+    "patch_local_screen1": {
+      "buggy_alerts": 2,
+      "fixed_alerts": 1,
+      "buggy_miss": false,
+      "fixed_noisy": true,
+      "poor_distinguishing": true,
+      "screen1_priority": "P0",
+      "screen1_reason": "fixed-side noisy",
+      "patch_related_targets": [
+        "net/rds/af_rds.o"
+      ]
+    },
+    "baseline_validation_summary": "Baseline validation (csa): Knighter基线扫描报告数=1, 人工确认bug=1, 人工非bug=0, 候选组=positive_scan_report_count。漏洞版命中=true, 漏洞版patch-scoped告警数=2, 修复版误报数=1, fixed_silent=false, PDS=false. 这些数只表示patch-local语义验证门，不等同于Knighter full-kernel report_count/FPR统计。"
+  },
+  "patch_path": "/anonymous/home/LLM-Native/research/knighter/e2/cases/23_13e788deb734_Out_of_Bound/patches/commit.patch",
+  "summary": "Patch suggests out_of_bounds_array_index semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=3, metadata refs=2.",
+  "patch_facts": [
+    {
+      "fact_type": "patch_overview",
+      "label": "Patch overview",
+      "attributes": {
+        "patch_path": "/anonymous/home/LLM-Native/research/knighter/e2/cases/23_13e788deb734_Out_of_Bound/patches/commit.patch",
+        "changed_files": [
+          "net/rds/af_rds.c"
+        ],
+        "changed_file_count": 1,
+        "added_line_count": 1,
+        "deleted_line_count": 1
+      }
+    },
+    {
+      "fact_type": "vulnerability_patterns",
+      "label": "Vulnerability patterns inferred from patch",
+      "attributes": {
+        "patterns": [
+          "out_of_bounds_array_index"
+        ],
+        "descriptions": [
+          "An off-by-one bounds check allowed trace.rx_trace_pos[i] == RDS_MSG_RX_DGRAM_TRACE_MAX to pass validation. That boundary value is outside the valid index range for arrays sized RDS_MSG_RX_DGRAM_TRACE_MAX, and later trace consumers may use the stored value as or to derive an array index."
+        ]
+      }
+    },
+    {
+      "fact_type": "affected_functions",
+      "label": "Functions implicated by removed or fixed code",
+      "attributes": {
+        "functions": [
+          "rds_recv_track_latency"
+        ]
+      }
+    },
+    {
+      "fact_type": "detection_strategy",
+      "label": "Existing patch analysis detection strategy",
+      "attributes": {
+        "primary_pattern": "out_of_bounds_array_index",
+        "check_types": [
+          "off_by_one_upper_bound_validation",
+          "array_index_range_validation",
+          "validated_value_later_used_as_index",
+          "boundary_value_accepted_by_strict_greater_check"
+        ],
+        "entry_points": [
+          "rds_recv_track_latency"
+        ],
+        "data_flow_tracking": true,
+        "cross_file_analysis": false,
+        "suggestions": [
+          "First-draft detector should anchor on the patch-local guard shape: 'if (value > MAX)' guarding a value that is later accepted as an index-like position, where valid values are expected to be '< MAX'.",
+          "Use 'trace.rx_trace_pos[i]' and 'RDS_MSG_RX_DGRAM_TRACE_MAX' as the minimal patch-local anchors; the important semantic delta is rejecting equality with the max constant.",
+          "Do not make the newly added '>=' guard a hard negative filter in the first draft; instead, report pre-fix strict '>' checks against array-size or max-count constants when the value can be stored or propagated.",
+          "Treat the reset-and-return path 'rs->rs_rx_traces = 0; return -EFAULT;' as the barrier that should execute for both greater-than and equal-to-max values.",
+          "A local AST/CFG check is enough to find the changed validation bug in rds_recv_track_latency; data-flow tracking is useful only to connect the accepted trace position to later index consumers such as rds_cmsg_recv.",
+          "Cross-file analysis is not required for a first patch-local checker, although a second-stage refinement may follow trace.rx_trace_pos[i] into rs->rs_rx_trace[i] and then into receive trace array indexing."
+        ]
+      }
+    },
+    {
+      "fact_type": "added_guards",
+      "label": "Patch introduces or strengthens guards",
+      "attributes": {
+        "guards": [
+          "if (trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX) {"
+        ]
+      }
+    },
+    {
+      "fact_type": "fix_patterns",
+      "label": "Patch introduces reusable fix patterns",
+      "attributes": {
+        "patterns": [
+          "change the guard to 'trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX'",
+          "on boundary violation, reset 'rs->rs_rx_traces = 0' and return '-EFAULT'",
+          "block the exact upper-bound value before it can be stored into the socket receive trace configuration"
+        ]
+      }
+    },
+    {
+      "fact_type": "patch_intent",
+      "label": "Patch intent and commit-style summary",
+      "attributes": {
+        "summary": "commit 13e788deb7348cc88df34bed736c3b3b9927ea52 | Author: Sharath Srinivasan <sharath.srinivasan@oracle.com>",
+        "keywords": [
+          "commit",
+          "e788deb7348cc88df34bed736c3b3b9927ea52",
+          "author",
+          "sharath",
+          "srinivasan",
+          "oracle"
+        ]
+      }
+    },
+    {
+      "fact_type": "external_references",
+      "label": "External references recovered from patch text",
+      "attributes": {
+        "cves": [],
+        "cwes": [],
+        "issues": [
+          "3289025aedc0",
+          "1"
+        ]
+      }
+    }
+  ],
+  "mechanism_graph": {
+    "summary": "Patch suggests out_of_bounds_array_index semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=3, metadata refs=2.",
+    "primary_patterns": [
+      "out_of_bounds_array_index"
+    ],
+    "nodes": [
+      {
+        "node_id": "patch",
+        "kind": "patch",
+        "label": "Security patch",
+        "attributes": {
+          "changed_files": [
+            "net/rds/af_rds.c"
+          ]
+        }
+      },
+      {
+        "node_id": "file_0",
+        "kind": "file",
+        "label": "net/rds/af_rds.c",
+        "attributes": {
+          "path": "net/rds/af_rds.c",
+          "additions": 1,
+          "deletions": 1,
+          "hunks": 1
+        }
+      },
+      {
+        "node_id": "pattern_0",
+        "kind": "pattern",
+        "label": "out_of_bounds_array_index",
+        "attributes": {
+          "type": "out_of_bounds_array_index",
+          "description": "An off-by-one bounds check allowed trace.rx_trace_pos[i] == RDS_MSG_RX_DGRAM_TRACE_MAX to pass validation. That boundary value is outside the valid index range for arrays sized RDS_MSG_RX_DGRAM_TRACE_MAX, and later trace consumers may use the stored value as or to derive an array index.",
+          "trigger_conditions": [
+            "rds_recv_track_latency iterates 'for (i = 0; i < rs->rs_rx_traces; i++)' and validates each trace.rx_trace_pos[i]",
+            "pre-patch guard rejects only 'trace.rx_trace_pos[i] > RDS_MSG_RX_DGRAM_TRACE_MAX'",
+            "trace.rx_trace_pos[i] equal to RDS_MSG_RX_DGRAM_TRACE_MAX is accepted instead of causing 'rs->rs_rx_traces = 0; return -EFAULT;'",
+            "the accepted value can propagate into receive trace state and be consumed as an index or index-derived value by later receive-message trace handling"
+          ],
+          "fix_patterns": [
+            "change the guard to 'trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX'",
+            "on boundary violation, reset 'rs->rs_rx_traces = 0' and return '-EFAULT'",
+            "block the exact upper-bound value before it can be stored into the socket receive trace configuration"
+          ],
+          "affected_functions": [
+            "rds_recv_track_latency"
+          ],
+          "cross_file": false,
+          "source": "llm",
+          "confidence": 0.92,
+          "evidence_lines": [
+            "net/rds/af_rds.c:419: static int rds_recv_track_latency(struct rds_sock *rs, sockptr_t optval,",
+            "rs->rs_rx_traces = trace.rx_traces;",
+            "for (i = 0; i < rs->rs_rx_traces; i++) {",
+            "-\t\tif (trace.rx_trace_pos[i] > RDS_MSG_RX_DGRAM_TRACE_MAX) {",
+            "+\t\tif (trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX) {",
+            "rs->rs_rx_traces = 0;"
+          ]
+        }
+      },
+      {
+        "node_id": "func_1",
+        "kind": "function",
+        "label": "rds_recv_track_latency",
+        "attributes": {
+          "function": "rds_recv_track_latency"
+        }
+      },
+      {
+        "node_id": "guard_1",
+        "kind": "guard",
+        "label": "rds_recv_track_latency iterates 'for (i = 0; i < rs->rs_rx_traces; i++)' and validates each trace.rx_trace_pos[i]",
+        "attributes": {
+          "condition": "rds_recv_track_latency iterates 'for (i = 0; i < rs->rs_rx_traces; i++)' and validates each trace.rx_trace_pos[i]"
+        }
+      },
+      {
+        "node_id": "guard_2",
+        "kind": "guard",
+        "label": "pre-patch guard rejects only 'trace.rx_trace_pos[i] > RDS_MSG_RX_DGRAM_TRACE_MAX'",
+        "attributes": {
+          "condition": "pre-patch guard rejects only 'trace.rx_trace_pos[i] > RDS_MSG_RX_DGRAM_TRACE_MAX'"
+        }
+      },
+      {
+        "node_id": "guard_3",
+        "kind": "guard",
+        "label": "trace.rx_trace_pos[i] equal to RDS_MSG_RX_DGRAM_TRACE_MAX is accepted instead of causing 'rs->rs_rx_traces = 0; return -EFAULT;'",
+        "attributes": {
+          "condition": "trace.rx_trace_pos[i] equal to RDS_MSG_RX_DGRAM_TRACE_MAX is accepted instead of causing 'rs->rs_rx_traces = 0; return -EFAULT;'"
+        }
+      },
+      {
+        "node_id": "guard_4",
+        "kind": "guard",
+        "label": "the accepted value can propagate into receive trace state and be consumed as an index or index-derived value by later receive-message trace handling",
+        "attributes": {
+          "condition": "the accepted value can propagate into receive trace state and be consumed as an index or index-derived value by later receive-message trace handling"
+        }
+      },
+      {
+        "node_id": "strategy",
+        "kind": "strategy",
+        "label": "out_of_bounds_array_index",
+        "attributes": {
+          "primary_pattern": "out_of_bounds_array_index",
+          "check_types": [
+            "off_by_one_upper_bound_validation",
+            "array_index_range_validation",
+            "validated_value_later_used_as_index",
+            "boundary_value_accepted_by_strict_greater_check"
+          ],
+          "entry_points": [
+            "rds_recv_track_latency"
+          ],
+          "data_flow_tracking": true,
+          "cross_file_analysis": false,
+          "suggestions": [
+            "First-draft detector should anchor on the patch-local guard shape: 'if (value > MAX)' guarding a value that is later accepted as an index-like position, where valid values are expected to be '< MAX'.",
+            "Use 'trace.rx_trace_pos[i]' and 'RDS_MSG_RX_DGRAM_TRACE_MAX' as the minimal patch-local anchors; the important semantic delta is rejecting equality with the max constant.",
+            "Do not make the newly added '>=' guard a hard negative filter in the first draft; instead, report pre-fix strict '>' checks against array-size or max-count constants when the value can be stored or propagated.",
+            "Treat the reset-and-return path 'rs->rs_rx_traces = 0; return -EFAULT;' as the barrier that should execute for both greater-than and equal-to-max values.",
+            "A local AST/CFG check is enough to find the changed validation bug in rds_recv_track_latency; data-flow tracking is useful only to connect the accepted trace position to later index consumers such as rds_cmsg_recv.",
+            "Cross-file analysis is not required for a first patch-local checker, although a second-stage refinement may follow trace.rx_trace_pos[i] into rs->rs_rx_trace[i] and then into receive trace array indexing."
+          ]
+        }
+      },
+      {
+        "node_id": "guard_5",
+        "kind": "guard",
+        "label": "if (trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX) {",
+        "attributes": {
+          "condition": "if (trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX) {",
+          "source": "patch_fact"
+        }
+      },
+      {
+        "node_id": "fix_1",
+        "kind": "fix",
+        "label": "change the guard to 'trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX'",
+        "attributes": {
+          "kind": "fix_patterns",
+          "value": "change the guard to 'trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX'"
+        }
+      },
+      {
+        "node_id": "fix_2",
+        "kind": "fix",
+        "label": "on boundary violation, reset 'rs->rs_rx_traces = 0' and return '-EFAULT'",
+        "attributes": {
+          "kind": "fix_patterns",
+          "value": "on boundary violation, reset 'rs->rs_rx_traces = 0' and return '-EFAULT'"
+        }
+      },
+      {
+        "node_id": "fix_3",
+        "kind": "fix",
+        "label": "block the exact upper-bound value before it can be stored into the socket receive trace configuration",
+        "attributes": {
+          "kind": "fix_patterns",
+          "value": "block the exact upper-bound value before it can be stored into the socket receive trace configuration"
+        }
+      },
+      {
+        "node_id": "intent_0",
+        "kind": "intent",
+        "label": "commit 13e788deb7348cc88df34bed736c3b3b9927ea52 | Author: Sharath Srinivasan <sharath.srinivasan@oracle.com>",
+        "attributes": {
+          "summary": "commit 13e788deb7348cc88df34bed736c3b3b9927ea52 | Author: Sharath Srinivasan <sharath.srinivasan@oracle.com>",
+          "keywords": [
+            "commit",
+            "e788deb7348cc88df34bed736c3b3b9927ea52",
+            "author",
+            "sharath",
+            "srinivasan",
+            "oracle"
+          ]
+        }
+      },
+      {
+        "node_id": "commit_0",
+        "kind": "commit",
+        "label": "3289025aedc0, 1",
+        "attributes": {
+          "issues": [
+            "3289025aedc0",
+            "1"
+          ]
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "patch",
+        "target": "file_0",
+        "relation": "touches",
+        "confidence": 0.95
+      },
+      {
+        "source": "patch",
+        "target": "pattern_0",
+        "relation": "indicates",
+        "confidence": 0.9
+      },
+      {
+        "source": "pattern_0",
+        "target": "func_1",
+        "relation": "affects",
+        "confidence": 0.75
+      },
+      {
+        "source": "pattern_0",
+        "target": "guard_1",
+        "relation": "requires",
+        "confidence": 0.7
+      },
+      {
+        "source": "pattern_0",
+        "target": "guard_2",
+        "relation": "requires",
+        "confidence": 0.7
+      },
+      {
+        "source": "pattern_0",
+        "target": "guard_3",
+        "relation": "requires",
+        "confidence": 0.7
+      },
+      {
+        "source": "pattern_0",
+        "target": "guard_4",
+        "relation": "requires",
+        "confidence": 0.7
+      },
+      {
+        "source": "patch",
+        "target": "strategy",
+        "relation": "guides",
+        "confidence": 0.85
+      },
+      {
+        "source": "patch",
+        "target": "guard_5",
+        "relation": "adds_guard",
+        "confidence": 0.84
+      },
+      {
+        "source": "patch",
+        "target": "fix_1",
+        "relation": "introduces",
+        "confidence": 0.8
+      },
+      {
+        "source": "patch",
+        "target": "fix_2",
+        "relation": "introduces",
+        "confidence": 0.8
+      },
+      {
+        "source": "patch",
+        "target": "fix_3",
+        "relation": "introduces",
+        "confidence": 0.8
+      },
+      {
+        "source": "patch",
+        "target": "intent_0",
+        "relation": "describes",
+        "confidence": 0.78
+      },
+      {
+        "source": "patch",
+        "target": "commit_0",
+        "relation": "tracked_by",
+        "confidence": 0.72
+      }
+    ]
+  },
+  "evidence_plan": {
+    "primary_pattern": "out_of_bounds_array_index",
+    "hypotheses": [
+      "The patch changes a data propagation condition that should generalize beyond the edited lines."
+    ],
+    "requirements": [
+      {
+        "evidence_type": "patch_fact",
+        "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+        "priority": 100,
+        "preferred_analyzers": [],
+        "confidence": 1.0,
+        "mechanism_refs": [
+          "patch"
+        ]
+      },
+      {
+        "evidence_type": "dataflow_candidate",
+        "reason": "Patch analysis requests data-flow tracking.",
+        "priority": 95,
+        "preferred_analyzers": [
+          "codeql"
+        ],
+        "confidence": 0.9,
+        "mechanism_refs": [
+          "strategy"
+        ]
+      },
+      {
+        "evidence_type": "call_chain",
+        "reason": "Interprocedural call-chain context is needed to generalize the fix pattern.",
+        "priority": 78,
+        "preferred_analyzers": [
+          "codeql"
+        ],
+        "confidence": 0.78,
+        "mechanism_refs": [
+          "strategy"
+        ]
+      }
+    ],
+    "recommended_analyzers": [
+      "codeql"
+    ],
+    "planner_notes": [
+      "Added guards detected in patch diff; path-sensitive evidence should stay near top priority.",
+      "Selected analyzers do not cover every planned evidence primitive."
+    ],
+    "coverage_gaps": [
+      "dataflow_candidate is not covered by selected analyzers ['csa']",
+      "call_chain is not covered by selected analyzers ['csa']"
+    ],
+    "uncertainty_budget": "medium",
+    "escalation_triggers": [
+      "metadata_available",
+      "selected_coverage_gap"
+    ]
+  }
+}

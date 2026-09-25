@@ -1,0 +1,13 @@
+Refinment Plan:
+
+1. The false positive is caused by `checkBind()` examining `S` as though it were the left-hand `DeclRefExpr`. For `ret = mas_store_gfp(...)`, the bind statement is normally the enclosing assignment expression, not `ret`, so the checker never changes `ret` from uninitialized to initialized.
+2. Update state based on the bound memory location (`Loc`) instead. Resolving `Loc` to its base `VarRegion` reliably identifies the actual local variable being written.
+3. Preserve path sensitivity: only change a tracked `ret` from uninitialized to initialized on a non-`UndefinedVal` write. Paths that bypass every assignment remain uninitialized and are still reported.
+4. Restrict tracking to automatic local variables. Static/global `ret` variables are zero-initialized by the language and must not be treated as uninitialized.
+5. Do not add transitions when state has not changed. This avoids needless exploded-graph nodes and follows Static Analyzer checker conventions.
+
+This removes the false positive in `regcache_maple_insert_block()` because its unconditional assignment to `ret` is recognized through the binding location. It still reports the real buggy `regcache_maple_sync()` and `regcache_maple_drop()` paths when loop bodies are not entered and `return ret;` is reached without any write. After `int ret = 0`, those variables are not entered as uninitialized state.
+
+Refined Code:
+```cpp
+```

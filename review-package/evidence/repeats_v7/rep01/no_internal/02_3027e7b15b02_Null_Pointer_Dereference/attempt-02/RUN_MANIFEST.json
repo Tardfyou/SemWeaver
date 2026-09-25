@@ -1,0 +1,153 @@
+{
+  "schema_version": 1,
+  "method": "semweaver_no_internal_evidence_ablation",
+  "evidence_mode": "no_internal",
+  "origin_gate_enabled": false,
+  "case_id": "02_3027e7b15b02_Null_Pointer_Dereference",
+  "model": "gpt-5.6-terra",
+  "provider": "openai_compatible",
+  "wire_api": "responses",
+  "reasoning_effort": "high",
+  "max_iterations": 1,
+  "max_tokens_per_call": 16000,
+  "request_timeout_seconds": 1800,
+  "wrapper_max_retries": 0,
+  "inline_semantic_validation": false,
+  "external_paired_validation_required": true,
+  "internal_evidence_preloaded": false,
+  "evidence_requests_disabled": true,
+  "compile_after_each_edit": true,
+  "llm_exchange_log": "/work/artifacts/fse_revision/repeats_v7/rep01/no_internal/02_3027e7b15b02_Null_Pointer_Dereference/attempt-02/llm_exchanges.jsonl",
+  "llm_exchange_log_sha256": "0e2b86b9f85cee9553b5ff0a5fb7561355e79fbee3f6036e0331f1a900e3f2e7",
+  "preloaded_internal_evidence_ids": [],
+  "patch_sha256": "365fc6280acb4aa9c94e1499bb2a0df13e5e202bfb5e2c6f878740ab1b74ab2b",
+  "original_checker_sha256": "7c7867c6ae15176a96b64e517f1a5a24bf006fdbbbac75353a051b0bf4af9070",
+  "starting_checker_sha256": "f005b29051380297069407d367d1d16fc2a354110b3e9b3d8947bb69c198f014",
+  "evidence_bundle_sha256": "eb1df4f02ac586d3ca4229e866f746a2f9e71312c93adbe5efc5dc6cbad73f0c",
+  "visible_evidence_sha256": "fc99258f671361c50e3b029c4bfba1619124126435da488caef4bbada652bab8",
+  "visible_evidence_record_count": 0,
+  "frozen_source_revision": "3027e7b15b02d2d37e3f82d6b8404f6d37e3b8cf^",
+  "frozen_source_hashes": {
+    "drivers/net/ethernet/intel/ice/ice_ptp.c": "6c5bdfb9e3bfefac41b8d6a892c6aca084784cdf51942bf5a277a79742c8f638"
+  },
+  "feedback_result_sha256": null,
+  "feedback_run_manifest_sha256": "ab70e2f8f307febca80207b8805bae156377c649279734b4f7e851d957176c95",
+  "feedback_candidate_sha256": "f005b29051380297069407d367d1d16fc2a354110b3e9b3d8947bb69c198f014",
+  "feedback_kind": "failed_tool",
+  "candidate_sha256": "f005b29051380297069407d367d1d16fc2a354110b3e9b3d8947bb69c198f014",
+  "candidate_changed": false,
+  "success": false,
+  "agent_success": false,
+  "iterations": 1,
+  "compile_attempts": 1,
+  "error_message": "达到最大精炼轮次 (1)",
+  "final_message": "达到最大精炼轮次，仍未通过本地验证。",
+  "output_path": "",
+  "elapsed_seconds": 70.8397421836853,
+  "llm_usage": {
+    "prompt_tokens": 13369,
+    "completion_tokens": 2555,
+    "total_tokens": 15924,
+    "call_count": 1,
+    "available": true,
+    "model": "gpt-5.6-terra",
+    "phases": 1
+  },
+  "llm_usage_by_phase": {
+    "decide": {
+      "prompt_tokens": 13369,
+      "completion_tokens": 2555,
+      "total_tokens": 15924,
+      "call_count": 1,
+      "available": true,
+      "model": "gpt-5.6-terra"
+    }
+  },
+  "artifact_review": {
+    "artifact_path": "/work/artifacts/fse_revision/repeats_v7/rep01/no_internal/02_3027e7b15b02_Null_Pointer_Dereference/attempt-02/SAGenTestChecker.cpp",
+    "analyzer": "csa",
+    "review_mode": "refine",
+    "findings": [],
+    "warnings": []
+  },
+  "failure_type": "compile_failure",
+  "latest_failure_title": "validate.compile_artifact",
+  "latest_failure_text": "ERROR: 编译失败: 2 个错误, 0 个警告\n/work/artifacts/fse_revision/repeats_v7/rep01/no_internal/02_3027e7b15b02_Null_Pointer_Dereference/attempt-02/SAGenTestChecker.cpp:159:30: error: no matching member function for call to 'getSVal'\n  159 |   SVal PointerValue = State->getSVal(MR, C.getLocationContext());\n      |                       ~~~~~~~^~~~~~~\n/usr/lib/llvm-18/include/clang/StaticAnalyzer/Core/PathSensitive/ProgramState.h:828:27: note: candidate function not viable: no known conversion from 'const LocationContext *' to 'QualType' for 2nd argument\n  828 | inline SVal ProgramState::getSVal(const MemRegion* R, QualType T) const {\n      |                           ^                           ~~~~~~~~~~\n/usr/lib/llvm-18/include/clang/StaticAnalyzer/Core/PathSensitive/ProgramState.h:805:27: note: candidate function not viable: no known conversion from 'const MemRegion *' to 'const Stmt *' for 1st argument\n  805 | inline SVal ProgramState::getSVal(const Stmt *Ex,\n      |                           ^       ~~~~~~~~~~~~~~\n/usr/lib/llvm-18/include/clang/StaticAnalyzer/Core/PathSensitive/ProgramState.h:380:8: note: candidate function not viable: no known conversion from 'const MemRegion *' to 'Loc' for 1st argument\n  380 |   SVal getSVal(Loc LV, QualType T = QualType()) const;\n      |        ^       ~~~~~~\n/work/artifacts/fse_revision/repeats_v7/rep01/no_internal/02_3027e7b15b02_Null_Pointer_Dereference/attempt-02/SAGenTestChecker.cpp:160:38: error: no matching member function for call to 'assume'\n  160 |   ProgramStateRef NullState = State->assume(PointerValue, false);\n      |                               ~~~~~~~^~~~~~\n/usr/lib/llvm-18/include/clang/StaticAnalyzer/Core/PathSensitive/ProgramState.h:706:38: note: candidate function not viable: no known conversion from 'SVal' to 'DefinedOrUnknownSVal' for 1st argument\n  706 | inline ProgramStateRef ProgramState::assume(DefinedOrUnknownSVal Cond,\n      |                                      ^      ~~~~~~~~~~~~~~~~~~~~~~~~~\n/usr/lib/llvm-18/include/clang/StaticAnalyzer/Core/PathSensitive/ProgramState.h:716:15: note: candidate function not viable: requires single argument 'Cond', but 2 arguments were provided\n  716 | ProgramState::assume(DefinedOrUnknownSVal Cond) const {\n      |               ^      ~~~~~~~~~~~~~~~~~~~~~~~~~\n2 errors generated.",
+  "tool_history": [
+    {
+      "tool_name": "read_file",
+      "success": true,
+      "error": "",
+      "metadata": {
+        "path": "/work/artifacts/fse_revision/repeats_v7/rep01/no_internal/02_3027e7b15b02_Null_Pointer_Dereference/attempt-02/SAGenTestChecker.cpp",
+        "length": 6595,
+        "lines": 188
+      }
+    },
+    {
+      "tool_name": "read_file",
+      "success": true,
+      "error": "",
+      "metadata": {
+        "path": "/work/artifacts/research/experiment/e1/02_3027e7b15b02_Null_Pointer_Dereference/patches/commit.patch",
+        "length": 1754,
+        "lines": 41
+      }
+    },
+    {
+      "tool_name": "read_file",
+      "success": true,
+      "error": "",
+      "metadata": {
+        "path": "/work/artifacts/fse_revision/repeats_v7/rep01/no_internal/02_3027e7b15b02_Null_Pointer_Dereference/attempt-02/frozen_source/drivers/net/ethernet/intel/ice/ice_ptp.c",
+        "length": 90321,
+        "lines": 3283
+      }
+    },
+    {
+      "tool_name": "review_artifact",
+      "success": true,
+      "error": "",
+      "metadata": {
+        "artifact_path": "/work/artifacts/fse_revision/repeats_v7/rep01/no_internal/02_3027e7b15b02_Null_Pointer_Dereference/attempt-02/SAGenTestChecker.cpp",
+        "analyzer": "csa",
+        "review_mode": "refine",
+        "findings": [],
+        "warnings": []
+      }
+    },
+    {
+      "tool_name": "lsp_validate",
+      "success": true,
+      "error": "",
+      "metadata": {
+        "check_level": "quick",
+        "errors": 0
+      }
+    },
+    {
+      "tool_name": "review_artifact",
+      "success": true,
+      "error": "",
+      "metadata": {
+        "artifact_path": "/work/artifacts/fse_revision/repeats_v7/rep01/no_internal/02_3027e7b15b02_Null_Pointer_Dereference/attempt-02/SAGenTestChecker.cpp",
+        "analyzer": "csa",
+        "review_mode": "refine",
+        "findings": [],
+        "warnings": []
+      }
+    },
+    {
+      "tool_name": "compile_checker",
+      "success": false,
+      "error": "编译失败: 2 个错误, 0 个警告",
+      "metadata": {
+        "source_file": "/work/artifacts/fse_revision/repeats_v7/rep01/no_internal/02_3027e7b15b02_Null_Pointer_Dereference/attempt-02/SAGenTestChecker.cpp",
+        "error_count": 2,
+        "warning_count": 0,
+        "checker_name": "SAGenTestChecker"
+      }
+    }
+  ],
+  "event_count": 22
+}

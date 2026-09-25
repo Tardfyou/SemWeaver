@@ -1,0 +1,17 @@
+Refinment Plan:
+
+The false positive is caused by matching the source text `dc->caps.max_links` in every branch condition without checking what resource the loop indexes. `hpd_rx_offload_wq` is a per-link array, so `max_links` is its correct capacity bound. `mode_info.num_crtc` applies only to CRTC-indexed resources such as `secure_display_ctxs`.
+
+The refined checker:
+
+- Replaces source-text matching with AST-based member and array-subscript analysis.
+- Recognizes canonical loop conditions bounded by `caps.max_links`, including reversed comparisons.
+- Uses a `RecursiveASTVisitor` to inspect the loop body and reports only when the induction variable indexes `secure_display_ctxs`.
+- Supports both the `adev->dm.secure_display_ctxs[i]` field access and the local `secure_display_ctxs[i]` allocation/initialization case.
+- Uses a `ProgramState` set to avoid repeatedly diagnosing the same loop along a single analysis path.
+- Leaves `hpd_rx_offload_wq[i]`, and other non-secure-display per-link arrays, unreported.
+- Uses APIs available in Clang 18.
+
+Refined Code:
+```cpp
+```

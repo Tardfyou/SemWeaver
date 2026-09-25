@@ -1,0 +1,621 @@
+{
+  "records": [
+    {
+      "evidence_id": "csa_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/rds/af_rds.c",
+        "function": "rds_recv_track_latency"
+      },
+      "location": {
+        "line": 419,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "rds_recv_track_latency adds patch barrier `trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX` around rs->rs_rx_traces = trace.rx_traces.",
+        "contract_type": "patch_barrier",
+        "same_call_binding": "tie the guard to the current downstream sink or protected state transition instead of any unrelated if-statement",
+        "trigger_contract": "report when a risky write proceeds without the patch-style barrier",
+        "silence_contract": "stay silent when the nearby guard proves the current write is blocked or bounded",
+        "guard_exprs": [
+          "trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX"
+        ],
+        "removed_calls": [],
+        "added_calls": [],
+        "tracked_symbols": [
+          "trace",
+          "rx_trace_pos",
+          "i",
+          "RDS_MSG_RX_DGRAM_TRACE_MAX"
+        ],
+        "widened_variables": [],
+        "state_resets": [],
+        "old_numeric_type": "",
+        "new_numeric_type": "",
+        "numeric_domain_change": "",
+        "arithmetic_operations": [],
+        "sink_calls": [
+          "rs->rs_rx_traces = trace.rx_traces"
+        ],
+        "buffer_fields": [
+          "rs->rs_rx_traces"
+        ],
+        "source_file": "net/rds/af_rds.c",
+        "function": "rds_recv_track_latency",
+        "source_excerpt": "390: \t\treturn -EFAULT;\n391: \n392: \tvalbool = val ? 1 : 0;\n393: \n394: \tif (optname == SO_TIMESTAMP_NEW)\n395: \t\tsock_set_flag(sk, SOCK_TSTAMP_NEW);\n396: \n397: \tif (valbool)\n398: \t\tsock_set_flag(sk, SOCK_RCVTSTAMP);\n399: \telse\n400: \t\tsock_reset_flag(sk, SOCK_RCVTSTAMP);\n401: \n402: \treturn 0;\n403: }\n404: \n405: static int rds_recv_track_latency(struct rds_sock *rs, sockptr_t optval,\n406: \t\t\t\t  int optlen)\n407: {\n408: \tstruct rds_rx_trace_so trace;\n409: \tint i;\n410: \n411: \tif (optlen != sizeof(struct rds_rx_trace_so))\n412: \t\treturn -EFAULT;\n413: \n414: \tif (copy_from_sockptr(&trace, optval, sizeof(trace)))\n415: \t\treturn -EFAULT;\n416: \n417: \tif (trace.rx_traces > RDS_MSG_RX_DGRAM_TRACE_MAX)\n418: \t\treturn -EFAULT;\n419: \n420: \trs->rs_rx_traces = trace.rx_traces;\n421: \tfor (i = 0; i < rs->rs_rx_traces; i++) {\n422: \t\tif (trace.rx_trace_pos[i] > RDS_MSG_RX_DGRAM_TRACE_MAX) {\n423: \t\t\trs->rs_rx_traces = 0;\n424: \t\t\treturn -EFAULT;\n425: \t\t}\n426: \t\trs->rs_rx_trace[i] = trace.rx_trace_pos[i];\n427: \t}\n428: \n429: \treturn 0;\n430: }\n431: \n432: static int rds_setsockopt(struct socket *sock, int level, int optname,\n433: \t\t\t  sockptr_t optval, unsigned int optlen)\n434: {\n435: \tstruct rds_sock *rs = rds_sk_to_rs(sock->sk);\n436: \tint ret;\n437: \n438: \tif (level != SOL_RDS) {\n439: \t\tret = -ENOPROTOOPT;\n440: \t\tgoto out;\n441: \t}\n442: \n443: \tswitch (optname) {\n444: \tcase RDS_CANCEL_SENT_TO:\n445: \t\tret = rds_cancel_sent_to(rs, optval, optlen);\n446: \t\tbreak;\n447: \tcase RDS_GET_MR:\n448: \t\tret = rds_get_mr(rs, optval, optlen);\n449: \t\tbreak;\n450: \tcase RDS_GET_MR_FOR_DEST:\n451: \t\tret = rds_get_mr_for_dest(rs, optval, optlen);\n452: \t\tbreak;\n453: \tcase RDS_FREE_MR:\n454: \t\tret = rds_free_mr(rs, optval, optlen);",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:semantic-contract",
+        "confidence": 0.92,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "net/rds/af_rds.c",
+          "hunk_index": 0,
+          "source_line": 419
+        },
+        "summary": "rds_recv_track_latency adds patch barrier `trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX` around rs->rs_rx_traces = trace.rx_traces.",
+        "statements": [
+          "if (trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX) {"
+        ],
+        "guards": [
+          "trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX"
+        ],
+        "call_boundary": [
+          "rs->rs_rx_traces = trace.rx_traces"
+        ],
+        "call_edges": [
+          "rds_recv_track_latency -> rs->rs_rx_traces = trace.rx_traces"
+        ],
+        "state_transitions": [
+          "",
+          "report when a risky write proceeds without the patch-style barrier",
+          "stay silent when the nearby guard proves the current write is blocked or bounded"
+        ],
+        "api_terms": [
+          "rs->rs_rx_traces = trace.rx_traces"
+        ],
+        "related_symbols": [
+          "trace",
+          "rx_trace_pos",
+          "i",
+          "RDS_MSG_RX_DGRAM_TRACE_MAX"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/rds/af_rds.c",
+        "function": "rds_recv_track_latency"
+      },
+      "location": {
+        "line": 419,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX",
+        "summary": "rds_recv_track_latency introduces patch guard `trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX` before rs->rs_rx_traces = trace.rx_traces.",
+        "state_before": [
+          "input(trace)",
+          "input(rx_trace_pos)",
+          "buffer(rs->rs_rx_traces)"
+        ],
+        "state_after": [
+          "guard(trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX)",
+          "current_call(rs->rs_rx_traces = trace.rx_traces)"
+        ],
+        "functions": [
+          "rds_recv_track_latency"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "trace",
+          "rx_trace_pos",
+          "i",
+          "RDS_MSG_RX_DGRAM_TRACE_MAX"
+        ],
+        "buffer_fields": [
+          "rs->rs_rx_traces"
+        ],
+        "call_targets": [
+          "rs->rs_rx_traces = trace.rx_traces"
+        ],
+        "call_edges": [
+          "rds_recv_track_latency -> rs->rs_rx_traces = trace.rx_traces"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX"
+        ],
+        "state_statements": [
+          "if (trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX) {"
+        ],
+        "compile_command_preview": "",
+        "source_file": "net/rds/af_rds.c",
+        "source_excerpt": "390: \t\treturn -EFAULT;\n391: \n392: \tvalbool = val ? 1 : 0;\n393: \n394: \tif (optname == SO_TIMESTAMP_NEW)\n395: \t\tsock_set_flag(sk, SOCK_TSTAMP_NEW);\n396: \n397: \tif (valbool)\n398: \t\tsock_set_flag(sk, SOCK_RCVTSTAMP);\n399: \telse\n400: \t\tsock_reset_flag(sk, SOCK_RCVTSTAMP);\n401: \n402: \treturn 0;\n403: }\n404: \n405: static int rds_recv_track_latency(struct rds_sock *rs, sockptr_t optval,\n406: \t\t\t\t  int optlen)\n407: {\n408: \tstruct rds_rx_trace_so trace;\n409: \tint i;\n410: \n411: \tif (optlen != sizeof(struct rds_rx_trace_so))\n412: \t\treturn -EFAULT;\n413: \n414: \tif (copy_from_sockptr(&trace, optval, sizeof(trace)))\n415: \t\treturn -EFAULT;\n416: \n417: \tif (trace.rx_traces > RDS_MSG_RX_DGRAM_TRACE_MAX)\n418: \t\treturn -EFAULT;\n419: \n420: \trs->rs_rx_traces = trace.rx_traces;\n421: \tfor (i = 0; i < rs->rs_rx_traces; i++) {\n422: \t\tif (trace.rx_trace_pos[i] > RDS_MSG_RX_DGRAM_TRACE_MAX) {\n423: \t\t\trs->rs_rx_traces = 0;\n424: \t\t\treturn -EFAULT;\n425: \t\t}\n426: \t\trs->rs_rx_trace[i] = trace.rx_trace_pos[i];\n427: \t}\n428: \n429: \treturn 0;\n430: }\n431: \n432: static int rds_setsockopt(struct socket *sock, int level, int optname,\n433: \t\t\t  sockptr_t optval, unsigned int optlen)\n434: {\n435: \tstruct rds_sock *rs = rds_sk_to_rs(sock->sk);\n436: \tint ret;\n437: \n438: \tif (level != SOL_RDS) {\n439: \t\tret = -ENOPROTOOPT;\n440: \t\tgoto out;\n441: \t}\n442: \n443: \tswitch (optname) {\n444: \tcase RDS_CANCEL_SENT_TO:\n445: \t\tret = rds_cancel_sent_to(rs, optval, optlen);\n446: \t\tbreak;\n447: \tcase RDS_GET_MR:\n448: \t\tret = rds_get_mr(rs, optval, optlen);\n449: \t\tbreak;\n450: \tcase RDS_GET_MR_FOR_DEST:\n451: \t\tret = rds_get_mr_for_dest(rs, optval, optlen);\n452: \t\tbreak;\n453: \tcase RDS_FREE_MR:\n454: \t\tret = rds_free_mr(rs, optval, optlen);",
+        "summary_line": 419,
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:path-guard",
+        "confidence": 0.92,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "net/rds/af_rds.c",
+          "hunk_index": 0,
+          "source_line": 419
+        },
+        "summary": "rds_recv_track_latency introduces patch guard `trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX` before rs->rs_rx_traces = trace.rx_traces.",
+        "statements": [
+          "if (trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX) {"
+        ],
+        "guards": [
+          "trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX"
+        ],
+        "call_boundary": [
+          "rs->rs_rx_traces = trace.rx_traces"
+        ],
+        "call_edges": [
+          "rds_recv_track_latency -> rs->rs_rx_traces = trace.rx_traces"
+        ],
+        "state_transitions": [
+          "guard(trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX)",
+          "current_call(rs->rs_rx_traces = trace.rx_traces)"
+        ],
+        "api_terms": [
+          "rs->rs_rx_traces = trace.rx_traces"
+        ],
+        "related_symbols": [
+          "trace",
+          "rx_trace_pos",
+          "i",
+          "RDS_MSG_RX_DGRAM_TRACE_MAX"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_guard_1",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/rds/af_rds.c",
+        "function": "rds_recv_track_latency"
+      },
+      "location": {
+        "line": 422,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "if trace.rx_trace_pos (ImplicitCastExpr, ArrayToPointerDecay, __u8 *)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, __u8) (ImplicitCastExpr, IntegralCast, int) > RDS_MSG_RX_DGRAM_TRACE_MAX",
+        "summary": "Analyzer CFG for rds_recv_track_latency in net/rds/af_rds.c: bindings: i = 0; rs (ImplicitCastExpr, LValueToRValue, struct rds_sock *)->rs_rx_traces = 0 (ImplicitCastExpr, IntegralCast, u8) | branches: if trace.rx_trace_pos (ImplicitCastExpr, ArrayToPointerDecay, __u8 *)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, __u8) (ImplicitCastExpr, IntegralCast, int) > RDS_MSG_RX_DGRAM_TRACE_MAX; for (...; i (ImplicitCastExpr, LValueToRValue, int) < rs (ImplicitCastExpr, LValueToRValue, struct rds_sock *)->rs_rx_traces (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int); ...) | calls: rds_recv_track_latency -> copy_from_sockptr",
+        "state_before": [
+          "buffer(rs->rs_rx_traces)",
+          "buffer(rs->rs_rx_trace)",
+          "sinks(sock_set_flag, sock_reset_flag)"
+        ],
+        "state_after": [
+          "cfg_binding(i = 0)",
+          "cfg_binding(rs (ImplicitCastExpr, LValueToRValue, struct rds_sock *)->rs_rx_traces = 0 (ImplicitCastExpr, IntegralCast, u8))",
+          "cfg_branch(if trace.rx_trace_pos (ImplicitCastExpr, ArrayToPointerDecay, __u8 *)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, __u8) (ImplicitCastExpr, IntegralCast, int) > RDS_MSG_RX_DGRAM_TRACE_MAX)",
+          "cfg_branch(for (...; i (ImplicitCastExpr, LValueToRValue, int) < rs (ImplicitCastExpr, LValueToRValue, struct rds_sock *)->rs_rx_traces (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int); ...))"
+        ],
+        "functions": [
+          "rds_recv_track_latency"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "rs->rs_rx_traces",
+          "rs->rs_rx_trace",
+          "sock->sk"
+        ],
+        "buffer_fields": [
+          "rs->rs_rx_traces",
+          "rs->rs_rx_trace",
+          "sock->sk"
+        ],
+        "call_targets": [
+          "sock_set_flag",
+          "sock_reset_flag",
+          "rds_recv_track_latency",
+          "rds_setsockopt",
+          "rds_sk_to_rs",
+          "rds_cancel_sent_to",
+          "rds_get_mr",
+          "rds_get_mr_for_dest"
+        ],
+        "call_edges": [
+          "rds_recv_track_latency -> copy_from_sockptr"
+        ],
+        "cfg_branch_kinds": [
+          "if",
+          "for"
+        ],
+        "branch_conditions": [
+          "if [B5.10]",
+          "for (...; [B6.8]; ...)",
+          "if [B9.6]",
+          "if [B11.9]",
+          "if [B13.7]"
+        ],
+        "resolved_branch_conditions": [
+          "if trace.rx_trace_pos (ImplicitCastExpr, ArrayToPointerDecay, __u8 *)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, __u8) (ImplicitCastExpr, IntegralCast, int) > RDS_MSG_RX_DGRAM_TRACE_MAX",
+          "for (...; i (ImplicitCastExpr, LValueToRValue, int) < rs (ImplicitCastExpr, LValueToRValue, struct rds_sock *)->rs_rx_traces (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int); ...)",
+          "if trace.rx_traces (ImplicitCastExpr, LValueToRValue, __u8) (ImplicitCastExpr, IntegralCast, int) > RDS_MSG_RX_DGRAM_TRACE_MAX",
+          "if copy_from_sockptr (ImplicitCastExpr, FunctionToPointerDecay, int (*)(void *, sockptr_t, size_t))(&trace (ImplicitCastExpr, BitCast, void *), optval (ImplicitCastExpr, LValueToRValue, sockptr_t), sizeof (trace))",
+          "if optlen (ImplicitCastExpr, LValueToRValue, int) (ImplicitCastExpr, IntegralCast, unsigned long) != sizeof(struct rds_rx_trace_so)"
+        ],
+        "cfg_value_bindings": [
+          "i = 0",
+          "rs (ImplicitCastExpr, LValueToRValue, struct rds_sock *)->rs_rx_traces = 0 (ImplicitCastExpr, IntegralCast, u8)",
+          "optlen (ImplicitCastExpr, LValueToRValue, int) (ImplicitCastExpr, IntegralCast, unsigned long) != sizeof(struct rds_rx_trace_so)",
+          "rs (ImplicitCastExpr, LValueToRValue, struct rds_sock *)->rs_rx_traces = trace.rx_traces (ImplicitCastExpr, LValueToRValue, __u8)",
+          "rs (ImplicitCastExpr, LValueToRValue, struct rds_sock *)->rs_rx_trace (ImplicitCastExpr, ArrayToPointerDecay, u8 *)[i (ImplicitCastExpr, LValueToRValue, int)] = trace.rx_trace_pos (ImplicitCastExpr, ArrayToPointerDecay, __u8 *)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, __u8)"
+        ],
+        "state_statements": [
+          "return [B1.1];",
+          "[B2.1]++",
+          "[B3.9]->rs_rx_trace",
+          "[B3.14] = [B3.7]",
+          "[B4.4]->rs_rx_traces",
+          "[B4.5] = [B4.2]"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,net/rds/.af_rds.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/uapi -I./arch/x86/include/...",
+        "source_file": "net/rds/af_rds.c",
+        "source_excerpt": "390: \t\treturn -EFAULT;\n391: \n392: \tvalbool = val ? 1 : 0;\n393: \n394: \tif (optname == SO_TIMESTAMP_NEW)\n395: \t\tsock_set_flag(sk, SOCK_TSTAMP_NEW);\n396: \n397: \tif (valbool)\n398: \t\tsock_set_flag(sk, SOCK_RCVTSTAMP);\n399: \telse\n400: \t\tsock_reset_flag(sk, SOCK_RCVTSTAMP);\n401: \n402: \treturn 0;\n403: }\n404: \n405: static int rds_recv_track_latency(struct rds_sock *rs, sockptr_t optval,\n406: \t\t\t\t  int optlen)\n407: {\n408: \tstruct rds_rx_trace_so trace;\n409: \tint i;\n410: \n411: \tif (optlen != sizeof(struct rds_rx_trace_so))\n412: \t\treturn -EFAULT;\n413: \n414: \tif (copy_from_sockptr(&trace, optval, sizeof(trace)))\n415: \t\treturn -EFAULT;\n416: \n417: \tif (trace.rx_traces > RDS_MSG_RX_DGRAM_TRACE_MAX)\n418: \t\treturn -EFAULT;\n419: \n420: \trs->rs_rx_traces = trace.rx_traces;\n421: \tfor (i = 0; i < rs->rs_rx_traces; i++) {\n422: \t\tif (trace.rx_trace_pos[i] > RDS_MSG_RX_DGRAM_TRACE_MAX) {\n423: \t\t\trs->rs_rx_traces = 0;\n424: \t\t\treturn -EFAULT;\n425: \t\t}\n426: \t\trs->rs_rx_trace[i] = trace.rx_trace_pos[i];\n427: \t}\n428: \n429: \treturn 0;\n430: }\n431: \n432: static int rds_setsockopt(struct socket *sock, int level, int optname,\n433: \t\t\t  sockptr_t optval, unsigned int optlen)\n434: {\n435: \tstruct rds_sock *rs = rds_sk_to_rs(sock->sk);\n436: \tint ret;\n437: \n438: \tif (level != SOL_RDS) {\n439: \t\tret = -ENOPROTOOPT;\n440: \t\tgoto out;\n441: \t}\n442: \n443: \tswitch (optname) {\n444: \tcase RDS_CANCEL_SENT_TO:\n445: \t\tret = rds_cancel_sent_to(rs, optval, optlen);\n446: \t\tbreak;\n447: \tcase RDS_GET_MR:\n448: \t\tret = rds_get_mr(rs, optval, optlen);\n449: \t\tbreak;\n450: \tcase RDS_GET_MR_FOR_DEST:\n451: \t\tret = rds_get_mr_for_dest(rs, optval, optlen);\n452: \t\tbreak;\n453: \tcase RDS_FREE_MR:\n454: \t\tret = rds_free_mr(rs, optval, optlen);",
+        "summary_line": 422,
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/semweaver_treatment_evidence_cohort_v3/23_13e788deb734_Out_of_Bound/csa/patchweaver_runtime/csa_raw/net-rds-af_rds.c-rds_recv_track_latency.txt",
+        "raw_output_sha256": "17c3443a5e5fc0aaa4335b57aec65e27f377f99f7e315c1f2d3c4086fcfe5511",
+        "command_sha256": "19523d076ff0343754f441d673552b81ff48aa9def35b975b8462157f8cdf002"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:debug-cfg",
+        "confidence": 0.92,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "net/rds/af_rds.c",
+          "hunk_index": 0,
+          "source_line": 422
+        },
+        "summary": "Analyzer CFG for rds_recv_track_latency in net/rds/af_rds.c: bindings: i = 0; rs (ImplicitCastExpr, LValueToRValue, struct rds_sock *)->rs_rx_traces = 0 (ImplicitCastExpr, IntegralCast, u8) | branches: if trace.rx_trace_pos (ImplicitCastExpr, ArrayToPointerDecay, __u8 *)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, __u8) (ImplicitCastExpr, IntegralCast, int) > RDS_MSG_RX_DGRAM_TRACE_MAX; for (...; i (ImplicitCastExpr, LValueToRValue, int) < rs (ImplicitCastExpr, LValueToRValue, struct rds_sock *)->rs_rx_traces (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int); ...) | calls: rds_recv_track_latency -> copy_from_sockptr",
+        "statements": [
+          "390: \t\treturn -EFAULT;",
+          "391:",
+          "392: \tvalbool = val ? 1 : 0;",
+          "393:",
+          "394: \tif (optname == SO_TIMESTAMP_NEW)",
+          "395: \t\tsock_set_flag(sk, SOCK_TSTAMP_NEW);"
+        ],
+        "guards": [
+          "if trace.rx_trace_pos (ImplicitCastExpr, ArrayToPointerDecay, __u8 *)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, __u8) (ImplicitCastExpr, IntegralCast, int) > RDS_MSG_RX_DGRAM_TRACE_MAX",
+          "for (...; i (ImplicitCastExpr, LValueToRValue, int) < rs (ImplicitCastExpr, LValueToRValue, struct rds_sock *)->rs_rx_traces (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int); ...)",
+          "if trace.rx_traces (ImplicitCastExpr, LValueToRValue, __u8) (ImplicitCastExpr, IntegralCast, int) > RDS_MSG_RX_DGRAM_TRACE_MAX",
+          "if copy_from_sockptr (ImplicitCastExpr, FunctionToPointerDecay, int (*)(void *, sockptr_t, size_t))(&trace (ImplicitCastExpr, BitCast, void *), optval (ImplicitCastExpr, LValueToRValue, sockptr_t), sizeof (trace))"
+        ],
+        "call_boundary": [
+          "sock_set_flag",
+          "sock_reset_flag",
+          "rds_recv_track_latency",
+          "rds_setsockopt",
+          "rds_sk_to_rs",
+          "rds_cancel_sent_to"
+        ],
+        "call_edges": [
+          "rds_recv_track_latency -> copy_from_sockptr"
+        ],
+        "state_transitions": [
+          "cfg_binding(i = 0)",
+          "cfg_binding(rs (ImplicitCastExpr, LValueToRValue, struct rds_sock *)->rs_rx_traces = 0 (ImplicitCastExpr, IntegralCast, u8))",
+          "cfg_branch(if trace.rx_trace_pos (ImplicitCastExpr, ArrayToPointerDecay, __u8 *)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, __u8) (ImplicitCastExpr, IntegralCast, int) > RDS_MSG_RX_DGRAM_TRACE_MAX)",
+          "cfg_branch(for (...; i (ImplicitCastExpr, LValueToRValue, int) < rs (ImplicitCastExpr, LValueToRValue, struct rds_sock *)->rs_rx_traces (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int); ...))",
+          "return [B1.1];",
+          "[B2.1]++"
+        ],
+        "api_terms": [
+          "copy_from_sockptr"
+        ],
+        "related_symbols": [
+          "rs->rs_rx_traces",
+          "rs->rs_rx_trace",
+          "sock->sk"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/rds/af_rds.c",
+        "function": "rds_recv_track_latency"
+      },
+      "location": {
+        "line": 419,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "rds_recv_track_latency adds patch barrier `trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX` around rs->rs_rx_traces = trace.rx_traces.",
+        "state_before": [
+          "input(trace)",
+          "input(rx_trace_pos)",
+          "buffer(rs->rs_rx_traces)"
+        ],
+        "state_after": [
+          "guard(trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX)",
+          "sink(rs->rs_rx_traces = trace.rx_traces)"
+        ],
+        "functions": [
+          "rds_recv_track_latency"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "trace",
+          "rx_trace_pos",
+          "i",
+          "RDS_MSG_RX_DGRAM_TRACE_MAX"
+        ],
+        "buffer_fields": [
+          "rs->rs_rx_traces"
+        ],
+        "call_targets": [
+          "rs->rs_rx_traces = trace.rx_traces"
+        ],
+        "call_edges": [
+          "rds_recv_track_latency -> rs->rs_rx_traces = trace.rx_traces"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX"
+        ],
+        "state_statements": [
+          "if (trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX) {"
+        ],
+        "return_statements": [],
+        "source_file": "net/rds/af_rds.c",
+        "source_excerpt": "390: \t\treturn -EFAULT;\n391: \n392: \tvalbool = val ? 1 : 0;\n393: \n394: \tif (optname == SO_TIMESTAMP_NEW)\n395: \t\tsock_set_flag(sk, SOCK_TSTAMP_NEW);\n396: \n397: \tif (valbool)\n398: \t\tsock_set_flag(sk, SOCK_RCVTSTAMP);\n399: \telse\n400: \t\tsock_reset_flag(sk, SOCK_RCVTSTAMP);\n401: \n402: \treturn 0;\n403: }\n404: \n405: static int rds_recv_track_latency(struct rds_sock *rs, sockptr_t optval,\n406: \t\t\t\t  int optlen)\n407: {\n408: \tstruct rds_rx_trace_so trace;\n409: \tint i;\n410: \n411: \tif (optlen != sizeof(struct rds_rx_trace_so))\n412: \t\treturn -EFAULT;\n413: \n414: \tif (copy_from_sockptr(&trace, optval, sizeof(trace)))\n415: \t\treturn -EFAULT;\n416: \n417: \tif (trace.rx_traces > RDS_MSG_RX_DGRAM_TRACE_MAX)\n418: \t\treturn -EFAULT;\n419: \n420: \trs->rs_rx_traces = trace.rx_traces;\n421: \tfor (i = 0; i < rs->rs_rx_traces; i++) {\n422: \t\tif (trace.rx_trace_pos[i] > RDS_MSG_RX_DGRAM_TRACE_MAX) {\n423: \t\t\trs->rs_rx_traces = 0;\n424: \t\t\treturn -EFAULT;\n425: \t\t}\n426: \t\trs->rs_rx_trace[i] = trace.rx_trace_pos[i];\n427: \t}\n428: \n429: \treturn 0;\n430: }\n431: \n432: static int rds_setsockopt(struct socket *sock, int level, int optname,\n433: \t\t\t  sockptr_t optval, unsigned int optlen)\n434: {\n435: \tstruct rds_sock *rs = rds_sk_to_rs(sock->sk);\n436: \tint ret;\n437: \n438: \tif (level != SOL_RDS) {\n439: \t\tret = -ENOPROTOOPT;\n440: \t\tgoto out;\n441: \t}\n442: \n443: \tswitch (optname) {\n444: \tcase RDS_CANCEL_SENT_TO:\n445: \t\tret = rds_cancel_sent_to(rs, optval, optlen);\n446: \t\tbreak;\n447: \tcase RDS_GET_MR:\n448: \t\tret = rds_get_mr(rs, optval, optlen);\n449: \t\tbreak;\n450: \tcase RDS_GET_MR_FOR_DEST:\n451: \t\tret = rds_get_mr_for_dest(rs, optval, optlen);\n452: \t\tbreak;\n453: \tcase RDS_FREE_MR:\n454: \t\tret = rds_free_mr(rs, optval, optlen);",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:guarded-state",
+        "confidence": 0.9,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "net/rds/af_rds.c",
+          "hunk_index": 0,
+          "source_line": 419
+        },
+        "summary": "rds_recv_track_latency adds patch barrier `trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX` around rs->rs_rx_traces = trace.rx_traces.",
+        "statements": [
+          "if (trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX) {"
+        ],
+        "guards": [
+          "trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX"
+        ],
+        "call_boundary": [
+          "rs->rs_rx_traces = trace.rx_traces"
+        ],
+        "call_edges": [
+          "rds_recv_track_latency -> rs->rs_rx_traces = trace.rx_traces"
+        ],
+        "state_transitions": [
+          "guard(trace.rx_trace_pos[i] >= RDS_MSG_RX_DGRAM_TRACE_MAX)",
+          "sink(rs->rs_rx_traces = trace.rx_traces)"
+        ],
+        "api_terms": [
+          "rs->rs_rx_traces = trace.rx_traces"
+        ],
+        "related_symbols": [
+          "trace",
+          "rx_trace_pos",
+          "i",
+          "RDS_MSG_RX_DGRAM_TRACE_MAX"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_0",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/rds/af_rds.c",
+        "function": "rds_recv_track_latency"
+      },
+      "location": {
+        "line": 422,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "rds_recv_track_latency in net/rds/af_rds.c provides CSA-backed pointer/resource lifecycle context near line 422",
+        "diagnostic_message": "",
+        "diagnostic_checker": "",
+        "state_before": [
+          "buffer(rs->rs_rx_traces)",
+          "buffer(rs->rs_rx_trace)",
+          "sinks(sock_set_flag, sock_reset_flag)"
+        ],
+        "state_after": [
+          "operation(for (i = 0; i < rs->rs_rx_traces; i++) {)",
+          "operation(return [B1.1];)",
+          "operation([B2.1]++)",
+          "operation([B3.9]->rs_rx_trace)"
+        ],
+        "functions": [
+          "rds_recv_track_latency"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "trace",
+          "rx_trace_pos",
+          "i",
+          "RDS_MSG_RX_DGRAM_TRACE_MAX"
+        ],
+        "buffer_fields": [
+          "rs->rs_rx_traces",
+          "rs->rs_rx_trace",
+          "sock->sk"
+        ],
+        "call_targets": [
+          "sock_set_flag",
+          "sock_reset_flag",
+          "rds_recv_track_latency",
+          "rds_setsockopt",
+          "rds_sk_to_rs",
+          "rds_cancel_sent_to"
+        ],
+        "call_edges": [
+          "rds_recv_track_latency -> copy_from_sockptr"
+        ],
+        "state_statements": [
+          "for (i = 0; i < rs->rs_rx_traces; i++) {",
+          "return [B1.1];",
+          "[B2.1]++",
+          "[B3.9]->rs_rx_trace",
+          "[B3.14] = [B3.7]",
+          "[B4.4]->rs_rx_traces"
+        ],
+        "source_file": "net/rds/af_rds.c",
+        "source_excerpt": "390: \t\treturn -EFAULT;\n391: \n392: \tvalbool = val ? 1 : 0;\n393: \n394: \tif (optname == SO_TIMESTAMP_NEW)\n395: \t\tsock_set_flag(sk, SOCK_TSTAMP_NEW);\n396: \n397: \tif (valbool)\n398: \t\tsock_set_flag(sk, SOCK_RCVTSTAMP);\n399: \telse\n400: \t\tsock_reset_flag(sk, SOCK_RCVTSTAMP);\n401: \n402: \treturn 0;\n403: }\n404: \n405: static int rds_recv_track_latency(struct rds_sock *rs, sockptr_t optval,\n406: \t\t\t\t  int optlen)\n407: {\n408: \tstruct rds_rx_trace_so trace;\n409: \tint i;\n410: \n411: \tif (optlen != sizeof(struct rds_rx_trace_so))\n412: \t\treturn -EFAULT;\n413: \n414: \tif (copy_from_sockptr(&trace, optval, sizeof(trace)))\n415: \t\treturn -EFAULT;\n416: \n417: \tif (trace.rx_traces > RDS_MSG_RX_DGRAM_TRACE_MAX)\n418: \t\treturn -EFAULT;\n419: \n420: \trs->rs_rx_traces = trace.rx_traces;\n421: \tfor (i = 0; i < rs->rs_rx_traces; i++) {\n422: \t\tif (trace.rx_trace_pos[i] > RDS_MSG_RX_DGRAM_TRACE_MAX) {\n423: \t\t\trs->rs_rx_traces = 0;\n424: \t\t\treturn -EFAULT;\n425: \t\t}\n426: \t\trs->rs_rx_trace[i] = trace.rx_trace_pos[i];\n427: \t}\n428: \n429: \treturn 0;\n430: }\n431: \n432: static int rds_setsockopt(struct socket *sock, int level, int optname,\n433: \t\t\t  sockptr_t optval, unsigned int optlen)\n434: {\n435: \tstruct rds_sock *rs = rds_sk_to_rs(sock->sk);\n436: \tint ret;\n437: \n438: \tif (level != SOL_RDS) {\n439: \t\tret = -ENOPROTOOPT;\n440: \t\tgoto out;\n441: \t}\n442: \n443: \tswitch (optname) {\n444: \tcase RDS_CANCEL_SENT_TO:\n445: \t\tret = rds_cancel_sent_to(rs, optval, optlen);\n446: \t\tbreak;\n447: \tcase RDS_GET_MR:\n448: \t\tret = rds_get_mr(rs, optval, optlen);\n449: \t\tbreak;\n450: \tcase RDS_GET_MR_FOR_DEST:\n451: \t\tret = rds_get_mr_for_dest(rs, optval, optlen);\n452: \t\tbreak;\n453: \tcase RDS_FREE_MR:\n454: \t\tret = rds_free_mr(rs, optval, optlen);",
+        "coverage_status": "partial",
+        "operations": [
+          "for (i = 0; i < rs->rs_rx_traces; i++) {",
+          "return [B1.1];",
+          "[B2.1]++",
+          "[B3.9]->rs_rx_trace",
+          "[B3.14] = [B3.7]",
+          "[B4.4]->rs_rx_traces"
+        ],
+        "acquisition_ops": [],
+        "release_ops": []
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.72,
+        "origin": "analyzer_output"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "net/rds/af_rds.c",
+          "hunk_index": 0,
+          "source_line": 422
+        },
+        "summary": "rds_recv_track_latency in net/rds/af_rds.c provides CSA-backed pointer/resource lifecycle context near line 422",
+        "statements": [
+          "390: \t\treturn -EFAULT;",
+          "391:",
+          "392: \tvalbool = val ? 1 : 0;",
+          "393:",
+          "394: \tif (optname == SO_TIMESTAMP_NEW)",
+          "395: \t\tsock_set_flag(sk, SOCK_TSTAMP_NEW);"
+        ],
+        "guards": [
+          "optname == SO_TIMESTAMP_NEW",
+          "valbool",
+          "optlen != sizeof(struct rds_rx_trace_so)",
+          "copy_from_sockptr(&trace, optval, sizeof(trace))"
+        ],
+        "call_boundary": [
+          "sock_set_flag",
+          "sock_reset_flag",
+          "rds_recv_track_latency",
+          "rds_setsockopt",
+          "rds_sk_to_rs",
+          "rds_cancel_sent_to"
+        ],
+        "call_edges": [
+          "rds_recv_track_latency -> copy_from_sockptr"
+        ],
+        "state_transitions": [
+          "operation(for (i = 0; i < rs->rs_rx_traces; i++) {)",
+          "operation(return [B1.1];)",
+          "operation([B2.1]++)",
+          "operation([B3.9]->rs_rx_trace)"
+        ],
+        "api_terms": [
+          "for (i = 0; i < rs->rs_rx_traces; i++) {",
+          "return [B1.1];",
+          "[B2.1]++",
+          "[B3.9]->rs_rx_trace",
+          "[B3.14] = [B3.7]",
+          "[B4.4]->rs_rx_traces"
+        ],
+        "related_symbols": [
+          "trace",
+          "rx_trace_pos",
+          "i",
+          "RDS_MSG_RX_DGRAM_TRACE_MAX"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "collected_analyzers": [
+    "csa"
+  ],
+  "provenance_summary": {
+    "total_records": 5,
+    "origin_counts": {
+      "analyzer_internal": 1,
+      "analyzer_output": 1,
+      "source_derived": 3
+    },
+    "analyzer_internal_records": 1,
+    "analyzer_internal_fraction": 0.2,
+    "analyzer_backed_records": 2,
+    "analyzer_backed_fraction": 0.4,
+    "source_derived_records": 3,
+    "source_derived_fraction": 0.6
+  }
+}

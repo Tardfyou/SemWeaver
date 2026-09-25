@@ -1,0 +1,59 @@
+% Fig. 4 -- Main result snapshot (SINGLE-COLUMN).
+% Body only: wrap with figure/caption/label in the Results section.
+% Numbers sourced from artifacts (do NOT hand-edit):
+%   E1  artifacts/research/e2/results/final/e2_final_results.csv
+%       buggy hit 12/12->11/12 ; fixed silent 0/12->12/12 ; PDS 0/12->11/12 ; fixed alerts 37->0
+%   E2  artifacts/v2_experiments/tables/refine_results.csv
+%       PDS: CSA 5/10->7/10, CodeQL 3/10->5/10, Overall 8/20->12/20 ; fixed silent overall 12/20->16/20
+\begin{tikzpicture}[sw,
+    ptitle/.style={font=\scriptsize\bfseries, text=swink, anchor=west},
+    mlab/.style={font=\scriptsize, text=swink, anchor=east},
+    flab/.style={font=\tiny\bfseries, anchor=west},
+  ]
+  \def\xz{3.00}   % bar origin (fraction 0)
+  \def\Wd{4.30}   % full-scale length (fraction 1)
+  \def\xW{8.10}   % right edge
+
+  % ---- legend (top right) ----
+  \fill[swmuted] (5.05,0.13) rectangle (5.30,0.27);
+  \node[font=\tiny, text=swmuted, anchor=west] at (5.34,0.20) {Baseline};
+  \fill[swteal]  (6.55,0.13) rectangle (6.80,0.27);
+  \node[font=\tiny, text=swteal,  anchor=west] at (6.84,0.20) {\toolname};
+
+  % ---- faint scale gridlines (0.5 and 1.0) ----
+  \foreach \g in {0.5,1.0}{
+    \draw[swgrid, line width=0.4pt] (\xz+\g*\Wd,0.05) -- (\xz+\g*\Wd,-2.22);
+    \draw[swgrid, line width=0.4pt] (\xz+\g*\Wd,-2.62) -- (\xz+\g*\Wd,-4.40);
+  }
+  \node[font=\tiny, text=swmuted, anchor=south] at (\xz+0.5*\Wd,0.30) {.5};
+  \node[font=\tiny, text=swmuted, anchor=south] at (\xz+1.0*\Wd,0.30) {1};
+
+  % =================== Panel A : E1 (n=12) =========================
+  \node[ptitle] at (0.0,-0.28) {E1: KNighter-derived CSA checkers ($n{=}12$)};
+  \foreach \y/\f/\lab/\c in {%
+      -0.80/1.000/{12/12}/swmuted, -0.98/0.917/{11/12}/swteal,
+      -1.34/0.000/{0/12}/swmuted,  -1.52/1.000/{12/12}/swteal,
+      -1.88/0.000/{0/12}/swmuted,  -2.06/0.917/{11/12}/swteal}{
+    \fill[\c] (\xz,\y-0.07) rectangle (\xz+\f*\Wd,\y+0.07);
+    \node[flab, text=\c] at (\xz+\f*\Wd+0.08,\y) {\lab};
+  }
+  \node[mlab] at (\xz-0.18,-0.89) {Buggy hit};
+  \node[mlab] at (\xz-0.18,-1.43) {Fixed silent};
+  \node[mlab] at (\xz-0.18,-1.97) {PDS};
+
+  % =================== Panel B : E2 PDS (n=20) =====================
+  \node[ptitle] at (0.0,-2.52) {E2: cross-generator + cross-backend PDS ($n{=}20$)};
+  \foreach \y/\f/\lab/\c in {%
+      -3.02/0.50/{5/10}/swmuted,  -3.20/0.70/{7/10}/swteal,
+      -3.54/0.30/{3/10}/swmuted,  -3.72/0.50/{5/10}/swteal,
+      -4.06/0.40/{8/20}/swmuted,  -4.24/0.60/{12/20}/swteal}{
+    \fill[\c] (\xz,\y-0.07) rectangle (\xz+\f*\Wd,\y+0.07);
+    \node[flab, text=\c] at (\xz+\f*\Wd+0.08,\y) {\lab};
+  }
+  \node[mlab] at (\xz-0.18,-3.11) {CSA};
+  \node[mlab] at (\xz-0.18,-3.63) {CodeQL};
+  \node[mlab] at (\xz-0.18,-4.15) {Overall};
+
+  \node[font=\tiny\itshape, text=swmuted, anchor=west] at (0.0,-4.66)
+       {Fixed silence also improves: overall $12/20 \to 16/20$.};
+\end{tikzpicture}

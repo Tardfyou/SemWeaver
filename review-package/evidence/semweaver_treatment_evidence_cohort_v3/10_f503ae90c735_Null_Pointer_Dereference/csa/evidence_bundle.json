@@ -1,0 +1,658 @@
+{
+  "records": [
+    {
+      "evidence_id": "csa_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/wireless/mediatek/mt76/mt7996/mcu.c",
+        "function": "mt7996_mcu_sta_bfer_he"
+      },
+      "location": {
+        "line": 1544,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "mt7996_mcu_sta_bfer_he adds patch barrier `!vc` around mt7996_mcu_sta_sounding_rate, min_t.",
+        "contract_type": "patch_barrier",
+        "same_call_binding": "tie the guard to the current downstream sink or protected state transition instead of any unrelated if-statement",
+        "trigger_contract": "report when a risky write proceeds without the patch-style barrier",
+        "silence_contract": "stay silent when the nearby guard proves the current write is blocked or bounded",
+        "guard_exprs": [
+          "!vc"
+        ],
+        "removed_calls": [],
+        "added_calls": [],
+        "tracked_symbols": [
+          "vc"
+        ],
+        "widened_variables": [],
+        "state_resets": [],
+        "old_numeric_type": "",
+        "new_numeric_type": "",
+        "numeric_domain_change": "",
+        "arithmetic_operations": [],
+        "sink_calls": [
+          "mt7996_mcu_sta_sounding_rate",
+          "min_t",
+          "mt76_connac_get_he_phy_cap",
+          "le16_to_cpu"
+        ],
+        "buffer_fields": [],
+        "source_file": "drivers/net/wireless/mediatek/mt76/mt7996/mcu.c",
+        "function": "mt7996_mcu_sta_bfer_he",
+        "source_excerpt": "1512: \t\tmt7996_mcu_sta_sounding_rate(bf);\n1513: \n1514: \t\tsts = FIELD_GET(IEEE80211_VHT_CAP_BEAMFORMEE_STS_MASK,\n1515: \t\t\t\tpc->cap);\n1516: \t\tsnd_dim = FIELD_GET(IEEE80211_VHT_CAP_SOUNDING_DIMENSIONS_MASK,\n1517: \t\t\t\t    vc->cap);\n1518: \t\tbf->nrow = min_t(u8, min_t(u8, snd_dim, sts), tx_ant);\n1519: \t\tbf->ncol = min_t(u8, nss_mcs, bf->nrow);\n1520: \t\tbf->ibf_ncol = bf->ncol;\n1521: \n1522: \t\tif (sta->deflink.bandwidth == IEEE80211_STA_RX_BW_160)\n1523: \t\t\tbf->nrow = 1;\n1524: \t} else {\n1525: \t\tbf->nrow = tx_ant;\n1526: \t\tbf->ncol = min_t(u8, nss_mcs, bf->nrow);\n1527: \t\tbf->ibf_ncol = nss_mcs;\n1528: \n1529: \t\tif (sta->deflink.bandwidth == IEEE80211_STA_RX_BW_160)\n1530: \t\t\tbf->ibf_nrow = 1;\n1531: \t}\n1532: }\n1533: \n1534: static void\n1535: mt7996_mcu_sta_bfer_he(struct ieee80211_sta *sta, struct ieee80211_vif *vif,\n1536: \t\t       struct mt7996_phy *phy, struct sta_rec_bf *bf)\n1537: {\n1538: \tstruct ieee80211_sta_he_cap *pc = &sta->deflink.he_cap;\n1539: \tstruct ieee80211_he_cap_elem *pe = &pc->he_cap_elem;\n1540: \tconst struct ieee80211_sta_he_cap *vc =\n1541: \t\tmt76_connac_get_he_phy_cap(phy->mt76, vif);\n1542: \tconst struct ieee80211_he_cap_elem *ve = &vc->he_cap_elem;\n1543: \tu16 mcs_map = le16_to_cpu(pc->he_mcs_nss_supp.rx_mcs_80);\n1544: \tu8 nss_mcs = mt7996_mcu_get_sta_nss(mcs_map);\n1545: \tu8 snd_dim, sts;\n1546: \n1547: \tbf->tx_mode = MT_PHY_TYPE_HE_SU;\n1548: \n1549: \tmt7996_mcu_sta_sounding_rate(bf);\n1550: \n1551: \tbf->trigger_su = HE_PHY(CAP6_TRIG_SU_BEAMFORMING_FB,\n1552: \t\t\t\tpe->phy_cap_info[6]);\n1553: \tbf->trigger_mu = HE_PHY(CAP6_TRIG_MU_BEAMFORMING_PARTIAL_BW_FB,\n1554: \t\t\t\tpe->phy_cap_info[6]);\n1555: \tsnd_dim = HE_PHY(CAP5_BEAMFORMEE_NUM_SND_DIM_UNDER_80MHZ_MASK,\n1556: \t\t\t ve->phy_cap_info[5]);\n1557: \tsts = HE_PHY(CAP4_BEAMFORMEE_MAX_STS_UNDER_80MHZ_MASK,\n1558: \t\t     pe->phy_cap_info[4]);\n1559: \tbf->nrow = min_t(u8, snd_dim, sts);\n1560: \tbf->ncol = min_t(u8, nss_mcs, bf->nrow);\n1561: \tbf->ibf_ncol = bf->ncol;\n1562: \n1563: \tif (sta->deflink.bandwidth != IEEE80211_STA_RX_BW_160)\n1564: \t\treturn;\n1565: \n1566: \t/* go over for 160MHz and 80p80 */\n1567: \tif (pe->phy_cap_info[0] &\n1568: \t    IEEE80211_HE_PHY_CAP0_CHANNEL_WIDTH_SET_160MHZ_IN_5G) {\n1569: \t\tmcs_map = le16_to_cpu(pc->he_mcs_nss_supp.rx_mcs_160);\n1570: \t\tnss_mcs = mt7996_mcu_get_sta_nss(mcs_map);\n1571: \n1572: \t\tbf->ncol_gt_bw80 = nss_mcs;\n1573: \t}\n1574: \n1575: \tif (pe->phy_cap_info[0] &\n1576: \t    IEEE80211_HE_PHY_CAP0_CHANNEL_WIDTH_SET_80PLUS80_MHZ_IN_5G) {",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:semantic-contract",
+        "confidence": 0.92,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "drivers/net/wireless/mediatek/mt76/mt7996/mcu.c",
+          "hunk_index": 0,
+          "source_line": 1544
+        },
+        "summary": "mt7996_mcu_sta_bfer_he adds patch barrier `!vc` around mt7996_mcu_sta_sounding_rate, min_t.",
+        "statements": [
+          "if (!vc)",
+          "return;"
+        ],
+        "guards": [
+          "!vc"
+        ],
+        "call_boundary": [
+          "mt7996_mcu_sta_sounding_rate",
+          "min_t",
+          "mt76_connac_get_he_phy_cap",
+          "le16_to_cpu"
+        ],
+        "call_edges": [
+          "mt7996_mcu_sta_bfer_he -> mt7996_mcu_sta_sounding_rate",
+          "mt7996_mcu_sta_bfer_he -> min_t",
+          "mt7996_mcu_sta_bfer_he -> mt76_connac_get_he_phy_cap"
+        ],
+        "state_transitions": [
+          "",
+          "report when a risky write proceeds without the patch-style barrier",
+          "stay silent when the nearby guard proves the current write is blocked or bounded"
+        ],
+        "api_terms": [
+          "mt7996_mcu_sta_sounding_rate",
+          "min_t",
+          "mt76_connac_get_he_phy_cap"
+        ],
+        "related_symbols": [
+          "vc"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/wireless/mediatek/mt76/mt7996/mcu.c",
+        "function": "mt7996_mcu_sta_bfer_he"
+      },
+      "location": {
+        "line": 1544,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "!vc",
+        "summary": "mt7996_mcu_sta_bfer_he introduces patch guard `!vc` before mt7996_mcu_sta_sounding_rate, min_t.",
+        "state_before": [
+          "input(vc)"
+        ],
+        "state_after": [
+          "guard(!vc)",
+          "current_call(mt7996_mcu_sta_sounding_rate)",
+          "current_call(min_t)"
+        ],
+        "functions": [
+          "mt7996_mcu_sta_bfer_he"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "vc"
+        ],
+        "buffer_fields": [],
+        "call_targets": [
+          "mt7996_mcu_sta_sounding_rate",
+          "min_t",
+          "mt76_connac_get_he_phy_cap",
+          "le16_to_cpu"
+        ],
+        "call_edges": [
+          "mt7996_mcu_sta_bfer_he -> mt7996_mcu_sta_sounding_rate",
+          "mt7996_mcu_sta_bfer_he -> min_t",
+          "mt7996_mcu_sta_bfer_he -> mt76_connac_get_he_phy_cap"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "!vc"
+        ],
+        "state_statements": [
+          "if (!vc)",
+          "return;"
+        ],
+        "compile_command_preview": "",
+        "source_file": "drivers/net/wireless/mediatek/mt76/mt7996/mcu.c",
+        "source_excerpt": "1512: \t\tmt7996_mcu_sta_sounding_rate(bf);\n1513: \n1514: \t\tsts = FIELD_GET(IEEE80211_VHT_CAP_BEAMFORMEE_STS_MASK,\n1515: \t\t\t\tpc->cap);\n1516: \t\tsnd_dim = FIELD_GET(IEEE80211_VHT_CAP_SOUNDING_DIMENSIONS_MASK,\n1517: \t\t\t\t    vc->cap);\n1518: \t\tbf->nrow = min_t(u8, min_t(u8, snd_dim, sts), tx_ant);\n1519: \t\tbf->ncol = min_t(u8, nss_mcs, bf->nrow);\n1520: \t\tbf->ibf_ncol = bf->ncol;\n1521: \n1522: \t\tif (sta->deflink.bandwidth == IEEE80211_STA_RX_BW_160)\n1523: \t\t\tbf->nrow = 1;\n1524: \t} else {\n1525: \t\tbf->nrow = tx_ant;\n1526: \t\tbf->ncol = min_t(u8, nss_mcs, bf->nrow);\n1527: \t\tbf->ibf_ncol = nss_mcs;\n1528: \n1529: \t\tif (sta->deflink.bandwidth == IEEE80211_STA_RX_BW_160)\n1530: \t\t\tbf->ibf_nrow = 1;\n1531: \t}\n1532: }\n1533: \n1534: static void\n1535: mt7996_mcu_sta_bfer_he(struct ieee80211_sta *sta, struct ieee80211_vif *vif,\n1536: \t\t       struct mt7996_phy *phy, struct sta_rec_bf *bf)\n1537: {\n1538: \tstruct ieee80211_sta_he_cap *pc = &sta->deflink.he_cap;\n1539: \tstruct ieee80211_he_cap_elem *pe = &pc->he_cap_elem;\n1540: \tconst struct ieee80211_sta_he_cap *vc =\n1541: \t\tmt76_connac_get_he_phy_cap(phy->mt76, vif);\n1542: \tconst struct ieee80211_he_cap_elem *ve = &vc->he_cap_elem;\n1543: \tu16 mcs_map = le16_to_cpu(pc->he_mcs_nss_supp.rx_mcs_80);\n1544: \tu8 nss_mcs = mt7996_mcu_get_sta_nss(mcs_map);\n1545: \tu8 snd_dim, sts;\n1546: \n1547: \tbf->tx_mode = MT_PHY_TYPE_HE_SU;\n1548: \n1549: \tmt7996_mcu_sta_sounding_rate(bf);\n1550: \n1551: \tbf->trigger_su = HE_PHY(CAP6_TRIG_SU_BEAMFORMING_FB,\n1552: \t\t\t\tpe->phy_cap_info[6]);\n1553: \tbf->trigger_mu = HE_PHY(CAP6_TRIG_MU_BEAMFORMING_PARTIAL_BW_FB,\n1554: \t\t\t\tpe->phy_cap_info[6]);\n1555: \tsnd_dim = HE_PHY(CAP5_BEAMFORMEE_NUM_SND_DIM_UNDER_80MHZ_MASK,\n1556: \t\t\t ve->phy_cap_info[5]);\n1557: \tsts = HE_PHY(CAP4_BEAMFORMEE_MAX_STS_UNDER_80MHZ_MASK,\n1558: \t\t     pe->phy_cap_info[4]);\n1559: \tbf->nrow = min_t(u8, snd_dim, sts);\n1560: \tbf->ncol = min_t(u8, nss_mcs, bf->nrow);\n1561: \tbf->ibf_ncol = bf->ncol;\n1562: \n1563: \tif (sta->deflink.bandwidth != IEEE80211_STA_RX_BW_160)\n1564: \t\treturn;\n1565: \n1566: \t/* go over for 160MHz and 80p80 */\n1567: \tif (pe->phy_cap_info[0] &\n1568: \t    IEEE80211_HE_PHY_CAP0_CHANNEL_WIDTH_SET_160MHZ_IN_5G) {\n1569: \t\tmcs_map = le16_to_cpu(pc->he_mcs_nss_supp.rx_mcs_160);\n1570: \t\tnss_mcs = mt7996_mcu_get_sta_nss(mcs_map);\n1571: \n1572: \t\tbf->ncol_gt_bw80 = nss_mcs;\n1573: \t}\n1574: \n1575: \tif (pe->phy_cap_info[0] &\n1576: \t    IEEE80211_HE_PHY_CAP0_CHANNEL_WIDTH_SET_80PLUS80_MHZ_IN_5G) {",
+        "summary_line": 1544,
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:path-guard",
+        "confidence": 0.92,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/net/wireless/mediatek/mt76/mt7996/mcu.c",
+          "hunk_index": 0,
+          "source_line": 1544
+        },
+        "summary": "mt7996_mcu_sta_bfer_he introduces patch guard `!vc` before mt7996_mcu_sta_sounding_rate, min_t.",
+        "statements": [
+          "if (!vc)",
+          "return;"
+        ],
+        "guards": [
+          "!vc"
+        ],
+        "call_boundary": [
+          "mt7996_mcu_sta_sounding_rate",
+          "min_t",
+          "mt76_connac_get_he_phy_cap",
+          "le16_to_cpu"
+        ],
+        "call_edges": [
+          "mt7996_mcu_sta_bfer_he -> mt7996_mcu_sta_sounding_rate",
+          "mt7996_mcu_sta_bfer_he -> min_t",
+          "mt7996_mcu_sta_bfer_he -> mt76_connac_get_he_phy_cap"
+        ],
+        "state_transitions": [
+          "guard(!vc)",
+          "current_call(mt7996_mcu_sta_sounding_rate)",
+          "current_call(min_t)"
+        ],
+        "api_terms": [
+          "mt7996_mcu_sta_sounding_rate",
+          "min_t",
+          "mt76_connac_get_he_phy_cap"
+        ],
+        "related_symbols": [
+          "vc"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_guard_1",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/wireless/mediatek/mt76/mt7996/mcu.c",
+        "function": "mt7996_mcu_sta_bfer_he"
+      },
+      "location": {
+        "line": 1544,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "if sta (ImplicitCastExpr, LValueToRValue, struct ieee80211_sta *)->deflink.bandwidth (ImplicitCastExpr, LValueToRValue, enum ieee80211_sta_rx_bandwidth) (ImplicitCastExpr, IntegralCast, unsigned int) != IEEE80211_STA_RX_BW_160 (ImplicitCastExpr, IntegralCast, unsigned int)",
+        "summary": "Analyzer CFG for mt7996_mcu_sta_bfer_he in drivers/net/wireless/mediatek/mt76/mt7996/mcu.c: bindings: struct ieee80211_sta_he_cap *pc = &sta->deflink.he_cap;; sta (ImplicitCastExpr, LValueToRValue, struct ieee80211_sta *)->deflink.bandwidth (ImplicitCastExpr, LValueToRValue, enum ieee80211_sta_rx_bandwidth) (ImplicitCastExpr, IntegralCast, unsigned int) != IEEE80211_STA_RX_BW_160 (ImplicitCastExpr, IntegralCast, unsigned int) | branches: if sta (ImplicitCastExpr, LValueToRValue, struct ieee80211_sta *)->deflink.bandwidth (ImplicitCastExpr, LValueToRValue, enum ieee80211_sta_rx_bandwidth) (ImplicitCastExpr, IntegralCast, unsigned int) != IEEE80211_STA_RX_BW_160 (ImplicitCastExpr, IntegralCast, unsigned int); (__UNIQUE_ID_x_1744) (ImplicitCastExpr, LValueToRValue, int) < (__UNIQUE_ID_y_1745) (ImplicitCastExpr, LValueToRValue, int) ? ... : ... | calls: mt7996_mcu_sta_bfer_he -> mt76_connac_get_he_phy_cap; mt7996_mcu_sta_bfer_he -> mt7996_mcu_get_sta_nss",
+        "state_before": [
+          "buffer(bf->ncol_gt_bw80)",
+          "buffer(bf->nrow)",
+          "sinks(mt7996_mcu_sta_sounding_rate, min_t)"
+        ],
+        "state_after": [
+          "cfg_binding(struct ieee80211_sta_he_cap *pc = &sta->deflink.he_cap;)",
+          "cfg_binding(sta (ImplicitCastExpr, LValueToRValue, struct ieee80211_sta *)->deflink.bandwidth (ImplicitCastExpr, LValueToRValue, enum ieee80211_sta_rx_bandwidth) (ImplicitCastExpr, IntegralCast, unsigned int) != IEEE80211_STA_RX_BW_160 (ImplicitCastExpr, IntegralCast, unsigned int))",
+          "cfg_branch(if sta (ImplicitCastExpr, LValueToRValue, struct ieee80211_sta *)->deflink.bandwidth (ImplicitCastExpr, LValueToRValue, enum ieee80211_sta_rx_bandwidth) (ImplicitCastExpr, IntegralCast, unsigned int) != IEEE80211_STA_RX_BW_160 (ImplicitCastExpr, IntegralCast, unsigned int))",
+          "cfg_branch((__UNIQUE_ID_x_1744) (ImplicitCastExpr, LValueToRValue, int) < (__UNIQUE_ID_y_1745) (ImplicitCastExpr, LValueToRValue, int) ? ... : ...)"
+        ],
+        "functions": [
+          "mt7996_mcu_sta_bfer_he"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "bf->ncol_gt_bw80",
+          "bf->nrow",
+          "sta->deflink",
+          "pc->he_cap_elem",
+          "phy->mt76",
+          "vc->he_cap_elem"
+        ],
+        "buffer_fields": [
+          "bf->ncol_gt_bw80",
+          "bf->nrow",
+          "sta->deflink",
+          "pc->he_cap_elem",
+          "phy->mt76",
+          "vc->he_cap_elem"
+        ],
+        "call_targets": [
+          "mt7996_mcu_sta_sounding_rate",
+          "min_t",
+          "mt7996_mcu_sta_bfer_he",
+          "mt76_connac_get_he_phy_cap",
+          "le16_to_cpu",
+          "mt7996_mcu_get_sta_nss",
+          "u8_get_bits"
+        ],
+        "call_edges": [
+          "mt7996_mcu_sta_bfer_he -> mt76_connac_get_he_phy_cap",
+          "mt7996_mcu_sta_bfer_he -> mt7996_mcu_get_sta_nss",
+          "mt7996_mcu_sta_bfer_he -> mt7996_mcu_sta_sounding_rate",
+          "mt7996_mcu_sta_bfer_he -> u8_get_bits"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "[B4.41] ? ... : ...",
+          "[B9.15] ? ... : ...",
+          "if [B10.20]",
+          "if [B11.10]",
+          "if [B13.10]",
+          "if [B15.24]"
+        ],
+        "resolved_branch_conditions": [
+          "if sta (ImplicitCastExpr, LValueToRValue, struct ieee80211_sta *)->deflink.bandwidth (ImplicitCastExpr, LValueToRValue, enum ieee80211_sta_rx_bandwidth) (ImplicitCastExpr, IntegralCast, unsigned int) != IEEE80211_STA_RX_BW_160 (ImplicitCastExpr, IntegralCast, unsigned int)",
+          "(__UNIQUE_ID_x_1744) (ImplicitCastExpr, LValueToRValue, int) < (__UNIQUE_ID_y_1745) (ImplicitCastExpr, LValueToRValue, int) ? ... : ...",
+          "(__UNIQUE_ID_x_1742) (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int) < (__UNIQUE_ID_y_1743) (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int) ? ... : ...",
+          "if bf (ImplicitCastExpr, LValueToRValue, struct sta_rec_bf *)->ncol_gt_bw80 (ImplicitCastExpr, LValueToRValue, u8)",
+          "if pe (ImplicitCastExpr, LValueToRValue, struct ieee80211_he_cap_elem *)->phy_cap_info (ImplicitCastExpr, ArrayToPointerDecay, u8 *)[0] (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int) & 16",
+          "if pe (ImplicitCastExpr, LValueToRValue, struct ieee80211_he_cap_elem *)->phy_cap_info (ImplicitCastExpr, ArrayToPointerDecay, u8 *)[0] (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int) & 8"
+        ],
+        "cfg_value_bindings": [
+          "struct ieee80211_sta_he_cap *pc = &sta->deflink.he_cap;",
+          "sta (ImplicitCastExpr, LValueToRValue, struct ieee80211_sta *)->deflink.bandwidth (ImplicitCastExpr, LValueToRValue, enum ieee80211_sta_rx_bandwidth) (ImplicitCastExpr, IntegralCast, unsigned int) != IEEE80211_STA_RX_BW_160 (ImplicitCastExpr, IntegralCast, unsigned int)",
+          "u8 nss_mcs = mt7996_mcu_get_sta_nss(mcs_map);",
+          "const struct ieee80211_sta_he_cap *vc = mt76_connac_get_he_phy_cap(phy->mt76, vif);",
+          "nss_mcs = mt7996_mcu_get_sta_nss (ImplicitCastExpr, FunctionToPointerDecay, u8 (*)(u16))(mcs_map (ImplicitCastExpr, LValueToRValue, u16))",
+          "u8 __UNIQUE_ID_y_1739 = (sts);"
+        ],
+        "state_statements": [
+          "[B1.5]->nrow_gt_bw80",
+          "[B1.6] = [B1.3]",
+          "[B4.4]->phy_cap_info",
+          "[B4.13] = [B4.12]",
+          "[B4.18]->phy_cap_info",
+          "[B4.27] = [B4.26]"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,drivers/net/wireless/mediatek/mt76/mt7996/.mcu.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/inc...",
+        "source_file": "drivers/net/wireless/mediatek/mt76/mt7996/mcu.c",
+        "source_excerpt": "1512: \t\tmt7996_mcu_sta_sounding_rate(bf);\n1513: \n1514: \t\tsts = FIELD_GET(IEEE80211_VHT_CAP_BEAMFORMEE_STS_MASK,\n1515: \t\t\t\tpc->cap);\n1516: \t\tsnd_dim = FIELD_GET(IEEE80211_VHT_CAP_SOUNDING_DIMENSIONS_MASK,\n1517: \t\t\t\t    vc->cap);\n1518: \t\tbf->nrow = min_t(u8, min_t(u8, snd_dim, sts), tx_ant);\n1519: \t\tbf->ncol = min_t(u8, nss_mcs, bf->nrow);\n1520: \t\tbf->ibf_ncol = bf->ncol;\n1521: \n1522: \t\tif (sta->deflink.bandwidth == IEEE80211_STA_RX_BW_160)\n1523: \t\t\tbf->nrow = 1;\n1524: \t} else {\n1525: \t\tbf->nrow = tx_ant;\n1526: \t\tbf->ncol = min_t(u8, nss_mcs, bf->nrow);\n1527: \t\tbf->ibf_ncol = nss_mcs;\n1528: \n1529: \t\tif (sta->deflink.bandwidth == IEEE80211_STA_RX_BW_160)\n1530: \t\t\tbf->ibf_nrow = 1;\n1531: \t}\n1532: }\n1533: \n1534: static void\n1535: mt7996_mcu_sta_bfer_he(struct ieee80211_sta *sta, struct ieee80211_vif *vif,\n1536: \t\t       struct mt7996_phy *phy, struct sta_rec_bf *bf)\n1537: {\n1538: \tstruct ieee80211_sta_he_cap *pc = &sta->deflink.he_cap;\n1539: \tstruct ieee80211_he_cap_elem *pe = &pc->he_cap_elem;\n1540: \tconst struct ieee80211_sta_he_cap *vc =\n1541: \t\tmt76_connac_get_he_phy_cap(phy->mt76, vif);\n1542: \tconst struct ieee80211_he_cap_elem *ve = &vc->he_cap_elem;\n1543: \tu16 mcs_map = le16_to_cpu(pc->he_mcs_nss_supp.rx_mcs_80);\n1544: \tu8 nss_mcs = mt7996_mcu_get_sta_nss(mcs_map);\n1545: \tu8 snd_dim, sts;\n1546: \n1547: \tbf->tx_mode = MT_PHY_TYPE_HE_SU;\n1548: \n1549: \tmt7996_mcu_sta_sounding_rate(bf);\n1550: \n1551: \tbf->trigger_su = HE_PHY(CAP6_TRIG_SU_BEAMFORMING_FB,\n1552: \t\t\t\tpe->phy_cap_info[6]);\n1553: \tbf->trigger_mu = HE_PHY(CAP6_TRIG_MU_BEAMFORMING_PARTIAL_BW_FB,\n1554: \t\t\t\tpe->phy_cap_info[6]);\n1555: \tsnd_dim = HE_PHY(CAP5_BEAMFORMEE_NUM_SND_DIM_UNDER_80MHZ_MASK,\n1556: \t\t\t ve->phy_cap_info[5]);\n1557: \tsts = HE_PHY(CAP4_BEAMFORMEE_MAX_STS_UNDER_80MHZ_MASK,\n1558: \t\t     pe->phy_cap_info[4]);\n1559: \tbf->nrow = min_t(u8, snd_dim, sts);\n1560: \tbf->ncol = min_t(u8, nss_mcs, bf->nrow);\n1561: \tbf->ibf_ncol = bf->ncol;\n1562: \n1563: \tif (sta->deflink.bandwidth != IEEE80211_STA_RX_BW_160)\n1564: \t\treturn;\n1565: \n1566: \t/* go over for 160MHz and 80p80 */\n1567: \tif (pe->phy_cap_info[0] &\n1568: \t    IEEE80211_HE_PHY_CAP0_CHANNEL_WIDTH_SET_160MHZ_IN_5G) {\n1569: \t\tmcs_map = le16_to_cpu(pc->he_mcs_nss_supp.rx_mcs_160);\n1570: \t\tnss_mcs = mt7996_mcu_get_sta_nss(mcs_map);\n1571: \n1572: \t\tbf->ncol_gt_bw80 = nss_mcs;\n1573: \t}\n1574: \n1575: \tif (pe->phy_cap_info[0] &\n1576: \t    IEEE80211_HE_PHY_CAP0_CHANNEL_WIDTH_SET_80PLUS80_MHZ_IN_5G) {",
+        "summary_line": 1544,
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/semweaver_treatment_evidence_cohort_v3/10_f503ae90c735_Null_Pointer_Dereference/csa/patchweaver_runtime/csa_raw/drivers-net-wireless-mediatek-mt76-mt7996-mcu.c-mt7996_mcu_sta_bfer_he.txt",
+        "raw_output_sha256": "560d70246edb5c8a7420ea96a1e7876e91f0c57375aa946045ff345085bcc550",
+        "command_sha256": "aa716f70025dac119c6a2a8d29862287502d9088e0762ee1cc3ef848a8fb23bc"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:debug-cfg",
+        "confidence": 0.92,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/net/wireless/mediatek/mt76/mt7996/mcu.c",
+          "hunk_index": 0,
+          "source_line": 1544
+        },
+        "summary": "Analyzer CFG for mt7996_mcu_sta_bfer_he in drivers/net/wireless/mediatek/mt76/mt7996/mcu.c: bindings: struct ieee80211_sta_he_cap *pc = &sta->deflink.he_cap;; sta (ImplicitCastExpr, LValueToRValue, struct ieee80211_sta *)->deflink.bandwidth (ImplicitCastExpr, LValueToRValue, enum ieee80211_sta_rx_bandwidth) (ImplicitCastExpr, IntegralCast, unsigned int) != IEEE80211_STA_RX_BW_160 (ImplicitCastExpr, IntegralCast, unsigned int) | branches: if sta (ImplicitCastExpr, LValueToRValue, struct ieee80211_sta *)->deflink.bandwidth (ImplicitCastExpr, LValueToRValue, enum ieee80211_sta_rx_bandwidth) (ImplicitCastExpr, IntegralCast, unsigned int) != IEEE80211_STA_RX_BW_160 (ImplicitCastExpr, IntegralCast, unsigned int); (__UNIQUE_ID_x_1744) (ImplicitCastExpr, LValueToRValue, int) < (__UNIQUE_ID_y_1745) (ImplicitCastExpr, LValueToRValue, int) ? ... : ... | calls: mt7996_mcu_sta_bfer_he -> mt76_connac_get_he_phy_cap; mt7996_mcu_sta_bfer_he -> mt7996_mcu_get_sta_nss",
+        "statements": [
+          "1512: \t\tmt7996_mcu_sta_sounding_rate(bf);",
+          "1513:",
+          "1514: \t\tsts = FIELD_GET(IEEE80211_VHT_CAP_BEAMFORMEE_STS_MASK,",
+          "1515: \t\t\t\tpc->cap);",
+          "1516: \t\tsnd_dim = FIELD_GET(IEEE80211_VHT_CAP_SOUNDING_DIMENSIONS_MASK,",
+          "1517: \t\t\t\t    vc->cap);"
+        ],
+        "guards": [
+          "if sta (ImplicitCastExpr, LValueToRValue, struct ieee80211_sta *)->deflink.bandwidth (ImplicitCastExpr, LValueToRValue, enum ieee80211_sta_rx_bandwidth) (ImplicitCastExpr, IntegralCast, unsigned int) != IEEE80211_STA_RX_BW_160 (ImplicitCastExpr, IntegralCast, unsigned int)",
+          "(__UNIQUE_ID_x_1744) (ImplicitCastExpr, LValueToRValue, int) < (__UNIQUE_ID_y_1745) (ImplicitCastExpr, LValueToRValue, int) ? ... : ...",
+          "(__UNIQUE_ID_x_1742) (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int) < (__UNIQUE_ID_y_1743) (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int) ? ... : ...",
+          "if bf (ImplicitCastExpr, LValueToRValue, struct sta_rec_bf *)->ncol_gt_bw80 (ImplicitCastExpr, LValueToRValue, u8)"
+        ],
+        "call_boundary": [
+          "mt7996_mcu_sta_sounding_rate",
+          "min_t",
+          "mt7996_mcu_sta_bfer_he",
+          "mt76_connac_get_he_phy_cap",
+          "le16_to_cpu",
+          "mt7996_mcu_get_sta_nss"
+        ],
+        "call_edges": [
+          "mt7996_mcu_sta_bfer_he -> mt76_connac_get_he_phy_cap",
+          "mt7996_mcu_sta_bfer_he -> mt7996_mcu_get_sta_nss",
+          "mt7996_mcu_sta_bfer_he -> mt7996_mcu_sta_sounding_rate",
+          "mt7996_mcu_sta_bfer_he -> u8_get_bits"
+        ],
+        "state_transitions": [
+          "cfg_binding(struct ieee80211_sta_he_cap *pc = &sta->deflink.he_cap;)",
+          "cfg_binding(sta (ImplicitCastExpr, LValueToRValue, struct ieee80211_sta *)->deflink.bandwidth (ImplicitCastExpr, LValueToRValue, enum ieee80211_sta_rx_bandwidth) (ImplicitCastExpr, IntegralCast, unsigned int) != IEEE80211_STA_RX_BW_160 (ImplicitCastExpr, IntegralCast, unsigned int))",
+          "cfg_branch(if sta (ImplicitCastExpr, LValueToRValue, struct ieee80211_sta *)->deflink.bandwidth (ImplicitCastExpr, LValueToRValue, enum ieee80211_sta_rx_bandwidth) (ImplicitCastExpr, IntegralCast, unsigned int) != IEEE80211_STA_RX_BW_160 (ImplicitCastExpr, IntegralCast, unsigned int))",
+          "cfg_branch((__UNIQUE_ID_x_1744) (ImplicitCastExpr, LValueToRValue, int) < (__UNIQUE_ID_y_1745) (ImplicitCastExpr, LValueToRValue, int) ? ... : ...)",
+          "[B1.5]->nrow_gt_bw80",
+          "[B1.6] = [B1.3]"
+        ],
+        "api_terms": [
+          "mt76_connac_get_he_phy_cap",
+          "mt7996_mcu_get_sta_nss",
+          "mt7996_mcu_sta_sounding_rate",
+          "u8_get_bits"
+        ],
+        "related_symbols": [
+          "bf->ncol_gt_bw80",
+          "bf->nrow",
+          "sta->deflink",
+          "pc->he_cap_elem",
+          "phy->mt76",
+          "vc->he_cap_elem"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/wireless/mediatek/mt76/mt7996/mcu.c",
+        "function": "mt7996_mcu_sta_bfer_he"
+      },
+      "location": {
+        "line": 1544,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "mt7996_mcu_sta_bfer_he adds patch barrier `!vc` around mt7996_mcu_sta_sounding_rate, min_t.",
+        "state_before": [
+          "input(vc)"
+        ],
+        "state_after": [
+          "guard(!vc)",
+          "sink(mt7996_mcu_sta_sounding_rate)",
+          "sink(min_t)"
+        ],
+        "functions": [
+          "mt7996_mcu_sta_bfer_he"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "vc"
+        ],
+        "buffer_fields": [],
+        "call_targets": [
+          "mt7996_mcu_sta_sounding_rate",
+          "min_t",
+          "mt76_connac_get_he_phy_cap",
+          "le16_to_cpu"
+        ],
+        "call_edges": [
+          "mt7996_mcu_sta_bfer_he -> mt7996_mcu_sta_sounding_rate",
+          "mt7996_mcu_sta_bfer_he -> min_t",
+          "mt7996_mcu_sta_bfer_he -> mt76_connac_get_he_phy_cap"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "!vc"
+        ],
+        "state_statements": [
+          "if (!vc)",
+          "return;"
+        ],
+        "return_statements": [],
+        "source_file": "drivers/net/wireless/mediatek/mt76/mt7996/mcu.c",
+        "source_excerpt": "1512: \t\tmt7996_mcu_sta_sounding_rate(bf);\n1513: \n1514: \t\tsts = FIELD_GET(IEEE80211_VHT_CAP_BEAMFORMEE_STS_MASK,\n1515: \t\t\t\tpc->cap);\n1516: \t\tsnd_dim = FIELD_GET(IEEE80211_VHT_CAP_SOUNDING_DIMENSIONS_MASK,\n1517: \t\t\t\t    vc->cap);\n1518: \t\tbf->nrow = min_t(u8, min_t(u8, snd_dim, sts), tx_ant);\n1519: \t\tbf->ncol = min_t(u8, nss_mcs, bf->nrow);\n1520: \t\tbf->ibf_ncol = bf->ncol;\n1521: \n1522: \t\tif (sta->deflink.bandwidth == IEEE80211_STA_RX_BW_160)\n1523: \t\t\tbf->nrow = 1;\n1524: \t} else {\n1525: \t\tbf->nrow = tx_ant;\n1526: \t\tbf->ncol = min_t(u8, nss_mcs, bf->nrow);\n1527: \t\tbf->ibf_ncol = nss_mcs;\n1528: \n1529: \t\tif (sta->deflink.bandwidth == IEEE80211_STA_RX_BW_160)\n1530: \t\t\tbf->ibf_nrow = 1;\n1531: \t}\n1532: }\n1533: \n1534: static void\n1535: mt7996_mcu_sta_bfer_he(struct ieee80211_sta *sta, struct ieee80211_vif *vif,\n1536: \t\t       struct mt7996_phy *phy, struct sta_rec_bf *bf)\n1537: {\n1538: \tstruct ieee80211_sta_he_cap *pc = &sta->deflink.he_cap;\n1539: \tstruct ieee80211_he_cap_elem *pe = &pc->he_cap_elem;\n1540: \tconst struct ieee80211_sta_he_cap *vc =\n1541: \t\tmt76_connac_get_he_phy_cap(phy->mt76, vif);\n1542: \tconst struct ieee80211_he_cap_elem *ve = &vc->he_cap_elem;\n1543: \tu16 mcs_map = le16_to_cpu(pc->he_mcs_nss_supp.rx_mcs_80);\n1544: \tu8 nss_mcs = mt7996_mcu_get_sta_nss(mcs_map);\n1545: \tu8 snd_dim, sts;\n1546: \n1547: \tbf->tx_mode = MT_PHY_TYPE_HE_SU;\n1548: \n1549: \tmt7996_mcu_sta_sounding_rate(bf);\n1550: \n1551: \tbf->trigger_su = HE_PHY(CAP6_TRIG_SU_BEAMFORMING_FB,\n1552: \t\t\t\tpe->phy_cap_info[6]);\n1553: \tbf->trigger_mu = HE_PHY(CAP6_TRIG_MU_BEAMFORMING_PARTIAL_BW_FB,\n1554: \t\t\t\tpe->phy_cap_info[6]);\n1555: \tsnd_dim = HE_PHY(CAP5_BEAMFORMEE_NUM_SND_DIM_UNDER_80MHZ_MASK,\n1556: \t\t\t ve->phy_cap_info[5]);\n1557: \tsts = HE_PHY(CAP4_BEAMFORMEE_MAX_STS_UNDER_80MHZ_MASK,\n1558: \t\t     pe->phy_cap_info[4]);\n1559: \tbf->nrow = min_t(u8, snd_dim, sts);\n1560: \tbf->ncol = min_t(u8, nss_mcs, bf->nrow);\n1561: \tbf->ibf_ncol = bf->ncol;\n1562: \n1563: \tif (sta->deflink.bandwidth != IEEE80211_STA_RX_BW_160)\n1564: \t\treturn;\n1565: \n1566: \t/* go over for 160MHz and 80p80 */\n1567: \tif (pe->phy_cap_info[0] &\n1568: \t    IEEE80211_HE_PHY_CAP0_CHANNEL_WIDTH_SET_160MHZ_IN_5G) {\n1569: \t\tmcs_map = le16_to_cpu(pc->he_mcs_nss_supp.rx_mcs_160);\n1570: \t\tnss_mcs = mt7996_mcu_get_sta_nss(mcs_map);\n1571: \n1572: \t\tbf->ncol_gt_bw80 = nss_mcs;\n1573: \t}\n1574: \n1575: \tif (pe->phy_cap_info[0] &\n1576: \t    IEEE80211_HE_PHY_CAP0_CHANNEL_WIDTH_SET_80PLUS80_MHZ_IN_5G) {",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:guarded-state",
+        "confidence": 0.9,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "drivers/net/wireless/mediatek/mt76/mt7996/mcu.c",
+          "hunk_index": 0,
+          "source_line": 1544
+        },
+        "summary": "mt7996_mcu_sta_bfer_he adds patch barrier `!vc` around mt7996_mcu_sta_sounding_rate, min_t.",
+        "statements": [
+          "if (!vc)",
+          "return;"
+        ],
+        "guards": [
+          "!vc"
+        ],
+        "call_boundary": [
+          "mt7996_mcu_sta_sounding_rate",
+          "min_t",
+          "mt76_connac_get_he_phy_cap",
+          "le16_to_cpu"
+        ],
+        "call_edges": [
+          "mt7996_mcu_sta_bfer_he -> mt7996_mcu_sta_sounding_rate",
+          "mt7996_mcu_sta_bfer_he -> min_t",
+          "mt7996_mcu_sta_bfer_he -> mt76_connac_get_he_phy_cap"
+        ],
+        "state_transitions": [
+          "guard(!vc)",
+          "sink(mt7996_mcu_sta_sounding_rate)",
+          "sink(min_t)"
+        ],
+        "api_terms": [
+          "mt7996_mcu_sta_sounding_rate",
+          "min_t",
+          "mt76_connac_get_he_phy_cap"
+        ],
+        "related_symbols": [
+          "vc"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_0",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/wireless/mediatek/mt76/mt7996/mcu.c",
+        "function": "mt7996_mcu_sta_bfer_he"
+      },
+      "location": {
+        "line": 1544,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "mt7996_mcu_sta_bfer_he in drivers/net/wireless/mediatek/mt76/mt7996/mcu.c provides CSA-backed pointer/resource lifecycle context near line 1544",
+        "diagnostic_message": "",
+        "diagnostic_checker": "",
+        "state_before": [
+          "buffer(bf->ncol_gt_bw80)",
+          "buffer(bf->nrow)",
+          "sinks(mt7996_mcu_sta_sounding_rate, min_t)"
+        ],
+        "state_after": [
+          "operation([B1.5]->nrow_gt_bw80)",
+          "operation([B1.6] = [B1.3])",
+          "operation([B4.4]->phy_cap_info)",
+          "operation([B4.13] = [B4.12])"
+        ],
+        "functions": [
+          "mt7996_mcu_sta_bfer_he"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "vc"
+        ],
+        "buffer_fields": [
+          "bf->ncol_gt_bw80",
+          "bf->nrow",
+          "sta->deflink",
+          "pc->he_cap_elem",
+          "phy->mt76",
+          "vc->he_cap_elem"
+        ],
+        "call_targets": [
+          "mt7996_mcu_sta_sounding_rate",
+          "min_t",
+          "mt7996_mcu_sta_bfer_he",
+          "mt76_connac_get_he_phy_cap",
+          "le16_to_cpu",
+          "mt7996_mcu_get_sta_nss"
+        ],
+        "call_edges": [
+          "mt7996_mcu_sta_bfer_he -> mt76_connac_get_he_phy_cap",
+          "mt7996_mcu_sta_bfer_he -> mt7996_mcu_get_sta_nss",
+          "mt7996_mcu_sta_bfer_he -> mt7996_mcu_sta_sounding_rate",
+          "mt7996_mcu_sta_bfer_he -> u8_get_bits"
+        ],
+        "state_statements": [
+          "[B1.5]->nrow_gt_bw80",
+          "[B1.6] = [B1.3]",
+          "[B4.4]->phy_cap_info",
+          "[B4.13] = [B4.12]",
+          "[B4.18]->phy_cap_info",
+          "[B4.27] = [B4.26]"
+        ],
+        "source_file": "drivers/net/wireless/mediatek/mt76/mt7996/mcu.c",
+        "source_excerpt": "1512: \t\tmt7996_mcu_sta_sounding_rate(bf);\n1513: \n1514: \t\tsts = FIELD_GET(IEEE80211_VHT_CAP_BEAMFORMEE_STS_MASK,\n1515: \t\t\t\tpc->cap);\n1516: \t\tsnd_dim = FIELD_GET(IEEE80211_VHT_CAP_SOUNDING_DIMENSIONS_MASK,\n1517: \t\t\t\t    vc->cap);\n1518: \t\tbf->nrow = min_t(u8, min_t(u8, snd_dim, sts), tx_ant);\n1519: \t\tbf->ncol = min_t(u8, nss_mcs, bf->nrow);\n1520: \t\tbf->ibf_ncol = bf->ncol;\n1521: \n1522: \t\tif (sta->deflink.bandwidth == IEEE80211_STA_RX_BW_160)\n1523: \t\t\tbf->nrow = 1;\n1524: \t} else {\n1525: \t\tbf->nrow = tx_ant;\n1526: \t\tbf->ncol = min_t(u8, nss_mcs, bf->nrow);\n1527: \t\tbf->ibf_ncol = nss_mcs;\n1528: \n1529: \t\tif (sta->deflink.bandwidth == IEEE80211_STA_RX_BW_160)\n1530: \t\t\tbf->ibf_nrow = 1;\n1531: \t}\n1532: }\n1533: \n1534: static void\n1535: mt7996_mcu_sta_bfer_he(struct ieee80211_sta *sta, struct ieee80211_vif *vif,\n1536: \t\t       struct mt7996_phy *phy, struct sta_rec_bf *bf)\n1537: {\n1538: \tstruct ieee80211_sta_he_cap *pc = &sta->deflink.he_cap;\n1539: \tstruct ieee80211_he_cap_elem *pe = &pc->he_cap_elem;\n1540: \tconst struct ieee80211_sta_he_cap *vc =\n1541: \t\tmt76_connac_get_he_phy_cap(phy->mt76, vif);\n1542: \tconst struct ieee80211_he_cap_elem *ve = &vc->he_cap_elem;\n1543: \tu16 mcs_map = le16_to_cpu(pc->he_mcs_nss_supp.rx_mcs_80);\n1544: \tu8 nss_mcs = mt7996_mcu_get_sta_nss(mcs_map);\n1545: \tu8 snd_dim, sts;\n1546: \n1547: \tbf->tx_mode = MT_PHY_TYPE_HE_SU;\n1548: \n1549: \tmt7996_mcu_sta_sounding_rate(bf);\n1550: \n1551: \tbf->trigger_su = HE_PHY(CAP6_TRIG_SU_BEAMFORMING_FB,\n1552: \t\t\t\tpe->phy_cap_info[6]);\n1553: \tbf->trigger_mu = HE_PHY(CAP6_TRIG_MU_BEAMFORMING_PARTIAL_BW_FB,\n1554: \t\t\t\tpe->phy_cap_info[6]);\n1555: \tsnd_dim = HE_PHY(CAP5_BEAMFORMEE_NUM_SND_DIM_UNDER_80MHZ_MASK,\n1556: \t\t\t ve->phy_cap_info[5]);\n1557: \tsts = HE_PHY(CAP4_BEAMFORMEE_MAX_STS_UNDER_80MHZ_MASK,\n1558: \t\t     pe->phy_cap_info[4]);\n1559: \tbf->nrow = min_t(u8, snd_dim, sts);\n1560: \tbf->ncol = min_t(u8, nss_mcs, bf->nrow);\n1561: \tbf->ibf_ncol = bf->ncol;\n1562: \n1563: \tif (sta->deflink.bandwidth != IEEE80211_STA_RX_BW_160)\n1564: \t\treturn;\n1565: \n1566: \t/* go over for 160MHz and 80p80 */\n1567: \tif (pe->phy_cap_info[0] &\n1568: \t    IEEE80211_HE_PHY_CAP0_CHANNEL_WIDTH_SET_160MHZ_IN_5G) {\n1569: \t\tmcs_map = le16_to_cpu(pc->he_mcs_nss_supp.rx_mcs_160);\n1570: \t\tnss_mcs = mt7996_mcu_get_sta_nss(mcs_map);\n1571: \n1572: \t\tbf->ncol_gt_bw80 = nss_mcs;\n1573: \t}\n1574: \n1575: \tif (pe->phy_cap_info[0] &\n1576: \t    IEEE80211_HE_PHY_CAP0_CHANNEL_WIDTH_SET_80PLUS80_MHZ_IN_5G) {",
+        "coverage_status": "partial",
+        "operations": [
+          "[B1.5]->nrow_gt_bw80",
+          "[B1.6] = [B1.3]",
+          "[B4.4]->phy_cap_info",
+          "[B4.13] = [B4.12]",
+          "[B4.18]->phy_cap_info",
+          "[B4.27] = [B4.26]"
+        ],
+        "acquisition_ops": [],
+        "release_ops": []
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.72,
+        "origin": "analyzer_output"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "drivers/net/wireless/mediatek/mt76/mt7996/mcu.c",
+          "hunk_index": 0,
+          "source_line": 1544
+        },
+        "summary": "mt7996_mcu_sta_bfer_he in drivers/net/wireless/mediatek/mt76/mt7996/mcu.c provides CSA-backed pointer/resource lifecycle context near line 1544",
+        "statements": [
+          "1512: \t\tmt7996_mcu_sta_sounding_rate(bf);",
+          "1513:",
+          "1514: \t\tsts = FIELD_GET(IEEE80211_VHT_CAP_BEAMFORMEE_STS_MASK,",
+          "1515: \t\t\t\tpc->cap);",
+          "1516: \t\tsnd_dim = FIELD_GET(IEEE80211_VHT_CAP_SOUNDING_DIMENSIONS_MASK,",
+          "1517: \t\t\t\t    vc->cap);"
+        ],
+        "guards": [
+          "sta->deflink.bandwidth == IEEE80211_STA_RX_BW_160",
+          "sta->deflink.bandwidth != IEEE80211_STA_RX_BW_160",
+          "!vc",
+          "[B4.41] ? ... : ..."
+        ],
+        "call_boundary": [
+          "mt7996_mcu_sta_sounding_rate",
+          "min_t",
+          "mt7996_mcu_sta_bfer_he",
+          "mt76_connac_get_he_phy_cap",
+          "le16_to_cpu",
+          "mt7996_mcu_get_sta_nss"
+        ],
+        "call_edges": [
+          "mt7996_mcu_sta_bfer_he -> mt76_connac_get_he_phy_cap",
+          "mt7996_mcu_sta_bfer_he -> mt7996_mcu_get_sta_nss",
+          "mt7996_mcu_sta_bfer_he -> mt7996_mcu_sta_sounding_rate",
+          "mt7996_mcu_sta_bfer_he -> u8_get_bits"
+        ],
+        "state_transitions": [
+          "operation([B1.5]->nrow_gt_bw80)",
+          "operation([B1.6] = [B1.3])",
+          "operation([B4.4]->phy_cap_info)",
+          "operation([B4.13] = [B4.12])"
+        ],
+        "api_terms": [
+          "[B1.5]->nrow_gt_bw80",
+          "[B1.6] = [B1.3]",
+          "[B4.4]->phy_cap_info",
+          "[B4.13] = [B4.12]",
+          "[B4.18]->phy_cap_info",
+          "[B4.27] = [B4.26]"
+        ],
+        "related_symbols": [
+          "vc"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "collected_analyzers": [
+    "csa"
+  ],
+  "provenance_summary": {
+    "total_records": 5,
+    "origin_counts": {
+      "analyzer_internal": 1,
+      "analyzer_output": 1,
+      "source_derived": 3
+    },
+    "analyzer_internal_records": 1,
+    "analyzer_internal_fraction": 0.2,
+    "analyzer_backed_records": 2,
+    "analyzer_backed_fraction": 0.4,
+    "source_derived_records": 3,
+    "source_derived_fraction": 0.6
+  }
+}

@@ -1,0 +1,679 @@
+{
+  "records": [
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/firmware/arm_scmi/driver.c",
+        "function": "scmi_debugfs_common_setup"
+      },
+      "location": {
+        "line": 2979,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "if __devm_add_action_or_reset (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct device *, void (*)(void *), void *, const char *))(info (ImplicitCastExpr, LValueToRValue, struct scmi_info *)->dev (ImplicitCastExpr, LValueToRValue, struct device *), scmi_debugfs_common_cleanup (ImplicitCastExpr, FunctionToPointerDecay, void (*)(void *)), dbg (ImplicitCastExpr, LValueToRValue, struct scmi_debug_info *) (ImplicitCastExpr, BitCast, void *), \"scmi_debugfs_common_cleanup\" (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *))",
+        "summary": "Analyzer CFG for scmi_debugfs_common_setup in drivers/firmware/arm_scmi/driver.c: bindings: dbg (ImplicitCastExpr, LValueToRValue, struct scmi_debug_info *)->is_atomic = [B7.35] (ImplicitCastExpr, LValueToRValue, struct scmi_info *)->desc (ImplicitCastExpr, LValueToRValue, const struct scmi_desc *)->atomic_enabled (ImplicitCastExpr, LValueToRValue, bool) (ImplicitCastExpr, IntegralCast, int) && is_transport_polling_capable (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const struct scmi_desc *))(info (ImplicitCastExpr, LValueToRValue, struct scmi_info *)->desc (ImplicitCastExpr, LValueToRValue, const struct scmi_desc *)) (ImplicitCastExpr, IntegralCast, int) (ImplicitCastExpr, IntegralToBoolean, bool); const char *c_ptr = ((void *)0); | branches: if __devm_add_action_or_reset (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct device *, void (*)(void *), void *, const char *))(info (ImplicitCastExpr, LValueToRValue, struct scmi_info *)->dev (ImplicitCastExpr, LValueToRValue, struct device *), scmi_debugfs_common_cleanup (ImplicitCastExpr, FunctionToPointerDecay, void (*)(void *)), dbg (ImplicitCastExpr, LValueToRValue, struct scmi_debug_info *) (ImplicitCastExpr, BitCast, void *), \"scmi_debugfs_common_cleanup\" (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *)); if 1 | calls: scmi_debugfs_common_setup -> devm_kzalloc; scmi_debugfs_common_setup -> kstrdup",
+        "state_before": [
+          "input(info)",
+          "buffer(dbg->is_atomic)",
+          "buffer(info->desc)",
+          "sinks(is_transport_polling_capable, debugfs_create_str)"
+        ],
+        "state_after": [
+          "cfg_binding(dbg (ImplicitCastExpr, LValueToRValue, struct scmi_debug_info *)->is_atomic = [B7.35] (ImplicitCastExpr, LValueToRValue, struct scmi_info *)->desc (ImplicitCastExpr, LValueToRValue, const struct scmi_desc *)->atomic_enabled (ImplicitCastExpr, LValueToRValue, bool) (ImplicitCastExpr, IntegralCast, int) && is_transport_polling_capable (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const struct scmi_desc *))(info (ImplicitCastExpr, LValueToRValue, struct scmi_info *)->desc (ImplicitCastExpr, LValueToRValue, const struct scmi_desc *)) (ImplicitCastExpr, IntegralCast, int) (ImplicitCastExpr, IntegralToBoolean, bool))",
+          "cfg_binding(const char *c_ptr = ((void *)0);)",
+          "cfg_branch(if __devm_add_action_or_reset (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct device *, void (*)(void *), void *, const char *))(info (ImplicitCastExpr, LValueToRValue, struct scmi_info *)->dev (ImplicitCastExpr, LValueToRValue, struct device *), scmi_debugfs_common_cleanup (ImplicitCastExpr, FunctionToPointerDecay, void (*)(void *)), dbg (ImplicitCastExpr, LValueToRValue, struct scmi_debug_info *) (ImplicitCastExpr, BitCast, void *), \"scmi_debugfs_common_cleanup\" (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *)))",
+          "cfg_branch(if 1)"
+        ],
+        "functions": [
+          "scmi_debugfs_common_setup"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "info",
+          "dbg->is_atomic",
+          "info->desc",
+          "dbg->name",
+          "info->atomic_threshold",
+          "dbg->type",
+          "info->tx_minfo"
+        ],
+        "buffer_fields": [
+          "dbg->is_atomic",
+          "info->desc",
+          "dbg->name",
+          "info->atomic_threshold",
+          "dbg->type",
+          "info->tx_minfo"
+        ],
+        "call_targets": [
+          "is_transport_polling_capable",
+          "debugfs_create_str",
+          "debugfs_create_u32",
+          "debugfs_create_bool",
+          "scmi_debugfs_counters_setup",
+          "devm_add_action_or_reset",
+          "scmi_debugfs_common_cleanup",
+          "devm_kzalloc"
+        ],
+        "call_edges": [
+          "scmi_debugfs_common_setup -> devm_kzalloc",
+          "scmi_debugfs_common_setup -> kstrdup",
+          "scmi_debugfs_common_setup -> of_node_full_name",
+          "scmi_debugfs_common_setup -> devm_kfree",
+          "scmi_debugfs_common_setup -> of_property_read_string",
+          "scmi_debugfs_common_setup -> kfree"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "if [B3.21]",
+          "if [B5.131]",
+          "[B7.41] && ...",
+          "if [B9.48]",
+          "if [B11.41]",
+          "if [B13.40]"
+        ],
+        "resolved_branch_conditions": [
+          "if __devm_add_action_or_reset (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct device *, void (*)(void *), void *, const char *))(info (ImplicitCastExpr, LValueToRValue, struct scmi_info *)->dev (ImplicitCastExpr, LValueToRValue, struct device *), scmi_debugfs_common_cleanup (ImplicitCastExpr, FunctionToPointerDecay, void (*)(void *)), dbg (ImplicitCastExpr, LValueToRValue, struct scmi_debug_info *) (ImplicitCastExpr, BitCast, void *), \"scmi_debugfs_common_cleanup\" (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *))",
+          "if 1",
+          "info (ImplicitCastExpr, LValueToRValue, struct scmi_info *)->desc (ImplicitCastExpr, LValueToRValue, const struct scmi_desc *)->atomic_enabled (ImplicitCastExpr, LValueToRValue, bool) (ImplicitCastExpr, IntegralCast, int) && ...",
+          "if !dbg (ImplicitCastExpr, LValueToRValue, struct scmi_debug_info *)->type (ImplicitCastExpr, LValueToRValue, const char *)",
+          "if !dbg (ImplicitCastExpr, LValueToRValue, struct scmi_debug_info *)->name (ImplicitCastExpr, LValueToRValue, const char *)",
+          "if !dbg (ImplicitCastExpr, LValueToRValue, struct scmi_debug_info *)"
+        ],
+        "cfg_value_bindings": [
+          "dbg (ImplicitCastExpr, LValueToRValue, struct scmi_debug_info *)->is_atomic = [B7.35] (ImplicitCastExpr, LValueToRValue, struct scmi_info *)->desc (ImplicitCastExpr, LValueToRValue, const struct scmi_desc *)->atomic_enabled (ImplicitCastExpr, LValueToRValue, bool) (ImplicitCastExpr, IntegralCast, int) && is_transport_polling_capable (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const struct scmi_desc *))(info (ImplicitCastExpr, LValueToRValue, struct scmi_info *)->desc (ImplicitCastExpr, LValueToRValue, const struct scmi_desc *)) (ImplicitCastExpr, IntegralCast, int) (ImplicitCastExpr, IntegralToBoolean, bool)",
+          "const char *c_ptr = ((void *)0);",
+          "dbg (ImplicitCastExpr, LValueToRValue, struct scmi_debug_info *)->top_dentry = top_dentry (ImplicitCastExpr, LValueToRValue, struct dentry *)",
+          "trans = debugfs_create_dir (ImplicitCastExpr, FunctionToPointerDecay, struct dentry *(*)(const char *, struct dentry *))(\"transport\" (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *), top_dentry (ImplicitCastExpr, LValueToRValue, struct dentry *))",
+          "top_dentry = debugfs_create_dir (ImplicitCastExpr, FunctionToPointerDecay, struct dentry *(*)(const char *, struct dentry *))(top_dir (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *), scmi_top_dentry (ImplicitCastExpr, LValueToRValue, struct dentry *))",
+          "dbg (ImplicitCastExpr, LValueToRValue, struct scmi_debug_info *)->type = kstrdup (ImplicitCastExpr, FunctionToPointerDecay, char *(*)(const char *, gfp_t))(c_ptr (ImplicitCastExpr, LValueToRValue, const char *), (((gfp_t)(((((1UL))) << (___GFP_DIRECT_RECLAIM_BIT)) | ((((1UL))) << (___GFP_KSWAPD_RECLAIM_BIT))) (CStyleCastExpr, IntegralCast, gfp_t)) | ((gfp_t)((((1UL))) << (___GFP_IO_BIT)) (CStyleCastExpr, IntegralCast, gfp_t)) | ((gfp_t)((((1UL))) << (___GFP_FS_BIT)) (CStyleCastExpr, IntegralCast, gfp_t)))) (ImplicitCastExpr, NoOp, const char *)"
+        ],
+        "state_statements": [
+          "return [B1.2];",
+          "return [B2.9];",
+          "[B3.4]->top_dentry",
+          "[B3.5] = [B3.2]",
+          "[B3.10]->dev",
+          "[B5.4]->is_atomic"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,drivers/firmware/arm_scmi/.driver.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/uapi -I....",
+        "source_file": "drivers/firmware/arm_scmi/driver.c",
+        "source_excerpt": "2947: \n2948: \tdbg->is_atomic = info->desc->atomic_enabled &&\n2949: \t\t\t\tis_transport_polling_capable(info->desc);\n2950: \n2951: \tdebugfs_create_str(\"instance_name\", 0400, top_dentry,\n2952: \t\t\t   (char **)&dbg->name);\n2953: \n2954: \tdebugfs_create_u32(\"atomic_threshold_us\", 0400, top_dentry,\n2955: \t\t\t   &info->atomic_threshold);\n2956: \n2957: \tdebugfs_create_str(\"type\", 0400, trans, (char **)&dbg->type);\n2958: \n2959: \tdebugfs_create_bool(\"is_atomic\", 0400, trans, &dbg->is_atomic);\n2960: \n2961: \tdebugfs_create_u32(\"max_rx_timeout_ms\", 0400, trans,\n2962: \t\t\t   (u32 *)&info->desc->max_rx_timeout_ms);\n2963: \n2964: \tdebugfs_create_u32(\"max_msg_size\", 0400, trans,\n2965: \t\t\t   (u32 *)&info->desc->max_msg_size);\n2966: \n2967: \tdebugfs_create_u32(\"tx_max_msg\", 0400, trans,\n2968: \t\t\t   (u32 *)&info->tx_minfo.max_msg);\n2969: \n2970: \tdebugfs_create_u32(\"rx_max_msg\", 0400, trans,\n2971: \t\t\t   (u32 *)&info->rx_minfo.max_msg);\n2972: \n2973: \tif (IS_ENABLED(CONFIG_ARM_SCMI_DEBUG_COUNTERS))\n2974: \t\tscmi_debugfs_counters_setup(dbg, trans);\n2975: \n2976: \tdbg->top_dentry = top_dentry;\n2977: \n2978: \tif (devm_add_action_or_reset(info->dev,\n2979: \t\t\t\t     scmi_debugfs_common_cleanup, dbg)) {\n2980: \t\tscmi_debugfs_common_cleanup(dbg);\n2981: \t\treturn NULL;\n2982: \t}\n2983: \n2984: \treturn dbg;\n2985: }",
+        "summary_line": 2979,
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/semweaver_treatment_evidence_cohort_v3/19_39b13dce1a91_Double_Free/csa/patchweaver_runtime/csa_raw/drivers-firmware-arm_scmi-driver.c-scmi_debugfs_common_setup.txt",
+        "raw_output_sha256": "76c8ebcdd88aa06171730a8a3b2d0029b15d8347a36a59c778e2921338ebaf47",
+        "command_sha256": "cb0e43d533048fde8adcbd67a77e3283140a45a8e3823f0ddb25b00d32bf5c7c"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:debug-cfg",
+        "confidence": 0.92,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/firmware/arm_scmi/driver.c",
+          "hunk_index": 0,
+          "source_line": 2979
+        },
+        "summary": "Analyzer CFG for scmi_debugfs_common_setup in drivers/firmware/arm_scmi/driver.c: bindings: dbg (ImplicitCastExpr, LValueToRValue, struct scmi_debug_info *)->is_atomic = [B7.35] (ImplicitCastExpr, LValueToRValue, struct scmi_info *)->desc (ImplicitCastExpr, LValueToRValue, const struct scmi_desc *)->atomic_enabled (ImplicitCastExpr, LValueToRValue, bool) (ImplicitCastExpr, IntegralCast, int) && is_transport_polling_capable (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const struct scmi_desc *))(info (ImplicitCastExpr, LValueToRValue, struct scmi_info *)->desc (ImplicitCastExpr, LValueToRValue, const struct scmi_desc *)) (ImplicitCastExpr, IntegralCast, int) (ImplicitCastExpr, IntegralToBoolean, bool); const char *c_ptr = ((void *)0); | branches: if __devm_add_action_or_reset (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct device *, void (*)(void *), void *, const char *))(info (ImplicitCastExpr, LValueToRValue, struct scmi_info *)->dev (ImplicitCastExpr, LValueToRValue, struct device *), scmi_debugfs_common_cleanup (ImplicitCastExpr, FunctionToPointerDecay, void (*)(void *)), dbg (ImplicitCastExpr, LValueToRValue, struct scmi_debug_info *) (ImplicitCastExpr, BitCast, void *), \"scmi_debugfs_common_cleanup\" (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *)); if 1 | calls: scmi_debugfs_common_setup -> devm_kzalloc; scmi_debugfs_common_setup -> kstrdup",
+        "statements": [
+          "2947:",
+          "2948: \tdbg->is_atomic = info->desc->atomic_enabled &&",
+          "2949: \t\t\t\tis_transport_polling_capable(info->desc);",
+          "2950:",
+          "2951: \tdebugfs_create_str(\"instance_name\", 0400, top_dentry,",
+          "2952: \t\t\t   (char **)&dbg->name);"
+        ],
+        "guards": [
+          "if __devm_add_action_or_reset (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct device *, void (*)(void *), void *, const char *))(info (ImplicitCastExpr, LValueToRValue, struct scmi_info *)->dev (ImplicitCastExpr, LValueToRValue, struct device *), scmi_debugfs_common_cleanup (ImplicitCastExpr, FunctionToPointerDecay, void (*)(void *)), dbg (ImplicitCastExpr, LValueToRValue, struct scmi_debug_info *) (ImplicitCastExpr, BitCast, void *), \"scmi_debugfs_common_cleanup\" (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *))",
+          "if 1",
+          "info (ImplicitCastExpr, LValueToRValue, struct scmi_info *)->desc (ImplicitCastExpr, LValueToRValue, const struct scmi_desc *)->atomic_enabled (ImplicitCastExpr, LValueToRValue, bool) (ImplicitCastExpr, IntegralCast, int) && ...",
+          "if !dbg (ImplicitCastExpr, LValueToRValue, struct scmi_debug_info *)->type (ImplicitCastExpr, LValueToRValue, const char *)"
+        ],
+        "call_boundary": [
+          "is_transport_polling_capable",
+          "debugfs_create_str",
+          "debugfs_create_u32",
+          "debugfs_create_bool",
+          "scmi_debugfs_counters_setup",
+          "devm_add_action_or_reset"
+        ],
+        "call_edges": [
+          "scmi_debugfs_common_setup -> devm_kzalloc",
+          "scmi_debugfs_common_setup -> kstrdup",
+          "scmi_debugfs_common_setup -> of_node_full_name",
+          "scmi_debugfs_common_setup -> devm_kfree",
+          "scmi_debugfs_common_setup -> of_property_read_string",
+          "scmi_debugfs_common_setup -> kfree",
+          "scmi_debugfs_common_setup -> snprintf",
+          "scmi_debugfs_common_setup -> debugfs_create_dir"
+        ],
+        "state_transitions": [
+          "cfg_binding(dbg (ImplicitCastExpr, LValueToRValue, struct scmi_debug_info *)->is_atomic = [B7.35] (ImplicitCastExpr, LValueToRValue, struct scmi_info *)->desc (ImplicitCastExpr, LValueToRValue, const struct scmi_desc *)->atomic_enabled (ImplicitCastExpr, LValueToRValue, bool) (ImplicitCastExpr, IntegralCast, int) && is_transport_polling_capable (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const struct scmi_desc *))(info (ImplicitCastExpr, LValueToRValue, struct scmi_info *)->desc (ImplicitCastExpr, LValueToRValue, const struct scmi_desc *)) (ImplicitCastExpr, IntegralCast, int) (ImplicitCastExpr, IntegralToBoolean, bool))",
+          "cfg_binding(const char *c_ptr = ((void *)0);)",
+          "cfg_branch(if __devm_add_action_or_reset (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct device *, void (*)(void *), void *, const char *))(info (ImplicitCastExpr, LValueToRValue, struct scmi_info *)->dev (ImplicitCastExpr, LValueToRValue, struct device *), scmi_debugfs_common_cleanup (ImplicitCastExpr, FunctionToPointerDecay, void (*)(void *)), dbg (ImplicitCastExpr, LValueToRValue, struct scmi_debug_info *) (ImplicitCastExpr, BitCast, void *), \"scmi_debugfs_common_cleanup\" (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *)))",
+          "cfg_branch(if 1)",
+          "return [B1.2];",
+          "return [B2.9];"
+        ],
+        "api_terms": [
+          "devm_kzalloc",
+          "kstrdup",
+          "of_node_full_name",
+          "devm_kfree",
+          "of_property_read_string",
+          "kfree"
+        ],
+        "related_symbols": [
+          "info",
+          "dbg->is_atomic",
+          "info->desc",
+          "dbg->name",
+          "info->atomic_threshold",
+          "dbg->type"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/firmware/arm_scmi/driver.c",
+        "function": "scmi_debugfs_common_setup"
+      },
+      "location": {
+        "line": 2979,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "scmi_debugfs_common_setup in drivers/firmware/arm_scmi/driver.c: cfg_calls=scmi_debugfs_common_setup -> devm_kzalloc; scmi_debugfs_common_setup -> kstrdup",
+        "state_before": [
+          "input(info)",
+          "buffer(dbg->is_atomic)",
+          "buffer(info->desc)",
+          "sinks(is_transport_polling_capable, debugfs_create_str)"
+        ],
+        "state_after": [
+          "transition(return [B1.2];)",
+          "transition(return [B2.9];)",
+          "transition([B3.4]->top_dentry)"
+        ],
+        "functions": [
+          "scmi_debugfs_common_setup"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "info",
+          "dbg->is_atomic",
+          "info->desc",
+          "dbg->name",
+          "info->atomic_threshold",
+          "dbg->type",
+          "info->tx_minfo"
+        ],
+        "buffer_fields": [
+          "dbg->is_atomic",
+          "info->desc",
+          "dbg->name",
+          "info->atomic_threshold",
+          "dbg->type",
+          "info->tx_minfo"
+        ],
+        "call_targets": [
+          "is_transport_polling_capable",
+          "debugfs_create_str",
+          "debugfs_create_u32",
+          "debugfs_create_bool",
+          "scmi_debugfs_counters_setup",
+          "devm_add_action_or_reset",
+          "scmi_debugfs_common_cleanup",
+          "devm_kzalloc"
+        ],
+        "call_edges": [
+          "scmi_debugfs_common_setup -> devm_kzalloc",
+          "scmi_debugfs_common_setup -> kstrdup",
+          "scmi_debugfs_common_setup -> of_node_full_name",
+          "scmi_debugfs_common_setup -> devm_kfree",
+          "scmi_debugfs_common_setup -> of_property_read_string",
+          "scmi_debugfs_common_setup -> kfree"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "if [B3.21]",
+          "if [B5.131]",
+          "[B7.41] && ...",
+          "if [B9.48]"
+        ],
+        "state_statements": [
+          "return [B1.2];",
+          "return [B2.9];",
+          "[B3.4]->top_dentry",
+          "[B3.5] = [B3.2]",
+          "[B3.10]->dev",
+          "[B5.4]->is_atomic",
+          "[B5.5] = [B5.2]",
+          "[B5.17]->name"
+        ],
+        "return_statements": [
+          "return [B1.2];",
+          "return [B2.9];",
+          "return [B8.21];",
+          "return [B10.13];"
+        ],
+        "source_file": "drivers/firmware/arm_scmi/driver.c",
+        "source_excerpt": "2947: \n2948: \tdbg->is_atomic = info->desc->atomic_enabled &&\n2949: \t\t\t\tis_transport_polling_capable(info->desc);\n2950: \n2951: \tdebugfs_create_str(\"instance_name\", 0400, top_dentry,\n2952: \t\t\t   (char **)&dbg->name);\n2953: \n2954: \tdebugfs_create_u32(\"atomic_threshold_us\", 0400, top_dentry,\n2955: \t\t\t   &info->atomic_threshold);\n2956: \n2957: \tdebugfs_create_str(\"type\", 0400, trans, (char **)&dbg->type);\n2958: \n2959: \tdebugfs_create_bool(\"is_atomic\", 0400, trans, &dbg->is_atomic);\n2960: \n2961: \tdebugfs_create_u32(\"max_rx_timeout_ms\", 0400, trans,\n2962: \t\t\t   (u32 *)&info->desc->max_rx_timeout_ms);\n2963: \n2964: \tdebugfs_create_u32(\"max_msg_size\", 0400, trans,\n2965: \t\t\t   (u32 *)&info->desc->max_msg_size);\n2966: \n2967: \tdebugfs_create_u32(\"tx_max_msg\", 0400, trans,\n2968: \t\t\t   (u32 *)&info->tx_minfo.max_msg);\n2969: \n2970: \tdebugfs_create_u32(\"rx_max_msg\", 0400, trans,\n2971: \t\t\t   (u32 *)&info->rx_minfo.max_msg);\n2972: \n2973: \tif (IS_ENABLED(CONFIG_ARM_SCMI_DEBUG_COUNTERS))\n2974: \t\tscmi_debugfs_counters_setup(dbg, trans);\n2975: \n2976: \tdbg->top_dentry = top_dentry;\n2977: \n2978: \tif (devm_add_action_or_reset(info->dev,\n2979: \t\t\t\t     scmi_debugfs_common_cleanup, dbg)) {\n2980: \t\tscmi_debugfs_common_cleanup(dbg);\n2981: \t\treturn NULL;\n2982: \t}\n2983: \n2984: \treturn dbg;\n2985: }",
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/semweaver_treatment_evidence_cohort_v3/19_39b13dce1a91_Double_Free/csa/patchweaver_runtime/csa_raw/drivers-firmware-arm_scmi-driver.c-scmi_debugfs_common_setup.txt",
+        "raw_output_sha256": "76c8ebcdd88aa06171730a8a3b2d0029b15d8347a36a59c778e2921338ebaf47",
+        "command_sha256": "cb0e43d533048fde8adcbd67a77e3283140a45a8e3823f0ddb25b00d32bf5c7c"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:symbolic-state",
+        "confidence": 0.88,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "drivers/firmware/arm_scmi/driver.c",
+          "hunk_index": 0,
+          "source_line": 2979
+        },
+        "summary": "scmi_debugfs_common_setup in drivers/firmware/arm_scmi/driver.c: cfg_calls=scmi_debugfs_common_setup -> devm_kzalloc; scmi_debugfs_common_setup -> kstrdup",
+        "statements": [
+          "2947:",
+          "2948: \tdbg->is_atomic = info->desc->atomic_enabled &&",
+          "2949: \t\t\t\tis_transport_polling_capable(info->desc);",
+          "2950:",
+          "2951: \tdebugfs_create_str(\"instance_name\", 0400, top_dentry,",
+          "2952: \t\t\t   (char **)&dbg->name);"
+        ],
+        "guards": [
+          "if [B3.21]",
+          "if [B5.131]",
+          "[B7.41] && ..."
+        ],
+        "call_boundary": [
+          "is_transport_polling_capable",
+          "debugfs_create_str",
+          "debugfs_create_u32",
+          "debugfs_create_bool",
+          "scmi_debugfs_counters_setup",
+          "devm_add_action_or_reset"
+        ],
+        "call_edges": [
+          "scmi_debugfs_common_setup -> devm_kzalloc",
+          "scmi_debugfs_common_setup -> kstrdup",
+          "scmi_debugfs_common_setup -> of_node_full_name",
+          "scmi_debugfs_common_setup -> devm_kfree",
+          "scmi_debugfs_common_setup -> of_property_read_string",
+          "scmi_debugfs_common_setup -> kfree",
+          "scmi_debugfs_common_setup -> snprintf",
+          "scmi_debugfs_common_setup -> debugfs_create_dir"
+        ],
+        "state_transitions": [
+          "transition(return [B1.2];)",
+          "transition(return [B2.9];)",
+          "transition([B3.4]->top_dentry)",
+          "return [B1.2];",
+          "return [B2.9];",
+          "[B3.4]->top_dentry"
+        ],
+        "api_terms": [
+          "devm_kzalloc",
+          "kstrdup",
+          "of_node_full_name",
+          "devm_kfree",
+          "of_property_read_string",
+          "kfree"
+        ],
+        "related_symbols": [
+          "info",
+          "dbg->is_atomic",
+          "info->desc",
+          "dbg->name",
+          "info->atomic_threshold",
+          "dbg->type"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_validation_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/firmware/arm_scmi/driver.c",
+        "function": "scmi_debugfs_common_setup"
+      },
+      "location": {
+        "line": 2979,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at drivers/firmware/arm_scmi/driver.c:2979",
+        "diagnostic_message": "",
+        "diagnostic_checker": "",
+        "state_before": [
+          "input(info)",
+          "buffer(dbg->is_atomic)",
+          "buffer(info->desc)",
+          "sinks(is_transport_polling_capable, debugfs_create_str)"
+        ],
+        "state_after": [
+          "diagnostic(csa)"
+        ],
+        "functions": [
+          "scmi_debugfs_common_setup"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "info"
+        ],
+        "buffer_fields": [
+          "dbg->is_atomic",
+          "info->desc",
+          "dbg->name",
+          "info->atomic_threshold",
+          "dbg->type",
+          "info->tx_minfo"
+        ],
+        "call_targets": [
+          "is_transport_polling_capable",
+          "debugfs_create_str",
+          "debugfs_create_u32",
+          "debugfs_create_bool",
+          "scmi_debugfs_counters_setup",
+          "devm_add_action_or_reset"
+        ],
+        "call_edges": [
+          "scmi_debugfs_common_setup -> devm_kzalloc",
+          "scmi_debugfs_common_setup -> kstrdup",
+          "scmi_debugfs_common_setup -> of_node_full_name",
+          "scmi_debugfs_common_setup -> devm_kfree",
+          "scmi_debugfs_common_setup -> of_property_read_string",
+          "scmi_debugfs_common_setup -> kfree"
+        ],
+        "state_statements": [
+          "return [B1.2];",
+          "return [B2.9];",
+          "[B3.4]->top_dentry",
+          "[B3.5] = [B3.2]",
+          "[B3.10]->dev",
+          "[B5.4]->is_atomic"
+        ],
+        "source_file": "drivers/firmware/arm_scmi/driver.c",
+        "source_excerpt": "2947: \n2948: \tdbg->is_atomic = info->desc->atomic_enabled &&\n2949: \t\t\t\tis_transport_polling_capable(info->desc);\n2950: \n2951: \tdebugfs_create_str(\"instance_name\", 0400, top_dentry,\n2952: \t\t\t   (char **)&dbg->name);\n2953: \n2954: \tdebugfs_create_u32(\"atomic_threshold_us\", 0400, top_dentry,\n2955: \t\t\t   &info->atomic_threshold);\n2956: \n2957: \tdebugfs_create_str(\"type\", 0400, trans, (char **)&dbg->type);\n2958: \n2959: \tdebugfs_create_bool(\"is_atomic\", 0400, trans, &dbg->is_atomic);\n2960: \n2961: \tdebugfs_create_u32(\"max_rx_timeout_ms\", 0400, trans,\n2962: \t\t\t   (u32 *)&info->desc->max_rx_timeout_ms);\n2963: \n2964: \tdebugfs_create_u32(\"max_msg_size\", 0400, trans,\n2965: \t\t\t   (u32 *)&info->desc->max_msg_size);\n2966: \n2967: \tdebugfs_create_u32(\"tx_max_msg\", 0400, trans,\n2968: \t\t\t   (u32 *)&info->tx_minfo.max_msg);\n2969: \n2970: \tdebugfs_create_u32(\"rx_max_msg\", 0400, trans,\n2971: \t\t\t   (u32 *)&info->rx_minfo.max_msg);\n2972: \n2973: \tif (IS_ENABLED(CONFIG_ARM_SCMI_DEBUG_COUNTERS))\n2974: \t\tscmi_debugfs_counters_setup(dbg, trans);\n2975: \n2976: \tdbg->top_dentry = top_dentry;\n2977: \n2978: \tif (devm_add_action_or_reset(info->dev,\n2979: \t\t\t\t     scmi_debugfs_common_cleanup, dbg)) {\n2980: \t\tscmi_debugfs_common_cleanup(dbg);\n2981: \t\treturn NULL;\n2982: \t}\n2983: \n2984: \treturn dbg;\n2985: }",
+        "coverage_status": "partial",
+        "contract_type": "",
+        "guard_exprs": [
+          "IS_ENABLED(CONFIG_ARM_SCMI_DEBUG_COUNTERS)",
+          "if [B3.21]",
+          "if [B5.131]",
+          "[B7.41] && ..."
+        ],
+        "sink_calls": [
+          "is_transport_polling_capable",
+          "debugfs_create_str",
+          "debugfs_create_u32",
+          "debugfs_create_bool"
+        ]
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.72,
+        "origin": "analyzer_output"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "drivers/firmware/arm_scmi/driver.c",
+          "hunk_index": 0,
+          "source_line": 2979
+        },
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at drivers/firmware/arm_scmi/driver.c:2979",
+        "statements": [
+          "2947:",
+          "2948: \tdbg->is_atomic = info->desc->atomic_enabled &&",
+          "2949: \t\t\t\tis_transport_polling_capable(info->desc);",
+          "2950:",
+          "2951: \tdebugfs_create_str(\"instance_name\", 0400, top_dentry,",
+          "2952: \t\t\t   (char **)&dbg->name);"
+        ],
+        "guards": [
+          "IS_ENABLED(CONFIG_ARM_SCMI_DEBUG_COUNTERS)",
+          "if [B3.21]",
+          "if [B5.131]",
+          "[B7.41] && ..."
+        ],
+        "call_boundary": [
+          "is_transport_polling_capable",
+          "debugfs_create_str",
+          "debugfs_create_u32",
+          "debugfs_create_bool",
+          "scmi_debugfs_counters_setup",
+          "devm_add_action_or_reset"
+        ],
+        "call_edges": [
+          "scmi_debugfs_common_setup -> devm_kzalloc",
+          "scmi_debugfs_common_setup -> kstrdup",
+          "scmi_debugfs_common_setup -> of_node_full_name",
+          "scmi_debugfs_common_setup -> devm_kfree",
+          "scmi_debugfs_common_setup -> of_property_read_string",
+          "scmi_debugfs_common_setup -> kfree"
+        ],
+        "state_transitions": [
+          "diagnostic(csa)"
+        ],
+        "api_terms": [
+          "return [B1.2];",
+          "return [B2.9];",
+          "[B3.4]->top_dentry",
+          "[B3.5] = [B3.2]",
+          "[B3.10]->dev",
+          "[B5.4]->is_atomic"
+        ],
+        "related_symbols": [
+          "info"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      }
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_1",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/firmware/arm_scmi/driver.c",
+        "function": "scmi_debugfs_common_setup"
+      },
+      "location": {
+        "line": 2979,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "scmi_debugfs_common_setup in drivers/firmware/arm_scmi/driver.c provides CSA-backed pointer/resource lifecycle context near line 2979",
+        "diagnostic_message": "",
+        "diagnostic_checker": "",
+        "state_before": [
+          "input(info)",
+          "buffer(dbg->is_atomic)",
+          "buffer(info->desc)",
+          "sinks(is_transport_polling_capable, debugfs_create_str)"
+        ],
+        "state_after": [
+          "operation(return [B1.2];)",
+          "operation(return [B2.9];)",
+          "operation([B3.4]->top_dentry)",
+          "operation([B3.5] = [B3.2])"
+        ],
+        "functions": [
+          "scmi_debugfs_common_setup"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "info"
+        ],
+        "buffer_fields": [
+          "dbg->is_atomic",
+          "info->desc",
+          "dbg->name",
+          "info->atomic_threshold",
+          "dbg->type",
+          "info->tx_minfo"
+        ],
+        "call_targets": [
+          "is_transport_polling_capable",
+          "debugfs_create_str",
+          "debugfs_create_u32",
+          "debugfs_create_bool",
+          "scmi_debugfs_counters_setup",
+          "devm_add_action_or_reset"
+        ],
+        "call_edges": [
+          "scmi_debugfs_common_setup -> devm_kzalloc",
+          "scmi_debugfs_common_setup -> kstrdup",
+          "scmi_debugfs_common_setup -> of_node_full_name",
+          "scmi_debugfs_common_setup -> devm_kfree",
+          "scmi_debugfs_common_setup -> of_property_read_string",
+          "scmi_debugfs_common_setup -> kfree"
+        ],
+        "state_statements": [
+          "return [B1.2];",
+          "return [B2.9];",
+          "[B3.4]->top_dentry",
+          "[B3.5] = [B3.2]",
+          "[B3.10]->dev",
+          "[B5.4]->is_atomic"
+        ],
+        "source_file": "drivers/firmware/arm_scmi/driver.c",
+        "source_excerpt": "2947: \n2948: \tdbg->is_atomic = info->desc->atomic_enabled &&\n2949: \t\t\t\tis_transport_polling_capable(info->desc);\n2950: \n2951: \tdebugfs_create_str(\"instance_name\", 0400, top_dentry,\n2952: \t\t\t   (char **)&dbg->name);\n2953: \n2954: \tdebugfs_create_u32(\"atomic_threshold_us\", 0400, top_dentry,\n2955: \t\t\t   &info->atomic_threshold);\n2956: \n2957: \tdebugfs_create_str(\"type\", 0400, trans, (char **)&dbg->type);\n2958: \n2959: \tdebugfs_create_bool(\"is_atomic\", 0400, trans, &dbg->is_atomic);\n2960: \n2961: \tdebugfs_create_u32(\"max_rx_timeout_ms\", 0400, trans,\n2962: \t\t\t   (u32 *)&info->desc->max_rx_timeout_ms);\n2963: \n2964: \tdebugfs_create_u32(\"max_msg_size\", 0400, trans,\n2965: \t\t\t   (u32 *)&info->desc->max_msg_size);\n2966: \n2967: \tdebugfs_create_u32(\"tx_max_msg\", 0400, trans,\n2968: \t\t\t   (u32 *)&info->tx_minfo.max_msg);\n2969: \n2970: \tdebugfs_create_u32(\"rx_max_msg\", 0400, trans,\n2971: \t\t\t   (u32 *)&info->rx_minfo.max_msg);\n2972: \n2973: \tif (IS_ENABLED(CONFIG_ARM_SCMI_DEBUG_COUNTERS))\n2974: \t\tscmi_debugfs_counters_setup(dbg, trans);\n2975: \n2976: \tdbg->top_dentry = top_dentry;\n2977: \n2978: \tif (devm_add_action_or_reset(info->dev,\n2979: \t\t\t\t     scmi_debugfs_common_cleanup, dbg)) {\n2980: \t\tscmi_debugfs_common_cleanup(dbg);\n2981: \t\treturn NULL;\n2982: \t}\n2983: \n2984: \treturn dbg;\n2985: }",
+        "coverage_status": "partial",
+        "operations": [
+          "return [B1.2];",
+          "return [B2.9];",
+          "[B3.4]->top_dentry",
+          "[B3.5] = [B3.2]",
+          "[B3.10]->dev",
+          "[B5.4]->is_atomic"
+        ],
+        "acquisition_ops": [],
+        "release_ops": []
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.72,
+        "origin": "analyzer_output"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "drivers/firmware/arm_scmi/driver.c",
+          "hunk_index": 0,
+          "source_line": 2979
+        },
+        "summary": "scmi_debugfs_common_setup in drivers/firmware/arm_scmi/driver.c provides CSA-backed pointer/resource lifecycle context near line 2979",
+        "statements": [
+          "2947:",
+          "2948: \tdbg->is_atomic = info->desc->atomic_enabled &&",
+          "2949: \t\t\t\tis_transport_polling_capable(info->desc);",
+          "2950:",
+          "2951: \tdebugfs_create_str(\"instance_name\", 0400, top_dentry,",
+          "2952: \t\t\t   (char **)&dbg->name);"
+        ],
+        "guards": [
+          "IS_ENABLED(CONFIG_ARM_SCMI_DEBUG_COUNTERS)",
+          "if [B3.21]",
+          "if [B5.131]",
+          "[B7.41] && ..."
+        ],
+        "call_boundary": [
+          "is_transport_polling_capable",
+          "debugfs_create_str",
+          "debugfs_create_u32",
+          "debugfs_create_bool",
+          "scmi_debugfs_counters_setup",
+          "devm_add_action_or_reset"
+        ],
+        "call_edges": [
+          "scmi_debugfs_common_setup -> devm_kzalloc",
+          "scmi_debugfs_common_setup -> kstrdup",
+          "scmi_debugfs_common_setup -> of_node_full_name",
+          "scmi_debugfs_common_setup -> devm_kfree",
+          "scmi_debugfs_common_setup -> of_property_read_string",
+          "scmi_debugfs_common_setup -> kfree"
+        ],
+        "state_transitions": [
+          "operation(return [B1.2];)",
+          "operation(return [B2.9];)",
+          "operation([B3.4]->top_dentry)",
+          "operation([B3.5] = [B3.2])"
+        ],
+        "api_terms": [
+          "return [B1.2];",
+          "return [B2.9];",
+          "[B3.4]->top_dentry",
+          "[B3.5] = [B3.2]",
+          "[B3.10]->dev",
+          "[B5.4]->is_atomic"
+        ],
+        "related_symbols": [
+          "info"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "collected_analyzers": [
+    "csa"
+  ],
+  "provenance_summary": {
+    "total_records": 4,
+    "origin_counts": {
+      "analyzer_internal": 2,
+      "analyzer_output": 2
+    },
+    "analyzer_internal_records": 2,
+    "analyzer_internal_fraction": 0.5,
+    "analyzer_backed_records": 4,
+    "analyzer_backed_fraction": 1.0,
+    "source_derived_records": 0,
+    "source_derived_fraction": 0.0
+  }
+}

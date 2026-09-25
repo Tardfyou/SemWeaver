@@ -1,0 +1,15 @@
+Refinement Plan:
+
+The false positive comes from treating every sub-64-bit left shift as a wide-arithmetic overflow. `REG_FIELD_PREP()` performs intentional 32-bit bit-field packing into `rxy`; its shifts are bounded by field masks and the result remains a `u32`. It is not an attempt to compute a 64-bit value.
+
+The repaired checker:
+
+- Uses the shift expression's actual promoted result type, rather than recursively searching its operands for arbitrary casts.
+- Reports only a 32-bit shift whose result is immediately widened to a 64-bit integer context. This preserves detection of the buggy `tau4 = ((1 << x_w) | x) << y;` pattern.
+- Recognizes a cast before the shift, such as `(u64)value << amount`, as the correct fix.
+- Rejects field-preparation macro-body shifts (`REG_FIELD_PREP`, `FIELD_PREP`, and `__FIELD_PREP`) while preserving checks for shifts supplied as macro arguments.
+- Skips known-zero shifts and records reported AST nodes in `ProgramState` to avoid repeated reports on revisited paths.
+
+Refined Code:
+```cpp
+```

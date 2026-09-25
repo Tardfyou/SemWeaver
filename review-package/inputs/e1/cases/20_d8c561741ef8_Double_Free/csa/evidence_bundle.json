@@ -1,0 +1,678 @@
+{
+  "records": [
+    {
+      "evidence_id": "pf_000",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c",
+        "function": "hws_send_ring_close_sq"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "patch_overview",
+        "label": "Patch overview",
+        "attributes": {
+          "patch_path": "/anonymous/home/LLM-Native/research/knighter/e2/cases/20_d8c561741ef8_Double_Free/patches/commit.patch",
+          "changed_files": [
+            "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c"
+          ],
+          "changed_file_count": 1,
+          "added_line_count": 7,
+          "deleted_line_count": 1
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "patch_overview",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_001",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c",
+        "function": "hws_send_ring_close_sq"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "vulnerability_patterns",
+        "label": "Vulnerability patterns inferred from patch",
+        "attributes": {
+          "patterns": [
+            "double_free"
+          ],
+          "descriptions": [
+            "On the create-SQ-ready error path, a partially initialized send queue object was cleaned up with hws_send_ring_close_sq(sq), which likely frees SQ-local allocations that are also released by the caller or later cleanup. The patch replaces that broad close routine with hws_send_ring_destroy_sq(mdev, sq), which only destroys the core SQ by sq->sqn and avoids re-freeing the local SQ allocations."
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "vulnerability_patterns",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_002",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c",
+        "function": "hws_send_ring_close_sq"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "affected_functions",
+        "label": "Functions implicated by removed or fixed code",
+        "attributes": {
+          "functions": [
+            "hws_send_ring_close_sq",
+            "hws_send_ring_create_sq_rdy",
+            "hws_send_ring_destroy_sq",
+            "mlx5_core_destroy_sq"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "affected_functions",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_003",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c",
+        "function": "hws_send_ring_close_sq"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "detection_strategy",
+        "label": "Existing patch analysis detection strategy",
+        "attributes": {
+          "primary_pattern": "double_free",
+          "check_types": [
+            "error_path_cleanup_mismatch",
+            "partial_initialization_resource_lifetime",
+            "duplicate_release_of_aggregate_owned_resources",
+            "replacement_of_broad_close_free_with_narrow_destroy"
+          ],
+          "entry_points": [
+            "hws_send_ring_create_sq_rdy",
+            "hws_send_ring_open_sq",
+            "hws_send_ring_close_sq",
+            "hws_send_ring_destroy_sq"
+          ],
+          "data_flow_tracking": true,
+          "cross_file_analysis": false,
+          "suggestions": [
+            "First-draft detector should anchor on the patch-local old sink: an error branch after hws_send_ring_set_sq_rdy(mdev, sq->sqn) that calls hws_send_ring_close_sq(sq).",
+            "Treat the added hws_send_ring_destroy_sq(mdev, sq) / mlx5_core_destroy_sq(mdev, sq->sqn) as the barrier replacement: it destroys only the core SQ handle instead of closing/freeing the whole sq object.",
+            "Do not require detailed knowledge of sq->dep_wqe, sq->wq_ctrl.buf.frags, or sq->wr_priv for the first hit; those are useful secondary convergence filters if hws_send_ring_close_sq() is modeled as freeing them.",
+            "A local CFG check in drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c is enough for the initial checker: match successful SQ creation, failed transition to ready state, then broad close on the same sq.",
+            "Use interprocedural modeling only as a refinement to confirm that hws_send_ring_close_sq(sq) releases SQ-owned allocations also freed by the caller cleanup; the patch-local replacement itself is sufficient as the primary anchor.",
+            "Avoid treating the new helper as merely a rename: its body calls mlx5_core_destroy_sq(mdev, sq->sqn), so the semantic distinction is narrower handle destruction versus broad object close."
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "detection_strategy",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_004",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c",
+        "function": "hws_send_ring_close_sq"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "fix_patterns",
+        "label": "Patch introduces reusable fix patterns",
+        "attributes": {
+          "patterns": [
+            "Replace the error-path call hws_send_ring_close_sq(sq) with hws_send_ring_destroy_sq(mdev, sq)",
+            "Introduce hws_send_ring_destroy_sq(struct mlx5_core_dev *mdev, struct mlx5hws_send_ring_sq *sq) as a narrower cleanup helper",
+            "Use mlx5_core_destroy_sq(mdev, sq->sqn) for this failure edge instead of the broader hws_send_ring_close_sq(sq)",
+            "Preserve the early error return after cleanup so the partially-created SQ is not treated as ready"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "fix_patterns",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_005",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c",
+        "function": "hws_send_ring_close_sq"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "added_api_calls",
+        "label": "Patch introduces or highlights API usage",
+        "attributes": {
+          "apis": [
+            "hws_send_ring_destroy_sq",
+            "mlx5_core_destroy_sq"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "added_api_calls",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_006",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c",
+        "function": "hws_send_ring_close_sq"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "patch_intent",
+        "label": "Patch intent and commit-style summary",
+        "attributes": {
+          "summary": "commit d8c561741ef83980114b3f7f95ffac54600f3f16 | Author: Yevgeny Kliteynik <kliteyn@nvidia.com>",
+          "keywords": [
+            "commit",
+            "d8c561741ef83980114b3f7f95ffac54600f3f16",
+            "author",
+            "yevgeny",
+            "kliteynik",
+            "kliteyn",
+            "nvidia"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "patch_intent",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_007",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c",
+        "function": "hws_send_ring_close_sq"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "external_references",
+        "label": "External references recovered from patch text",
+        "attributes": {
+          "cves": [],
+          "cwes": [],
+          "issues": [
+            "the",
+            "2ca62599aa0b"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "external_references",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "csa_validation_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c",
+        "function": "hws_send_ring_set_sq_rdy"
+      },
+      "location": {
+        "line": 656,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c:656",
+        "diagnostic_message": "",
+        "diagnostic_checker": "",
+        "state_before": [
+          "input(mdev)",
+          "input(sqn)",
+          "sinks(kvzalloc, mlx5_core_modify_sq)"
+        ],
+        "state_after": [
+          "diagnostic(csa)"
+        ],
+        "functions": [
+          "hws_send_ring_set_sq_rdy"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "mdev",
+          "sqn"
+        ],
+        "buffer_fields": [],
+        "call_targets": [
+          "kvzalloc",
+          "mlx5_core_modify_sq",
+          "kvfree"
+        ],
+        "call_edges": [],
+        "state_statements": [],
+        "source_file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c",
+        "source_excerpt": "662: static int hws_send_ring_set_sq_rdy(struct mlx5_core_dev *mdev, u32 sqn)\n663: {\n664: \tvoid *in, *sqc;\n665: \tint inlen, err;\n666: \n667: \tinlen = MLX5_ST_SZ_BYTES(modify_sq_in);\n668: \tin = kvzalloc(inlen, GFP_KERNEL);\n669: \tif (!in)\n670: \t\treturn -ENOMEM;\n671: \n672: \tMLX5_SET(modify_sq_in, in, sq_state, MLX5_SQC_STATE_RST);\n673: \tsqc = MLX5_ADDR_OF(modify_sq_in, in, ctx);\n674: \tMLX5_SET(sqc, sqc, state, MLX5_SQC_STATE_RDY);\n675: \n676: \terr = mlx5_core_modify_sq(mdev, sqn, in);\n677: \n678: \tkvfree(in);\n679: \n680: \treturn err;\n681: }",
+        "coverage_status": "partial",
+        "contract_type": "",
+        "guard_exprs": [
+          "!in"
+        ],
+        "sink_calls": [
+          "kvzalloc",
+          "mlx5_core_modify_sq",
+          "kvfree"
+        ]
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.72
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c",
+          "hunk_index": 0,
+          "source_line": 656
+        },
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c:656",
+        "statements": [
+          "662: static int hws_send_ring_set_sq_rdy(struct mlx5_core_dev *mdev, u32 sqn)",
+          "663: {",
+          "664: \tvoid *in, *sqc;",
+          "665: \tint inlen, err;",
+          "666:",
+          "667: \tinlen = MLX5_ST_SZ_BYTES(modify_sq_in);"
+        ],
+        "guards": [
+          "!in"
+        ],
+        "call_boundary": [
+          "kvzalloc",
+          "mlx5_core_modify_sq",
+          "kvfree"
+        ],
+        "call_edges": [],
+        "state_transitions": [
+          "diagnostic(csa)"
+        ],
+        "api_terms": [
+          "kvzalloc",
+          "mlx5_core_modify_sq",
+          "kvfree"
+        ],
+        "related_symbols": [
+          "mdev",
+          "sqn"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      }
+    },
+    {
+      "evidence_id": "csa_validation_path_guard_1",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c",
+        "function": "hws_send_ring_set_sq_rdy"
+      },
+      "location": {
+        "line": 656,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "CSA validation reaches drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c:656 in hws_send_ring_set_sq_rdy with guards !in",
+        "diagnostic_message": "",
+        "diagnostic_checker": "",
+        "state_before": [
+          "input(mdev)",
+          "input(sqn)",
+          "sinks(kvzalloc, mlx5_core_modify_sq)"
+        ],
+        "state_after": [
+          "guard(!in)",
+          "diagnostic(csa)"
+        ],
+        "functions": [
+          "hws_send_ring_set_sq_rdy"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "mdev",
+          "sqn"
+        ],
+        "buffer_fields": [],
+        "call_targets": [
+          "kvzalloc",
+          "mlx5_core_modify_sq",
+          "kvfree"
+        ],
+        "call_edges": [],
+        "state_statements": [],
+        "source_file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c",
+        "source_excerpt": "662: static int hws_send_ring_set_sq_rdy(struct mlx5_core_dev *mdev, u32 sqn)\n663: {\n664: \tvoid *in, *sqc;\n665: \tint inlen, err;\n666: \n667: \tinlen = MLX5_ST_SZ_BYTES(modify_sq_in);\n668: \tin = kvzalloc(inlen, GFP_KERNEL);\n669: \tif (!in)\n670: \t\treturn -ENOMEM;\n671: \n672: \tMLX5_SET(modify_sq_in, in, sq_state, MLX5_SQC_STATE_RST);\n673: \tsqc = MLX5_ADDR_OF(modify_sq_in, in, ctx);\n674: \tMLX5_SET(sqc, sqc, state, MLX5_SQC_STATE_RDY);\n675: \n676: \terr = mlx5_core_modify_sq(mdev, sqn, in);\n677: \n678: \tkvfree(in);\n679: \n680: \treturn err;\n681: }",
+        "coverage_status": "partial",
+        "guard_expr": "!in",
+        "cfg_branch_kinds": [],
+        "branch_conditions": [
+          "!in"
+        ]
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.72
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c",
+          "hunk_index": 0,
+          "source_line": 656
+        },
+        "summary": "CSA validation reaches drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c:656 in hws_send_ring_set_sq_rdy with guards !in",
+        "statements": [
+          "662: static int hws_send_ring_set_sq_rdy(struct mlx5_core_dev *mdev, u32 sqn)",
+          "663: {",
+          "664: \tvoid *in, *sqc;",
+          "665: \tint inlen, err;",
+          "666:",
+          "667: \tinlen = MLX5_ST_SZ_BYTES(modify_sq_in);"
+        ],
+        "guards": [
+          "!in"
+        ],
+        "call_boundary": [
+          "kvzalloc",
+          "mlx5_core_modify_sq",
+          "kvfree"
+        ],
+        "call_edges": [],
+        "state_transitions": [
+          "guard(!in)",
+          "diagnostic(csa)"
+        ],
+        "api_terms": [
+          "kvzalloc",
+          "mlx5_core_modify_sq",
+          "kvfree"
+        ],
+        "related_symbols": [
+          "mdev",
+          "sqn"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      }
+    },
+    {
+      "evidence_id": "csa_validation_state_transition_2",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c",
+        "function": "hws_send_ring_set_sq_rdy"
+      },
+      "location": {
+        "line": 656,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "hws_send_ring_set_sq_rdy in drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c has CSA-observed state near line 656",
+        "diagnostic_message": "",
+        "diagnostic_checker": "",
+        "state_before": [
+          "input(mdev)",
+          "input(sqn)",
+          "sinks(kvzalloc, mlx5_core_modify_sq)"
+        ],
+        "state_after": [
+          "call(kvzalloc)",
+          "call(mlx5_core_modify_sq)"
+        ],
+        "functions": [
+          "hws_send_ring_set_sq_rdy"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "mdev",
+          "sqn"
+        ],
+        "buffer_fields": [],
+        "call_targets": [
+          "kvzalloc",
+          "mlx5_core_modify_sq",
+          "kvfree"
+        ],
+        "call_edges": [],
+        "state_statements": [],
+        "source_file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c",
+        "source_excerpt": "662: static int hws_send_ring_set_sq_rdy(struct mlx5_core_dev *mdev, u32 sqn)\n663: {\n664: \tvoid *in, *sqc;\n665: \tint inlen, err;\n666: \n667: \tinlen = MLX5_ST_SZ_BYTES(modify_sq_in);\n668: \tin = kvzalloc(inlen, GFP_KERNEL);\n669: \tif (!in)\n670: \t\treturn -ENOMEM;\n671: \n672: \tMLX5_SET(modify_sq_in, in, sq_state, MLX5_SQC_STATE_RST);\n673: \tsqc = MLX5_ADDR_OF(modify_sq_in, in, ctx);\n674: \tMLX5_SET(sqc, sqc, state, MLX5_SQC_STATE_RDY);\n675: \n676: \terr = mlx5_core_modify_sq(mdev, sqn, in);\n677: \n678: \tkvfree(in);\n679: \n680: \treturn err;\n681: }",
+        "coverage_status": "partial",
+        "cfg_branch_kinds": [],
+        "branch_conditions": [
+          "!in"
+        ]
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.72
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c",
+          "hunk_index": 0,
+          "source_line": 656
+        },
+        "summary": "hws_send_ring_set_sq_rdy in drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c has CSA-observed state near line 656",
+        "statements": [
+          "662: static int hws_send_ring_set_sq_rdy(struct mlx5_core_dev *mdev, u32 sqn)",
+          "663: {",
+          "664: \tvoid *in, *sqc;",
+          "665: \tint inlen, err;",
+          "666:",
+          "667: \tinlen = MLX5_ST_SZ_BYTES(modify_sq_in);"
+        ],
+        "guards": [
+          "!in"
+        ],
+        "call_boundary": [
+          "kvzalloc",
+          "mlx5_core_modify_sq",
+          "kvfree"
+        ],
+        "call_edges": [],
+        "state_transitions": [
+          "call(kvzalloc)",
+          "call(mlx5_core_modify_sq)"
+        ],
+        "api_terms": [
+          "kvzalloc",
+          "mlx5_core_modify_sq",
+          "kvfree"
+        ],
+        "related_symbols": [
+          "mdev",
+          "sqn"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      }
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_3",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c",
+        "function": "hws_send_ring_set_sq_rdy"
+      },
+      "location": {
+        "line": 656,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "hws_send_ring_set_sq_rdy in drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c provides CSA-backed pointer/resource lifecycle context near line 656",
+        "diagnostic_message": "",
+        "diagnostic_checker": "",
+        "state_before": [
+          "input(mdev)",
+          "input(sqn)",
+          "sinks(kvzalloc, mlx5_core_modify_sq)"
+        ],
+        "state_after": [],
+        "functions": [
+          "hws_send_ring_set_sq_rdy"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "mdev",
+          "sqn"
+        ],
+        "buffer_fields": [],
+        "call_targets": [
+          "kvzalloc",
+          "mlx5_core_modify_sq",
+          "kvfree"
+        ],
+        "call_edges": [],
+        "state_statements": [],
+        "source_file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c",
+        "source_excerpt": "662: static int hws_send_ring_set_sq_rdy(struct mlx5_core_dev *mdev, u32 sqn)\n663: {\n664: \tvoid *in, *sqc;\n665: \tint inlen, err;\n666: \n667: \tinlen = MLX5_ST_SZ_BYTES(modify_sq_in);\n668: \tin = kvzalloc(inlen, GFP_KERNEL);\n669: \tif (!in)\n670: \t\treturn -ENOMEM;\n671: \n672: \tMLX5_SET(modify_sq_in, in, sq_state, MLX5_SQC_STATE_RST);\n673: \tsqc = MLX5_ADDR_OF(modify_sq_in, in, ctx);\n674: \tMLX5_SET(sqc, sqc, state, MLX5_SQC_STATE_RDY);\n675: \n676: \terr = mlx5_core_modify_sq(mdev, sqn, in);\n677: \n678: \tkvfree(in);\n679: \n680: \treturn err;\n681: }",
+        "coverage_status": "partial",
+        "operations": [],
+        "acquisition_ops": [],
+        "release_ops": []
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.72
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c",
+          "hunk_index": 0,
+          "source_line": 656
+        },
+        "summary": "hws_send_ring_set_sq_rdy in drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c provides CSA-backed pointer/resource lifecycle context near line 656",
+        "statements": [
+          "662: static int hws_send_ring_set_sq_rdy(struct mlx5_core_dev *mdev, u32 sqn)",
+          "663: {",
+          "664: \tvoid *in, *sqc;",
+          "665: \tint inlen, err;",
+          "666:",
+          "667: \tinlen = MLX5_ST_SZ_BYTES(modify_sq_in);"
+        ],
+        "guards": [
+          "!in"
+        ],
+        "call_boundary": [
+          "kvzalloc",
+          "mlx5_core_modify_sq",
+          "kvfree"
+        ],
+        "call_edges": [],
+        "state_transitions": [],
+        "api_terms": [
+          "kvzalloc",
+          "mlx5_core_modify_sq",
+          "kvfree"
+        ],
+        "related_symbols": [
+          "mdev",
+          "sqn"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "collected_analyzers": [
+    "csa",
+    "patch"
+  ]
+}

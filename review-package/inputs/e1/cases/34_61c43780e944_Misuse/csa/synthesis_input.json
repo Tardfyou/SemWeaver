@@ -1,0 +1,1006 @@
+{
+  "analyzer_id": "csa",
+  "detector_artifact": "checker_plugin",
+  "primary_pattern": "api_misuse",
+  "objective": "Synthesize a path-sensitive api_misuse detector that encodes the same local state, guards, and lifecycle mechanism evidenced by the patch, while still generalizing to semantically equivalent sites.",
+  "mechanism_contract": {
+    "mechanism_family": "generic_vulnerability_mechanism",
+    "semantic_dimensions": [
+      "vulnerability trigger",
+      "patch-introduced barrier",
+      "local state or flow relation"
+    ],
+    "trigger_invariants": [
+      "the vulnerable mechanism is reachable on a feasible path",
+      "the path lacks the barrier introduced by the patch",
+      "Patch-backed trigger clue: detection hints: First-draft checker should anchor on the patch-local sink devlink_nl_port_fill() inside devlink_nl_port_get_dump_one() and inspect its command argument., Prioritize matching calls where the third argument is DEVLINK_CMD_NEW in a port dump/get context; this is the deleted dangerous expression., Do not model guard absence, resource lifetime, bounds checks, or cleanup paths; the patch contains none of those mechanisms."
+    ],
+    "silence_invariants": [
+      "patch-introduced guards, barriers, or safe APIs must suppress findings",
+      "patch-introduced barrier pattern: Replace the devlink_nl_port_fill() command argument DEVLINK_CMD_NEW with DEVLINK_CMD_PORT_NEW in the port dump path.",
+      "patch-introduced barrier pattern: Keep the sink and surrounding control flow unchanged; the barrier is semantic replacement of the incorrect enum value, not a runtime guard.",
+      "patch-introduced barrier pattern: Use the operation-specific command constant when filling netlink messages for devlink port dump replies."
+    ],
+    "transfer_axes": [
+      "only generalize along evidence-backed state, guard, flow, or API-role equivalence",
+      "equivalent guard or barrier predicates on sibling paths",
+      "equivalent local state transitions around the same sink or dereference",
+      "equivalent ownership or release/reinit lifecycle on the same symbolic resource"
+    ],
+    "forbidden_shortcuts": [
+      "bind the detector to fixed file paths, line numbers, or exact patch strings",
+      "broaden into unrelated bug families just to improve hit count",
+      "use the patch text itself as the matching rule",
+      "widen to unrelated bug families without evidence",
+      "placeholder helper logic or empty ProgramState modeling"
+    ],
+    "evidence_backed_axes": [
+      "resource lifecycle",
+      "path guards and barrier conditions",
+      "semantic trigger slice",
+      "state transitions"
+    ]
+  },
+  "detector_name_hint": "DevlinkPortDumpCmdMismatchChecker",
+  "focus_files": [
+    "net/devlink/port.c"
+  ],
+  "focus_functions": [
+    "devlink_nl_port_get_dump_one"
+  ],
+  "hypotheses": [
+    "Patch likely encodes a reusable vulnerability mechanism but available metadata is weak; keep evidence collection broad."
+  ],
+  "required_evidence_types": [
+    "patch_fact"
+  ],
+  "missing_evidence_types": [],
+  "evidence_degraded": false,
+  "patch_mechanism_signals": [
+    "detection hints: First-draft checker should anchor on the patch-local sink devlink_nl_port_fill() inside devlink_nl_port_get_dump_one() and inspect its command argument., Prioritize matching calls where the third argument is DEVLINK_CMD_NEW in a port dump/get context; this is the deleted dangerous expression., Do not model guard absence, resource lifetime, bounds checks, or cleanup paths; the patch contains none of those mechanisms."
+  ],
+  "silencing_conditions": [
+    "patch-introduced barrier pattern: Replace the devlink_nl_port_fill() command argument DEVLINK_CMD_NEW with DEVLINK_CMD_PORT_NEW in the port dump path.",
+    "patch-introduced barrier pattern: Keep the sink and surrounding control flow unchanged; the barrier is semantic replacement of the incorrect enum value, not a runtime guard.",
+    "patch-introduced barrier pattern: Use the operation-specific command constant when filling netlink messages for devlink port dump replies."
+  ],
+  "retry_guidance": [],
+  "selected_evidence_ids": [
+    "csa_validation_allocation_lifecycle_3",
+    "csa_validation_path_guard_1",
+    "csa_validation_semantic_slice_0",
+    "csa_validation_state_transition_2",
+    "pf_004",
+    "pf_003",
+    "pf_002",
+    "pf_001",
+    "pf_000"
+  ],
+  "selected_evidence": [
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_3",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/devlink/port.c",
+        "function": "xa_for_each_start"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "xa_for_each_start in net/devlink/port.c provides CSA-backed pointer/resource lifecycle context near line 586",
+        "state_before": [
+          "input(ports)",
+          "input(port_index)",
+          "input(devlink_port)",
+          "buffer(devlink->ports)",
+          "buffer(state->idx)",
+          "sinks(devlink_nl_port_fill)"
+        ],
+        "tracked_symbols": [
+          "ports",
+          "port_index",
+          "devlink_port",
+          "idx"
+        ],
+        "buffer_fields": [
+          "devlink->ports",
+          "state->idx",
+          "cb->skb",
+          "cb->nlh",
+          "cb->extack"
+        ],
+        "coverage_status": "partial",
+        "functions": [
+          "xa_for_each_start"
+        ],
+        "call_targets": [
+          "devlink_nl_port_fill"
+        ],
+        "source_file": "net/devlink/port.c"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "net/devlink/port.c",
+          "hunk_index": 0,
+          "source_line": 586
+        },
+        "summary": "xa_for_each_start in net/devlink/port.c provides CSA-backed pointer/resource lifecycle context near line 586",
+        "statements": [
+          "584: \txa_for_each_start(&devlink->ports, port_index, devlink_port, state->idx) {",
+          "585: \t\terr = devlink_nl_port_fill(msg, devlink_port,",
+          "586: \t\t\t\t\t   DEVLINK_CMD_PORT_NEW,",
+          "587: \t\t\t\t\t   NETLINK_CB(cb->skb).portid,",
+          "588: \t\t\t\t\t   cb->nlh->nlmsg_seq, flags,",
+          "589: \t\t\t\t\t   cb->extack);"
+        ],
+        "guards": [
+          "err"
+        ],
+        "call_boundary": [
+          "devlink_nl_port_fill"
+        ],
+        "call_edges": [],
+        "state_transitions": [],
+        "api_terms": [
+          "devlink_nl_port_fill"
+        ],
+        "related_symbols": [
+          "ports",
+          "port_index",
+          "devlink_port",
+          "idx"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      },
+      "confidence": 0.72
+    },
+    {
+      "evidence_id": "csa_validation_path_guard_1",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/devlink/port.c",
+        "function": "xa_for_each_start"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "guard_expr": "err",
+        "summary": "CSA validation reaches net/devlink/port.c:586 in xa_for_each_start with guards err",
+        "state_before": [
+          "input(ports)",
+          "input(port_index)",
+          "input(devlink_port)",
+          "buffer(devlink->ports)",
+          "buffer(state->idx)",
+          "sinks(devlink_nl_port_fill)"
+        ],
+        "state_after": [
+          "guard(err)",
+          "diagnostic(csa)"
+        ],
+        "tracked_symbols": [
+          "ports",
+          "port_index",
+          "devlink_port",
+          "idx"
+        ],
+        "buffer_fields": [
+          "devlink->ports",
+          "state->idx",
+          "cb->skb",
+          "cb->nlh",
+          "cb->extack"
+        ],
+        "coverage_status": "partial",
+        "functions": [
+          "xa_for_each_start"
+        ],
+        "call_targets": [
+          "devlink_nl_port_fill"
+        ],
+        "branch_conditions": [
+          "err"
+        ],
+        "source_file": "net/devlink/port.c"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "net/devlink/port.c",
+          "hunk_index": 0,
+          "source_line": 586
+        },
+        "summary": "CSA validation reaches net/devlink/port.c:586 in xa_for_each_start with guards err",
+        "statements": [
+          "584: \txa_for_each_start(&devlink->ports, port_index, devlink_port, state->idx) {",
+          "585: \t\terr = devlink_nl_port_fill(msg, devlink_port,",
+          "586: \t\t\t\t\t   DEVLINK_CMD_PORT_NEW,",
+          "587: \t\t\t\t\t   NETLINK_CB(cb->skb).portid,",
+          "588: \t\t\t\t\t   cb->nlh->nlmsg_seq, flags,",
+          "589: \t\t\t\t\t   cb->extack);"
+        ],
+        "guards": [
+          "err"
+        ],
+        "call_boundary": [
+          "devlink_nl_port_fill"
+        ],
+        "call_edges": [],
+        "state_transitions": [
+          "guard(err)",
+          "diagnostic(csa)"
+        ],
+        "api_terms": [
+          "devlink_nl_port_fill"
+        ],
+        "related_symbols": [
+          "ports",
+          "port_index",
+          "devlink_port",
+          "idx"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      },
+      "confidence": 0.72
+    },
+    {
+      "evidence_id": "csa_validation_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/devlink/port.c",
+        "function": "xa_for_each_start"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at net/devlink/port.c:586",
+        "state_before": [
+          "input(ports)",
+          "input(port_index)",
+          "input(devlink_port)",
+          "buffer(devlink->ports)",
+          "buffer(state->idx)",
+          "sinks(devlink_nl_port_fill)"
+        ],
+        "state_after": [
+          "diagnostic(csa)"
+        ],
+        "tracked_symbols": [
+          "ports",
+          "port_index",
+          "devlink_port",
+          "idx"
+        ],
+        "buffer_fields": [
+          "devlink->ports",
+          "state->idx",
+          "cb->skb",
+          "cb->nlh",
+          "cb->extack"
+        ],
+        "coverage_status": "partial",
+        "functions": [
+          "xa_for_each_start"
+        ],
+        "call_targets": [
+          "devlink_nl_port_fill"
+        ],
+        "source_file": "net/devlink/port.c"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "net/devlink/port.c",
+          "hunk_index": 0,
+          "source_line": 586
+        },
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at net/devlink/port.c:586",
+        "statements": [
+          "584: \txa_for_each_start(&devlink->ports, port_index, devlink_port, state->idx) {",
+          "585: \t\terr = devlink_nl_port_fill(msg, devlink_port,",
+          "586: \t\t\t\t\t   DEVLINK_CMD_PORT_NEW,",
+          "587: \t\t\t\t\t   NETLINK_CB(cb->skb).portid,",
+          "588: \t\t\t\t\t   cb->nlh->nlmsg_seq, flags,",
+          "589: \t\t\t\t\t   cb->extack);"
+        ],
+        "guards": [
+          "err"
+        ],
+        "call_boundary": [
+          "devlink_nl_port_fill"
+        ],
+        "call_edges": [],
+        "state_transitions": [
+          "diagnostic(csa)"
+        ],
+        "api_terms": [
+          "devlink_nl_port_fill"
+        ],
+        "related_symbols": [
+          "ports",
+          "port_index",
+          "devlink_port",
+          "idx"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      },
+      "confidence": 0.72
+    },
+    {
+      "evidence_id": "csa_validation_state_transition_2",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/devlink/port.c",
+        "function": "xa_for_each_start"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "xa_for_each_start in net/devlink/port.c has CSA-observed state near line 586",
+        "state_before": [
+          "input(ports)",
+          "input(port_index)",
+          "input(devlink_port)",
+          "buffer(devlink->ports)",
+          "buffer(state->idx)",
+          "sinks(devlink_nl_port_fill)"
+        ],
+        "state_after": [
+          "call(devlink_nl_port_fill)"
+        ],
+        "tracked_symbols": [
+          "ports",
+          "port_index",
+          "devlink_port",
+          "idx"
+        ],
+        "buffer_fields": [
+          "devlink->ports",
+          "state->idx",
+          "cb->skb",
+          "cb->nlh",
+          "cb->extack"
+        ],
+        "coverage_status": "partial",
+        "functions": [
+          "xa_for_each_start"
+        ],
+        "call_targets": [
+          "devlink_nl_port_fill"
+        ],
+        "branch_conditions": [
+          "err"
+        ],
+        "source_file": "net/devlink/port.c"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "net/devlink/port.c",
+          "hunk_index": 0,
+          "source_line": 586
+        },
+        "summary": "xa_for_each_start in net/devlink/port.c has CSA-observed state near line 586",
+        "statements": [
+          "584: \txa_for_each_start(&devlink->ports, port_index, devlink_port, state->idx) {",
+          "585: \t\terr = devlink_nl_port_fill(msg, devlink_port,",
+          "586: \t\t\t\t\t   DEVLINK_CMD_PORT_NEW,",
+          "587: \t\t\t\t\t   NETLINK_CB(cb->skb).portid,",
+          "588: \t\t\t\t\t   cb->nlh->nlmsg_seq, flags,",
+          "589: \t\t\t\t\t   cb->extack);"
+        ],
+        "guards": [
+          "err"
+        ],
+        "call_boundary": [
+          "devlink_nl_port_fill"
+        ],
+        "call_edges": [],
+        "state_transitions": [
+          "call(devlink_nl_port_fill)"
+        ],
+        "api_terms": [
+          "devlink_nl_port_fill"
+        ],
+        "related_symbols": [
+          "ports",
+          "port_index",
+          "devlink_port",
+          "idx"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      },
+      "confidence": 0.72
+    },
+    {
+      "evidence_id": "pf_004",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/devlink/port.c",
+        "function": "devlink_nl_port_get_dump_one"
+      },
+      "semantic_payload": {
+        "label": "Patch introduces reusable fix patterns"
+      },
+      "evidence_slice": {},
+      "confidence": 0.95
+    },
+    {
+      "evidence_id": "pf_003",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/devlink/port.c",
+        "function": "devlink_nl_port_get_dump_one"
+      },
+      "semantic_payload": {
+        "label": "Existing patch analysis detection strategy"
+      },
+      "evidence_slice": {},
+      "confidence": 0.95
+    },
+    {
+      "evidence_id": "pf_002",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/devlink/port.c",
+        "function": "devlink_nl_port_get_dump_one"
+      },
+      "semantic_payload": {
+        "label": "Functions implicated by removed or fixed code"
+      },
+      "evidence_slice": {},
+      "confidence": 0.95
+    },
+    {
+      "evidence_id": "pf_001",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/devlink/port.c",
+        "function": "devlink_nl_port_get_dump_one"
+      },
+      "semantic_payload": {
+        "label": "Vulnerability patterns inferred from patch"
+      },
+      "evidence_slice": {},
+      "confidence": 0.95
+    },
+    {
+      "evidence_id": "pf_000",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/devlink/port.c",
+        "function": "devlink_nl_port_get_dump_one"
+      },
+      "semantic_payload": {
+        "label": "Patch overview"
+      },
+      "evidence_slice": {},
+      "confidence": 0.95
+    }
+  ],
+  "semantic_slice_count": 4,
+  "context_summary_count": 0,
+  "semantic_slice_coverage": "partial",
+  "selected_semantic_slice_ids": [
+    "csa_validation_allocation_lifecycle_3",
+    "csa_validation_path_guard_1",
+    "csa_validation_semantic_slice_0",
+    "csa_validation_state_transition_2"
+  ],
+  "selected_context_summary_ids": [],
+  "selected_semantic_slices": [
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_3",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/devlink/port.c",
+        "function": "xa_for_each_start"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "xa_for_each_start in net/devlink/port.c provides CSA-backed pointer/resource lifecycle context near line 586",
+        "state_before": [
+          "input(ports)",
+          "input(port_index)",
+          "input(devlink_port)",
+          "buffer(devlink->ports)",
+          "buffer(state->idx)",
+          "sinks(devlink_nl_port_fill)"
+        ],
+        "tracked_symbols": [
+          "ports",
+          "port_index",
+          "devlink_port",
+          "idx"
+        ],
+        "buffer_fields": [
+          "devlink->ports",
+          "state->idx",
+          "cb->skb",
+          "cb->nlh",
+          "cb->extack"
+        ],
+        "coverage_status": "partial",
+        "functions": [
+          "xa_for_each_start"
+        ],
+        "call_targets": [
+          "devlink_nl_port_fill"
+        ],
+        "source_file": "net/devlink/port.c"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "net/devlink/port.c",
+          "hunk_index": 0,
+          "source_line": 586
+        },
+        "summary": "xa_for_each_start in net/devlink/port.c provides CSA-backed pointer/resource lifecycle context near line 586",
+        "statements": [
+          "584: \txa_for_each_start(&devlink->ports, port_index, devlink_port, state->idx) {",
+          "585: \t\terr = devlink_nl_port_fill(msg, devlink_port,",
+          "586: \t\t\t\t\t   DEVLINK_CMD_PORT_NEW,",
+          "587: \t\t\t\t\t   NETLINK_CB(cb->skb).portid,",
+          "588: \t\t\t\t\t   cb->nlh->nlmsg_seq, flags,",
+          "589: \t\t\t\t\t   cb->extack);"
+        ],
+        "guards": [
+          "err"
+        ],
+        "call_boundary": [
+          "devlink_nl_port_fill"
+        ],
+        "call_edges": [],
+        "state_transitions": [],
+        "api_terms": [
+          "devlink_nl_port_fill"
+        ],
+        "related_symbols": [
+          "ports",
+          "port_index",
+          "devlink_port",
+          "idx"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      },
+      "confidence": 0.72
+    },
+    {
+      "evidence_id": "csa_validation_path_guard_1",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/devlink/port.c",
+        "function": "xa_for_each_start"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "guard_expr": "err",
+        "summary": "CSA validation reaches net/devlink/port.c:586 in xa_for_each_start with guards err",
+        "state_before": [
+          "input(ports)",
+          "input(port_index)",
+          "input(devlink_port)",
+          "buffer(devlink->ports)",
+          "buffer(state->idx)",
+          "sinks(devlink_nl_port_fill)"
+        ],
+        "state_after": [
+          "guard(err)",
+          "diagnostic(csa)"
+        ],
+        "tracked_symbols": [
+          "ports",
+          "port_index",
+          "devlink_port",
+          "idx"
+        ],
+        "buffer_fields": [
+          "devlink->ports",
+          "state->idx",
+          "cb->skb",
+          "cb->nlh",
+          "cb->extack"
+        ],
+        "coverage_status": "partial",
+        "functions": [
+          "xa_for_each_start"
+        ],
+        "call_targets": [
+          "devlink_nl_port_fill"
+        ],
+        "branch_conditions": [
+          "err"
+        ],
+        "source_file": "net/devlink/port.c"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "net/devlink/port.c",
+          "hunk_index": 0,
+          "source_line": 586
+        },
+        "summary": "CSA validation reaches net/devlink/port.c:586 in xa_for_each_start with guards err",
+        "statements": [
+          "584: \txa_for_each_start(&devlink->ports, port_index, devlink_port, state->idx) {",
+          "585: \t\terr = devlink_nl_port_fill(msg, devlink_port,",
+          "586: \t\t\t\t\t   DEVLINK_CMD_PORT_NEW,",
+          "587: \t\t\t\t\t   NETLINK_CB(cb->skb).portid,",
+          "588: \t\t\t\t\t   cb->nlh->nlmsg_seq, flags,",
+          "589: \t\t\t\t\t   cb->extack);"
+        ],
+        "guards": [
+          "err"
+        ],
+        "call_boundary": [
+          "devlink_nl_port_fill"
+        ],
+        "call_edges": [],
+        "state_transitions": [
+          "guard(err)",
+          "diagnostic(csa)"
+        ],
+        "api_terms": [
+          "devlink_nl_port_fill"
+        ],
+        "related_symbols": [
+          "ports",
+          "port_index",
+          "devlink_port",
+          "idx"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      },
+      "confidence": 0.72
+    },
+    {
+      "evidence_id": "csa_validation_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/devlink/port.c",
+        "function": "xa_for_each_start"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at net/devlink/port.c:586",
+        "state_before": [
+          "input(ports)",
+          "input(port_index)",
+          "input(devlink_port)",
+          "buffer(devlink->ports)",
+          "buffer(state->idx)",
+          "sinks(devlink_nl_port_fill)"
+        ],
+        "state_after": [
+          "diagnostic(csa)"
+        ],
+        "tracked_symbols": [
+          "ports",
+          "port_index",
+          "devlink_port",
+          "idx"
+        ],
+        "buffer_fields": [
+          "devlink->ports",
+          "state->idx",
+          "cb->skb",
+          "cb->nlh",
+          "cb->extack"
+        ],
+        "coverage_status": "partial",
+        "functions": [
+          "xa_for_each_start"
+        ],
+        "call_targets": [
+          "devlink_nl_port_fill"
+        ],
+        "source_file": "net/devlink/port.c"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "net/devlink/port.c",
+          "hunk_index": 0,
+          "source_line": 586
+        },
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at net/devlink/port.c:586",
+        "statements": [
+          "584: \txa_for_each_start(&devlink->ports, port_index, devlink_port, state->idx) {",
+          "585: \t\terr = devlink_nl_port_fill(msg, devlink_port,",
+          "586: \t\t\t\t\t   DEVLINK_CMD_PORT_NEW,",
+          "587: \t\t\t\t\t   NETLINK_CB(cb->skb).portid,",
+          "588: \t\t\t\t\t   cb->nlh->nlmsg_seq, flags,",
+          "589: \t\t\t\t\t   cb->extack);"
+        ],
+        "guards": [
+          "err"
+        ],
+        "call_boundary": [
+          "devlink_nl_port_fill"
+        ],
+        "call_edges": [],
+        "state_transitions": [
+          "diagnostic(csa)"
+        ],
+        "api_terms": [
+          "devlink_nl_port_fill"
+        ],
+        "related_symbols": [
+          "ports",
+          "port_index",
+          "devlink_port",
+          "idx"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      },
+      "confidence": 0.72
+    },
+    {
+      "evidence_id": "csa_validation_state_transition_2",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/devlink/port.c",
+        "function": "xa_for_each_start"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "xa_for_each_start in net/devlink/port.c has CSA-observed state near line 586",
+        "state_before": [
+          "input(ports)",
+          "input(port_index)",
+          "input(devlink_port)",
+          "buffer(devlink->ports)",
+          "buffer(state->idx)",
+          "sinks(devlink_nl_port_fill)"
+        ],
+        "state_after": [
+          "call(devlink_nl_port_fill)"
+        ],
+        "tracked_symbols": [
+          "ports",
+          "port_index",
+          "devlink_port",
+          "idx"
+        ],
+        "buffer_fields": [
+          "devlink->ports",
+          "state->idx",
+          "cb->skb",
+          "cb->nlh",
+          "cb->extack"
+        ],
+        "coverage_status": "partial",
+        "functions": [
+          "xa_for_each_start"
+        ],
+        "call_targets": [
+          "devlink_nl_port_fill"
+        ],
+        "branch_conditions": [
+          "err"
+        ],
+        "source_file": "net/devlink/port.c"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "net/devlink/port.c",
+          "hunk_index": 0,
+          "source_line": 586
+        },
+        "summary": "xa_for_each_start in net/devlink/port.c has CSA-observed state near line 586",
+        "statements": [
+          "584: \txa_for_each_start(&devlink->ports, port_index, devlink_port, state->idx) {",
+          "585: \t\terr = devlink_nl_port_fill(msg, devlink_port,",
+          "586: \t\t\t\t\t   DEVLINK_CMD_PORT_NEW,",
+          "587: \t\t\t\t\t   NETLINK_CB(cb->skb).portid,",
+          "588: \t\t\t\t\t   cb->nlh->nlmsg_seq, flags,",
+          "589: \t\t\t\t\t   cb->extack);"
+        ],
+        "guards": [
+          "err"
+        ],
+        "call_boundary": [
+          "devlink_nl_port_fill"
+        ],
+        "call_edges": [],
+        "state_transitions": [
+          "call(devlink_nl_port_fill)"
+        ],
+        "api_terms": [
+          "devlink_nl_port_fill"
+        ],
+        "related_symbols": [
+          "ports",
+          "port_index",
+          "devlink_port",
+          "idx"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      },
+      "confidence": 0.72
+    }
+  ],
+  "selected_context_summaries": [],
+  "semantic_clause_plan": [
+    {
+      "clause_id": "vulnerable_trigger_clause",
+      "intent": "Trigger on the vulnerable api_misuse mechanism using evidence-backed path/flow semantics.",
+      "supporting_evidence_ids": [
+        "csa_validation_allocation_lifecycle_3",
+        "csa_validation_path_guard_1",
+        "csa_validation_semantic_slice_0",
+        "csa_validation_state_transition_2"
+      ],
+      "repair_when": [
+        "semantic_no_hits"
+      ],
+      "focus_functions": [
+        "devlink_nl_port_get_dump_one"
+      ]
+    },
+    {
+      "clause_id": "patched_silence_clause",
+      "intent": "Stay silent on patched code when patch-added guards, barriers, or safe APIs prove the mechanism is blocked.",
+      "supporting_evidence_ids": [
+        "csa_validation_path_guard_1",
+        "csa_validation_semantic_slice_0",
+        "csa_validation_state_transition_2",
+        "pf_004",
+        "pf_003",
+        "pf_002",
+        "pf_001",
+        "pf_000"
+      ],
+      "repair_when": [],
+      "silencing_conditions": [
+        "patch-introduced barrier pattern: Replace the devlink_nl_port_fill() command argument DEVLINK_CMD_NEW with DEVLINK_CMD_PORT_NEW in the port dump path.",
+        "patch-introduced barrier pattern: Keep the sink and surrounding control flow unchanged; the barrier is semantic replacement of the incorrect enum value, not a runtime guard.",
+        "patch-introduced barrier pattern: Use the operation-specific command constant when filling netlink messages for devlink port dump replies."
+      ]
+    },
+    {
+      "clause_id": "semantic_transfer_clause",
+      "intent": "Generalize along semantic slices and call-chain evidence rather than patch-local syntax.",
+      "supporting_evidence_ids": [
+        "csa_validation_semantic_slice_0"
+      ],
+      "repair_when": [],
+      "analyzer_id": "csa"
+    },
+    {
+      "clause_id": "analyzer_interface_clause",
+      "intent": "Preserve valid analyzer-facing syntax and interfaces while keeping semantics unchanged.",
+      "supporting_evidence_ids": [
+        "pf_004",
+        "pf_003",
+        "pf_002",
+        "pf_001",
+        "pf_000"
+      ],
+      "repair_when": [
+        "semantic_execution_error"
+      ],
+      "analyzer_id": "csa"
+    }
+  ],
+  "repair_directives": [],
+  "constraints": [
+    {
+      "title": "Generalize beyond patch site",
+      "description": "Do not bind the detector to fixed file paths, line numbers, or exact patch strings.",
+      "priority": "high"
+    },
+    {
+      "title": "Preserve vulnerability semantics",
+      "description": "Keep the detector focused on the vulnerability family implied by the patch and evidence.",
+      "priority": "high"
+    },
+    {
+      "title": "Respect analyzer-native form",
+      "description": "Output must be a valid checker_plugin for csa.",
+      "priority": "high"
+    },
+    {
+      "title": "Stay within proven mechanism scope",
+      "description": "Generalize only along evidence-supported semantic dimensions. Do not broaden the detector into unrelated globals, APIs, or bug families.",
+      "priority": "high"
+    },
+    {
+      "title": "Honor mechanism contract",
+      "description": "Preserve the mechanism family `generic_vulnerability_mechanism` by keeping trigger invariants the vulnerable mechanism is reachable on a feasible path; the path lacks the barrier introduced by the patch; Patch-backed trigger clue: detection hints: First-draft checker should anchor on the patch-local sink devlink_nl_port_fill() inside devlink_nl_port_get_dump_one() and inspect its command argument., Prioritize matching calls where the third argument is DEVLINK_CMD_NEW in a port dump/get context; this is the deleted dangerous expression., Do not model guard absence, resource lifetime, bounds checks, or cleanup paths; the patch contains none of those mechanisms..",
+      "priority": "high"
+    },
+    {
+      "title": "Generalize only on contract axes",
+      "description": "Reuse semantics only along these transfer axes: only generalize along evidence-backed state, guard, flow, or API-role equivalence; equivalent guard or barrier predicates on sibling paths; equivalent local state transitions around the same sink or dereference.",
+      "priority": "high"
+    },
+    {
+      "title": "Anchor on patch-touched scope",
+      "description": "Use patch-touched files/functions as the semantic anchor for synthesis. Only extend beyond them when the same mechanism is explicitly supported by evidence.",
+      "priority": "high"
+    },
+    {
+      "title": "Encode the patch-added barrier",
+      "description": "model the absence of barriers like Replace the devlink_nl_port_fill() command argument DEVLINK_CMD_NEW with DEVLINK_CMD_PORT_NEW in the port dump path., Keep the sink and surrounding control flow unchanged; the barrier is semantic replacement of the incorrect enum value, not a runtime guard., Use the operation-specific command constant when filling netlink messages for devlink port dump replies..",
+      "priority": "high"
+    },
+    {
+      "title": "Respect patched silence",
+      "description": "Use these no-report conditions when they are semantically proven: patch-introduced barrier pattern: Replace the devlink_nl_port_fill() command argument DEVLINK_CMD_NEW with DEVLINK_CMD_PORT_NEW in the port dump path.; patch-introduced barrier pattern: Keep the sink and surrounding control flow unchanged; the barrier is semantic replacement of the incorrect enum value, not a runtime guard.; patch-introduced barrier pattern: Use the operation-specific command constant when filling netlink messages for devlink port dump replies..",
+      "priority": "high"
+    },
+    {
+      "title": "Use path-sensitive evidence",
+      "description": "Prefer guards, state transitions, and lifecycle facts over broad textual matching.",
+      "priority": "high"
+    },
+    {
+      "title": "No placeholder helper logic",
+      "description": "Helper predicates must inspect AST/program state and must not be unconditional return-true/return-false stubs.",
+      "priority": "high"
+    }
+  ],
+  "implementation_hints": [
+    "Mechanism family: generic_vulnerability_mechanism",
+    "Mechanism dimensions: vulnerability trigger, patch-introduced barrier, local state or flow relation",
+    "Trigger invariants: the vulnerable mechanism is reachable on a feasible path, the path lacks the barrier introduced by the patch, Patch-backed trigger clue: detection hints: First-draft checker should anchor on the patch-local sink devlink_nl_port_fill() inside devlink_nl_port_get_dump_one() and inspect its command argument., Prioritize matching calls where the third argument is DEVLINK_CMD_NEW in a port dump/get context; this is the deleted dangerous expression., Do not model guard absence, resource lifetime, bounds checks, or cleanup paths; the patch contains none of those mechanisms.",
+    "Silence invariants: patch-introduced guards, barriers, or safe APIs must suppress findings, patch-introduced barrier pattern: Replace the devlink_nl_port_fill() command argument DEVLINK_CMD_NEW with DEVLINK_CMD_PORT_NEW in the port dump path., patch-introduced barrier pattern: Keep the sink and surrounding control flow unchanged; the barrier is semantic replacement of the incorrect enum value, not a runtime guard.",
+    "Transfer axes: only generalize along evidence-backed state, guard, flow, or API-role equivalence, equivalent guard or barrier predicates on sibling paths, equivalent local state transitions around the same sink or dereference",
+    "Focus files: net/devlink/port.c",
+    "Priority functions: devlink_nl_port_get_dump_one",
+    "Patch-added barriers: Replace the devlink_nl_port_fill() command argument DEVLINK_CMD_NEW with DEVLINK_CMD_PORT_NEW in the port dump path., Keep the sink and surrounding control flow unchanged; the barrier is semantic replacement of the incorrect enum value, not a runtime guard., Use the operation-specific command constant when filling netlink messages for devlink port dump replies."
+  ],
+  "validation_expectations": [
+    "Vulnerable version should trigger a api_misuse finding.",
+    "Patched version should stay silent for the same mechanism.",
+    "Semantic validation that executes but returns zero hits is not acceptable; recover coverage with evidence-backed semantics.",
+    "Repair phase may fix syntax/interfaces only; it must not simplify away the core detection logic.",
+    "Generalization must stay inside the mechanism contract transfer axes instead of widening to adjacent bug families.",
+    "Trigger invariant: the vulnerable mechanism is reachable on a feasible path.",
+    "Trigger invariant: the path lacks the barrier introduced by the patch.",
+    "Patched silence depends on: patch-introduced barrier pattern: Replace the devlink_nl_port_fill() command argument DEVLINK_CMD_NEW with DEVLINK_CMD_PORT_NEW in the port dump path..",
+    "Patched silence depends on: patch-introduced barrier pattern: Keep the sink and surrounding control flow unchanged; the barrier is semantic replacement of the incorrect enum value, not a runtime guard.."
+  ]
+}

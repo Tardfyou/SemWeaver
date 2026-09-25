@@ -1,0 +1,16 @@
+Refinment Plan:
+
+The false positive is caused by reporting every call whose source text contains `hws_send_ring_close_sq`, without proving that the call is part of the specific SQ-ready failure cleanup path. Consequently, the normal teardown call in `hws_send_ring_close()` is incorrectly diagnosed.
+
+The refined checker:
+
+- Matches the direct callee declaration instead of searching source text.
+- Uses AST parent traversal to verify that the cleanup call is in the error arm of an `if` statement.
+- Uses a `ProgramState` map to mark only guards whose most recent status assignment invokes `hws_send_ring_set_sq_rdy()`.
+- Requires a prior `hws_send_ring_create_sq()` call in the same compound statement, tying the report to the SQ creation/ready sequence.
+- Handles `if (err)`, `if (!err)`, `if (err != 0)`, and `if (err == 0)` forms.
+- Fails closed for unfamiliar control-flow forms, preventing normal shutdown paths from being reported.
+
+Refined Code:
+```cpp
+```

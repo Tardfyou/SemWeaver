@@ -1,0 +1,17 @@
+Refinement Plan:
+
+1. Root cause: the original checker uses source-text matching on the *entire* `devm_add_action_or_reset()` call expression. Since that expression contains `scmi_debugfs_common_cleanup` as a callback argument, it is incorrectly treated as though the cleanup function were being invoked. The corrected code registers/passes the callback but does not call it explicitly.
+
+2. Replace text matching with AST-based identification:
+   - Only consider an actual direct call to a cleanup function.
+   - Find an enclosing `if` whose condition contains exactly one direct call to `devm_add_action_or_reset`.
+   - Extract and compare the registered callback declaration with the manually called cleanup declaration.
+   - Confirm the manual call is in the branch representing the helper's failure path.
+
+3. Use the current `ProgramState` to verify that the callback data argument passed to `devm_add_action_or_reset(..., cleanup, data)` is the same object supplied to `cleanup(data)`. This avoids reporting a same-named/same-function cleanup applied to a different object.
+
+4. Be conservative for ambiguous boolean expressions or indirect callbacks. The checker supports direct conditions, `!call`, assignments, and `== 0` / `!= 0` comparisons, while declining to report complex conditions where failure-path semantics cannot be proven.
+
+Refined Code:
+```cpp
+```

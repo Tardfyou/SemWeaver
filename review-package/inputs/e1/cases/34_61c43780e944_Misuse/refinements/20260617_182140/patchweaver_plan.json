@@ -1,0 +1,939 @@
+{
+  "files_changed": [
+    "net/devlink/port.c"
+  ],
+  "file_details": [
+    {
+      "path": "net/devlink/port.c",
+      "additions": 1,
+      "deletions": 1,
+      "hunks": 1
+    }
+  ],
+  "vulnerability_patterns": [
+    {
+      "type": "api_misuse",
+      "description": "Before the patch, devlink_nl_port_get_dump_one() constructed port dump replies by calling devlink_nl_port_fill() with the generic DEVLINK_CMD_NEW command value, so consumers of the generated netlink message observed a command type inconsistent with port-get responses and port notifications. After the patch, the same sink is called with DEVLINK_CMD_PORT_NEW, replacing the wrong protocol constant with the port-specific command value.",
+      "trigger_conditions": [
+        "Execution reaches devlink_nl_port_get_dump_one() and iterates devlink->ports via xa_for_each_start().",
+        "The port dump reply is constructed through devlink_nl_port_fill(msg, devlink_port, ...).",
+        "The command argument at that sink is DEVLINK_CMD_NEW instead of the port-specific DEVLINK_CMD_PORT_NEW.",
+        "The generated dump response is consumed by code expecting the dumpit response command value to match the port get/doit response command."
+      ],
+      "fix_patterns": [
+        "Replace the devlink_nl_port_fill() command argument DEVLINK_CMD_NEW with DEVLINK_CMD_PORT_NEW in the port dump path.",
+        "Keep the sink and surrounding control flow unchanged; the barrier is semantic replacement of the incorrect enum value, not a runtime guard.",
+        "Use the operation-specific command constant when filling netlink messages for devlink port dump replies."
+      ],
+      "affected_functions": [
+        "devlink_nl_port_get_dump_one"
+      ],
+      "cross_file": false,
+      "source": "llm",
+      "confidence": 0.88,
+      "evidence_lines": [
+        "devlink_nl_port_get_dump_one(struct sk_buff *msg, struct devlink *devlink,",
+        "xa_for_each_start(&devlink->ports, port_index, devlink_port, state->idx) {",
+        "err = devlink_nl_port_fill(msg, devlink_port,",
+        "-\t\t\t\t\t   DEVLINK_CMD_NEW,",
+        "+\t\t\t\t\t   DEVLINK_CMD_PORT_NEW,",
+        "NETLINK_CB(cb->skb).portid,"
+      ]
+    }
+  ],
+  "cross_file_dependencies": [],
+  "detection_strategy": {
+    "primary_pattern": "api_misuse",
+    "check_types": [
+      "local_call_argument_constant_mismatch",
+      "protocol_enum_misuse",
+      "operation_specific_response_command_consistency"
+    ],
+    "entry_points": [
+      "devlink_nl_port_get_dump_one"
+    ],
+    "data_flow_tracking": false,
+    "cross_file_analysis": false,
+    "suggestions": [
+      "First-draft checker should anchor on the patch-local sink devlink_nl_port_fill() inside devlink_nl_port_get_dump_one() and inspect its command argument.",
+      "Prioritize matching calls where the third argument is DEVLINK_CMD_NEW in a port dump/get context; this is the deleted dangerous expression.",
+      "Do not model guard absence, resource lifetime, bounds checks, or cleanup paths; the patch contains none of those mechanisms.",
+      "Use DEVLINK_CMD_PORT_NEW as the expected replacement only as a convergence filter after finding the local sink and wrong constant.",
+      "Local AST matching is sufficient for an initial detector; no interprocedural data flow or cross-file analysis is required unless generalizing to other devlink fill helpers.",
+      "Auxiliary filters can require the enclosing function name devlink_nl_port_get_dump_one or the surrounding xa_for_each_start(&devlink->ports, ...) loop to reduce false positives."
+    ]
+  },
+  "checker_name_suggestion": "DevlinkPortDumpCmdMismatchChecker",
+  "affected_functions": [
+    "devlink_nl_port_get_dump_one"
+  ],
+  "key_functions": [
+    "devlink_nl_port_get_dump_one"
+  ],
+  "patch_semantics": {
+    "added_guards": [],
+    "added_api_calls": [],
+    "removed_api_calls": [],
+    "state_resets": [],
+    "lifecycle_changes": []
+  },
+  "analysis_backend": "llm",
+  "analysis_confidence": 0.88,
+  "analysis_rationale": "The patch changes only the command argument passed to devlink_nl_port_fill() inside devlink_nl_port_get_dump_one(): the old dump path used DEVLINK_CMD_NEW, while the fixed path uses DEVLINK_CMD_PORT_NEW. There is no new guard, cleanup, lifetime change, or bounds check; the concrete mechanism is misuse of an enum/protocol command value at a message construction sink.",
+  "llm_usage": {
+    "prompt_tokens": 4133,
+    "completion_tokens": 1300,
+    "total_tokens": 5433,
+    "call_count": 1,
+    "available": true,
+    "model": "gpt-5.5"
+  },
+  "patchweaver": {
+    "summary": "Patch suggests api_misuse semantics across 1 file(s); added guards=0, removed risky operations=0, fix patterns=3, metadata refs=2.",
+    "patch_facts": [
+      {
+        "fact_type": "patch_overview",
+        "label": "Patch overview",
+        "attributes": {
+          "patch_path": "/anonymous/home/LLM-Native/research/knighter/e2/cases/34_61c43780e944_Misuse/patches/commit.patch",
+          "changed_files": [
+            "net/devlink/port.c"
+          ],
+          "changed_file_count": 1,
+          "added_line_count": 1,
+          "deleted_line_count": 1
+        }
+      },
+      {
+        "fact_type": "vulnerability_patterns",
+        "label": "Vulnerability patterns inferred from patch",
+        "attributes": {
+          "patterns": [
+            "api_misuse"
+          ],
+          "descriptions": [
+            "Before the patch, devlink_nl_port_get_dump_one() constructed port dump replies by calling devlink_nl_port_fill() with the generic DEVLINK_CMD_NEW command value, so consumers of the generated netlink message observed a command type inconsistent with port-get responses and port notifications. After the patch, the same sink is called with DEVLINK_CMD_PORT_NEW, replacing the wrong protocol constant with the port-specific command value."
+          ]
+        }
+      },
+      {
+        "fact_type": "affected_functions",
+        "label": "Functions implicated by removed or fixed code",
+        "attributes": {
+          "functions": [
+            "devlink_nl_port_get_dump_one",
+            "xa_for_each_start"
+          ]
+        }
+      },
+      {
+        "fact_type": "detection_strategy",
+        "label": "Existing patch analysis detection strategy",
+        "attributes": {
+          "primary_pattern": "api_misuse",
+          "check_types": [
+            "local_call_argument_constant_mismatch",
+            "protocol_enum_misuse",
+            "operation_specific_response_command_consistency"
+          ],
+          "entry_points": [
+            "devlink_nl_port_get_dump_one"
+          ],
+          "data_flow_tracking": false,
+          "cross_file_analysis": false,
+          "suggestions": [
+            "First-draft checker should anchor on the patch-local sink devlink_nl_port_fill() inside devlink_nl_port_get_dump_one() and inspect its command argument.",
+            "Prioritize matching calls where the third argument is DEVLINK_CMD_NEW in a port dump/get context; this is the deleted dangerous expression.",
+            "Do not model guard absence, resource lifetime, bounds checks, or cleanup paths; the patch contains none of those mechanisms.",
+            "Use DEVLINK_CMD_PORT_NEW as the expected replacement only as a convergence filter after finding the local sink and wrong constant.",
+            "Local AST matching is sufficient for an initial detector; no interprocedural data flow or cross-file analysis is required unless generalizing to other devlink fill helpers.",
+            "Auxiliary filters can require the enclosing function name devlink_nl_port_get_dump_one or the surrounding xa_for_each_start(&devlink->ports, ...) loop to reduce false positives."
+          ]
+        }
+      },
+      {
+        "fact_type": "fix_patterns",
+        "label": "Patch introduces reusable fix patterns",
+        "attributes": {
+          "patterns": [
+            "Replace the devlink_nl_port_fill() command argument DEVLINK_CMD_NEW with DEVLINK_CMD_PORT_NEW in the port dump path.",
+            "Keep the sink and surrounding control flow unchanged; the barrier is semantic replacement of the incorrect enum value, not a runtime guard.",
+            "Use the operation-specific command constant when filling netlink messages for devlink port dump replies."
+          ]
+        }
+      },
+      {
+        "fact_type": "patch_intent",
+        "label": "Patch intent and commit-style summary",
+        "attributes": {
+          "summary": "commit 61c43780e9444123410cd48c2483e01d2b8f75e8 | Author: Jiri Pirko <jiri@resnulli.us>",
+          "keywords": [
+            "commit",
+            "c43780e9444123410cd48c2483e01d2b8f75e8",
+            "author",
+            "jiri",
+            "pirko",
+            "resnulli"
+          ]
+        }
+      },
+      {
+        "fact_type": "external_references",
+        "label": "External references recovered from patch text",
+        "attributes": {
+          "cves": [],
+          "cwes": [],
+          "issues": [
+            "tag",
+            "bfcd3a466172"
+          ]
+        }
+      }
+    ],
+    "mechanism_graph": {
+      "summary": "Patch suggests api_misuse semantics across 1 file(s); added guards=0, removed risky operations=0, fix patterns=3, metadata refs=2.",
+      "primary_patterns": [
+        "api_misuse"
+      ],
+      "nodes": [
+        {
+          "node_id": "patch",
+          "kind": "patch",
+          "label": "Security patch",
+          "attributes": {
+            "changed_files": [
+              "net/devlink/port.c"
+            ]
+          }
+        },
+        {
+          "node_id": "file_0",
+          "kind": "file",
+          "label": "net/devlink/port.c",
+          "attributes": {
+            "path": "net/devlink/port.c",
+            "additions": 1,
+            "deletions": 1,
+            "hunks": 1
+          }
+        },
+        {
+          "node_id": "pattern_0",
+          "kind": "pattern",
+          "label": "api_misuse",
+          "attributes": {
+            "type": "api_misuse",
+            "description": "Before the patch, devlink_nl_port_get_dump_one() constructed port dump replies by calling devlink_nl_port_fill() with the generic DEVLINK_CMD_NEW command value, so consumers of the generated netlink message observed a command type inconsistent with port-get responses and port notifications. After the patch, the same sink is called with DEVLINK_CMD_PORT_NEW, replacing the wrong protocol constant with the port-specific command value.",
+            "trigger_conditions": [
+              "Execution reaches devlink_nl_port_get_dump_one() and iterates devlink->ports via xa_for_each_start().",
+              "The port dump reply is constructed through devlink_nl_port_fill(msg, devlink_port, ...).",
+              "The command argument at that sink is DEVLINK_CMD_NEW instead of the port-specific DEVLINK_CMD_PORT_NEW.",
+              "The generated dump response is consumed by code expecting the dumpit response command value to match the port get/doit response command."
+            ],
+            "fix_patterns": [
+              "Replace the devlink_nl_port_fill() command argument DEVLINK_CMD_NEW with DEVLINK_CMD_PORT_NEW in the port dump path.",
+              "Keep the sink and surrounding control flow unchanged; the barrier is semantic replacement of the incorrect enum value, not a runtime guard.",
+              "Use the operation-specific command constant when filling netlink messages for devlink port dump replies."
+            ],
+            "affected_functions": [
+              "devlink_nl_port_get_dump_one"
+            ],
+            "cross_file": false,
+            "source": "llm",
+            "confidence": 0.88,
+            "evidence_lines": [
+              "devlink_nl_port_get_dump_one(struct sk_buff *msg, struct devlink *devlink,",
+              "xa_for_each_start(&devlink->ports, port_index, devlink_port, state->idx) {",
+              "err = devlink_nl_port_fill(msg, devlink_port,",
+              "-\t\t\t\t\t   DEVLINK_CMD_NEW,",
+              "+\t\t\t\t\t   DEVLINK_CMD_PORT_NEW,",
+              "NETLINK_CB(cb->skb).portid,"
+            ]
+          }
+        },
+        {
+          "node_id": "func_1",
+          "kind": "function",
+          "label": "devlink_nl_port_get_dump_one",
+          "attributes": {
+            "function": "devlink_nl_port_get_dump_one"
+          }
+        },
+        {
+          "node_id": "guard_1",
+          "kind": "guard",
+          "label": "Execution reaches devlink_nl_port_get_dump_one() and iterates devlink->ports via xa_for_each_start().",
+          "attributes": {
+            "condition": "Execution reaches devlink_nl_port_get_dump_one() and iterates devlink->ports via xa_for_each_start()."
+          }
+        },
+        {
+          "node_id": "guard_2",
+          "kind": "guard",
+          "label": "The port dump reply is constructed through devlink_nl_port_fill(msg, devlink_port, ...).",
+          "attributes": {
+            "condition": "The port dump reply is constructed through devlink_nl_port_fill(msg, devlink_port, ...)."
+          }
+        },
+        {
+          "node_id": "guard_3",
+          "kind": "guard",
+          "label": "The command argument at that sink is DEVLINK_CMD_NEW instead of the port-specific DEVLINK_CMD_PORT_NEW.",
+          "attributes": {
+            "condition": "The command argument at that sink is DEVLINK_CMD_NEW instead of the port-specific DEVLINK_CMD_PORT_NEW."
+          }
+        },
+        {
+          "node_id": "guard_4",
+          "kind": "guard",
+          "label": "The generated dump response is consumed by code expecting the dumpit response command value to match the port get/doit response command.",
+          "attributes": {
+            "condition": "The generated dump response is consumed by code expecting the dumpit response command value to match the port get/doit response command."
+          }
+        },
+        {
+          "node_id": "strategy",
+          "kind": "strategy",
+          "label": "api_misuse",
+          "attributes": {
+            "primary_pattern": "api_misuse",
+            "check_types": [
+              "local_call_argument_constant_mismatch",
+              "protocol_enum_misuse",
+              "operation_specific_response_command_consistency"
+            ],
+            "entry_points": [
+              "devlink_nl_port_get_dump_one"
+            ],
+            "data_flow_tracking": false,
+            "cross_file_analysis": false,
+            "suggestions": [
+              "First-draft checker should anchor on the patch-local sink devlink_nl_port_fill() inside devlink_nl_port_get_dump_one() and inspect its command argument.",
+              "Prioritize matching calls where the third argument is DEVLINK_CMD_NEW in a port dump/get context; this is the deleted dangerous expression.",
+              "Do not model guard absence, resource lifetime, bounds checks, or cleanup paths; the patch contains none of those mechanisms.",
+              "Use DEVLINK_CMD_PORT_NEW as the expected replacement only as a convergence filter after finding the local sink and wrong constant.",
+              "Local AST matching is sufficient for an initial detector; no interprocedural data flow or cross-file analysis is required unless generalizing to other devlink fill helpers.",
+              "Auxiliary filters can require the enclosing function name devlink_nl_port_get_dump_one or the surrounding xa_for_each_start(&devlink->ports, ...) loop to reduce false positives."
+            ]
+          }
+        },
+        {
+          "node_id": "func_2",
+          "kind": "function",
+          "label": "xa_for_each_start",
+          "attributes": {
+            "function": "xa_for_each_start",
+            "source": "patch_fact"
+          }
+        },
+        {
+          "node_id": "fix_1",
+          "kind": "fix",
+          "label": "Replace the devlink_nl_port_fill() command argument DEVLINK_CMD_NEW with DEVLINK_CMD_PORT_NEW in the port dump path.",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "Replace the devlink_nl_port_fill() command argument DEVLINK_CMD_NEW with DEVLINK_CMD_PORT_NEW in the port dump path."
+          }
+        },
+        {
+          "node_id": "fix_2",
+          "kind": "fix",
+          "label": "Keep the sink and surrounding control flow unchanged; the barrier is semantic replacement of the incorrect enum value, not a runtime guard.",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "Keep the sink and surrounding control flow unchanged; the barrier is semantic replacement of the incorrect enum value, not a runtime guard."
+          }
+        },
+        {
+          "node_id": "fix_3",
+          "kind": "fix",
+          "label": "Use the operation-specific command constant when filling netlink messages for devlink port dump replies.",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "Use the operation-specific command constant when filling netlink messages for devlink port dump replies."
+          }
+        },
+        {
+          "node_id": "intent_0",
+          "kind": "intent",
+          "label": "commit 61c43780e9444123410cd48c2483e01d2b8f75e8 | Author: Jiri Pirko <jiri@resnulli.us>",
+          "attributes": {
+            "summary": "commit 61c43780e9444123410cd48c2483e01d2b8f75e8 | Author: Jiri Pirko <jiri@resnulli.us>",
+            "keywords": [
+              "commit",
+              "c43780e9444123410cd48c2483e01d2b8f75e8",
+              "author",
+              "jiri",
+              "pirko",
+              "resnulli"
+            ]
+          }
+        },
+        {
+          "node_id": "commit_0",
+          "kind": "commit",
+          "label": "tag, bfcd3a466172",
+          "attributes": {
+            "issues": [
+              "tag",
+              "bfcd3a466172"
+            ]
+          }
+        }
+      ],
+      "edges": [
+        {
+          "source": "patch",
+          "target": "file_0",
+          "relation": "touches",
+          "confidence": 0.95
+        },
+        {
+          "source": "patch",
+          "target": "pattern_0",
+          "relation": "indicates",
+          "confidence": 0.9
+        },
+        {
+          "source": "pattern_0",
+          "target": "func_1",
+          "relation": "affects",
+          "confidence": 0.75
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_1",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_2",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_3",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_4",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "patch",
+          "target": "strategy",
+          "relation": "guides",
+          "confidence": 0.85
+        },
+        {
+          "source": "patch",
+          "target": "func_2",
+          "relation": "focuses_on",
+          "confidence": 0.82
+        },
+        {
+          "source": "patch",
+          "target": "fix_1",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_2",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_3",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "intent_0",
+          "relation": "describes",
+          "confidence": 0.78
+        },
+        {
+          "source": "patch",
+          "target": "commit_0",
+          "relation": "tracked_by",
+          "confidence": 0.72
+        }
+      ]
+    },
+    "evidence_plan": {
+      "primary_pattern": "api_misuse",
+      "hypotheses": [
+        "Patch likely encodes a reusable vulnerability mechanism but available metadata is weak; keep evidence collection broad."
+      ],
+      "requirements": [
+        {
+          "evidence_type": "patch_fact",
+          "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+          "priority": 100,
+          "preferred_analyzers": [],
+          "confidence": 1.0,
+          "mechanism_refs": [
+            "patch"
+          ]
+        }
+      ],
+      "recommended_analyzers": [
+        "csa",
+        "codeql"
+      ],
+      "planner_notes": [],
+      "coverage_gaps": [],
+      "uncertainty_budget": "medium",
+      "escalation_triggers": [
+        "metadata_available"
+      ]
+    },
+    "validation_feedback_history": [
+      {
+        "analyzer": "csa",
+        "phase": "knighter_e2_patch_local_baseline",
+        "summary": "Baseline validation (csa): Knighter基线扫描报告数=0, 人工确认bug=0, 人工非bug=0, 候选组=valid_no_local_report。漏洞版命中=true, 漏洞版patch-scoped告警数=2, 修复版误报数=1, fixed_silent=false, PDS=false. 这些数只表示patch-local语义验证门，不等同于Knighter full-kernel report_count/FPR统计。"
+      }
+    ],
+    "refinement_targets": {
+      "csa": {
+        "checker_name": "SAGenTestChecker",
+        "artifact_path": "/anonymous/home/LLM-Native/research/knighter/e2/cases/34_61c43780e944_Misuse/csa/SAGenTestChecker.cpp",
+        "artifact_kind": "checker_source",
+        "validation_summary": "Baseline validation (csa): Knighter基线扫描报告数=0, 人工确认bug=0, 人工非bug=0, 候选组=valid_no_local_report。漏洞版命中=true, 漏洞版patch-scoped告警数=2, 修复版误报数=1, fixed_silent=false, PDS=false. 这些数只表示patch-local语义验证门，不等同于Knighter full-kernel report_count/FPR统计。",
+        "refinement_summary": "Baseline validation (csa): Knighter基线扫描报告数=0, 人工确认bug=0, 人工非bug=0, 候选组=valid_no_local_report。漏洞版命中=true, 漏洞版patch-scoped告警数=2, 修复版误报数=1, fixed_silent=false, PDS=false. 这些数只表示patch-local语义验证门，不等同于Knighter full-kernel report_count/FPR统计。"
+      }
+    }
+  },
+  "knighter": {
+    "patch_local_screen1": {
+      "buggy_alerts": 2,
+      "fixed_alerts": 1,
+      "buggy_miss": false,
+      "fixed_noisy": true,
+      "poor_distinguishing": true,
+      "screen1_priority": "P0",
+      "screen1_reason": "fixed-side noisy",
+      "patch_related_targets": [
+        "net/devlink/port.o"
+      ]
+    },
+    "baseline_validation_summary": "Baseline validation (csa): Knighter基线扫描报告数=0, 人工确认bug=0, 人工非bug=0, 候选组=valid_no_local_report。漏洞版命中=true, 漏洞版patch-scoped告警数=2, 修复版误报数=1, fixed_silent=false, PDS=false. 这些数只表示patch-local语义验证门，不等同于Knighter full-kernel report_count/FPR统计。"
+  },
+  "patch_path": "/anonymous/home/LLM-Native/research/knighter/e2/cases/34_61c43780e944_Misuse/patches/commit.patch",
+  "summary": "Patch suggests api_misuse semantics across 1 file(s); added guards=0, removed risky operations=0, fix patterns=3, metadata refs=2.",
+  "patch_facts": [
+    {
+      "fact_type": "patch_overview",
+      "label": "Patch overview",
+      "attributes": {
+        "patch_path": "/anonymous/home/LLM-Native/research/knighter/e2/cases/34_61c43780e944_Misuse/patches/commit.patch",
+        "changed_files": [
+          "net/devlink/port.c"
+        ],
+        "changed_file_count": 1,
+        "added_line_count": 1,
+        "deleted_line_count": 1
+      }
+    },
+    {
+      "fact_type": "vulnerability_patterns",
+      "label": "Vulnerability patterns inferred from patch",
+      "attributes": {
+        "patterns": [
+          "api_misuse"
+        ],
+        "descriptions": [
+          "Before the patch, devlink_nl_port_get_dump_one() constructed port dump replies by calling devlink_nl_port_fill() with the generic DEVLINK_CMD_NEW command value, so consumers of the generated netlink message observed a command type inconsistent with port-get responses and port notifications. After the patch, the same sink is called with DEVLINK_CMD_PORT_NEW, replacing the wrong protocol constant with the port-specific command value."
+        ]
+      }
+    },
+    {
+      "fact_type": "affected_functions",
+      "label": "Functions implicated by removed or fixed code",
+      "attributes": {
+        "functions": [
+          "devlink_nl_port_get_dump_one",
+          "xa_for_each_start"
+        ]
+      }
+    },
+    {
+      "fact_type": "detection_strategy",
+      "label": "Existing patch analysis detection strategy",
+      "attributes": {
+        "primary_pattern": "api_misuse",
+        "check_types": [
+          "local_call_argument_constant_mismatch",
+          "protocol_enum_misuse",
+          "operation_specific_response_command_consistency"
+        ],
+        "entry_points": [
+          "devlink_nl_port_get_dump_one"
+        ],
+        "data_flow_tracking": false,
+        "cross_file_analysis": false,
+        "suggestions": [
+          "First-draft checker should anchor on the patch-local sink devlink_nl_port_fill() inside devlink_nl_port_get_dump_one() and inspect its command argument.",
+          "Prioritize matching calls where the third argument is DEVLINK_CMD_NEW in a port dump/get context; this is the deleted dangerous expression.",
+          "Do not model guard absence, resource lifetime, bounds checks, or cleanup paths; the patch contains none of those mechanisms.",
+          "Use DEVLINK_CMD_PORT_NEW as the expected replacement only as a convergence filter after finding the local sink and wrong constant.",
+          "Local AST matching is sufficient for an initial detector; no interprocedural data flow or cross-file analysis is required unless generalizing to other devlink fill helpers.",
+          "Auxiliary filters can require the enclosing function name devlink_nl_port_get_dump_one or the surrounding xa_for_each_start(&devlink->ports, ...) loop to reduce false positives."
+        ]
+      }
+    },
+    {
+      "fact_type": "fix_patterns",
+      "label": "Patch introduces reusable fix patterns",
+      "attributes": {
+        "patterns": [
+          "Replace the devlink_nl_port_fill() command argument DEVLINK_CMD_NEW with DEVLINK_CMD_PORT_NEW in the port dump path.",
+          "Keep the sink and surrounding control flow unchanged; the barrier is semantic replacement of the incorrect enum value, not a runtime guard.",
+          "Use the operation-specific command constant when filling netlink messages for devlink port dump replies."
+        ]
+      }
+    },
+    {
+      "fact_type": "patch_intent",
+      "label": "Patch intent and commit-style summary",
+      "attributes": {
+        "summary": "commit 61c43780e9444123410cd48c2483e01d2b8f75e8 | Author: Jiri Pirko <jiri@resnulli.us>",
+        "keywords": [
+          "commit",
+          "c43780e9444123410cd48c2483e01d2b8f75e8",
+          "author",
+          "jiri",
+          "pirko",
+          "resnulli"
+        ]
+      }
+    },
+    {
+      "fact_type": "external_references",
+      "label": "External references recovered from patch text",
+      "attributes": {
+        "cves": [],
+        "cwes": [],
+        "issues": [
+          "tag",
+          "bfcd3a466172"
+        ]
+      }
+    }
+  ],
+  "mechanism_graph": {
+    "summary": "Patch suggests api_misuse semantics across 1 file(s); added guards=0, removed risky operations=0, fix patterns=3, metadata refs=2.",
+    "primary_patterns": [
+      "api_misuse"
+    ],
+    "nodes": [
+      {
+        "node_id": "patch",
+        "kind": "patch",
+        "label": "Security patch",
+        "attributes": {
+          "changed_files": [
+            "net/devlink/port.c"
+          ]
+        }
+      },
+      {
+        "node_id": "file_0",
+        "kind": "file",
+        "label": "net/devlink/port.c",
+        "attributes": {
+          "path": "net/devlink/port.c",
+          "additions": 1,
+          "deletions": 1,
+          "hunks": 1
+        }
+      },
+      {
+        "node_id": "pattern_0",
+        "kind": "pattern",
+        "label": "api_misuse",
+        "attributes": {
+          "type": "api_misuse",
+          "description": "Before the patch, devlink_nl_port_get_dump_one() constructed port dump replies by calling devlink_nl_port_fill() with the generic DEVLINK_CMD_NEW command value, so consumers of the generated netlink message observed a command type inconsistent with port-get responses and port notifications. After the patch, the same sink is called with DEVLINK_CMD_PORT_NEW, replacing the wrong protocol constant with the port-specific command value.",
+          "trigger_conditions": [
+            "Execution reaches devlink_nl_port_get_dump_one() and iterates devlink->ports via xa_for_each_start().",
+            "The port dump reply is constructed through devlink_nl_port_fill(msg, devlink_port, ...).",
+            "The command argument at that sink is DEVLINK_CMD_NEW instead of the port-specific DEVLINK_CMD_PORT_NEW.",
+            "The generated dump response is consumed by code expecting the dumpit response command value to match the port get/doit response command."
+          ],
+          "fix_patterns": [
+            "Replace the devlink_nl_port_fill() command argument DEVLINK_CMD_NEW with DEVLINK_CMD_PORT_NEW in the port dump path.",
+            "Keep the sink and surrounding control flow unchanged; the barrier is semantic replacement of the incorrect enum value, not a runtime guard.",
+            "Use the operation-specific command constant when filling netlink messages for devlink port dump replies."
+          ],
+          "affected_functions": [
+            "devlink_nl_port_get_dump_one"
+          ],
+          "cross_file": false,
+          "source": "llm",
+          "confidence": 0.88,
+          "evidence_lines": [
+            "devlink_nl_port_get_dump_one(struct sk_buff *msg, struct devlink *devlink,",
+            "xa_for_each_start(&devlink->ports, port_index, devlink_port, state->idx) {",
+            "err = devlink_nl_port_fill(msg, devlink_port,",
+            "-\t\t\t\t\t   DEVLINK_CMD_NEW,",
+            "+\t\t\t\t\t   DEVLINK_CMD_PORT_NEW,",
+            "NETLINK_CB(cb->skb).portid,"
+          ]
+        }
+      },
+      {
+        "node_id": "func_1",
+        "kind": "function",
+        "label": "devlink_nl_port_get_dump_one",
+        "attributes": {
+          "function": "devlink_nl_port_get_dump_one"
+        }
+      },
+      {
+        "node_id": "guard_1",
+        "kind": "guard",
+        "label": "Execution reaches devlink_nl_port_get_dump_one() and iterates devlink->ports via xa_for_each_start().",
+        "attributes": {
+          "condition": "Execution reaches devlink_nl_port_get_dump_one() and iterates devlink->ports via xa_for_each_start()."
+        }
+      },
+      {
+        "node_id": "guard_2",
+        "kind": "guard",
+        "label": "The port dump reply is constructed through devlink_nl_port_fill(msg, devlink_port, ...).",
+        "attributes": {
+          "condition": "The port dump reply is constructed through devlink_nl_port_fill(msg, devlink_port, ...)."
+        }
+      },
+      {
+        "node_id": "guard_3",
+        "kind": "guard",
+        "label": "The command argument at that sink is DEVLINK_CMD_NEW instead of the port-specific DEVLINK_CMD_PORT_NEW.",
+        "attributes": {
+          "condition": "The command argument at that sink is DEVLINK_CMD_NEW instead of the port-specific DEVLINK_CMD_PORT_NEW."
+        }
+      },
+      {
+        "node_id": "guard_4",
+        "kind": "guard",
+        "label": "The generated dump response is consumed by code expecting the dumpit response command value to match the port get/doit response command.",
+        "attributes": {
+          "condition": "The generated dump response is consumed by code expecting the dumpit response command value to match the port get/doit response command."
+        }
+      },
+      {
+        "node_id": "strategy",
+        "kind": "strategy",
+        "label": "api_misuse",
+        "attributes": {
+          "primary_pattern": "api_misuse",
+          "check_types": [
+            "local_call_argument_constant_mismatch",
+            "protocol_enum_misuse",
+            "operation_specific_response_command_consistency"
+          ],
+          "entry_points": [
+            "devlink_nl_port_get_dump_one"
+          ],
+          "data_flow_tracking": false,
+          "cross_file_analysis": false,
+          "suggestions": [
+            "First-draft checker should anchor on the patch-local sink devlink_nl_port_fill() inside devlink_nl_port_get_dump_one() and inspect its command argument.",
+            "Prioritize matching calls where the third argument is DEVLINK_CMD_NEW in a port dump/get context; this is the deleted dangerous expression.",
+            "Do not model guard absence, resource lifetime, bounds checks, or cleanup paths; the patch contains none of those mechanisms.",
+            "Use DEVLINK_CMD_PORT_NEW as the expected replacement only as a convergence filter after finding the local sink and wrong constant.",
+            "Local AST matching is sufficient for an initial detector; no interprocedural data flow or cross-file analysis is required unless generalizing to other devlink fill helpers.",
+            "Auxiliary filters can require the enclosing function name devlink_nl_port_get_dump_one or the surrounding xa_for_each_start(&devlink->ports, ...) loop to reduce false positives."
+          ]
+        }
+      },
+      {
+        "node_id": "func_2",
+        "kind": "function",
+        "label": "xa_for_each_start",
+        "attributes": {
+          "function": "xa_for_each_start",
+          "source": "patch_fact"
+        }
+      },
+      {
+        "node_id": "fix_1",
+        "kind": "fix",
+        "label": "Replace the devlink_nl_port_fill() command argument DEVLINK_CMD_NEW with DEVLINK_CMD_PORT_NEW in the port dump path.",
+        "attributes": {
+          "kind": "fix_patterns",
+          "value": "Replace the devlink_nl_port_fill() command argument DEVLINK_CMD_NEW with DEVLINK_CMD_PORT_NEW in the port dump path."
+        }
+      },
+      {
+        "node_id": "fix_2",
+        "kind": "fix",
+        "label": "Keep the sink and surrounding control flow unchanged; the barrier is semantic replacement of the incorrect enum value, not a runtime guard.",
+        "attributes": {
+          "kind": "fix_patterns",
+          "value": "Keep the sink and surrounding control flow unchanged; the barrier is semantic replacement of the incorrect enum value, not a runtime guard."
+        }
+      },
+      {
+        "node_id": "fix_3",
+        "kind": "fix",
+        "label": "Use the operation-specific command constant when filling netlink messages for devlink port dump replies.",
+        "attributes": {
+          "kind": "fix_patterns",
+          "value": "Use the operation-specific command constant when filling netlink messages for devlink port dump replies."
+        }
+      },
+      {
+        "node_id": "intent_0",
+        "kind": "intent",
+        "label": "commit 61c43780e9444123410cd48c2483e01d2b8f75e8 | Author: Jiri Pirko <jiri@resnulli.us>",
+        "attributes": {
+          "summary": "commit 61c43780e9444123410cd48c2483e01d2b8f75e8 | Author: Jiri Pirko <jiri@resnulli.us>",
+          "keywords": [
+            "commit",
+            "c43780e9444123410cd48c2483e01d2b8f75e8",
+            "author",
+            "jiri",
+            "pirko",
+            "resnulli"
+          ]
+        }
+      },
+      {
+        "node_id": "commit_0",
+        "kind": "commit",
+        "label": "tag, bfcd3a466172",
+        "attributes": {
+          "issues": [
+            "tag",
+            "bfcd3a466172"
+          ]
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "patch",
+        "target": "file_0",
+        "relation": "touches",
+        "confidence": 0.95
+      },
+      {
+        "source": "patch",
+        "target": "pattern_0",
+        "relation": "indicates",
+        "confidence": 0.9
+      },
+      {
+        "source": "pattern_0",
+        "target": "func_1",
+        "relation": "affects",
+        "confidence": 0.75
+      },
+      {
+        "source": "pattern_0",
+        "target": "guard_1",
+        "relation": "requires",
+        "confidence": 0.7
+      },
+      {
+        "source": "pattern_0",
+        "target": "guard_2",
+        "relation": "requires",
+        "confidence": 0.7
+      },
+      {
+        "source": "pattern_0",
+        "target": "guard_3",
+        "relation": "requires",
+        "confidence": 0.7
+      },
+      {
+        "source": "pattern_0",
+        "target": "guard_4",
+        "relation": "requires",
+        "confidence": 0.7
+      },
+      {
+        "source": "patch",
+        "target": "strategy",
+        "relation": "guides",
+        "confidence": 0.85
+      },
+      {
+        "source": "patch",
+        "target": "func_2",
+        "relation": "focuses_on",
+        "confidence": 0.82
+      },
+      {
+        "source": "patch",
+        "target": "fix_1",
+        "relation": "introduces",
+        "confidence": 0.8
+      },
+      {
+        "source": "patch",
+        "target": "fix_2",
+        "relation": "introduces",
+        "confidence": 0.8
+      },
+      {
+        "source": "patch",
+        "target": "fix_3",
+        "relation": "introduces",
+        "confidence": 0.8
+      },
+      {
+        "source": "patch",
+        "target": "intent_0",
+        "relation": "describes",
+        "confidence": 0.78
+      },
+      {
+        "source": "patch",
+        "target": "commit_0",
+        "relation": "tracked_by",
+        "confidence": 0.72
+      }
+    ]
+  },
+  "evidence_plan": {
+    "primary_pattern": "api_misuse",
+    "hypotheses": [
+      "Patch likely encodes a reusable vulnerability mechanism but available metadata is weak; keep evidence collection broad."
+    ],
+    "requirements": [
+      {
+        "evidence_type": "patch_fact",
+        "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+        "priority": 100,
+        "preferred_analyzers": [],
+        "confidence": 1.0,
+        "mechanism_refs": [
+          "patch"
+        ]
+      }
+    ],
+    "recommended_analyzers": [
+      "csa",
+      "codeql"
+    ],
+    "planner_notes": [],
+    "coverage_gaps": [],
+    "uncertainty_budget": "medium",
+    "escalation_triggers": [
+      "metadata_available"
+    ]
+  }
+}

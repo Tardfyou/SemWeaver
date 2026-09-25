@@ -1,0 +1,8 @@
+I’ll trace the netlink command construction around `devlink_nl_port_new_doit`, verify the command ABI roles, and compare the reported call with the corresponding corrected form in the available kernel history.- Decision: Bug
+- Reason: This is a true positive. In `devlink_nl_port_new_doit()`, the driver successfully creates a port through `devlink->ops->port_new()`, then builds the Generic Netlink reply with `devlink_nl_port_fill()`. That helper uses its command argument as the command ID placed in the reply's Generic Netlink header. The operation being handled is the port-specific `DEVLINK_CMD_PORT_NEW` command, so its reply must carry `DEVLINK_CMD_PORT_NEW`.
+
+  Pre-patch, line 892 passes `DEVLINK_CMD_NEW`, which is the distinct devlink-instance creation command, rather than `DEVLINK_CMD_PORT_NEW`. The port attributes may otherwise be correctly serialized, but userspace receives a reply with the wrong command identity. This creates inconsistent behavior between the port-new request and reply, and can cause command-based netlink dispatch or validation in consumers to treat the reply as a devlink `NEW` message instead of a port `NEW` message.
+
+  This exactly matches the target copy-paste pattern: a nearby/similar devlink creation command constant was reused where the port-specific constant was required. The applicable fix is the direct substitution:
+  `devlink_nl_port_fill(msg, devlink_port, DEVLINK_CMD_PORT_NEW, ...)`.
+  No numeric bounds or null-pointer feasibility analysis is relevant; the defect is an unconditional protocol-command mismatch on every successful port-creation reply that reaches this call.

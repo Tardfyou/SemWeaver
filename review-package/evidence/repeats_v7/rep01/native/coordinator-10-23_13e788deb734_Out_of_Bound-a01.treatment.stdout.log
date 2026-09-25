@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "method": "semweaver_provenance_gated_csa_treatment",
+  "evidence_mode": "native",
+  "origin_gate_enabled": true,
+  "case_id": "23_13e788deb734_Out_of_Bound",
+  "model": "gpt-5.6-terra",
+  "provider": "openai_compatible",
+  "wire_api": "responses",
+  "reasoning_effort": "high",
+  "max_iterations": 1,
+  "max_tokens_per_call": 16000,
+  "request_timeout_seconds": 1800,
+  "wrapper_max_retries": 0,
+  "inline_semantic_validation": false,
+  "external_paired_validation_required": true,
+  "internal_evidence_preloaded": true,
+  "evidence_requests_disabled": true,
+  "compile_after_each_edit": true,
+  "llm_exchange_log": "/work/artifacts/fse_revision/repeats_v7/rep01/native/23_13e788deb734_Out_of_Bound/attempt-01/llm_exchanges.jsonl",
+  "llm_exchange_log_sha256": "7fcfc651e13015d35b77d3d7297f0f0e5ead2a51dd013fa4ff2e82590620dca2",
+  "preloaded_internal_evidence_ids": [
+    "csa_guard_1"
+  ],
+  "patch_sha256": "956ae9f9006676be04f1b3f419636f01390bff91565289b60d13e03e38571a92",
+  "original_checker_sha256": "41a4a3b5d182be2a62b6c49b61921ed7b42cfff03f3dbde8dfb825daf11b8ee1",
+  "starting_checker_sha256": "41a4a3b5d182be2a62b6c49b61921ed7b42cfff03f3dbde8dfb825daf11b8ee1",
+  "evidence_bundle_sha256": "85db9b59d177ca8ee1080c2914ce52953cb7672a4ac8afbe33eddcf3be252efa",
+  "visible_evidence_sha256": "690d79bfb4cbb467e6c67fc1aa94c9b6bb03d765f0c0632ec8dbc6f23ac25dd8",
+  "visible_evidence_record_count": 5,
+  "frozen_source_revision": "13e788deb7348cc88df34bed736c3b3b9927ea52^",
+  "frozen_source_hashes": {
+    "net/rds/af_rds.c": "bf9dc4554c32f72132a278504ee3289e9f6066d521e519c4769721cfc10695b9"
+  },
+  "feedback_result_sha256": null,
+  "feedback_run_manifest_sha256": null,
+  "feedback_candidate_sha256": null,
+  "feedback_kind": null,
+  "candidate_sha256": "41a4a3b5d182be2a62b6c49b61921ed7b42cfff03f3dbde8dfb825daf11b8ee1",
+  "candidate_changed": false,
+  "success": false,
+  "agent_success": false,
+  "iterations": 1,
+  "compile_attempts": 0,
+  "error_message": "模型预算耗尽，最后候选未通过本地前置门: ERROR: 发现 2 个语法错误\n❌ 发现语法错误:\n  - Line 13: expected namespace name\n  - Line 63: unknown type name 'APInt'; did you mean 'llvm::APInt'?",
+  "final_message": "候选已产生但被本地前置门拒绝，未进入结果验证。",
+  "output_path": "",
+  "elapsed_seconds": 116.27663898468018,
+  "llm_usage": {
+    "prompt_tokens": 13046,
+    "completion_tokens": 6025,
+    "total_tokens": 19071,
+    "call_count": 1,
+    "available": true,
+    "model": "gpt-5.6-terra",
+    "phases": 1
+  },
+  "llm_usage_by_phase": {
+    "decide": {
+      "prompt_tokens": 13046,
+      "completion_tokens": 6025,
+      "total_tokens": 19071,
+      "call_count": 1,
+      "available": true,
+      "model": "gpt-5.6-terra"
+    }
+  },
+  "artifact_review": {
+    "artifact_path": "/work/artifacts/fse_revision/repeats_v7/rep01/native/23_13e788deb734_Out_of_Bound/attempt-01/SAGenTestChecker.cpp",
+    "analyzer": "csa",
+    "review_mode": "refine",
+    "findings": [],
+    "warnings": [
+      "CSA 代码引入了 `ProgramState` / 路径敏感相关符号或说明，但实现里没有对应的状态读写、约束传播或 guard 绑定。 如果当前路线本来就是 AST/实参/guard 建模，应删掉这类 stateful 话术；只有显式声明了状态建模却完全未落地时才应继续升级处理。"
+    ]
+  },
+  "failure_type": "preflight_lsp_failure",
+  "latest_failure_title": "preflight_lsp_validate_resulting_content",
+  "latest_failure_text": "ERROR: 发现 2 个语法错误\n❌ 发现语法错误:\n  - Line 13: expected namespace name\n  - Line 63: unknown type name 'APInt'; did you mean 'llvm::APInt'?",
+  "event_count": 18
+}

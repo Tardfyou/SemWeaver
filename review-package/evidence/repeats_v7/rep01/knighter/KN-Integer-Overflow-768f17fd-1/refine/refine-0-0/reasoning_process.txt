@@ -1,0 +1,16 @@
+Refinment Plan:
+
+1. The false positive occurs because the checker reports every sub-64-bit left shift solely from the LHS type. It does not distinguish an arithmetic calculation intended to produce a `u64` result from a deliberate 32-bit MMIO register-field encoding such as `REG_FIELD_PREP()`.
+2. Restrict reports to narrow shifts whose result flows into a 64-bit integer use through an assignment, cast, return, call parameter, or wider enclosing expression. This preserves detection of the target bug:
+   ```c
+   tau4 = ((1 << x_w) | x) << y;
+   ```
+   because the narrow shift result is assigned to `u64 tau4`.
+3. Treat the direct type of the shift LHS as authoritative. The previous subtree cast search was unsound: a cast anywhere below the LHS does not necessarily widen the value being shifted.
+4. Suppress shifts proven safe when both operands are concrete on the current path. This avoids reporting the internal `1 << x_w` helper shift in the fixed expression, where `x_w == 2`.
+5. Add a narrow macro-aware exemption for `FIELD_PREP` and `REG_FIELD_PREP`, which are defined to construct fixed-width bit fields rather than perform intended 64-bit arithmetic.
+6. Use a ProgramState set to avoid rediscovering the same report expression on an already-reported path.
+
+Refined Code:
+```cpp
+```

@@ -1,0 +1,22 @@
+Refinment Plan:
+
+1. The false positive occurs because the checker treats every `> RDS_MSG_RX_DGRAM_TRACE_MAX` comparison as an index check. At line 417, `trace.rx_traces` is a count controlling the loop length, not an index. `>` is correct for a count whose valid range includes the array length.
+
+2. Restrict the warning to comparisons where the left-hand side is an array-element value, such as `trace.rx_trace_pos[i]`. This retains detection of the buggy pre-patch condition:
+   ```c
+   if (trace.rx_trace_pos[i] > RDS_MSG_RX_DGRAM_TRACE_MAX)
+   ```
+   while excluding the count validation:
+   ```c
+   if (trace.rx_traces > RDS_MSG_RX_DGRAM_TRACE_MAX)
+   ```
+
+3. Replace the one-result downward search with a `RecursiveASTVisitor`, so compound conditions are handled correctly and every relevant `>` comparison is considered.
+
+4. Use a ProgramState set to avoid re-emitting the same diagnostic after the checker has already reported it along a path.
+
+5. This remains intentionally conservative. It detects direct array-sourced index values, including the target RDS bug, but does not attempt to infer arbitrary semantic aliases such as `int pos = trace.rx_trace_pos[i]; if (pos > MAX)`. Supporting those cases reliably requires broader value/provenance tracking and should be added separately to avoid reintroducing count-related false positives.
+
+Refined Code:
+```cpp
+```

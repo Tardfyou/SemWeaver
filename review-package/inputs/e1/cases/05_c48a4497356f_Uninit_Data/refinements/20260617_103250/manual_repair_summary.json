@@ -1,0 +1,30 @@
+{
+  "case_id": "05_c48a4497356f_Uninit_Data",
+  "commit_id": "c48a4497356f701f94f1951626637ae240af909e",
+  "bug_type": "Uninit-Data",
+  "repair_type": "manual_checker_repair",
+  "rerun_performed": true,
+  "source_path": "research/knighter/e2/cases/05_c48a4497356f_Uninit_Data/csa/refinements/20260617_103250/csa/SAGenTestChecker.cpp",
+  "baseline_patch_local": {
+    "buggy_alerts": 2,
+    "fixed_alerts": 1
+  },
+  "expected_refined_patch_local": {
+    "buggy_alerts": 2,
+    "fixed_alerts": 0,
+    "pds_strict": true
+  },
+  "manual_repair_rationale": "The final manual repair keeps the direct output-pointer check signal (`if (!fw)`) but suppresses follow-on member-access branch conditions such as `fw->size`, which are reachable after the fixed-version `ret = request_firmware(...)` / `if (ret) return` barrier. This preserves a buggy-side patch semantic alert while removing the fixed-side false positive.",
+  "validation_basis": "Rebuilt SAGenTestPlugin with Knighter LLVM and reran strict patch-local validation for sound/soc/codecs/sma1307.o on buggy and fixed versions.",
+  "prior_validation_dirs": {
+    "baseline_or_generated_buggy_fixed": "research/knighter/runs/knighter-v613/validation_20260617_104442"
+  },
+  "plugin_path": "research/knighter/e2/cases/05_c48a4497356f_Uninit_Data/csa/refinements/20260617_103250/csa/SAGenTestPlugin.so",
+  "validated_refined_patch_local": {
+    "buggy_alerts": 1,
+    "fixed_alerts": 0,
+    "pds_strict": true
+  },
+  "validation_dir": "research/knighter/runs/knighter-v613/validation_20260617_124521",
+  "validation_log": "research/knighter/runs/knighter-v613/validation_20260617_124521/knighter_validation.log"
+}

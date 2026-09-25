@@ -1,0 +1,16 @@
+Refinment Plan:
+
+1. The report is a false positive because `mlx5hws_definer_free()` is an ownership-taking teardown helper. Its `definer` argument is a formal parameter whose allocation occurs in a separate factory function (`hws_definer_alloc()` via `kmemdup()`), often outside the currently analyzed path. Treating every untracked formal parameter passed to `kfree()` as invalid is not sound.
+
+2. The checker only recognizes `kzalloc()`. It therefore misses valid Linux allocations made by `kmemdup()` and other common `kmalloc`-family APIs.
+
+3. Keep reporting:
+   - frees of untracked non-parameter resources, including `kfree(mt->fc)` in the buggy `free_fc:` path;
+   - frees of resources already marked released, including aliases;
+   - valid allocations followed by a single free are accepted.
+
+4. Record released state explicitly instead of removing the state entry. This makes a proven second free distinguishable from a pointer whose ownership is simply unavailable in the current interprocedural analysis context.
+
+Refined Code:
+```cpp
+```

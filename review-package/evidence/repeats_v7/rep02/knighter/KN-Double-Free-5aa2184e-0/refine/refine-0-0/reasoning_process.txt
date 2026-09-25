@@ -1,0 +1,11 @@
+Refinment Plan:
+
+The false positive is caused by treating the absence of a local `kzalloc` record as proof that a `kfree` is invalid. `hws_definer_free()` is a normal ownership-taking destructor: its `definer` argument was allocated by `kmemdup()` in `hws_definer_alloc()`, but the original checker neither models `kmemdup()` nor distinguishes an unknown/formal-pointer ownership history from a previously released allocation.
+
+The repair uses path-sensitive program state to track both live and released allocation regions. It reports only a definite second release of the same tracked region on the current path. This preserves detection of the target bug: when an allocation made during conversion has already been freed on the failed conversion path, the later broad `free_fc` cleanup reaches `kfree(mt->fc)` with that region in `ReleasedRegionMap`.
+
+The checker also replaces source-text matching with exact callee-name matching, tracks common kernel allocation functions including `kmemdup`, and records pointer-storage aliases without conflating all fields of a structure through `getBaseRegion()`.
+
+Refined Code:
+```cpp
+```

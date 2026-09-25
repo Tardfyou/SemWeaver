@@ -1,0 +1,130 @@
+% =====================================================================
+%  SemWeaver shared figure style  (\input after \usepackage{packages})
+%  ---------------------------------------------------------------------
+%  ONE place that defines the colour palette, node styles and edge
+%  styles for every TikZ figure in the paper.  Goals:
+%    * colour-blind safe  (blue / orange / teal, never red+green alone)
+%    * legible in grayscale print  (hue + line-style redundancy)
+%    * font matched to the body text (\footnotesize, no \resizebox)
+%  Requires (already in packages.sty): tikz + arrows.meta, positioning,
+%  calc, shapes.geometric, fit, backgrounds.
+% =====================================================================
+\makeatletter
+\@ifundefined{swfigurestyleloaded}{\gdef\swfigurestyleloaded{1}}{\endinput}
+\makeatother
+
+% ----- Palette --------------------------------------------------------
+% Colours sampled from the hand-drawn teaser (fig-overview) and architecture
+% (fig-architecture) figures so every TikZ figure shares one visual key:
+% soft pastel panels, one bright primary, magenta sub-titles, amber connectors.
+\definecolor{swink}{HTML}{1F2329}     % near-black: text / strong strokes
+\definecolor{swmuted}{HTML}{5F6874}   % secondary text
+\definecolor{swgray}{HTML}{7A828D}    % neutral strokes
+\definecolor{swrule}{HTML}{CFD6DF}    % light rules / panel borders
+\definecolor{swgrid}{HTML}{ECEFF3}    % very light separators
+\definecolor{swmist}{HTML}{F5F7FA}    % neutral fill (inputs / passive)
+\definecolor{swwhite}{HTML}{FFFFFF}
+% Primary  (process / the tool / main flow) -- PPT dark teal-blue + sky panel
+\definecolor{swblue}{HTML}{0B76A0}
+\definecolor{swbluefill}{HTML}{E2F5FF}
+\definecolor{swbluemid}{HTML}{8BD3F0} % mid blue (box fill / bar fill)
+% Accent  (the contribution / "after" / the patch barrier) -- peach
+\definecolor{sworange}{HTML}{C0651D}
+\definecolor{sworangefill}{HTML}{FBE3D6}
+% Safe  (fixed side / silent / accepted) -- PPT green
+\definecolor{swteal}{HTML}{1F8A5B}
+\definecolor{swtealfill}{HTML}{E6F4DD}
+% Danger  (use SPARINGLY; never the sole carrier of meaning)
+\definecolor{swred}{HTML}{C23B36}
+\definecolor{swredfill}{HTML}{FBE6E3}
+% Extra accents harmonised with the redrawn PPT figures
+\definecolor{swmagenta}{HTML}{C6154F} % section / sub-title accent (PPT titles)
+\definecolor{swamber}{HTML}{FFB300}   % connector arrows / adopt highlight
+\definecolor{swlav}{HTML}{ECE8FF}     % lavender fill (bundle / audit)
+\definecolor{swpink}{HTML}{FFEBEE}    % gains panel pink
+\definecolor{swbadgefill}{HTML}{FFBDC6} % delta-badge fill
+
+% ----- Geometry defaults ---------------------------------------------
+\tikzset{
+  sw/.style={
+    font=\footnotesize,
+    >={Latex[length=1.7mm,width=1.5mm]},
+    line cap=round, line join=round,
+    node distance=6mm and 9mm,
+    text=swink,
+  },
+}
+
+% ----- Node styles ----------------------------------------------------
+% base box every node inherits
+\tikzset{
+  swbox/.style={
+    draw=swgray, line width=0.55pt, rounded corners=1.2pt,
+    align=center, inner sep=3.2pt, minimum height=7.0mm, font=\footnotesize,
+    text=swink,
+  },
+  swpanel/.style={
+    draw=swrule, line width=0.5pt, rounded corners=1.6pt,
+    fill=swwhite, inner sep=4.4pt,
+  },
+  swpaneltitle/.style={font=\scriptsize\bfseries, text=swmuted, anchor=west},
+  % passive inputs / artifacts (neutral)
+  swio/.style   ={swbox, draw=swgray,    fill=swmist},
+  % process steps performed by the tool (primary blue)
+  swproc/.style ={swbox, draw=swblue,    fill=swbluefill,   text=swink},
+  % the emphasised data object (evidence bundle): heavier blue
+  swhub/.style  ={swbox, draw=swblue, line width=0.85pt, fill=swbluefill},
+  % contribution / accepted / "after" (accent orange)
+  swhi/.style   ={swbox, draw=sworange,  fill=sworangefill},
+  % safe / fixed-silent (teal)
+  swsafe/.style ={swbox, draw=swteal,    fill=swtealfill},
+  % buggy / vulnerable (danger, used sparingly + always with line style)
+  swbug/.style  ={swbox, draw=swred,     fill=swredfill},
+  % tiny annotation text
+  swnote/.style ={font=\scriptsize\itshape, text=swmuted, align=center},
+  swcallout/.style={font=\scriptsize, text=swink, align=left},
+  swtag/.style  ={font=\scriptsize\bfseries, text=swink},
+  swbadge/.style={
+    draw=swrule, fill=swmist, rounded corners=5pt,
+    inner xsep=3.2pt, inner ysep=1.2pt, font=\scriptsize\bfseries,
+    text=swmuted,
+  },
+  swok/.style   ={font=\footnotesize\bfseries, text=swteal},
+  swno/.style   ={font=\footnotesize\bfseries, text=swred},
+  swverdict/.style={font=\scriptsize\bfseries\itshape},
+  % shared accents matching the redrawn PPT figures
+  swptitle/.style={font=\scriptsize\bfseries, text=swmagenta}, % figure sub-titles
+  swlavbox/.style={swbox, draw=swblue!55, fill=swlav},         % bundle / audit object
+  swmidbox/.style={swbox, draw=swblue, fill=swbluemid},        % emphasised blue box
+}
+
+% ----- Code listing style: compact patch diff ------------------------
+% Whole-line coloring for removed (vulnerable) and added (fixed) lines,
+% redundant with the leading -/+ glyph so it survives grayscale print.
+\lstdefinestyle{swdiff}{
+  basicstyle=\ttfamily\scriptsize,
+  breaklines=false,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  numbers=none,
+  xleftmargin=4pt, xrightmargin=2pt,
+  aboveskip=2pt, belowskip=1pt,
+  commentstyle=\color{swmuted}\itshape,
+  morecomment=[l]{//},
+  moredelim=[il][\color{swred}]{-\ },
+  moredelim=[il][\color{swteal}]{+\ },
+}
+
+% ----- Edge styles  (hue + dash redundancy for grayscale) -------------
+\tikzset{
+  swflow/.style    ={-{Latex[length=1.7mm,width=1.5mm]}, draw=swblue,   line width=0.8pt},
+  swthin/.style    ={-{Latex[length=1.5mm,width=1.3mm]}, draw=swgray,   line width=0.6pt},
+  swaccent/.style  ={-{Latex[length=1.7mm,width=1.5mm]}, draw=sworange, line width=0.9pt},
+  swsafeedge/.style={-{Latex[length=1.7mm,width=1.5mm]}, draw=swteal,   line width=0.9pt, dash pattern=on 3pt off 2pt},
+  swbugedge/.style ={-{Latex[length=1.7mm,width=1.5mm]}, draw=swred,    line width=0.9pt},
+  swfeedback/.style={-{Latex[length=1.5mm,width=1.3mm]}, draw=swgray,   line width=0.6pt, dash pattern=on 2pt off 2pt},
+  swamberedge/.style={-{Latex[length=1.9mm,width=1.7mm]}, draw=swamber, line width=1.1pt}, % main connector (PPT amber)
+  swrule/.style    ={draw=swrule, line width=0.45pt},
+  swrow/.style     ={draw=swgrid, line width=0.35pt},
+}

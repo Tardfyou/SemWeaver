@@ -1,0 +1,15 @@
+Refinment Plan:
+
+1. Root cause: the checker records `fw` as unverified after `request_firmware()` but never tracks the call's integer return value or recognizes that `if (ret)` validates that exact return value. Consequently, `fw->size` in the subsequent `else if` is incorrectly treated as an unchecked pointer use.
+
+2. Track the symbolic return value of each `request_firmware()` call together with its output-pointer storage region. When that symbolic value is bound to `ret` (or copied to another variable), record the status-variable region.
+
+3. During branch-condition analysis, clear only the matching pending firmware entry when the branch condition evaluates the tracked return-status variable or directly evaluates the `request_firmware()` call result. This is path-sensitive because the updated state is transitioned before successor paths are explored.
+
+4. Preserve true-positive detection: `request_firmware(&fw, ...)` followed by `if (!fw)` has no corresponding check of the request return value, so `fw` remains pending and is reported.
+
+5. Clear state when tracked storage is overwritten or invalidated. This avoids incorrectly treating a later unrelated value in `ret`, or an overwritten `fw`, as belonging to the original call.
+
+Refined Code:
+```cpp
+```

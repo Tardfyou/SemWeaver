@@ -1,0 +1,18 @@
+Refinment Plan:
+
+1. The false positive is caused by `checkLocation()` treating a load of a pointer variable as if it were a dereference of that pointer. Evaluating `if (!name)` loads `name` from its `VarRegion`; the old `checkBind()` copied the unchecked status to that `VarRegion`, so the checker reports the required NULL test itself.
+
+2. Do not mark an allocation result permanently "checked" in `checkBranchCondition()`. That callback runs before branch splitting and cannot determine whether the current successor is the NULL or non-NULL path. Instead, retain only provenance in program state and use Clang's path constraints via `State->isNull(...)`. After `if (!name) return;`, the remaining path has `name` constrained non-NULL.
+
+3. Track only the `devm_kasprintf()` return region, not local variable storage regions. The StoreManager preserves the pointer value through normal aliases, assignments, and field loads.
+
+4. Report only:
+   - a true syntactic pointee access: `*name`, `name[i]`, or `name->field`;
+   - an escape into non-local storage, such as `aux_driver->name = name`, which preserves detection of both target buggy functions;
+   - arguments passed to functions explicitly listed as dereferencing their corresponding parameters.
+
+5. Suppress duplicate diagnostics on the same tracked allocation path with a second program-state map.
+
+Refined Code:
+```cpp
+```

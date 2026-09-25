@@ -1,0 +1,11 @@
+Refinment Plan:
+
+1. The false positive is caused by treating every sub-64-bit left shift as an overflow candidate. `REG_FIELD_PREP()` deliberately shifts bounded field values into a 32-bit register image and then masks them; it is not a missing-`u64` upcast bug.
+2. Replace descendant-cast searching with examination of the shift expression's effective LHS type. A cast anywhere below the LHS is not proof that the shifted value is 64-bit.
+3. Use the analyzer's existing `ProgramState` constraint information to suppress shifts proved safe, such as `1 << x_w` when `x_w == 2`.
+4. Add a narrow exemption for shifts structurally identified as `FIELD_PREP` / `REG_FIELD_PREP` masked field packing. This preserves detection of the target `tau4 = ((1 << x_w) | x) << y` bug, while excluding the unrelated register packing shifts.
+5. Conservatively report when the shift amount or operand bound is unknown. Thus, the buggy pre-patch `tau4` computation remains detectable, while `(u64)((1 << x_w) | x) << y` is correctly accepted.
+
+Refined Code:
+```cpp
+```

@@ -1,0 +1,358 @@
+# Instruction
+
+Determine whether the static analyzer report is a real bug in the Linux kernel and matches the target bug pattern
+
+Your analysis should:
+- **Compare the report against the provided target bug pattern specification,** using the **buggy function (pre-patch)** and the **fix patch** as the reference.
+- Explain your reasoning for classifying this as either:
+  - **A true positive** (matches the target bug pattern **and** is a real bug), or
+  - **A false positive** (does **not** match the target bug pattern **or** is **not** a real bug).
+
+Please evaluate thoroughly using the following process:
+
+- **First, understand** the reported code pattern and its control/data flow.
+- **Then, compare** it against the target bug pattern characteristics.
+- **Finally, validate** against the **pre-/post-patch** behavior:
+  - The reported case demonstrates the same root cause pattern as the target bug pattern/function and would be addressed by a similar fix.
+
+- **Numeric / bounds feasibility** (if applicable):
+  - Infer tight **min/max** ranges for all involved variables from types, prior checks, and loop bounds.
+  - Show whether overflow/underflow or OOB is actually triggerable (compute the smallest/largest values that violate constraints).
+
+- **Null-pointer dereference feasibility** (if applicable):
+  1. **Identify the pointer source** and return convention of the producing function(s) in this path (e.g., returns **NULL**, **ERR_PTR**, negative error code via cast, or never-null).
+  2. **Check real-world feasibility in this specific driver/socket/filesystem/etc.**:
+     - Enumerate concrete conditions under which the producer can return **NULL/ERR_PTR** here (e.g., missing DT/ACPI property, absent PCI device/function, probe ordering, hotplug/race, Kconfig options, chip revision/quirks).
+     - Verify whether those conditions can occur given the driver’s init/probe sequence and the kernel helpers used.
+  3. **Lifetime & concurrency**: consider teardown paths, RCU usage, refcounting (`get/put`), and whether the pointer can become invalid/NULL across yields or callbacks.
+  4. If the producer is provably non-NULL in this context (by spec or preceding checks), classify as **false positive**.
+
+If there is any uncertainty in the classification, **err on the side of caution and classify it as a false positive**. Your analysis will be used to improve the static analyzer's accuracy.
+
+## Bug Pattern
+
+Using an incorrect upper bound for iteration and memory allocation. Specifically, the code incorrectly uses adev->dm.dc->caps.max_links (which may be larger than available CRTCs) to determine the iteration count and size of the secure_display_ctxs array, instead of using adev->mode_info.num_crtc. This mismatch in bounds can lead to buffer overflows by accessing unallocated memory.
+
+## Bug Pattern
+
+Using an incorrect upper bound for iteration and memory allocation. Specifically, the code incorrectly uses adev->dm.dc->caps.max_links (which may be larger than available CRTCs) to determine the iteration count and size of the secure_display_ctxs array, instead of using adev->mode_info.num_crtc. This mismatch in bounds can lead to buffer overflows by accessing unallocated memory.
+
+# Report
+
+BuildSource:| drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c
+### Report Summary
+
+File:| /anonymous/home/LLM-
+Native/research/knighter/linux/drivers/gpu/drm/amd/amdgpu/../display/amdgpu_dm/amdgpu_dm.c  
+---|---  
+Warning:| line 2415, column 17  
+Incorrect upper bound: use mode_info.num_crtc instead of dc->caps.max_links  
+  
+### Annotated Source Code
+
+
+2282  | /**
+2283  |  * dm_hw_init() - Initialize DC device
+2284  |  * @handle: The base driver device containing the amdgpu_dm device.
+2285  |  *
+2286  |  * Initialize the &struct amdgpu_display_manager device. This involves calling
+2287  |  * the initializers of each DM component, then populating the struct with them.
+2288  |  *
+2289  |  * Although the function implies hardware initialization, both hardware and
+2290  |  * software are initialized here. Splitting them out to their relevant init
+2291  |  * hooks is a future TODO item.
+2292  |  *
+2293  |  * Some notable things that are initialized here:
+2294  |  *
+2295  |  * - Display Core, both software and hardware
+2296  |  * - DC modules that we need (freesync and color management)
+2297  |  * - DRM software states
+2298  |  * - Interrupt sources and handlers
+2299  |  * - Vblank support
+2300  |  * - Debug FS entries, if enabled
+2301  |  */
+2302  | static int dm_hw_init(void *handle)
+2303  | {
+2304  |  struct amdgpu_device *adev = (struct amdgpu_device *)handle;
+2305  |  /* Create DAL display manager */
+2306  | 	amdgpu_dm_init(adev);
+2307  | 	amdgpu_dm_hpd_init(adev);
+2308  |  
+2309  |  return 0;
+2310  | }
+2311  |  
+2312  | /**
+2313  |  * dm_hw_fini() - Teardown DC device
+2314  |  * @handle: The base driver device containing the amdgpu_dm device.
+2315  |  *
+2316  |  * Teardown components within &struct amdgpu_display_manager that require
+2317  |  * cleanup. This involves cleaning up the DRM device, DC, and any modules that
+2318  |  * were loaded. Also flush IRQ workqueues and disable them.
+2319  |  */
+2320  | static int dm_hw_fini(void *handle)
+2321  | {
+2322  |  struct amdgpu_device *adev = (struct amdgpu_device *)handle;
+2323  |  
+2324  | 	amdgpu_dm_hpd_fini(adev);
+2325  |  
+2326  | 	amdgpu_dm_irq_fini(adev);
+2327  | 	amdgpu_dm_fini(adev);
+2328  |  return 0;
+2329  | }
+2330  |  
+2331  |  
+2332  | static void dm_gpureset_toggle_interrupts(struct amdgpu_device *adev,
+2333  |  struct dc_state *state, bool enable)
+2334  | {
+2335  |  enum dc_irq_source irq_source;
+2336  |  struct amdgpu_crtc *acrtc;
+2337  |  int rc = -EBUSY;
+2338  |  int i = 0;
+2339  |  
+2340  |  for (i = 0; i < state->stream_count; i++) {
+2341  | 		acrtc = get_crtc_by_otg_inst(
+2342  | 				adev, state->stream_status[i].primary_otg_inst);
+2343  |  
+2344  |  if (acrtc && state->stream_status[i].plane_count != 0) {
+2345  | 			irq_source = IRQ_TYPE_PFLIP + acrtc->otg_inst;
+2346  | 			rc = dc_interrupt_set(adev->dm.dc, irq_source, enable) ? 0 : -EBUSY;
+2347  |  DRM_DEBUG_VBL("crtc %d - vupdate irq %sabling: r=%d\n",
+2348  |  acrtc->crtc_id, enable ? "en" : "dis", rc);
+2349  |  if (rc)
+2350  |  DRM_WARN("Failed to %s pflip interrupts\n",
+2351  |  enable ? "enable" : "disable");
+2352  |  
+2353  |  if (enable) {
+2354  | 				rc = dm_enable_vblank(&acrtc->base);
+2355  |  if (rc)
+2356  |  DRM_WARN("Failed to enable vblank interrupts\n");
+2357  | 			} else {
+2358  | 				dm_disable_vblank(&acrtc->base);
+2359  | 			}
+2360  |  
+2361  | 		}
+2362  | 	}
+2363  |  
+2364  | }
+2365  |  
+2366  | static enum dc_status amdgpu_dm_commit_zero_streams(struct dc *dc)
+2367  | {
+2368  |  struct dc_state *context = NULL;
+2369  |  enum dc_status res = DC_ERROR_UNEXPECTED;
+2370  |  int i;
+2371  |  struct dc_stream_state *del_streams[MAX_PIPES];
+2372  |  int del_streams_count = 0;
+2373  |  
+2374  |  memset(del_streams, 0, sizeof(del_streams));
+2375  |  
+2376  | 	context = dc_create_state(dc);
+2377  |  if (context == NULL)
+2378  |  goto context_alloc_fail;
+2379  |  
+2380  | 	dc_resource_state_copy_construct_current(dc, context);
+2381  |  
+2382  |  /* First remove from context all streams */
+2383  |  for (i = 0; i < context->stream_count; i++) {
+2384  |  struct dc_stream_state *stream = context->streams[i];
+2385  |  
+2386  | 		del_streams[del_streams_count++] = stream;
+2387  | 	}
+2388  |  
+2389  |  /* Remove all planes for removed streams and then remove the streams */
+2390  |  for (i = 0; i < del_streams_count; i++) {
+2391  |  if (!dc_rem_all_planes_for_stream(dc, del_streams[i], context)) {
+2392  | 			res = DC_FAIL_DETACH_SURFACES;
+2393  |  goto fail;
+2394  | 		}
+2395  |  
+2396  | 		res = dc_remove_stream_from_ctx(dc, context, del_streams[i]);
+2397  |  if (res != DC_OK)
+2398  |  goto fail;
+2399  | 	}
+2400  |  
+2401  | 	res = dc_commit_state(dc, context);
+2402  |  
+2403  | fail:
+2404  | 	dc_release_state(context);
+2405  |  
+2406  | context_alloc_fail:
+2407  |  return res;
+2408  | }
+2409  |  
+2410  | static void hpd_rx_irq_work_suspend(struct amdgpu_display_manager *dm)
+2411  | {
+2412  |  int i;
+2413  |  
+2414  |  if (dm->hpd_rx_offload_wq) {
+    9←Assuming field 'hpd_rx_offload_wq' is non-null→
+    10←Taking true branch→
+2415  |  for (i = 0; i < dm->dc->caps.max_links; i++)
+    11←Assuming 'i' is >= field 'max_links'→
+    12←Incorrect upper bound: use mode_info.num_crtc instead of dc->caps.max_links
+2416  |  flush_workqueue(dm->hpd_rx_offload_wq[i].wq);
+2417  | 	}
+2418  | }
+2419  |  
+2420  | static int dm_suspend(void *handle)
+2421  | {
+2422  |  struct amdgpu_device *adev = handle;
+2423  |  struct amdgpu_display_manager *dm = &adev->dm;
+2424  |  int ret = 0;
+2425  |  
+2426  |  if (amdgpu_in_reset(adev)) {
+    6←Assuming the condition is true→
+    7←Taking true branch→
+2427  |  mutex_lock(&dm->dc_lock);
+2428  |  
+2429  | 		dc_allow_idle_optimizations(adev->dm.dc, false);
+2430  |  
+2431  | 		dm->cached_dc_state = dc_copy_state(dm->dc->current_state);
+2432  |  
+2433  | 		dm_gpureset_toggle_interrupts(adev, dm->cached_dc_state, false);
+2434  |  
+2435  | 		amdgpu_dm_commit_zero_streams(dm->dc);
+2436  |  
+2437  | 		amdgpu_dm_irq_suspend(adev);
+2438  |  
+2439  |  hpd_rx_irq_work_suspend(dm);
+    8←Calling 'hpd_rx_irq_work_suspend'→
+2440  |  
+2441  |  return ret;
+2442  | 	}
+2443  |  
+2444  |  WARN_ON(adev->dm.cached_state);
+2445  | 	adev->dm.cached_state = drm_atomic_helper_suspend(adev_to_drm(adev));
+2446  |  
+2447  | 	s3_handle_mst(adev_to_drm(adev), true);
+2448  |  
+2449  | 	amdgpu_dm_irq_suspend(adev);
+2450  |  
+2451  | 	hpd_rx_irq_work_suspend(dm);
+2452  |  
+2453  | 	dc_set_power_state(dm->dc, DC_ACPI_CM_POWER_STATE_D3);
+2454  |  
+2455  |  return 0;
+2456  | }
+2457  |  
+2458  | struct amdgpu_dm_connector *
+2459  | amdgpu_dm_find_first_crtc_matching_connector(struct drm_atomic_state *state,
+2460  |  struct drm_crtc *crtc)
+2461  | {
+2462  | 	u32 i;
+2463  |  struct drm_connector_state *new_con_state;
+2464  |  struct drm_connector *connector;
+2465  |  struct drm_crtc *crtc_from_state;
+2466  |  
+2467  |  for_each_new_connector_in_state(state, connector, new_con_state, i) {
+2468  | 		crtc_from_state = new_con_state->crtc;
+2469  |  
+4401  | 		}
+4402  |  break;
+4403  | 	}
+4404  |  
+4405  |  return 0;
+4406  | fail:
+4407  | 	kfree(aencoder);
+4408  | 	kfree(aconnector);
+4409  |  
+4410  |  return -EINVAL;
+4411  | }
+4412  |  
+4413  | static void amdgpu_dm_destroy_drm_device(struct amdgpu_display_manager *dm)
+4414  | {
+4415  | 	drm_atomic_private_obj_fini(&dm->atomic_obj);
+4416  |  return;
+4417  | }
+4418  |  
+4419  | /******************************************************************************
+4420  |  * amdgpu_display_funcs functions
+4421  |  *****************************************************************************/
+4422  |  
+4423  | /*
+4424  |  * dm_bandwidth_update - program display watermarks
+4425  |  *
+4426  |  * @adev: amdgpu_device pointer
+4427  |  *
+4428  |  * Calculate and program the display watermarks and line buffer allocation.
+4429  |  */
+4430  | static void dm_bandwidth_update(struct amdgpu_device *adev)
+4431  | {
+4432  |  /* TODO: implement later */
+4433  | }
+4434  |  
+4435  | static const struct amdgpu_display_funcs dm_display_funcs = {
+4436  | 	.bandwidth_update = dm_bandwidth_update, /* called unconditionally */
+4437  | 	.vblank_get_counter = dm_vblank_get_counter,/* called unconditionally */
+4438  | 	.backlight_set_level = NULL, /* never called for DC */
+4439  | 	.backlight_get_level = NULL, /* never called for DC */
+4440  | 	.hpd_sense = NULL,/* called unconditionally */
+4441  | 	.hpd_set_polarity = NULL, /* called unconditionally */
+4442  | 	.hpd_get_gpio_reg = NULL, /* VBIOS parsing. DAL does it. */
+4443  | 	.page_flip_get_scanoutpos =
+4444  | 		dm_crtc_get_scanoutpos,/* called unconditionally */
+4445  | 	.add_encoder = NULL, /* VBIOS parsing. DAL does it. */
+4446  | 	.add_connector = NULL, /* VBIOS parsing. DAL does it. */
+4447  | };
+4448  |  
+4449  | #if defined(CONFIG_DEBUG_KERNEL_DC)
+4450  |  
+4451  | static ssize_t s3_debug_store(struct device *device,
+4452  |  struct device_attribute *attr,
+4453  |  const char *buf,
+4454  | 			      size_t count)
+4455  | {
+4456  |  int ret;
+4457  |  int s3_state;
+4458  |  struct drm_device *drm_dev = dev_get_drvdata(device);
+4459  |  struct amdgpu_device *adev = drm_to_adev(drm_dev);
+4460  |  
+4461  | 	ret = kstrtoint(buf, 0, &s3_state);
+4462  |  
+4463  |  if (ret == 0) {
+    1Assuming 'ret' is equal to 0→
+    2←Taking true branch→
+4464  |  if (s3_state) {
+    3←Assuming 's3_state' is 0→
+    4←Taking false branch→
+4465  | 			dm_resume(adev);
+4466  | 			drm_kms_helper_hotplug_event(adev_to_drm(adev));
+4467  | 		} else
+4468  |  dm_suspend(adev);
+    5←Calling 'dm_suspend'→
+4469  | 	}
+4470  |  
+4471  |  return ret == 0 ? count : 0;
+4472  | }
+4473  |  
+4474  | DEVICE_ATTR_WO(s3_debug);
+4475  |  
+4476  | #endif
+4477  |  
+4478  | static int dm_init_microcode(struct amdgpu_device *adev)
+4479  | {
+4480  |  char *fw_name_dmub;
+4481  |  int r;
+4482  |  
+4483  |  switch (adev->ip_versions[DCE_HWIP][0]) {
+4484  |  case IP_VERSION(2, 1, 0):
+4485  | 		fw_name_dmub = FIRMWARE_RENOIR_DMUB;
+4486  |  if (ASICREV_IS_GREEN_SARDINE(adev->external_rev_id))
+4487  | 			fw_name_dmub = FIRMWARE_GREEN_SARDINE_DMUB;
+4488  |  break;
+4489  |  case IP_VERSION(3, 0, 0):
+4490  |  if (adev->ip_versions[GC_HWIP][0] == IP_VERSION(10, 3, 0))
+4491  | 			fw_name_dmub = FIRMWARE_SIENNA_CICHLID_DMUB;
+4492  |  else
+4493  | 			fw_name_dmub = FIRMWARE_NAVY_FLOUNDER_DMUB;
+4494  |  break;
+4495  |  case IP_VERSION(3, 0, 1):
+4496  | 		fw_name_dmub = FIRMWARE_VANGOGH_DMUB;
+4497  |  break;
+4498  |  case IP_VERSION(3, 0, 2):
+
+# Formatting
+
+Please provide your answer in the following format:
+
+- Decision: {Bug/NotABug}
+- Reason: {Your reason here}

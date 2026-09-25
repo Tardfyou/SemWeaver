@@ -1,0 +1,14 @@
+Refinment Plan:
+
+1. Root cause: the original checker reports every branch condition containing the text `dc->caps.max_links`. It does not verify what array is indexed by the loop, so it incorrectly treats the HPD workqueue array as CRTC-indexed storage.
+2. Restrict analysis to `for` loops whose bound structurally resolves to `dc->caps.max_links`.
+3. Report only when that loop accesses CRTC-indexed secure-display storage:
+   - Direct member access to `secure_display_ctxs`, or
+   - A local secure-display context pointer, or
+   - A local array pointer allocated through `kcalloc()` using a CRTC capacity (`AMDGPU_MAX_CRTCS` or `mode_info.num_crtc`).
+4. Use a ProgramState set to avoid rediscovering and reporting the same `ForStmt` on loop back-edges.
+5. This preserves reports for all three buggy secure-display loops while excluding `hpd_rx_offload_wq`, whose allocation and indexing domain is correctly `max_links`.
+
+Refined Code:
+```cpp
+```

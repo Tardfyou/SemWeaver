@@ -1,0 +1,48 @@
+% Fig. 4 -- Ablation + robustness outcome composition (SINGLE-COLUMN).
+% Body only: wrap with figure/caption/label in Discussion (or Results qualitative).
+% Each row = the 5 controlled subset samples, one cell per sample, colored by outcome.
+% Numbers from artifacts (strict refined_buggy_alerts>0 && refined_fixed_alerts=0 = PDS):
+%   E3 ablation  artifacts/research/e2/ablation/results/ablation_results.csv
+%       Full 5 PDS ; No-analyzer 4 PDS +1 over-pruned ; Validation-only 3 PDS +1 over-pruned +1 fixed-noisy
+%   E4 robustness artifacts/research/e2/model_robustness/results/model_robustness_results.csv
+%       DeepSeek-V4-Pro 4 PDS +1 fixed-noisy ; Gemini-2.5-Flash 5 fixed-noisy
+\def\cx{2.95}\def\cstep{0.72}\def\cw{0.60}\def\ch{0.27}
+\newcommand{\cellrow}[7]{% #1=y #2..#6 = five cell colors #7 = PDS fraction
+  \foreach \i/\c in {0/#2,1/#3,2/#4,3/#5,4/#6}{
+    \fill[\c] (\cx+\i*\cstep,#1-\ch) rectangle (\cx+\i*\cstep+\cw,#1+\ch);
+    \draw[draw=swwhite,line width=0.7pt]
+          (\cx+\i*\cstep,#1-\ch) rectangle (\cx+\i*\cstep+\cw,#1+\ch);}
+  \node[font=\scriptsize\bfseries, text=swink, anchor=west] at (6.62,#1) {#7};
+}
+% Softer pastel status colours (nudge the percentages to taste: higher = stronger).
+\colorlet{cPDS}{swteal!52}     % PDS  (soft green)
+\colorlet{cOP}{swred!48}       % over-pruned (soft rose)
+\colorlet{cFN}{sworange!55}    % fixed-noisy (soft peach)
+\begin{tikzpicture}[sw,
+    rl/.style={font=\scriptsize, text=swink, anchor=east},
+    pt/.style={font=\scriptsize\bfseries, text=swmagenta, anchor=west},
+  ]
+  \node[font=\tiny\bfseries, text=swmuted, anchor=west] at (6.50,0.18) {PDS};
+
+  % ===== E3 : evidence ablation =====
+  \node[pt] at (0.0,-0.30) {E3: evidence ablation ($n{=}5$)};
+  \node[rl] at (2.75,-0.84) {Full evidence};      \cellrow{-0.84}{cPDS}{cPDS}{cPDS}{cPDS}{cPDS}{5/5}
+  \node[rl] at (2.75,-1.44) {Reduced bundle};  \cellrow{-1.44}{cPDS}{cPDS}{cPDS}{cPDS}{cOP}{4/5}
+  \node[rl] at (2.75,-2.04) {Validation-only};      \cellrow{-2.04}{cPDS}{cPDS}{cPDS}{cOP}{cFN}{3/5}
+
+  % ===== E4 : model robustness =====
+  \node[pt] at (0.0,-2.62) {E4: model comparison ($n{=}5$)};
+  \node[rl] at (2.75,-3.16) {DeepSeek-V4-Pro};   \cellrow{-3.16}{cPDS}{cPDS}{cPDS}{cPDS}{cFN}{4/5}
+  \node[rl] at (2.75,-3.76) {Gemini-2.5-Flash};  \cellrow{-3.76}{cFN}{cFN}{cFN}{cFN}{cFN}{0/5}
+
+  % ===== legend =====
+  \draw[swrule] (0.0,-4.20) -- (7.30,-4.20);
+  \begin{scope}[shift={(0.0,-4.55)}]
+    \fill[cPDS]   (0.00,-0.13) rectangle (0.30,0.13);
+    \node[font=\tiny,text=swmuted,anchor=west] at (0.36,0) {PDS (bug hit, fix silent)};
+    \fill[cOP]    (3.10,-0.13) rectangle (3.40,0.13);
+    \node[font=\tiny,text=swmuted,anchor=west] at (3.46,0) {over-pruned};
+    \fill[cFN] (5.05,-0.13) rectangle (5.35,0.13);
+    \node[font=\tiny,text=swmuted,anchor=west] at (5.41,0) {fixed-side failure};
+  \end{scope}
+\end{tikzpicture}

@@ -1,0 +1,119 @@
+% Fig. 2 -- SemWeaver architecture and data contracts (Approach overview).
+% Body only: wrap with figure*/caption/label in the Approach section.
+% Spans the IEEE two-column \textwidth (<=516pt) at body font (no \resizebox).
+% Schema names mirror SemWeaver/src/core/evidence_schema.py:
+%   EvidenceSlice  : statements, guards, call_boundary, call_edges,
+%                    state_transitions, api_terms, related_symbols, coverage_status
+%   EvidenceRecord : type, analyzer, scope, location, semantic_payload, provenance, slice
+%   EvidenceBundle : records, missing_evidence, collected_analyzers
+%   CSA types      : path_guard, state_transition, allocation_lifecycle, semantic_slice
+%   CodeQL types   : dataflow_candidate, call_chain, semantic_slice
+%   validation     : ValidationFeedbackBuilder -> validation_outcome
+% NOTE: apply \tl UNBRACED so node \\ line breaks stay at top level.
+\providecommand{\tl}{\tiny\color{swmuted}}
+\begin{tikzpicture}[sw,
+    zlab/.style={font=\scriptsize\bfseries, text=swmuted, anchor=south west},
+    ibox/.style={swio, font=\scriptsize, align=center, minimum width=20mm,
+                 minimum height=6.4mm, anchor=center},
+    stage/.style={swproc, font=\scriptsize, align=left, text width=35mm,
+                  inner sep=2.4pt, anchor=center},
+    tline/.style={font=\tiny, text=swmuted},
+  ]
+  % ------------------------------------------------------------------ x anchors
+  \def\xI{1.25}   % inputs
+  \def\xS{4.85}   % evidence-assembly stages
+  \def\xB{8.95}   % evidence bundle hub
+  \def\xR{12.80}  % refinement column
+  \def\xU{15.95}  % audit
+
+  % ===================== ZONE LABELS ================================
+  \node[zlab] at (0.10,0.20)  {Inputs};
+  \node[zlab] at (3.20,0.20)  {Evidence assembly\, (typed, bounded)};
+  \node[zlab] at (11.25,0.20) {Target-preserving refinement};
+
+  % ===================== INPUTS =====================================
+  \node[ibox] (inD) at (\xI,-1.35) {Detector\\(checker/query)};
+  \node[ibox] (inP) at (\xI,-2.75) {Patch};
+  \node[ibox] (inS) at (\xI,-4.15) {Source tree};
+  \node[ibox] (inV) at (\xI,-5.55) {Validation\\target};
+
+  % ===================== EVIDENCE-ASSEMBLY PIPELINE =================
+  \node[stage] (s1) at (\xS,-1.05)
+       {\textbf{Patch preflight}\\[0.4pt]\tl patch\_fact, requirements, \mbox{mechanism} graph};
+  \node[stage] (s2) at (\xS,-2.60)
+       {\textbf{Source extraction}\\[0.4pt]\tl semantic\_slice: function, guards, calls, mem/state, build flags};
+  \node[stage, draw=swink, line width=0.7pt] (s3) at (\xS,-4.20)
+       {\textbf{Analyzer-native}\\[0.4pt]\tl
+        \textcolor{swblue}{CSA}: path\_guard, state\_transition, lifetime\\
+        \textcolor{sworange}{CodeQL}: dataflow\_candidate, call\_chain};
+  \node[stage] (s4) at (\xS,-5.75)
+       {\textbf{Validation feedback}\\[0.4pt]\tl validation\_outcome: \mbox{failure\_mode}, repair};
+
+  % sequential assembly spine (s1 -> s2 -> s3 -> s4)
+  \draw[swflow] (s1) -- (s2);
+  \draw[swflow] (s2) -- (s3);
+  \draw[swflow] (s3) -- (s4);
+
+  % inputs feed the relevant stages (kept sparse to avoid spaghetti)
+  \draw[swthin] (inP.east) -- (s1.west);
+  \draw[swthin] (inS.east) -- (s2.west);
+  \draw[swthin] (inD.east) to[out=0,in=160] (s1.north west);
+  \draw[swthin] (inV.east) -- (s4.west);
+
+  % ===================== NORMALIZE + BUNDLE HUB =====================
+  \node[font=\tiny\itshape, text=swmuted, anchor=south] at (\xB,-0.88)
+       {\textsc{Norm}: merge $\cdot$ de-dup $\cdot$ keep missing};
+  \node[swhub, font=\scriptsize, align=left, text width=36mm, inner sep=3.4pt,
+        anchor=center] (bundle) at (\xB,-3.45)
+       {\textbf{EvidenceBundle}\\[1.5pt]\tl
+        \textbf{records}\,$=\langle$type, analyzer, scope,\\
+        location, payload, provenance, slice$\rangle$\\[2pt]
+        \textbf{EvidenceSlice}: statements, guards,\\
+        call\_edges, state\_transitions, api\_terms,\\
+        related\_symbols, coverage\_status\\[2pt]
+        \textbf{missing\_evidence} kept\,$\cdot$\,\textbf{collected\_analyzers}};
+
+  % each stage normalizes into the bundle
+  \foreach \n in {s1,s2,s3,s4}{\draw[swflow] (\n.east) -- (bundle.west);}
+
+  % ===================== REFINEMENT PLANE ===========================
+  \node[swproc, font=\scriptsize, align=center, minimum width=27mm,
+        minimum height=6.4mm] (agent) at (\xR,-1.35) {Refinement agent};
+  \node[swio, font=\scriptsize, align=center, minimum width=27mm, minimum height=6.4mm]
+        (cand) at (\xR,-2.80) {Candidate detector};
+  \node[swhi, font=\scriptsize, align=center, text width=31mm, minimum height=9.0mm]
+        (gate) at (\xR,-4.45)
+       {\textbf{Strict gate}\\[0.4pt]\tl accept iff $\mathrm{Changed}\wedge\mathrm{AnalyzerOK}$\\
+        $\wedge\;$PDS\,(bug hit $\wedge$ fix silent)};
+  \node[swio, font=\scriptsize, align=left, text width=24mm, minimum height=21mm,
+        inner sep=3pt] (audit) at (\xU,-2.95)
+       {\textbf{Audit artifacts}\\[1.5pt]\tl evidence bundle\\ validation feedback\\
+        refinement input\\ analyzer results\\ final report};
+
+  \draw[swflow] (bundle.east) -- (agent.west);
+  \draw[swflow] (agent) -- (cand);
+  \draw[swflow] (cand) -- (gate);
+  % adopted candidate -> audit (accent = the contribution)
+  \draw[swaccent] (gate.east) to[out=0,in=-90]
+        node[pos=0.55,right=1pt,font=\tiny,text=sworange,fill=swwhite,inner sep=0.6pt]
+        {adopt} (audit.south);
+  \draw[swthin] (agent.north) to[out=90,in=90]
+        node[pos=0.5,above,font=\tiny,text=swmuted] {persist} (audit.north);
+
+  % agent pulls bounded evidence types on demand (dashed query)
+  \draw[swfeedback] (agent.north west) to[out=155,in=25]
+        node[pos=0.5,above,font=\tiny,text=swmuted,fill=swwhite,inner sep=0.5pt]
+        {request types} (bundle.north east);
+
+  % ===================== FEEDBACK LOOP (gate -> validation evidence) =
+  \draw[swfeedback] (gate.south) |- ($(s4.south)+(0,-0.60)$) -|
+        node[pos=0.27,below,font=\tiny,text=swmuted,fill=swwhite,inner sep=0.6pt]
+        {rejected: validation outcome re-enters as evidence} (s4.south);
+
+  % ===================== legend =====================================
+  \begin{scope}[shift={(0.05,-6.55)}]
+    \draw[swflow] (0,0) -- (0.5,0);       \node[tline,anchor=west] at (0.55,0) {data flow};
+    \draw[swfeedback] (2.25,0) -- (2.75,0); \node[tline,anchor=west] at (2.80,0) {feedback / query};
+    \draw[swaccent] (5.25,0) -- (5.75,0);  \node[tline,anchor=west] at (5.80,0) {adopted output};
+  \end{scope}
+\end{tikzpicture}

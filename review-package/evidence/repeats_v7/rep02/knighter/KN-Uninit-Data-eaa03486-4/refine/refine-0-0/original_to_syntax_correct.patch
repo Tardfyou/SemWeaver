@@ -1,0 +1,209 @@
+--- original_code.cpp+++ syntax_correct_refine_code.cpp@@ -1,4 +1,3 @@-// /external/upstream-study/SAGEN/result-0224-bugfail-multi-o3mini/test-Uninit-Data-eaa03486d932572dfd1c5f64f9dfebe572ad88c0/checkers/checker4.cpp
+ #include "clang/StaticAnalyzer/Core/BugReporter/BugReporter.h"
+ #include "clang/StaticAnalyzer/Core/BugReporter/BugType.h"
+ #include "clang/StaticAnalyzer/Checkers/Taint.h"
+@@ -22,103 +21,134 @@ using namespace ento;
+ using namespace taint;
+ 
+-// Program state map to keep track of the initialization status of a variable 'ret'.
+-// The mapping: VarDecl* -> bool (true means initialized, false means uninitialized).
+-REGISTER_MAP_WITH_PROGRAMSTATE(UninitVarMap, const VarDecl*, bool)
++// Tracks automatic local variables named "ret" by their actual storage region.
++// false means the region has not been definitely initialized on this path;
++// true means it has been assigned on this path.
++REGISTER_MAP_WITH_PROGRAMSTATE(RetInitializationMap, const MemRegion *, bool)
+ 
+ namespace {
+ 
+ class SAGenTestChecker : public Checker<check::PostStmt<DeclStmt>,
+-                                          check::Bind,
+-                                          check::PreStmt<ReturnStmt>> {
++                                        check::Bind,
++                                        check::PreStmt<ReturnStmt>> {
+   mutable std::unique_ptr<BugType> BT;
+ 
++  static const MemRegion *getVarRegion(const VarDecl *VD,
++                                       ProgramStateRef State,
++                                       CheckerContext &C);
++
++  static const VarDecl *getReturnedRetDecl(const Expr *E);
++
+ public:
+-  SAGenTestChecker() 
+-      : BT(new BugType(this, "Uninitialized Variable", "Uninitialized ret usage")) {}
++  SAGenTestChecker()
++      : BT(new BugType(this, "Uninitialized Variable",
++                       "Uninitialized ret usage")) {}
+ 
+-  // Called after a declaration statement is processed.
+   void checkPostStmt(const DeclStmt *DS, CheckerContext &C) const;
+-
+-  // Called when a value is bound to a variable.
+-  void checkBind(SVal Loc, SVal Val, const Stmt *S, CheckerContext &C) const;
+-
+-  // Called before a return statement is processed.
++  void checkBind(SVal Loc, SVal Val, const Stmt *S,
++                 CheckerContext &C) const;
+   void checkPreStmt(const ReturnStmt *RS, CheckerContext &C) const;
+ };
+ 
+-// checkPostStmt: Processes declaration statements to record "ret" variables
+-// that are declared without an initializer.
+-void SAGenTestChecker::checkPostStmt(const DeclStmt *DS, CheckerContext &C) const {
++const MemRegion *SAGenTestChecker::getVarRegion(const VarDecl *VD,
++                                                ProgramStateRef State,
++                                                CheckerContext &C) {
++  SVal Loc = State->getLValue(VD, C.getLocationContext());
++  return Loc.getAsRegion();
++}
++
++const VarDecl *SAGenTestChecker::getReturnedRetDecl(const Expr *E) {
++  if (!E)
++    return nullptr;
++
++  // Parentheses and both implicit and explicit casts preserve a read of ret.
++  E = E->IgnoreParenImpCasts();
++  while (const auto *CE = dyn_cast<CastExpr>(E))
++    E = CE->getSubExpr()->IgnoreParenImpCasts();
++
++  const auto *DRE = dyn_cast<DeclRefExpr>(E);
++  if (!DRE)
++    return nullptr;
++
++  return dyn_cast<VarDecl>(DRE->getDecl());
++}
++
++// Record a local ret declaration that has no initializer.
++void SAGenTestChecker::checkPostStmt(const DeclStmt *DS,
++                                     CheckerContext &C) const {
+   ProgramStateRef State = C.getState();
++  bool StateChanged = false;
++
+   for (const Decl *D : DS->decls()) {
+-    if (const VarDecl *VD = dyn_cast<VarDecl>(D)) {
+-      if (VD->getName() == "ret") {
+-        // If 'ret' has no initializer, mark it as uninitialized.
+-        if (!VD->hasInit()) {
+-          State = State->set<UninitVarMap>(VD, false);
+-        }
+-      }
+-    }
++    const auto *VD = dyn_cast<VarDecl>(D);
++    if (!VD || VD->getName() != "ret" || VD->hasInit() ||
++        !VD->hasLocalStorage())
++      continue;
++
++    const MemRegion *Region = getVarRegion(VD, State, C);
++    if (!Region)
++      continue;
++
++    State = State->set<RetInitializationMap>(Region, false);
++    StateChanged = true;
+   }
++
++  if (StateChanged)
++    C.addTransition(State);
++}
++
++// Loc, rather than S, identifies the storage being written. S is merely the
++// statement that triggered the bind and is commonly a BinaryOperator or call.
++void SAGenTestChecker::checkBind(SVal Loc, SVal Val, const Stmt *S,
++                                 CheckerContext &C) const {
++  ProgramStateRef State = C.getState();
++  const MemRegion *Region = Loc.getAsRegion();
++  if (!Region)
++    return;
++
++  const bool *Initialized = State->get<RetInitializationMap>(Region);
++  if (!Initialized || *Initialized)
++    return;
++
++  // This exact tracked region has now received a value on the current path.
++  State = State->set<RetInitializationMap>(Region, true);
+   C.addTransition(State);
+ }
+ 
+-// checkBind: Processes bindings (assignments) to update the initialization status
+-// of a variable. If a binding to the "ret" variable occurs, mark it as initialized.
+-void SAGenTestChecker::checkBind(SVal Loc, SVal Val, const Stmt *S, CheckerContext &C) const {
+-  ProgramStateRef State = C.getState();
+-  // Try to extract the variable from the left-hand side of the binding.
+-  if (const Expr *E = dyn_cast<Expr>(S)) {
+-    if (const DeclRefExpr *DRE = dyn_cast<DeclRefExpr>(E->IgnoreImplicit())) {
+-      if (const VarDecl *VD = dyn_cast<VarDecl>(DRE->getDecl())) {
+-        if (VD->getName() == "ret") {
+-          // Mark the variable as having been initialized.
+-          State = State->set<UninitVarMap>(VD, true);
+-          C.addTransition(State);
+-          return;
+-        }
+-      }
+-    }
+-  }
+-  C.addTransition(State);
+-}
+-
+-// checkPreStmt: Called before a ReturnStmt is processed.
+-// If the return expression is a direct use of the variable "ret" and it is still uninitialized,
+-// report a bug.
+-void SAGenTestChecker::checkPreStmt(const ReturnStmt *RS, CheckerContext &C) const {
+-  ProgramStateRef State = C.getState();
+-  const Expr *retExpr = RS->getRetValue();
+-  if (!retExpr)
++// Report only when the returned ret expression is still uninitialized on the
++// current path.
++void SAGenTestChecker::checkPreStmt(const ReturnStmt *RS,
++                                    CheckerContext &C) const {
++  const Expr *RetExpr = RS->getRetValue();
++  const VarDecl *VD = getReturnedRetDecl(RetExpr);
++  if (!VD || VD->getName() != "ret" || !VD->hasLocalStorage())
+     return;
+ 
+-  retExpr = retExpr->IgnoreImplicit();
+-  if (const DeclRefExpr *DRE = dyn_cast<DeclRefExpr>(retExpr)) {
+-    if (const VarDecl *VD = dyn_cast<VarDecl>(DRE->getDecl())) {
+-      if (VD->getName() == "ret") {
+-        const bool *Initialized = State->get<UninitVarMap>(VD);
+-        if (Initialized && !(*Initialized)) {
+-          ExplodedNode *N = C.generateNonFatalErrorNode();
+-          if (!N)
+-            return;
+-          auto report = std::make_unique<PathSensitiveBugReport>(
+-              *BT, "Uninitialized variable 'ret' used", N);
+-          report->addRange(retExpr->getSourceRange());
+-          C.emitReport(std::move(report));
+-        }
+-      }
+-    }
+-  }
+-  C.addTransition(State);
++  ProgramStateRef State = C.getState();
++  const MemRegion *Region = getVarRegion(VD, State, C);
++  if (!Region)
++    return;
++
++  const bool *Initialized = State->get<RetInitializationMap>(Region);
++  if (!Initialized || *Initialized)
++    return;
++
++  ExplodedNode *N = C.generateNonFatalErrorNode();
++  if (!N)
++    return;
++
++  auto Report = std::make_unique<PathSensitiveBugReport>(
++      *BT, "Uninitialized variable 'ret' used", N);
++  Report->addRange(RetExpr->getSourceRange());
++  C.emitReport(std::move(Report));
+ }
+ 
+ } // end anonymous namespace
+ 
+ extern "C" void clang_registerCheckers(CheckerRegistry &registry) {
+   registry.addChecker<SAGenTestChecker>(
+-      "custom.SAGenTestChecker", 
+-      "Detects usage of uninitialized local variable 'ret'", 
++      "custom.SAGenTestChecker",
++      "Detects usage of uninitialized local variable 'ret'",
+       "");
+ }
+ 

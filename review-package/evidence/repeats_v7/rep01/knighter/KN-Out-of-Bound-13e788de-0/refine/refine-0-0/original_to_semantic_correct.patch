@@ -1,0 +1,185 @@
+--- original_code.cpp+++ semantic_correct_refine_code.cpp@@ -1,4 +1,3 @@-// /external/upstream-study/SAGEN/result-0224-bugfail-multi-o3mini/test-Out-of-Bound-13e788deb7348cc88df34bed736c3b3b9927ea52/checkers/checker0.cpp
+ #include "clang/StaticAnalyzer/Core/BugReporter/BugReporter.h"
+ #include "clang/StaticAnalyzer/Core/BugReporter/BugType.h"
+ #include "clang/StaticAnalyzer/Checkers/Taint.h"
+@@ -12,65 +11,142 @@ #include "clang/StaticAnalyzer/Frontend/CheckerRegistry.h"
+ #include "clang/AST/RecursiveASTVisitor.h"
+ #include "clang/AST/StmtVisitor.h"
++#include "llvm/ADT/ArrayRef.h"
++#include "llvm/ADT/SmallVector.h"
+ #include "llvm/Support/raw_ostream.h"
+ #include "clang/StaticAnalyzer/Checkers/utility.h"
+-#include "clang/Lex/Lexer.h"  // For Lexer::getSourceText
++#include "clang/Lex/Lexer.h"
+ #include <memory>
+ 
+ using namespace clang;
+ using namespace ento;
+ using namespace taint;
+ 
++REGISTER_SET_WITH_PROGRAMSTATE(ReportedOffByOneConditions,
++                               const BinaryOperator *)
++
+ namespace {
++
++class GreaterThanComparisonVisitor
++    : public RecursiveASTVisitor<GreaterThanComparisonVisitor> {
++  llvm::SmallVector<const BinaryOperator *, 4> Comparisons;
++
++public:
++  bool VisitBinaryOperator(BinaryOperator *BOp) {
++    if (BOp->getOpcode() == BO_GT)
++      Comparisons.push_back(BOp);
++
++    return true;
++  }
++
++  llvm::ArrayRef<const BinaryOperator *> getComparisons() const {
++    return Comparisons;
++  }
++};
++
++static bool isTargetBoundaryMacro(const Expr *E, CheckerContext &C) {
++  if (!E)
++    return false;
++
++  const SourceManager &SM = C.getSourceManager();
++  const LangOptions &LangOpts = C.getLangOpts();
++
++  CharSourceRange Range = CharSourceRange::getTokenRange(E->getSourceRange());
++  StringRef SourceText = Lexer::getSourceText(Range, SM, LangOpts);
++  if (SourceText.contains("RDS_MSG_RX_DGRAM_TRACE_MAX"))
++    return true;
++
++  // Macro-expanded expressions may no longer expose the original spelling
++  // through getSourceText(), so also inspect the macro expansion chain.
++  SourceLocation Loc = E->getExprLoc();
++  while (Loc.isValid() && Loc.isMacroID()) {
++    if (Lexer::getImmediateMacroName(Loc, SM, LangOpts) ==
++        "RDS_MSG_RX_DGRAM_TRACE_MAX")
++      return true;
++
++    SourceLocation CallerLoc = SM.getImmediateMacroCallerLoc(Loc);
++    if (CallerLoc == Loc)
++      break;
++
++    Loc = CallerLoc;
++  }
++
++  return false;
++}
++
++static bool isArrayElementValue(const Expr *E) {
++  if (!E)
++    return false;
++
++  E = E->IgnoreParenImpCasts();
++  return isa<ArraySubscriptExpr>(E);
++}
+ 
+ class SAGenTestChecker : public Checker<check::BranchCondition> {
+   mutable std::unique_ptr<BugType> BT;
+ 
+ public:
+   SAGenTestChecker()
+-      : BT(new BugType(this, "Off-by-one array index boundary check", "Array Bounds")) {}
++      : BT(new BugType(this, "Off-by-one array index boundary check",
++                       "Array Bounds")) {}
+ 
+-  // This callback inspects branch conditions for incorrect boundary checks.
+-  void checkBranchCondition(const Stmt *Condition, CheckerContext &C) const;
++  void checkBranchCondition(const Stmt *Condition,
++                            CheckerContext &C) const;
+ 
+ private:
+-  // Helper function to report the bug.
+-  void reportBug(const Stmt *Condition, CheckerContext &C) const;
++  void reportBug(const BinaryOperator *Condition,
++                 CheckerContext &C) const;
+ };
+ 
+-void SAGenTestChecker::checkBranchCondition(const Stmt *Condition, CheckerContext &C) const {
++void SAGenTestChecker::checkBranchCondition(const Stmt *Condition,
++                                            CheckerContext &C) const {
+   if (!Condition)
+     return;
+ 
+-  // Look downward in the condition expression tree for a binary operator.
+-  const BinaryOperator *BOp = findSpecificTypeInChildren<BinaryOperator>(Condition);
+-  if (!BOp)
++  GreaterThanComparisonVisitor Visitor;
++
++  // RecursiveASTVisitor uses non-const AST pointers but does not modify them.
++  Visitor.TraverseStmt(const_cast<Stmt *>(Condition));
++
++  for (const BinaryOperator *BOp : Visitor.getComparisons()) {
++    const Expr *LHS = BOp->getLHS();
++    const Expr *RHS = BOp->getRHS();
++
++    if (!LHS || !RHS)
++      continue;
++
++    if (!isTargetBoundaryMacro(RHS, C))
++      continue;
++
++    // A count may validly equal the number of available elements, so:
++    //
++    //   if (count > ARRAY_SIZE)
++    //
++    // is not an off-by-one error. The target defect instead validates a value
++    // read from trace.rx_trace_pos[i], which is subsequently used as an index.
++    // Restrict reporting to direct array-element values to distinguish those
++    // cases without incorrectly rejecting valid full-capacity counts.
++    if (!isArrayElementValue(LHS))
++      continue;
++
++    reportBug(BOp, C);
++    return;
++  }
++}
++
++void SAGenTestChecker::reportBug(const BinaryOperator *Condition,
++                                 CheckerContext &C) const {
++  ProgramStateRef State = C.getState();
++
++  if (State->contains<ReportedOffByOneConditions>(Condition))
+     return;
+ 
+-  // We are interested in a '>' comparison instead of '>='.
+-  if (BOp->getOpcode() != BO_GT)
+-    return;
++  State = State->add<ReportedOffByOneConditions>(Condition);
+ 
+-  // Retrieve the right-hand side expression of the operator.
+-  const Expr *RHS = BOp->getRHS();
+-  if (!RHS)
+-    return;
+-
+-  // Use the utility function to check if the RHS contains the macro name.
+-  if (!ExprHasName(RHS, "RDS_MSG_RX_DGRAM_TRACE_MAX", C))
+-    return;
+-
+-  // The condition uses ">" with the boundary constant, which is likely an off-by-one error.
+-  reportBug(Condition, C);
+-}
+-
+-void SAGenTestChecker::reportBug(const Stmt *Condition, CheckerContext &C) const {
+-  // Generate a non-fatal error node.
+-  ExplodedNode *N = C.generateNonFatalErrorNode();
++  ExplodedNode *N = C.generateNonFatalErrorNode(State);
+   if (!N)
+     return;
+ 
+-  // Emit a concise bug report indicating the off-by-one error.
+   auto Report = std::make_unique<PathSensitiveBugReport>(
+       *BT, "Off-by-one error: incorrect array index boundary check", N);
+   Report->addRange(Condition->getSourceRange());
+@@ -82,8 +158,7 @@ extern "C" void clang_registerCheckers(CheckerRegistry &registry) {
+   registry.addChecker<SAGenTestChecker>(
+       "custom.SAGenTestChecker",
+-      "Detects off-by-one error in array index boundary check",
+-      "");
++      "Detects off-by-one error in array index boundary check", "");
+ }
+ 
+ extern "C" const char clang_analyzerAPIVersionString[] =

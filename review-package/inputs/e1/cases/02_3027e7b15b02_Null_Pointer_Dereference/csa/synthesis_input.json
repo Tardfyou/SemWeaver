@@ -1,0 +1,991 @@
+{
+  "analyzer_id": "csa",
+  "detector_artifact": "checker_plugin",
+  "primary_pattern": "null_dereference",
+  "objective": "Synthesize a path-sensitive null_dereference detector that encodes the same local state, guards, and lifecycle mechanism evidenced by the patch, while still generalizing to semantically equivalent sites.",
+  "mechanism_contract": {
+    "mechanism_family": "nullability_contract_violation",
+    "semantic_dimensions": [
+      "pointer-like value",
+      "dereference or call sink",
+      "nonnull proof or dominating guard"
+    ],
+    "trigger_invariants": [
+      "a pointer-like value reaches dereference, field access, or indirect call",
+      "the active path does not prove the value is non-null",
+      "Patch-backed trigger clue: added guard: if (!name)",
+      "Patch-backed trigger clue: detection hints: First-draft detector should anchor on devm_kasprintf(...) assigned to a local variable named or used as name, followed by assignment of that variable into a struct field before any if (!var) or equivalent NULL check., Do not require proof of the eventual dereference in the first draft; the patch-local sink is the unchecked propagation into aux_driver->name or aux_dev->name and continued initialization., Treat the newly added if (!name) return -ENOMEM as the barrier, but do not make the exact error code a hard requirement except as a secondary precision filter."
+    ],
+    "silence_invariants": [
+      "a dominating non-null check or successful initializer proves the value is safe",
+      "patch-added early return or validation guard blocks the null path",
+      "length/capacity guard present: if (!name)",
+      "patch-introduced barrier pattern: Insert if (!name) immediately after devm_kasprintf(...)",
+      "patch-introduced barrier pattern: Return an error such as -ENOMEM before assigning the possibly NULL pointer into aux_driver->name or aux_dev->name",
+      "patch-introduced barrier pattern: Use the NULL guard as a barrier between the allocation result and subsequent object initialization"
+    ],
+    "transfer_axes": [
+      "equivalent nullability guards before sibling dereference sites",
+      "equivalent initialization or validation patterns for the same pointer role",
+      "equivalent guard or barrier predicates on sibling paths"
+    ],
+    "forbidden_shortcuts": [
+      "bind the detector to fixed file paths, line numbers, or exact patch strings",
+      "broaden into unrelated bug families just to improve hit count",
+      "report every pointer dereference regardless of path proof",
+      "confuse null checks with unrelated branch conditions",
+      "placeholder helper logic or empty ProgramState modeling"
+    ],
+    "evidence_backed_axes": [
+      "path guards and barrier conditions",
+      "semantic trigger slice"
+    ]
+  },
+  "detector_name_hint": "UncheckedDevmKasprintfNullChecker",
+  "focus_files": [
+    "drivers/net/ethernet/intel/ice/ice_ptp.c"
+  ],
+  "focus_functions": [
+    "ice_ptp_register_auxbus_driver",
+    "ice_ptp_create_auxbus_device"
+  ],
+  "hypotheses": [
+    "The patch changes a data propagation condition that should generalize beyond the edited lines.",
+    "The fix strengthens a guard or bound that should be captured as a reusable precondition."
+  ],
+  "required_evidence_types": [
+    "patch_fact",
+    "dataflow_candidate",
+    "path_guard",
+    "call_chain"
+  ],
+  "missing_evidence_types": [],
+  "evidence_degraded": false,
+  "patch_mechanism_signals": [
+    "added guard: if (!name)",
+    "detection hints: First-draft detector should anchor on devm_kasprintf(...) assigned to a local variable named or used as name, followed by assignment of that variable into a struct field before any if (!var) or equivalent NULL check., Do not require proof of the eventual dereference in the first draft; the patch-local sink is the unchecked propagation into aux_driver->name or aux_dev->name and continued initialization., Treat the newly added if (!name) return -ENOMEM as the barrier, but do not make the exact error code a hard requirement except as a secondary precision filter."
+  ],
+  "silencing_conditions": [
+    "length/capacity guard present: if (!name)",
+    "patch-introduced barrier pattern: Insert if (!name) immediately after devm_kasprintf(...)",
+    "patch-introduced barrier pattern: Return an error such as -ENOMEM before assigning the possibly NULL pointer into aux_driver->name or aux_dev->name",
+    "patch-introduced barrier pattern: Use the NULL guard as a barrier between the allocation result and subsequent object initialization"
+  ],
+  "retry_guidance": [],
+  "selected_evidence_ids": [
+    "csa_guard_0",
+    "csa_guard_1",
+    "csa_semantic_slice_0",
+    "csa_semantic_slice_1",
+    "pf_004",
+    "pf_005",
+    "pf_003",
+    "pf_002",
+    "pf_001"
+  ],
+  "selected_evidence": [
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/ethernet/intel/ice/ice_ptp.c",
+        "function": "ice_ptp_register_auxbus_driver"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "!name",
+        "summary": "ice_ptp_register_auxbus_driver introduces patch guard `!name` before aux_driver->name = name, aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name).",
+        "summary_line": 2863,
+        "state_before": [
+          "input(name)",
+          "input(ENOMEM)",
+          "buffer(aux_driver->name)",
+          "buffer(aux_driver->id_table)"
+        ],
+        "state_after": [
+          "guard(!name)",
+          "current_call(aux_driver->name = name)",
+          "current_call(aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name))"
+        ],
+        "tracked_symbols": [
+          "name",
+          "ENOMEM"
+        ],
+        "buffer_fields": [
+          "aux_driver->name",
+          "aux_driver->id_table"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "ice_ptp_register_auxbus_driver"
+        ],
+        "call_targets": [
+          "aux_driver->name = name",
+          "aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name)"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "!name"
+        ],
+        "call_edges": [
+          "ice_ptp_register_auxbus_driver -> aux_driver->name = name",
+          "ice_ptp_register_auxbus_driver -> aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name)"
+        ],
+        "state_statements": [
+          "if (!name)",
+          "return -ENOMEM;"
+        ],
+        "source_file": "drivers/net/ethernet/intel/ice/ice_ptp.c"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/net/ethernet/intel/ice/ice_ptp.c",
+          "hunk_index": 0,
+          "source_line": 2863
+        },
+        "summary": "ice_ptp_register_auxbus_driver introduces patch guard `!name` before aux_driver->name = name, aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name).",
+        "statements": [
+          "if (!name)",
+          "return -ENOMEM;"
+        ],
+        "guards": [
+          "!name"
+        ],
+        "call_boundary": [
+          "aux_driver->name = name",
+          "aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name)"
+        ],
+        "call_edges": [
+          "ice_ptp_register_auxbus_driver -> aux_driver->name = name",
+          "ice_ptp_register_auxbus_driver -> aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name)"
+        ],
+        "state_transitions": [
+          "guard(!name)",
+          "current_call(aux_driver->name = name)",
+          "current_call(aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name))"
+        ],
+        "api_terms": [
+          "aux_driver->name = name",
+          "aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name)"
+        ],
+        "related_symbols": [
+          "name",
+          "ENOMEM"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_guard_1",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/ethernet/intel/ice/ice_ptp.c",
+        "function": "ice_ptp_create_auxbus_device"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "!name",
+        "summary": "ice_ptp_create_auxbus_device introduces patch guard `!name` before aux_dev->name = name, dev_err.",
+        "summary_line": 3109,
+        "state_before": [
+          "input(name)",
+          "input(ENOMEM)",
+          "buffer(aux_dev->name)"
+        ],
+        "state_after": [
+          "guard(!name)",
+          "current_call(aux_dev->name = name)",
+          "current_call(dev_err)"
+        ],
+        "tracked_symbols": [
+          "name",
+          "ENOMEM"
+        ],
+        "buffer_fields": [
+          "aux_dev->name"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "ice_ptp_create_auxbus_device"
+        ],
+        "call_targets": [
+          "aux_dev->name = name",
+          "dev_err",
+          "devm_kfree"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "!name"
+        ],
+        "call_edges": [
+          "ice_ptp_create_auxbus_device -> aux_dev->name = name",
+          "ice_ptp_create_auxbus_device -> dev_err",
+          "ice_ptp_create_auxbus_device -> devm_kfree"
+        ],
+        "state_statements": [
+          "if (!name)",
+          "return -ENOMEM;"
+        ],
+        "source_file": "drivers/net/ethernet/intel/ice/ice_ptp.c"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/net/ethernet/intel/ice/ice_ptp.c",
+          "hunk_index": 1,
+          "source_line": 3109
+        },
+        "summary": "ice_ptp_create_auxbus_device introduces patch guard `!name` before aux_dev->name = name, dev_err.",
+        "statements": [
+          "if (!name)",
+          "return -ENOMEM;"
+        ],
+        "guards": [
+          "!name"
+        ],
+        "call_boundary": [
+          "aux_dev->name = name",
+          "dev_err",
+          "devm_kfree"
+        ],
+        "call_edges": [
+          "ice_ptp_create_auxbus_device -> aux_dev->name = name",
+          "ice_ptp_create_auxbus_device -> dev_err",
+          "ice_ptp_create_auxbus_device -> devm_kfree"
+        ],
+        "state_transitions": [
+          "guard(!name)",
+          "current_call(aux_dev->name = name)",
+          "current_call(dev_err)"
+        ],
+        "api_terms": [
+          "aux_dev->name = name",
+          "dev_err",
+          "devm_kfree"
+        ],
+        "related_symbols": [
+          "name",
+          "ENOMEM"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/ethernet/intel/ice/ice_ptp.c",
+        "function": "ice_ptp_register_auxbus_driver"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "ice_ptp_register_auxbus_driver adds patch barrier `!name` around aux_driver->name = name, aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name).",
+        "tracked_symbols": [
+          "name",
+          "ENOMEM"
+        ],
+        "buffer_fields": [
+          "aux_driver->name",
+          "aux_driver->id_table"
+        ],
+        "coverage_status": "full",
+        "source_file": "drivers/net/ethernet/intel/ice/ice_ptp.c"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "drivers/net/ethernet/intel/ice/ice_ptp.c",
+          "hunk_index": 0,
+          "source_line": 2863
+        },
+        "summary": "ice_ptp_register_auxbus_driver adds patch barrier `!name` around aux_driver->name = name, aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name).",
+        "statements": [
+          "if (!name)",
+          "return -ENOMEM;"
+        ],
+        "guards": [
+          "!name"
+        ],
+        "call_boundary": [
+          "aux_driver->name = name",
+          "aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name)"
+        ],
+        "call_edges": [
+          "ice_ptp_register_auxbus_driver -> aux_driver->name = name",
+          "ice_ptp_register_auxbus_driver -> aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name)"
+        ],
+        "state_transitions": [
+          "",
+          "report when a risky write proceeds without the patch-style barrier",
+          "stay silent when the nearby guard proves the current write is blocked or bounded"
+        ],
+        "api_terms": [
+          "aux_driver->name = name",
+          "aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name)"
+        ],
+        "related_symbols": [
+          "name",
+          "ENOMEM"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_semantic_slice_1",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/ethernet/intel/ice/ice_ptp.c",
+        "function": "ice_ptp_create_auxbus_device"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "ice_ptp_create_auxbus_device adds patch barrier `!name` around aux_dev->name = name, dev_err.",
+        "tracked_symbols": [
+          "name",
+          "ENOMEM"
+        ],
+        "buffer_fields": [
+          "aux_dev->name"
+        ],
+        "coverage_status": "full",
+        "source_file": "drivers/net/ethernet/intel/ice/ice_ptp.c"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "drivers/net/ethernet/intel/ice/ice_ptp.c",
+          "hunk_index": 1,
+          "source_line": 3109
+        },
+        "summary": "ice_ptp_create_auxbus_device adds patch barrier `!name` around aux_dev->name = name, dev_err.",
+        "statements": [
+          "if (!name)",
+          "return -ENOMEM;"
+        ],
+        "guards": [
+          "!name"
+        ],
+        "call_boundary": [
+          "aux_dev->name = name",
+          "dev_err",
+          "devm_kfree"
+        ],
+        "call_edges": [
+          "ice_ptp_create_auxbus_device -> aux_dev->name = name",
+          "ice_ptp_create_auxbus_device -> dev_err",
+          "ice_ptp_create_auxbus_device -> devm_kfree"
+        ],
+        "state_transitions": [
+          "",
+          "report when a risky write proceeds without the patch-style barrier",
+          "stay silent when the nearby guard proves the current write is blocked or bounded"
+        ],
+        "api_terms": [
+          "aux_dev->name = name",
+          "dev_err",
+          "devm_kfree"
+        ],
+        "related_symbols": [
+          "name",
+          "ENOMEM"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "pf_004",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/ethernet/intel/ice/ice_ptp.c",
+        "function": "ice_ptp_create_auxbus_device"
+      },
+      "semantic_payload": {
+        "label": "Patch introduces or strengthens guards"
+      },
+      "evidence_slice": {},
+      "confidence": 0.95
+    },
+    {
+      "evidence_id": "pf_005",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/ethernet/intel/ice/ice_ptp.c",
+        "function": "ice_ptp_create_auxbus_device"
+      },
+      "semantic_payload": {
+        "label": "Patch introduces reusable fix patterns"
+      },
+      "evidence_slice": {},
+      "confidence": 0.95
+    },
+    {
+      "evidence_id": "pf_003",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/ethernet/intel/ice/ice_ptp.c",
+        "function": "ice_ptp_create_auxbus_device"
+      },
+      "semantic_payload": {
+        "label": "Existing patch analysis detection strategy"
+      },
+      "evidence_slice": {},
+      "confidence": 0.95
+    },
+    {
+      "evidence_id": "pf_002",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/ethernet/intel/ice/ice_ptp.c",
+        "function": "ice_ptp_create_auxbus_device"
+      },
+      "semantic_payload": {
+        "label": "Functions implicated by removed or fixed code"
+      },
+      "evidence_slice": {},
+      "confidence": 0.95
+    },
+    {
+      "evidence_id": "pf_001",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/ethernet/intel/ice/ice_ptp.c",
+        "function": "ice_ptp_create_auxbus_device"
+      },
+      "semantic_payload": {
+        "label": "Vulnerability patterns inferred from patch"
+      },
+      "evidence_slice": {},
+      "confidence": 0.95
+    }
+  ],
+  "semantic_slice_count": 7,
+  "context_summary_count": 0,
+  "semantic_slice_coverage": "partial",
+  "selected_semantic_slice_ids": [
+    "csa_guard_0",
+    "csa_guard_1",
+    "csa_semantic_slice_0",
+    "csa_semantic_slice_1"
+  ],
+  "selected_context_summary_ids": [],
+  "selected_semantic_slices": [
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/ethernet/intel/ice/ice_ptp.c",
+        "function": "ice_ptp_register_auxbus_driver"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "!name",
+        "summary": "ice_ptp_register_auxbus_driver introduces patch guard `!name` before aux_driver->name = name, aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name).",
+        "summary_line": 2863,
+        "state_before": [
+          "input(name)",
+          "input(ENOMEM)",
+          "buffer(aux_driver->name)",
+          "buffer(aux_driver->id_table)"
+        ],
+        "state_after": [
+          "guard(!name)",
+          "current_call(aux_driver->name = name)",
+          "current_call(aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name))"
+        ],
+        "tracked_symbols": [
+          "name",
+          "ENOMEM"
+        ],
+        "buffer_fields": [
+          "aux_driver->name",
+          "aux_driver->id_table"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "ice_ptp_register_auxbus_driver"
+        ],
+        "call_targets": [
+          "aux_driver->name = name",
+          "aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name)"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "!name"
+        ],
+        "call_edges": [
+          "ice_ptp_register_auxbus_driver -> aux_driver->name = name",
+          "ice_ptp_register_auxbus_driver -> aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name)"
+        ],
+        "state_statements": [
+          "if (!name)",
+          "return -ENOMEM;"
+        ],
+        "source_file": "drivers/net/ethernet/intel/ice/ice_ptp.c"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/net/ethernet/intel/ice/ice_ptp.c",
+          "hunk_index": 0,
+          "source_line": 2863
+        },
+        "summary": "ice_ptp_register_auxbus_driver introduces patch guard `!name` before aux_driver->name = name, aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name).",
+        "statements": [
+          "if (!name)",
+          "return -ENOMEM;"
+        ],
+        "guards": [
+          "!name"
+        ],
+        "call_boundary": [
+          "aux_driver->name = name",
+          "aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name)"
+        ],
+        "call_edges": [
+          "ice_ptp_register_auxbus_driver -> aux_driver->name = name",
+          "ice_ptp_register_auxbus_driver -> aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name)"
+        ],
+        "state_transitions": [
+          "guard(!name)",
+          "current_call(aux_driver->name = name)",
+          "current_call(aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name))"
+        ],
+        "api_terms": [
+          "aux_driver->name = name",
+          "aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name)"
+        ],
+        "related_symbols": [
+          "name",
+          "ENOMEM"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_guard_1",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/ethernet/intel/ice/ice_ptp.c",
+        "function": "ice_ptp_create_auxbus_device"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "!name",
+        "summary": "ice_ptp_create_auxbus_device introduces patch guard `!name` before aux_dev->name = name, dev_err.",
+        "summary_line": 3109,
+        "state_before": [
+          "input(name)",
+          "input(ENOMEM)",
+          "buffer(aux_dev->name)"
+        ],
+        "state_after": [
+          "guard(!name)",
+          "current_call(aux_dev->name = name)",
+          "current_call(dev_err)"
+        ],
+        "tracked_symbols": [
+          "name",
+          "ENOMEM"
+        ],
+        "buffer_fields": [
+          "aux_dev->name"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "ice_ptp_create_auxbus_device"
+        ],
+        "call_targets": [
+          "aux_dev->name = name",
+          "dev_err",
+          "devm_kfree"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "!name"
+        ],
+        "call_edges": [
+          "ice_ptp_create_auxbus_device -> aux_dev->name = name",
+          "ice_ptp_create_auxbus_device -> dev_err",
+          "ice_ptp_create_auxbus_device -> devm_kfree"
+        ],
+        "state_statements": [
+          "if (!name)",
+          "return -ENOMEM;"
+        ],
+        "source_file": "drivers/net/ethernet/intel/ice/ice_ptp.c"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/net/ethernet/intel/ice/ice_ptp.c",
+          "hunk_index": 1,
+          "source_line": 3109
+        },
+        "summary": "ice_ptp_create_auxbus_device introduces patch guard `!name` before aux_dev->name = name, dev_err.",
+        "statements": [
+          "if (!name)",
+          "return -ENOMEM;"
+        ],
+        "guards": [
+          "!name"
+        ],
+        "call_boundary": [
+          "aux_dev->name = name",
+          "dev_err",
+          "devm_kfree"
+        ],
+        "call_edges": [
+          "ice_ptp_create_auxbus_device -> aux_dev->name = name",
+          "ice_ptp_create_auxbus_device -> dev_err",
+          "ice_ptp_create_auxbus_device -> devm_kfree"
+        ],
+        "state_transitions": [
+          "guard(!name)",
+          "current_call(aux_dev->name = name)",
+          "current_call(dev_err)"
+        ],
+        "api_terms": [
+          "aux_dev->name = name",
+          "dev_err",
+          "devm_kfree"
+        ],
+        "related_symbols": [
+          "name",
+          "ENOMEM"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/ethernet/intel/ice/ice_ptp.c",
+        "function": "ice_ptp_register_auxbus_driver"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "ice_ptp_register_auxbus_driver adds patch barrier `!name` around aux_driver->name = name, aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name).",
+        "tracked_symbols": [
+          "name",
+          "ENOMEM"
+        ],
+        "buffer_fields": [
+          "aux_driver->name",
+          "aux_driver->id_table"
+        ],
+        "coverage_status": "full",
+        "source_file": "drivers/net/ethernet/intel/ice/ice_ptp.c"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "drivers/net/ethernet/intel/ice/ice_ptp.c",
+          "hunk_index": 0,
+          "source_line": 2863
+        },
+        "summary": "ice_ptp_register_auxbus_driver adds patch barrier `!name` around aux_driver->name = name, aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name).",
+        "statements": [
+          "if (!name)",
+          "return -ENOMEM;"
+        ],
+        "guards": [
+          "!name"
+        ],
+        "call_boundary": [
+          "aux_driver->name = name",
+          "aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name)"
+        ],
+        "call_edges": [
+          "ice_ptp_register_auxbus_driver -> aux_driver->name = name",
+          "ice_ptp_register_auxbus_driver -> aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name)"
+        ],
+        "state_transitions": [
+          "",
+          "report when a risky write proceeds without the patch-style barrier",
+          "stay silent when the nearby guard proves the current write is blocked or bounded"
+        ],
+        "api_terms": [
+          "aux_driver->name = name",
+          "aux_driver->id_table = ice_ptp_auxbus_create_id_table(pf, name)"
+        ],
+        "related_symbols": [
+          "name",
+          "ENOMEM"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_semantic_slice_1",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/ethernet/intel/ice/ice_ptp.c",
+        "function": "ice_ptp_create_auxbus_device"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "ice_ptp_create_auxbus_device adds patch barrier `!name` around aux_dev->name = name, dev_err.",
+        "tracked_symbols": [
+          "name",
+          "ENOMEM"
+        ],
+        "buffer_fields": [
+          "aux_dev->name"
+        ],
+        "coverage_status": "full",
+        "source_file": "drivers/net/ethernet/intel/ice/ice_ptp.c"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "drivers/net/ethernet/intel/ice/ice_ptp.c",
+          "hunk_index": 1,
+          "source_line": 3109
+        },
+        "summary": "ice_ptp_create_auxbus_device adds patch barrier `!name` around aux_dev->name = name, dev_err.",
+        "statements": [
+          "if (!name)",
+          "return -ENOMEM;"
+        ],
+        "guards": [
+          "!name"
+        ],
+        "call_boundary": [
+          "aux_dev->name = name",
+          "dev_err",
+          "devm_kfree"
+        ],
+        "call_edges": [
+          "ice_ptp_create_auxbus_device -> aux_dev->name = name",
+          "ice_ptp_create_auxbus_device -> dev_err",
+          "ice_ptp_create_auxbus_device -> devm_kfree"
+        ],
+        "state_transitions": [
+          "",
+          "report when a risky write proceeds without the patch-style barrier",
+          "stay silent when the nearby guard proves the current write is blocked or bounded"
+        ],
+        "api_terms": [
+          "aux_dev->name = name",
+          "dev_err",
+          "devm_kfree"
+        ],
+        "related_symbols": [
+          "name",
+          "ENOMEM"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    }
+  ],
+  "selected_context_summaries": [],
+  "semantic_clause_plan": [
+    {
+      "clause_id": "vulnerable_trigger_clause",
+      "intent": "Trigger on the vulnerable null_dereference mechanism using evidence-backed path/flow semantics.",
+      "supporting_evidence_ids": [
+        "csa_guard_0",
+        "csa_guard_1",
+        "csa_semantic_slice_0",
+        "csa_semantic_slice_1"
+      ],
+      "repair_when": [
+        "semantic_no_hits"
+      ],
+      "focus_functions": [
+        "ice_ptp_register_auxbus_driver",
+        "ice_ptp_create_auxbus_device"
+      ]
+    },
+    {
+      "clause_id": "patched_silence_clause",
+      "intent": "Stay silent on patched code when patch-added guards, barriers, or safe APIs prove the mechanism is blocked.",
+      "supporting_evidence_ids": [
+        "csa_guard_0",
+        "csa_guard_1",
+        "csa_semantic_slice_0",
+        "csa_semantic_slice_1",
+        "pf_004",
+        "pf_005",
+        "pf_003",
+        "pf_002"
+      ],
+      "repair_when": [],
+      "silencing_conditions": [
+        "length/capacity guard present: if (!name)",
+        "patch-introduced barrier pattern: Insert if (!name) immediately after devm_kasprintf(...)",
+        "patch-introduced barrier pattern: Return an error such as -ENOMEM before assigning the possibly NULL pointer into aux_driver->name or aux_dev->name",
+        "patch-introduced barrier pattern: Use the NULL guard as a barrier between the allocation result and subsequent object initialization"
+      ]
+    },
+    {
+      "clause_id": "semantic_transfer_clause",
+      "intent": "Generalize along semantic slices and call-chain evidence rather than patch-local syntax.",
+      "supporting_evidence_ids": [
+        "csa_semantic_slice_0",
+        "csa_semantic_slice_1"
+      ],
+      "repair_when": [],
+      "analyzer_id": "csa"
+    },
+    {
+      "clause_id": "analyzer_interface_clause",
+      "intent": "Preserve valid analyzer-facing syntax and interfaces while keeping semantics unchanged.",
+      "supporting_evidence_ids": [
+        "pf_004",
+        "pf_005",
+        "pf_003",
+        "pf_002",
+        "pf_001"
+      ],
+      "repair_when": [
+        "semantic_execution_error"
+      ],
+      "analyzer_id": "csa"
+    }
+  ],
+  "repair_directives": [],
+  "constraints": [
+    {
+      "title": "Generalize beyond patch site",
+      "description": "Do not bind the detector to fixed file paths, line numbers, or exact patch strings.",
+      "priority": "high"
+    },
+    {
+      "title": "Preserve vulnerability semantics",
+      "description": "Keep the detector focused on the vulnerability family implied by the patch and evidence.",
+      "priority": "high"
+    },
+    {
+      "title": "Respect analyzer-native form",
+      "description": "Output must be a valid checker_plugin for csa.",
+      "priority": "high"
+    },
+    {
+      "title": "Stay within proven mechanism scope",
+      "description": "Generalize only along evidence-supported semantic dimensions. Do not broaden the detector into unrelated globals, APIs, or bug families.",
+      "priority": "high"
+    },
+    {
+      "title": "Honor mechanism contract",
+      "description": "Preserve the mechanism family `nullability_contract_violation` by keeping trigger invariants a pointer-like value reaches dereference, field access, or indirect call; the active path does not prove the value is non-null; Patch-backed trigger clue: added guard: if (!name).",
+      "priority": "high"
+    },
+    {
+      "title": "Generalize only on contract axes",
+      "description": "Reuse semantics only along these transfer axes: equivalent nullability guards before sibling dereference sites; equivalent initialization or validation patterns for the same pointer role; equivalent guard or barrier predicates on sibling paths.",
+      "priority": "high"
+    },
+    {
+      "title": "Anchor on patch-touched scope",
+      "description": "Use patch-touched files/functions as the semantic anchor for synthesis. Only extend beyond them when the same mechanism is explicitly supported by evidence.",
+      "priority": "high"
+    },
+    {
+      "title": "Encode the patch-added barrier",
+      "description": "model the absence of barriers like Insert if (!name) immediately after devm_kasprintf(...), Return an error such as -ENOMEM before assigning the possibly NULL pointer into aux_driver->name or aux_dev->name, Use the NULL guard as a barrier between the allocation result and subsequent object initialization; treat guards such as if (!name) as semantic barriers.",
+      "priority": "high"
+    },
+    {
+      "title": "Respect patched silence",
+      "description": "Use these no-report conditions when they are semantically proven: length/capacity guard present: if (!name); patch-introduced barrier pattern: Insert if (!name) immediately after devm_kasprintf(...); patch-introduced barrier pattern: Return an error such as -ENOMEM before assigning the possibly NULL pointer into aux_driver->name or aux_dev->name.",
+      "priority": "high"
+    },
+    {
+      "title": "Require missing non-null proof",
+      "description": "Only report dereference-like sinks when the active path lacks a non-null proof; patched null checks and early returns must stay silent.",
+      "priority": "high"
+    },
+    {
+      "title": "Use path-sensitive evidence",
+      "description": "Prefer guards, state transitions, and lifecycle facts over broad textual matching.",
+      "priority": "high"
+    },
+    {
+      "title": "No placeholder helper logic",
+      "description": "Helper predicates must inspect AST/program state and must not be unconditional return-true/return-false stubs.",
+      "priority": "high"
+    }
+  ],
+  "implementation_hints": [
+    "Mechanism family: nullability_contract_violation",
+    "Mechanism dimensions: pointer-like value, dereference or call sink, nonnull proof or dominating guard",
+    "Trigger invariants: a pointer-like value reaches dereference, field access, or indirect call, the active path does not prove the value is non-null, Patch-backed trigger clue: added guard: if (!name)",
+    "Silence invariants: a dominating non-null check or successful initializer proves the value is safe, patch-added early return or validation guard blocks the null path, length/capacity guard present: if (!name)",
+    "Transfer axes: equivalent nullability guards before sibling dereference sites, equivalent initialization or validation patterns for the same pointer role, equivalent guard or barrier predicates on sibling paths",
+    "Focus files: drivers/net/ethernet/intel/ice/ice_ptp.c",
+    "Priority functions: ice_ptp_register_auxbus_driver, ice_ptp_create_auxbus_device",
+    "Patch-added barriers: Insert if (!name) immediately after devm_kasprintf(...), Return an error such as -ENOMEM before assigning the possibly NULL pointer into aux_driver->name or aux_dev->name, Use the NULL guard as a barrier between the allocation result and subsequent object initialization"
+  ],
+  "validation_expectations": [
+    "Vulnerable version should trigger a null_dereference finding.",
+    "Patched version should stay silent for the same mechanism.",
+    "Semantic validation that executes but returns zero hits is not acceptable; recover coverage with evidence-backed semantics.",
+    "Repair phase may fix syntax/interfaces only; it must not simplify away the core detection logic.",
+    "Generalization must stay inside the mechanism contract transfer axes instead of widening to adjacent bug families.",
+    "Trigger invariant: a pointer-like value reaches dereference, field access, or indirect call.",
+    "Trigger invariant: the active path does not prove the value is non-null.",
+    "Patched silence depends on: length/capacity guard present: if (!name).",
+    "Patched silence depends on: patch-introduced barrier pattern: Insert if (!name) immediately after devm_kasprintf(...)."
+  ]
+}

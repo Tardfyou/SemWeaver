@@ -1,0 +1,700 @@
+{
+  "records": [
+    {
+      "evidence_id": "pf_000",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/firmware/arm_scmi/driver.c",
+        "function": "scmi_debugfs_common_cleanup"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "patch_overview",
+        "label": "Patch overview",
+        "attributes": {
+          "patch_path": "/anonymous/home/LLM-Native/research/knighter/e2/cases/19_39b13dce1a91_Double_Free/patches/commit.patch",
+          "changed_files": [
+            "drivers/firmware/arm_scmi/driver.c"
+          ],
+          "changed_file_count": 1,
+          "added_line_count": 1,
+          "deleted_line_count": 3
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "patch_overview",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_001",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/firmware/arm_scmi/driver.c",
+        "function": "scmi_debugfs_common_cleanup"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "vulnerability_patterns",
+        "label": "Vulnerability patterns inferred from patch",
+        "attributes": {
+          "patterns": [
+            "double_free"
+          ],
+          "descriptions": [
+            "Before the patch, failure of devm_add_action_or_reset() consumed dbg with scmi_debugfs_common_cleanup as a registered reset action and then the error branch explicitly called scmi_debugfs_common_cleanup(dbg) again, allowing the same resources owned by dbg, including dbg->name according to the patch context, to be freed twice. After the patch, the failure path returns NULL immediately and relies only on devm_add_action_or_reset()'s reset action to perform cleanup once."
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "vulnerability_patterns",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_002",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/firmware/arm_scmi/driver.c",
+        "function": "scmi_debugfs_common_cleanup"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "affected_functions",
+        "label": "Functions implicated by removed or fixed code",
+        "attributes": {
+          "functions": [
+            "scmi_debugfs_common_cleanup",
+            "scmi_debugfs_common_setup"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "affected_functions",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_003",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/firmware/arm_scmi/driver.c",
+        "function": "scmi_debugfs_common_cleanup"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "detection_strategy",
+        "label": "Existing patch analysis detection strategy",
+        "attributes": {
+          "primary_pattern": "double_free",
+          "check_types": [
+            "local_ast",
+            "local_cfg",
+            "resource_lifecycle"
+          ],
+          "entry_points": [
+            "drivers/firmware/arm_scmi/driver.c:scmi_debugfs_common_setup",
+            "drivers/firmware/arm_scmi/driver.c:scmi_debugfs_common_cleanup"
+          ],
+          "data_flow_tracking": false,
+          "cross_file_analysis": false,
+          "suggestions": [
+            "First-draft detector should anchor on a call to devm_add_action_or_reset(dev, cleanup_fn, arg) used as an if-condition or error-check, where the failure branch directly calls cleanup_fn(arg).",
+            "The most precise patch-local sink is the deleted explicit call scmi_debugfs_common_cleanup(dbg), not the return NULL or formatting change.",
+            "Model devm_add_action_or_reset() as a barrier/reset API that invokes the supplied cleanup callback with the supplied argument on failure; then flag duplicate manual cleanup of the same callback and same argument on that failure path.",
+            "Use local AST plus local CFG within the affected function first; no cross-file analysis is needed for the initial checker because the callback and argument identity are visible at the call site.",
+            "Treat exact callback identity and exact argument identity as strong first-pass conditions; details of what scmi_debugfs_common_cleanup frees, such as dbg->name, can be a secondary refinement rather than a required initial match.",
+            "Do not require a separate free() call in the same function; the vulnerability is duplicated cleanup callback execution, where the actual free may be inside the callback."
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "detection_strategy",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_004",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/firmware/arm_scmi/driver.c",
+        "function": "scmi_debugfs_common_cleanup"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "fix_patterns",
+        "label": "Patch introduces reusable fix patterns",
+        "attributes": {
+          "patterns": [
+            "Remove the explicit scmi_debugfs_common_cleanup(dbg) call from the devm_add_action_or_reset() failure branch.",
+            "Keep the early return NULL after devm_add_action_or_reset() failure so the setup function stops without a second cleanup invocation.",
+            "Rely on devm_add_action_or_reset() to run scmi_debugfs_common_cleanup on failure instead of manually duplicating the cleanup action."
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "fix_patterns",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_005",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/firmware/arm_scmi/driver.c",
+        "function": "scmi_debugfs_common_cleanup"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "patch_intent",
+        "label": "Patch intent and commit-style summary",
+        "attributes": {
+          "summary": "commit 39b13dce1a91cdfc3bec9238f9e89094551bd428 | Author: Su Hui <suhui@nfschina.com>",
+          "keywords": [
+            "commit",
+            "b13dce1a91cdfc3bec9238f9e89094551bd428",
+            "author",
+            "suhui",
+            "nfschina"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "patch_intent",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_006",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/firmware/arm_scmi/driver.c",
+        "function": "scmi_debugfs_common_cleanup"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "external_references",
+        "label": "External references recovered from patch text",
+        "attributes": {
+          "cves": [],
+          "cwes": [],
+          "issues": [
+            "c3d4aed763ce"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "external_references",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "csa_validation_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/firmware/arm_scmi/driver.c",
+        "function": "scmi_debugfs_common_setup"
+      },
+      "location": {
+        "line": 2979,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at drivers/firmware/arm_scmi/driver.c:2979",
+        "diagnostic_message": "",
+        "diagnostic_checker": "",
+        "state_before": [
+          "input(info)",
+          "buffer(dbg->is_atomic)",
+          "buffer(info->desc)",
+          "sinks(is_transport_polling_capable, debugfs_create_str)"
+        ],
+        "state_after": [
+          "diagnostic(csa)"
+        ],
+        "functions": [
+          "scmi_debugfs_common_setup"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "info"
+        ],
+        "buffer_fields": [
+          "dbg->is_atomic",
+          "info->desc",
+          "dbg->name",
+          "info->atomic_threshold",
+          "dbg->type",
+          "info->tx_minfo"
+        ],
+        "call_targets": [
+          "is_transport_polling_capable",
+          "debugfs_create_str",
+          "debugfs_create_u32",
+          "debugfs_create_bool",
+          "scmi_debugfs_counters_setup",
+          "devm_add_action_or_reset"
+        ],
+        "call_edges": [],
+        "state_statements": [],
+        "source_file": "drivers/firmware/arm_scmi/driver.c",
+        "source_excerpt": "2947: \n2948: \tdbg->is_atomic = info->desc->atomic_enabled &&\n2949: \t\t\t\tis_transport_polling_capable(info->desc);\n2950: \n2951: \tdebugfs_create_str(\"instance_name\", 0400, top_dentry,\n2952: \t\t\t   (char **)&dbg->name);\n2953: \n2954: \tdebugfs_create_u32(\"atomic_threshold_us\", 0400, top_dentry,\n2955: \t\t\t   &info->atomic_threshold);\n2956: \n2957: \tdebugfs_create_str(\"type\", 0400, trans, (char **)&dbg->type);\n2958: \n2959: \tdebugfs_create_bool(\"is_atomic\", 0400, trans, &dbg->is_atomic);\n2960: \n2961: \tdebugfs_create_u32(\"max_rx_timeout_ms\", 0400, trans,\n2962: \t\t\t   (u32 *)&info->desc->max_rx_timeout_ms);\n2963: \n2964: \tdebugfs_create_u32(\"max_msg_size\", 0400, trans,\n2965: \t\t\t   (u32 *)&info->desc->max_msg_size);\n2966: \n2967: \tdebugfs_create_u32(\"tx_max_msg\", 0400, trans,\n2968: \t\t\t   (u32 *)&info->tx_minfo.max_msg);\n2969: \n2970: \tdebugfs_create_u32(\"rx_max_msg\", 0400, trans,\n2971: \t\t\t   (u32 *)&info->rx_minfo.max_msg);\n2972: \n2973: \tif (IS_ENABLED(CONFIG_ARM_SCMI_DEBUG_COUNTERS))\n2974: \t\tscmi_debugfs_counters_setup(dbg, trans);\n2975: \n2976: \tdbg->top_dentry = top_dentry;\n2977: \n2978: \tif (devm_add_action_or_reset(info->dev,\n2979: \t\t\t\t     scmi_debugfs_common_cleanup, dbg))\n2980: \t\treturn NULL;\n2981: \n2982: \treturn dbg;\n2983: }",
+        "coverage_status": "partial",
+        "contract_type": "",
+        "guard_exprs": [
+          "IS_ENABLED(CONFIG_ARM_SCMI_DEBUG_COUNTERS)"
+        ],
+        "sink_calls": [
+          "is_transport_polling_capable",
+          "debugfs_create_str",
+          "debugfs_create_u32",
+          "debugfs_create_bool"
+        ]
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.72
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "drivers/firmware/arm_scmi/driver.c",
+          "hunk_index": 0,
+          "source_line": 2979
+        },
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at drivers/firmware/arm_scmi/driver.c:2979",
+        "statements": [
+          "2947:",
+          "2948: \tdbg->is_atomic = info->desc->atomic_enabled &&",
+          "2949: \t\t\t\tis_transport_polling_capable(info->desc);",
+          "2950:",
+          "2951: \tdebugfs_create_str(\"instance_name\", 0400, top_dentry,",
+          "2952: \t\t\t   (char **)&dbg->name);"
+        ],
+        "guards": [
+          "IS_ENABLED(CONFIG_ARM_SCMI_DEBUG_COUNTERS)"
+        ],
+        "call_boundary": [
+          "is_transport_polling_capable",
+          "debugfs_create_str",
+          "debugfs_create_u32",
+          "debugfs_create_bool",
+          "scmi_debugfs_counters_setup",
+          "devm_add_action_or_reset"
+        ],
+        "call_edges": [],
+        "state_transitions": [
+          "diagnostic(csa)"
+        ],
+        "api_terms": [
+          "is_transport_polling_capable",
+          "debugfs_create_str",
+          "debugfs_create_u32",
+          "debugfs_create_bool",
+          "scmi_debugfs_counters_setup",
+          "devm_add_action_or_reset"
+        ],
+        "related_symbols": [
+          "info"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      }
+    },
+    {
+      "evidence_id": "csa_validation_path_guard_1",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/firmware/arm_scmi/driver.c",
+        "function": "scmi_debugfs_common_setup"
+      },
+      "location": {
+        "line": 2979,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "CSA validation reaches drivers/firmware/arm_scmi/driver.c:2979 in scmi_debugfs_common_setup with guards IS_ENABLED(CONFIG_ARM_SCMI_DEBUG_COUNTERS)",
+        "diagnostic_message": "",
+        "diagnostic_checker": "",
+        "state_before": [
+          "input(info)",
+          "buffer(dbg->is_atomic)",
+          "buffer(info->desc)",
+          "sinks(is_transport_polling_capable, debugfs_create_str)"
+        ],
+        "state_after": [
+          "guard(IS_ENABLED(CONFIG_ARM_SCMI_DEBUG_COUNTERS))",
+          "diagnostic(csa)"
+        ],
+        "functions": [
+          "scmi_debugfs_common_setup"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "info"
+        ],
+        "buffer_fields": [
+          "dbg->is_atomic",
+          "info->desc",
+          "dbg->name",
+          "info->atomic_threshold",
+          "dbg->type",
+          "info->tx_minfo"
+        ],
+        "call_targets": [
+          "is_transport_polling_capable",
+          "debugfs_create_str",
+          "debugfs_create_u32",
+          "debugfs_create_bool",
+          "scmi_debugfs_counters_setup",
+          "devm_add_action_or_reset"
+        ],
+        "call_edges": [],
+        "state_statements": [],
+        "source_file": "drivers/firmware/arm_scmi/driver.c",
+        "source_excerpt": "2947: \n2948: \tdbg->is_atomic = info->desc->atomic_enabled &&\n2949: \t\t\t\tis_transport_polling_capable(info->desc);\n2950: \n2951: \tdebugfs_create_str(\"instance_name\", 0400, top_dentry,\n2952: \t\t\t   (char **)&dbg->name);\n2953: \n2954: \tdebugfs_create_u32(\"atomic_threshold_us\", 0400, top_dentry,\n2955: \t\t\t   &info->atomic_threshold);\n2956: \n2957: \tdebugfs_create_str(\"type\", 0400, trans, (char **)&dbg->type);\n2958: \n2959: \tdebugfs_create_bool(\"is_atomic\", 0400, trans, &dbg->is_atomic);\n2960: \n2961: \tdebugfs_create_u32(\"max_rx_timeout_ms\", 0400, trans,\n2962: \t\t\t   (u32 *)&info->desc->max_rx_timeout_ms);\n2963: \n2964: \tdebugfs_create_u32(\"max_msg_size\", 0400, trans,\n2965: \t\t\t   (u32 *)&info->desc->max_msg_size);\n2966: \n2967: \tdebugfs_create_u32(\"tx_max_msg\", 0400, trans,\n2968: \t\t\t   (u32 *)&info->tx_minfo.max_msg);\n2969: \n2970: \tdebugfs_create_u32(\"rx_max_msg\", 0400, trans,\n2971: \t\t\t   (u32 *)&info->rx_minfo.max_msg);\n2972: \n2973: \tif (IS_ENABLED(CONFIG_ARM_SCMI_DEBUG_COUNTERS))\n2974: \t\tscmi_debugfs_counters_setup(dbg, trans);\n2975: \n2976: \tdbg->top_dentry = top_dentry;\n2977: \n2978: \tif (devm_add_action_or_reset(info->dev,\n2979: \t\t\t\t     scmi_debugfs_common_cleanup, dbg))\n2980: \t\treturn NULL;\n2981: \n2982: \treturn dbg;\n2983: }",
+        "coverage_status": "partial",
+        "guard_expr": "IS_ENABLED(CONFIG_ARM_SCMI_DEBUG_COUNTERS)",
+        "cfg_branch_kinds": [],
+        "branch_conditions": [
+          "IS_ENABLED(CONFIG_ARM_SCMI_DEBUG_COUNTERS)"
+        ]
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.72
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/firmware/arm_scmi/driver.c",
+          "hunk_index": 0,
+          "source_line": 2979
+        },
+        "summary": "CSA validation reaches drivers/firmware/arm_scmi/driver.c:2979 in scmi_debugfs_common_setup with guards IS_ENABLED(CONFIG_ARM_SCMI_DEBUG_COUNTERS)",
+        "statements": [
+          "2947:",
+          "2948: \tdbg->is_atomic = info->desc->atomic_enabled &&",
+          "2949: \t\t\t\tis_transport_polling_capable(info->desc);",
+          "2950:",
+          "2951: \tdebugfs_create_str(\"instance_name\", 0400, top_dentry,",
+          "2952: \t\t\t   (char **)&dbg->name);"
+        ],
+        "guards": [
+          "IS_ENABLED(CONFIG_ARM_SCMI_DEBUG_COUNTERS)"
+        ],
+        "call_boundary": [
+          "is_transport_polling_capable",
+          "debugfs_create_str",
+          "debugfs_create_u32",
+          "debugfs_create_bool",
+          "scmi_debugfs_counters_setup",
+          "devm_add_action_or_reset"
+        ],
+        "call_edges": [],
+        "state_transitions": [
+          "guard(IS_ENABLED(CONFIG_ARM_SCMI_DEBUG_COUNTERS))",
+          "diagnostic(csa)"
+        ],
+        "api_terms": [
+          "is_transport_polling_capable",
+          "debugfs_create_str",
+          "debugfs_create_u32",
+          "debugfs_create_bool",
+          "scmi_debugfs_counters_setup",
+          "devm_add_action_or_reset"
+        ],
+        "related_symbols": [
+          "info"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      }
+    },
+    {
+      "evidence_id": "csa_validation_state_transition_2",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/firmware/arm_scmi/driver.c",
+        "function": "scmi_debugfs_common_setup"
+      },
+      "location": {
+        "line": 2979,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "scmi_debugfs_common_setup in drivers/firmware/arm_scmi/driver.c has CSA-observed state near line 2979",
+        "diagnostic_message": "",
+        "diagnostic_checker": "",
+        "state_before": [
+          "input(info)",
+          "buffer(dbg->is_atomic)",
+          "buffer(info->desc)",
+          "sinks(is_transport_polling_capable, debugfs_create_str)"
+        ],
+        "state_after": [
+          "call(is_transport_polling_capable)",
+          "call(debugfs_create_str)"
+        ],
+        "functions": [
+          "scmi_debugfs_common_setup"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "info"
+        ],
+        "buffer_fields": [
+          "dbg->is_atomic",
+          "info->desc",
+          "dbg->name",
+          "info->atomic_threshold",
+          "dbg->type",
+          "info->tx_minfo"
+        ],
+        "call_targets": [
+          "is_transport_polling_capable",
+          "debugfs_create_str",
+          "debugfs_create_u32",
+          "debugfs_create_bool",
+          "scmi_debugfs_counters_setup",
+          "devm_add_action_or_reset"
+        ],
+        "call_edges": [],
+        "state_statements": [],
+        "source_file": "drivers/firmware/arm_scmi/driver.c",
+        "source_excerpt": "2947: \n2948: \tdbg->is_atomic = info->desc->atomic_enabled &&\n2949: \t\t\t\tis_transport_polling_capable(info->desc);\n2950: \n2951: \tdebugfs_create_str(\"instance_name\", 0400, top_dentry,\n2952: \t\t\t   (char **)&dbg->name);\n2953: \n2954: \tdebugfs_create_u32(\"atomic_threshold_us\", 0400, top_dentry,\n2955: \t\t\t   &info->atomic_threshold);\n2956: \n2957: \tdebugfs_create_str(\"type\", 0400, trans, (char **)&dbg->type);\n2958: \n2959: \tdebugfs_create_bool(\"is_atomic\", 0400, trans, &dbg->is_atomic);\n2960: \n2961: \tdebugfs_create_u32(\"max_rx_timeout_ms\", 0400, trans,\n2962: \t\t\t   (u32 *)&info->desc->max_rx_timeout_ms);\n2963: \n2964: \tdebugfs_create_u32(\"max_msg_size\", 0400, trans,\n2965: \t\t\t   (u32 *)&info->desc->max_msg_size);\n2966: \n2967: \tdebugfs_create_u32(\"tx_max_msg\", 0400, trans,\n2968: \t\t\t   (u32 *)&info->tx_minfo.max_msg);\n2969: \n2970: \tdebugfs_create_u32(\"rx_max_msg\", 0400, trans,\n2971: \t\t\t   (u32 *)&info->rx_minfo.max_msg);\n2972: \n2973: \tif (IS_ENABLED(CONFIG_ARM_SCMI_DEBUG_COUNTERS))\n2974: \t\tscmi_debugfs_counters_setup(dbg, trans);\n2975: \n2976: \tdbg->top_dentry = top_dentry;\n2977: \n2978: \tif (devm_add_action_or_reset(info->dev,\n2979: \t\t\t\t     scmi_debugfs_common_cleanup, dbg))\n2980: \t\treturn NULL;\n2981: \n2982: \treturn dbg;\n2983: }",
+        "coverage_status": "partial",
+        "cfg_branch_kinds": [],
+        "branch_conditions": [
+          "IS_ENABLED(CONFIG_ARM_SCMI_DEBUG_COUNTERS)"
+        ]
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.72
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "drivers/firmware/arm_scmi/driver.c",
+          "hunk_index": 0,
+          "source_line": 2979
+        },
+        "summary": "scmi_debugfs_common_setup in drivers/firmware/arm_scmi/driver.c has CSA-observed state near line 2979",
+        "statements": [
+          "2947:",
+          "2948: \tdbg->is_atomic = info->desc->atomic_enabled &&",
+          "2949: \t\t\t\tis_transport_polling_capable(info->desc);",
+          "2950:",
+          "2951: \tdebugfs_create_str(\"instance_name\", 0400, top_dentry,",
+          "2952: \t\t\t   (char **)&dbg->name);"
+        ],
+        "guards": [
+          "IS_ENABLED(CONFIG_ARM_SCMI_DEBUG_COUNTERS)"
+        ],
+        "call_boundary": [
+          "is_transport_polling_capable",
+          "debugfs_create_str",
+          "debugfs_create_u32",
+          "debugfs_create_bool",
+          "scmi_debugfs_counters_setup",
+          "devm_add_action_or_reset"
+        ],
+        "call_edges": [],
+        "state_transitions": [
+          "call(is_transport_polling_capable)",
+          "call(debugfs_create_str)"
+        ],
+        "api_terms": [
+          "is_transport_polling_capable",
+          "debugfs_create_str",
+          "debugfs_create_u32",
+          "debugfs_create_bool",
+          "scmi_debugfs_counters_setup",
+          "devm_add_action_or_reset"
+        ],
+        "related_symbols": [
+          "info"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      }
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_3",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/firmware/arm_scmi/driver.c",
+        "function": "scmi_debugfs_common_setup"
+      },
+      "location": {
+        "line": 2979,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "scmi_debugfs_common_setup in drivers/firmware/arm_scmi/driver.c provides CSA-backed pointer/resource lifecycle context near line 2979",
+        "diagnostic_message": "",
+        "diagnostic_checker": "",
+        "state_before": [
+          "input(info)",
+          "buffer(dbg->is_atomic)",
+          "buffer(info->desc)",
+          "sinks(is_transport_polling_capable, debugfs_create_str)"
+        ],
+        "state_after": [],
+        "functions": [
+          "scmi_debugfs_common_setup"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "info"
+        ],
+        "buffer_fields": [
+          "dbg->is_atomic",
+          "info->desc",
+          "dbg->name",
+          "info->atomic_threshold",
+          "dbg->type",
+          "info->tx_minfo"
+        ],
+        "call_targets": [
+          "is_transport_polling_capable",
+          "debugfs_create_str",
+          "debugfs_create_u32",
+          "debugfs_create_bool",
+          "scmi_debugfs_counters_setup",
+          "devm_add_action_or_reset"
+        ],
+        "call_edges": [],
+        "state_statements": [],
+        "source_file": "drivers/firmware/arm_scmi/driver.c",
+        "source_excerpt": "2947: \n2948: \tdbg->is_atomic = info->desc->atomic_enabled &&\n2949: \t\t\t\tis_transport_polling_capable(info->desc);\n2950: \n2951: \tdebugfs_create_str(\"instance_name\", 0400, top_dentry,\n2952: \t\t\t   (char **)&dbg->name);\n2953: \n2954: \tdebugfs_create_u32(\"atomic_threshold_us\", 0400, top_dentry,\n2955: \t\t\t   &info->atomic_threshold);\n2956: \n2957: \tdebugfs_create_str(\"type\", 0400, trans, (char **)&dbg->type);\n2958: \n2959: \tdebugfs_create_bool(\"is_atomic\", 0400, trans, &dbg->is_atomic);\n2960: \n2961: \tdebugfs_create_u32(\"max_rx_timeout_ms\", 0400, trans,\n2962: \t\t\t   (u32 *)&info->desc->max_rx_timeout_ms);\n2963: \n2964: \tdebugfs_create_u32(\"max_msg_size\", 0400, trans,\n2965: \t\t\t   (u32 *)&info->desc->max_msg_size);\n2966: \n2967: \tdebugfs_create_u32(\"tx_max_msg\", 0400, trans,\n2968: \t\t\t   (u32 *)&info->tx_minfo.max_msg);\n2969: \n2970: \tdebugfs_create_u32(\"rx_max_msg\", 0400, trans,\n2971: \t\t\t   (u32 *)&info->rx_minfo.max_msg);\n2972: \n2973: \tif (IS_ENABLED(CONFIG_ARM_SCMI_DEBUG_COUNTERS))\n2974: \t\tscmi_debugfs_counters_setup(dbg, trans);\n2975: \n2976: \tdbg->top_dentry = top_dentry;\n2977: \n2978: \tif (devm_add_action_or_reset(info->dev,\n2979: \t\t\t\t     scmi_debugfs_common_cleanup, dbg))\n2980: \t\treturn NULL;\n2981: \n2982: \treturn dbg;\n2983: }",
+        "coverage_status": "partial",
+        "operations": [],
+        "acquisition_ops": [],
+        "release_ops": []
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.72
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "drivers/firmware/arm_scmi/driver.c",
+          "hunk_index": 0,
+          "source_line": 2979
+        },
+        "summary": "scmi_debugfs_common_setup in drivers/firmware/arm_scmi/driver.c provides CSA-backed pointer/resource lifecycle context near line 2979",
+        "statements": [
+          "2947:",
+          "2948: \tdbg->is_atomic = info->desc->atomic_enabled &&",
+          "2949: \t\t\t\tis_transport_polling_capable(info->desc);",
+          "2950:",
+          "2951: \tdebugfs_create_str(\"instance_name\", 0400, top_dentry,",
+          "2952: \t\t\t   (char **)&dbg->name);"
+        ],
+        "guards": [
+          "IS_ENABLED(CONFIG_ARM_SCMI_DEBUG_COUNTERS)"
+        ],
+        "call_boundary": [
+          "is_transport_polling_capable",
+          "debugfs_create_str",
+          "debugfs_create_u32",
+          "debugfs_create_bool",
+          "scmi_debugfs_counters_setup",
+          "devm_add_action_or_reset"
+        ],
+        "call_edges": [],
+        "state_transitions": [],
+        "api_terms": [
+          "is_transport_polling_capable",
+          "debugfs_create_str",
+          "debugfs_create_u32",
+          "debugfs_create_bool",
+          "scmi_debugfs_counters_setup",
+          "devm_add_action_or_reset"
+        ],
+        "related_symbols": [
+          "info"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "collected_analyzers": [
+    "csa",
+    "patch"
+  ]
+}

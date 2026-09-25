@@ -1,0 +1,16 @@
+Refinment Plan:
+
+The false positive is caused by a name-only heuristic: every `unsigned int` declaration containing `sector` is reported, regardless of whether it represents an unbounded disk-sector count. `max_sectors` is instead a bounded per-key encoding limit derived from `KEY_SIZE_MAX` and rounded to `c->block_bits`; it cannot exceed the key-size representation limit.
+
+The refined checker records sector-related declarations and their uses while traversing a function body. It reports only when there is evidence of a real width mismatch:
+
+- A local sector variable is initialized from a wider integral expression, such as `trans->disk_res->sectors`.
+- A sector parameter is used in a 64-bit operation, passed to a 64-bit API parameter, or assigned from a 64-bit expression. This retains detection of the buggy `unsigned sectors` parameter in `bch2_extent_fallocate()`.
+- A `KEY_SIZE_MAX` / `block_bits` mask used for a max-like sector bound is explicitly recognized as a bounded key-encoding quantity and suppressed.
+- Format checking now associates a `%u` conversion with its actual variadic argument and warns only when that argument is both sector-related and wider than `unsigned int`.
+
+A `ProgramState` map is not appropriate here because these are declaration/type and AST-use facts, and `checkASTCodeBody()` is already invoked once per analyzed body. The visitor keeps this per-function analysis state directly.
+
+Refined Code:
+```cpp
+```

@@ -1,0 +1,10 @@
+I’ll trace `bch2_fpunch_at()` and the definitions of the key-size and sector-related types, then compare the reported declaration with the intended 32-bit-to-64-bit sector-count pattern and its feasibility.I’m checking the surrounding loop and call sites now, particularly whether `max_sectors` is a logical disk-sector quantity or a bounded key-encoding limit that is intentionally `unsigned`.- Decision: NotABug
+- Reason: `max_sectors` is not a variable intended to represent an arbitrary filesystem-wide sector count. It is a per-key maximum extent length derived from `KEY_SIZE_MAX`, which is the representational limit of a bcachefs key size. `c->block_bits` only rounds that already-bounded maximum down to a filesystem-block boundary:
+  ```c
+  max_sectors = KEY_SIZE_MAX & (~0 << c->block_bits);
+  ```
+  Let `K = KEY_SIZE_MAX` and `b = c->block_bits`. For valid block sizes, the result is `K` with its lowest `b` bits cleared, so `0 <= max_sectors <= K`. Since `KEY_SIZE_MAX` is itself bounded by the key-size encoding and fits in `unsigned`, assigning this result to `unsigned` cannot truncate or overflow. In the common `KEY_SIZE_MAX == U32_MAX` case, the maximum result is at most `2^32 - 1` (and, for `b > 0`, is actually `2^32 - 2^b`).
+
+  The surrounding function correctly keeps the actual file position/end value in 64-bit types: `end` is `u64` and `end_pos` carries that 64-bit position. `max_sectors` is only the chunking limit used to ensure each generated/deleted extent remains encodable as a single bcachefs key. Large ranges are therefore handled as multiple key-sized operations; this variable is not expected to hold the entire range length.
+
+  Consequently, changing `max_sectors` to `u64` would not permit larger key sizes, prevent an arithmetic overflow, or fix a format mismatch. It would also be inconsistent with the key-size constraint that the calculation enforces. The report superficially recognizes a name containing “sectors,” but it does not demonstrate the target pattern of a full disk-sector count being narrowed from a required 64-bit value to 32 bits.

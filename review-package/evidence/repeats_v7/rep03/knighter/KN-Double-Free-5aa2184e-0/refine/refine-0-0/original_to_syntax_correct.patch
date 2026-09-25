@@ -1,0 +1,329 @@
+--- original_code.cpp+++ syntax_correct_refine_code.cpp@@ -1,4 +1,3 @@-// /external/upstream-study/SAGEN/result-0224-bugfail-multi-o3mini/test-Double-Free-5aa2184e29081665f915594bc6de9b7fee6e4883/checkers/checker0.cpp
+ #include "clang/StaticAnalyzer/Core/BugReporter/BugReporter.h"
+ #include "clang/StaticAnalyzer/Core/BugReporter/BugType.h"
+ #include "clang/StaticAnalyzer/Checkers/Taint.h"
+@@ -16,15 +15,22 @@ #include "clang/StaticAnalyzer/Checkers/utility.h"
+ #include "clang/AST/Expr.h"
+ #include "clang/AST/ExprCXX.h"
++#include "clang/StaticAnalyzer/Core/PathSensitive/MemRegion.h"
+ 
+ using namespace clang;
+ using namespace ento;
+ using namespace taint;
+ 
+-// Register program state map to track allocated regions.
++// A value of true means that the allocation is currently live.
++// A value of false means that the allocation was already released.
+ REGISTER_MAP_WITH_PROGRAMSTATE(AllocatedRegionMap, const MemRegion *, bool)
+-// Register program state map to track pointer aliasing.
+-REGISTER_MAP_WITH_PROGRAMSTATE(PtrAliasMap, const MemRegion *, const MemRegion *)
++REGISTER_MAP_WITH_PROGRAMSTATE(AllocatedSymbolMap, SymbolRef, bool)
++
++// Maps pointer storage locations, such as variables and fields, to the region
++// currently stored in them. This is only a fallback for cases where the
++// argument SVal still refers to the storage location.
++REGISTER_MAP_WITH_PROGRAMSTATE(PtrAliasMap, const MemRegion *,
++                               const MemRegion *)
+ 
+ namespace {
+ 
+@@ -33,119 +39,203 @@   mutable std::unique_ptr<BugType> BT;
+ 
+ public:
+-  SAGenTestChecker() : BT(new BugType(this, "Incorrect free in error path")) {}
+-
+-  // Callback to track allocation calls.
++  SAGenTestChecker()
++      : BT(new BugType(this, "Incorrect free in error path")) {}
++
+   void checkPostCall(const CallEvent &Call, CheckerContext &C) const;
+-  // Callback to check free calls.
+   void checkPreCall(const CallEvent &Call, CheckerContext &C) const;
+-  // Callback to track pointer assignments (for aliasing).
+-  void checkBind(SVal Loc, SVal Val, const Stmt *S, CheckerContext &C) const;
++  void checkBind(SVal Loc, SVal Val, const Stmt *S,
++                 CheckerContext &C) const;
+ 
+ private:
+-  // Report an error for a free call that frees a pointer not marked as allocated.
+-  void reportIncorrectFree(const CallEvent &Call, CheckerContext &C,
+-                           const MemRegion *MR) const;
++  static bool isKnownAllocator(const CallEvent &Call);
++  static bool isKnownDeallocator(const CallEvent &Call);
++
++  static const MemRegion *getBaseRegion(SVal Value);
++  static const MemRegion *getTrackedRegion(SVal Value,
++                                           ProgramStateRef State);
++
++  void reportIncorrectFree(const CallEvent &Call,
++                           CheckerContext &C) const;
+ };
+ 
+-void SAGenTestChecker::checkPostCall(const CallEvent &Call, CheckerContext &C) const {
+-  // We track allocations performed by "kzalloc". When kzalloc is called,
+-  // mark the returned pointer region as allocated.
+-  const Expr *OriginExpr = Call.getOriginExpr();
+-  if (!OriginExpr)
+-    return;
+-  if (!ExprHasName(OriginExpr, "kzalloc", C))
+-    return;
+-
+-  const CallExpr *CE = dyn_cast<CallExpr>(OriginExpr);
+-  if (!CE)
+-    return;
+-
+-  const MemRegion *MR = getMemRegionFromExpr(CE, C);
+-  if (!MR)
+-    return;
+-  MR = MR->getBaseRegion();
+-  if (!MR)
+-    return;
+-
++bool SAGenTestChecker::isKnownAllocator(const CallEvent &Call) {
++  const IdentifierInfo *II = Call.getCalleeIdentifier();
++  if (!II)
++    return false;
++
++  llvm::StringRef Name = II->getName();
++
++  // Keep this list restricted to functions whose successful return value owns
++  // a dynamically allocated object that can be released by the modeled frees.
++  return Name == "kmalloc" ||
++         Name == "__kmalloc" ||
++         Name == "kzalloc" ||
++         Name == "kcalloc" ||
++         Name == "kmalloc_array" ||
++         Name == "kmalloc_node" ||
++         Name == "__kmalloc_node" ||
++         Name == "kzalloc_node" ||
++         Name == "kmemdup" ||
++         Name == "kmemdup_nul" ||
++         Name == "vmalloc" ||
++         Name == "vzalloc" ||
++         Name == "vcalloc" ||
++         Name == "kvmalloc" ||
++         Name == "kvzalloc" ||
++         Name == "kvcalloc" ||
++         Name == "kvmalloc_array" ||
++         Name == "malloc" ||
++         Name == "calloc" ||
++         Name == "realloc";
++}
++
++bool SAGenTestChecker::isKnownDeallocator(const CallEvent &Call) {
++  const IdentifierInfo *II = Call.getCalleeIdentifier();
++  if (!II)
++    return false;
++
++  llvm::StringRef Name = II->getName();
++
++  return Name == "kfree" ||
++         Name == "kfree_sensitive" ||
++         Name == "kvfree" ||
++         Name == "kvfree_sensitive" ||
++         Name == "vfree" ||
++         Name == "free";
++}
++
++const MemRegion *SAGenTestChecker::getBaseRegion(SVal Value) {
++  const MemRegion *MR = Value.getAsRegion();
++  return MR ? MR->getBaseRegion() : nullptr;
++}
++
++const MemRegion *SAGenTestChecker::getTrackedRegion(
++    SVal Value, ProgramStateRef State) {
++  const MemRegion *RawRegion = Value.getAsRegion();
++  if (!RawRegion)
++    return nullptr;
++
++  const MemRegion *BaseRegion = RawRegion->getBaseRegion();
++  if (State->get<AllocatedRegionMap>(BaseRegion))
++    return BaseRegion;
++
++  // Normally CallEvent supplies the pointee region directly. Retain this
++  // fallback for pointer storage values tracked by checkBind().
++  if (const MemRegion *const *AliasedRegion =
++          State->get<PtrAliasMap>(RawRegion))
++    return (*AliasedRegion)->getBaseRegion();
++
++  return BaseRegion;
++}
++
++void SAGenTestChecker::checkPostCall(const CallEvent &Call,
++                                     CheckerContext &C) const {
++  if (!isKnownAllocator(Call))
++    return;
++
++  SVal ReturnValue = Call.getReturnValue();
+   ProgramStateRef State = C.getState();
+-  State = State->set<AllocatedRegionMap>(MR, true);
+-  // Also record alias information
+-  State = State->set<PtrAliasMap>(MR, MR);
+-  C.addTransition(State);
+-}
+-
+-void SAGenTestChecker::checkPreCall(const CallEvent &Call, CheckerContext &C) const {
+-  // Intercept free calls performed via "kfree".
+-  const Expr *OriginExpr = Call.getOriginExpr();
+-  if (!OriginExpr)
+-    return;
+-  if (!ExprHasName(OriginExpr, "kfree", C))
+-    return;
+-
+-  // For kfree, the pointer argument is the first argument.
+-  if (Call.getNumArgs() < 1)
+-    return;
+-  SVal ArgVal = Call.getArgSVal(0);
+-  const MemRegion *MR = ArgVal.getAsRegion();
+-  if (!MR)
+-    return;
+-  MR = MR->getBaseRegion();
+-  if (!MR)
+-    return;
+-
++  bool StateChanged = false;
++
++  if (const MemRegion *MR = getBaseRegion(ReturnValue)) {
++    State = State->set<AllocatedRegionMap>(MR, true);
++    StateChanged = true;
++  }
++
++  if (SymbolRef Sym = ReturnValue.getAsSymbol()) {
++    State = State->set<AllocatedSymbolMap>(Sym, true);
++    StateChanged = true;
++  }
++
++  if (StateChanged)
++    C.addTransition(State);
++}
++
++void SAGenTestChecker::checkPreCall(const CallEvent &Call,
++                                    CheckerContext &C) const {
++  if (!isKnownDeallocator(Call) || Call.getNumArgs() == 0)
++    return;
++
++  SVal ArgValue = Call.getArgSVal(0);
+   ProgramStateRef State = C.getState();
+-  const bool *IsAllocated = State->get<AllocatedRegionMap>(MR);
+-  // If there is no record of allocation or it is marked as not allocated,
+-  // then this free is suspect.
+-  if (!IsAllocated || !(*IsAllocated)) {
+-    reportIncorrectFree(Call, C, MR);
+-    return;
+-  }
+-  // Otherwise, remove the allocation marker so that subsequent free calls on the same
+-  // pointer do not trigger false positives.
+-  State = State->remove<AllocatedRegionMap>(MR);
+-  C.addTransition(State);
+-}
+-
+-void SAGenTestChecker::checkBind(SVal Loc, SVal Val, const Stmt *S, CheckerContext &C) const {
++
++  const MemRegion *MR = getTrackedRegion(ArgValue, State);
++  SymbolRef Sym = ArgValue.getAsSymbol();
++
++  const bool *RegionStatus =
++      MR ? State->get<AllocatedRegionMap>(MR) : nullptr;
++  const bool *SymbolStatus =
++      Sym ? State->get<AllocatedSymbolMap>(Sym) : nullptr;
++
++  // A release is suspicious only when it is proven to target an allocation
++  // which this checker has already observed being released. In particular,
++  // do not report untracked pointers: they may be caller-owned or returned
++  // from a valid allocator wrapper that is not modeled here.
++  if ((RegionStatus && !*RegionStatus) ||
++      (SymbolStatus && !*SymbolStatus)) {
++    reportIncorrectFree(Call, C);
++    return;
++  }
++
++  // Record the release instead of removing the entry. Retaining the false
++  // value lets a later cleanup path prove a double/incorrect free.
++  if ((RegionStatus && *RegionStatus) ||
++      (SymbolStatus && *SymbolStatus)) {
++    if (RegionStatus)
++      State = State->set<AllocatedRegionMap>(MR, false);
++    if (SymbolStatus)
++      State = State->set<AllocatedSymbolMap>(Sym, false);
++
++    C.addTransition(State);
++  }
++}
++
++void SAGenTestChecker::checkBind(SVal Loc, SVal Val, const Stmt *S,
++                                 CheckerContext &C) const {
++  const MemRegion *StorageRegion = Loc.getAsRegion();
++  if (!StorageRegion)
++    return;
++
++  const auto *TypedRegion = dyn_cast<TypedValueRegion>(StorageRegion);
++  if (!TypedRegion || !TypedRegion->getValueType()->isPointerType())
++    return;
++
+   ProgramStateRef State = C.getState();
+-
+-  // If a pointer is assigned from one region to another, record the alias.
+-  const MemRegion *LHSReg = Loc.getAsRegion();
+-  if (!LHSReg)
+-    return;
+-  LHSReg = LHSReg->getBaseRegion();
+-  if (!LHSReg)
+-    return;
+-  
+-  if (const MemRegion *RHSReg = Val.getAsRegion()) {
+-    RHSReg = RHSReg->getBaseRegion();
+-    if (!RHSReg)
+-      return;
+-    State = State->set<PtrAliasMap>(LHSReg, RHSReg);
+-    State = State->set<PtrAliasMap>(RHSReg, LHSReg);
+-  }
+-  C.addTransition(State);
+-}
+-
+-void SAGenTestChecker::reportIncorrectFree(const CallEvent &Call, CheckerContext &C,
+-                                             const MemRegion *MR) const {
++  ProgramStateRef NewState = State;
++
++  if (const MemRegion *PointeeRegion = Val.getAsRegion()) {
++    NewState = NewState->set<PtrAliasMap>(
++        StorageRegion, PointeeRegion->getBaseRegion());
++  } else {
++    // Clear stale alias information for assignments such as "ptr = NULL".
++    NewState = NewState->remove<PtrAliasMap>(StorageRegion);
++  }
++
++  if (NewState != State)
++    C.addTransition(NewState);
++}
++
++void SAGenTestChecker::reportIncorrectFree(const CallEvent &Call,
++                                           CheckerContext &C) const {
+   ExplodedNode *N = C.generateNonFatalErrorNode();
+   if (!N)
+     return;
+-  auto report = std::make_unique<PathSensitiveBugReport>(
+-      *BT, "Incorrect free in error handling: pointer is being freed without a valid allocation", N);
+-  report->addRange(Call.getSourceRange());
+-  C.emitReport(std::move(report));
++
++  auto Report = std::make_unique<PathSensitiveBugReport>(
++      *BT,
++      "Incorrect free in error handling: allocation was already released",
++      N);
++  Report->addRange(Call.getSourceRange());
++  C.emitReport(std::move(Report));
+ }
+ 
+ } // end anonymous namespace
+ 
+-extern "C" void clang_registerCheckers(CheckerRegistry &registry) {
+-  registry.addChecker<SAGenTestChecker>(
+-      "custom.SAGenTestChecker", 
+-      "Detects cleanup paths that free unallocated resources, which may indicate a double free error",
++extern "C" void clang_registerCheckers(CheckerRegistry &Registry) {
++  Registry.addChecker<SAGenTestChecker>(
++      "custom.SAGenTestChecker",
++      "Detects cleanup paths that release a previously released allocation",
+       "");
+ }
+ 

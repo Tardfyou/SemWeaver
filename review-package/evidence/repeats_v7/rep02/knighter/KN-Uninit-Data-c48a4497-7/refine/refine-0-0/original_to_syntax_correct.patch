@@ -1,0 +1,419 @@
+--- original_code.cpp+++ syntax_correct_refine_code.cpp@@ -1,4 +1,3 @@-// /external/upstream-study/SAGEN/result-0224-bugfail-multi-o3mini/test-Uninit-Data-c48a4497356f701f94f1951626637ae240af909e/checkers/checker7.cpp
+ #include "clang/StaticAnalyzer/Core/BugReporter/BugReporter.h"
+ #include "clang/StaticAnalyzer/Core/BugReporter/BugType.h"
+ #include "clang/StaticAnalyzer/Checkers/Taint.h"
+@@ -12,6 +11,7 @@ #include "clang/StaticAnalyzer/Frontend/CheckerRegistry.h"
+ #include "clang/AST/RecursiveASTVisitor.h"
+ #include "clang/AST/StmtVisitor.h"
++#include "llvm/ADT/SmallVector.h"
+ #include "llvm/Support/raw_ostream.h"
+ #include "clang/StaticAnalyzer/Checkers/utility.h"
+ #include "clang/Lex/Lexer.h"
+@@ -20,114 +20,322 @@ using namespace ento;
+ using namespace taint;
+ 
+-// Register a program state map which stores firmware pointer regions (as obtained from request_firmware())
+-// along with a boolean flag (true if the pointer comes directly from request_firmware() and is unverified).
+-REGISTER_MAP_WITH_PROGRAMSTATE(RequestFwMap, const MemRegion*, bool)
++// Maps the firmware output-pointer storage region to the symbolic return value
++// of the request_firmware() call that initialized it.
++//
++// A null SymbolRef is retained when the analyzer cannot model the return value
++// symbolically. In that case, the checker still detects direct fw checks, but
++// cannot safely associate an arbitrary later integer variable with the call.
++REGISTER_MAP_WITH_PROGRAMSTATE(RequestFwMap, const MemRegion *, SymbolRef)
++
++// Maps a variable/field holding a request_firmware() return value to that
++// return-value symbol. This also handles simple copies such as:
++//
++//   ret = request_firmware(...);
++//   err = ret;
++//   if (err)
++REGISTER_MAP_WITH_PROGRAMSTATE(RequestFwStatusMap, const MemRegion *, SymbolRef)
+ 
+ namespace {
+ 
+-class SAGenTestChecker : public Checker< check::PostCall, check::BranchCondition > {
++static bool isRequestFirmwareCall(const CallEvent &Call) {
++  const IdentifierInfo *Callee = Call.getCalleeIdentifier();
++  return Callee && Callee->getName() == "request_firmware";
++}
++
++static const MemRegion *getTrackedRegion(const Expr *E,
++                                         CheckerContext &C) {
++  if (!E)
++    return nullptr;
++
++  // Do not use getBaseRegion() here. For output parameters such as
++  // &object->fw, reducing a FieldRegion to its base object would conflate
++  // independent firmware fields in the same object.
++  return getMemRegionFromExpr(E, C);
++}
++
++static bool isOutstandingRequestReturn(ProgramStateRef State,
++                                       SymbolRef ReturnSymbol) {
++  if (!ReturnSymbol)
++    return false;
++
++  for (const auto &Entry : State->get<RequestFwMap>()) {
++    if (Entry.second == ReturnSymbol)
++      return true;
++  }
++
++  return false;
++}
++
++static ProgramStateRef markRequestReturnAsChecked(
++    ProgramStateRef State, SymbolRef ReturnSymbol) {
++  if (!ReturnSymbol)
++    return State;
++
++  llvm::SmallVector<const MemRegion *, 4> VerifiedFirmwareRegions;
++
++  for (const auto &Entry : State->get<RequestFwMap>()) {
++    // Match the exact symbolic return value. This prevents an old return-code
++    // variable from validating a later request_firmware() call to the same fw.
++    if (Entry.second == ReturnSymbol)
++      VerifiedFirmwareRegions.push_back(Entry.first);
++  }
++
++  for (const MemRegion *FirmwareRegion : VerifiedFirmwareRegions)
++    State = State->remove<RequestFwMap>(FirmwareRegion);
++
++  return State;
++}
++
++static bool regionWasChanged(const MemRegion *TrackedRegion,
++                             ArrayRef<const MemRegion *> ExplicitRegions,
++                             ArrayRef<const MemRegion *> Regions) {
++  if (!TrackedRegion)
++    return false;
++
++  const MemRegion *TrackedBase = TrackedRegion->getBaseRegion();
++
++  auto MatchesTrackedRegion = [TrackedRegion,
++                               TrackedBase](const MemRegion *ChangedRegion) {
++    if (!ChangedRegion)
++      return false;
++
++    return ChangedRegion == TrackedRegion ||
++           ChangedRegion->getBaseRegion() == TrackedBase;
++  };
++
++  for (const MemRegion *ChangedRegion : ExplicitRegions) {
++    if (MatchesTrackedRegion(ChangedRegion))
++      return true;
++  }
++
++  for (const MemRegion *ChangedRegion : Regions) {
++    if (MatchesTrackedRegion(ChangedRegion))
++      return true;
++  }
++
++  return false;
++}
++
++// Collects expressions that participate directly in the branch condition.
++// Call arguments are deliberately not traversed: in
++//
++//   if (log_error(ret))
++//     ...
++//
++// the branch depends on log_error()'s result, not necessarily on ret itself.
++// A direct request_firmware() call is separately retained so that
++//
++//   if (request_firmware(&fw, file, dev))
++//     return;
++//
++// is recognized as a legitimate return-value check.
++class BranchConditionVisitor
++    : public RecursiveASTVisitor<BranchConditionVisitor> {
++  llvm::SmallVector<const Expr *, 16> ConditionExpressions;
++  llvm::SmallVector<const CallExpr *, 4> Calls;
++
++public:
++  bool VisitExpr(const Expr *E) {
++    ConditionExpressions.push_back(E);
++    return true;
++  }
++
++  bool TraverseCallExpr(CallExpr *CE) {
++    Calls.push_back(CE);
++
++    // Do not recursively inspect call arguments. They are not themselves
++    // necessarily values that control this branch.
++    return true;
++  }
++
++  ArrayRef<const Expr *> getConditionExpressions() const {
++    return ConditionExpressions;
++  }
++
++  ArrayRef<const CallExpr *> getCalls() const {
++    return Calls;
++  }
++};
++
++class SAGenTestChecker
++    : public Checker<check::PostCall, check::Bind,
++                     check::BranchCondition, check::RegionChanges> {
+   mutable std::unique_ptr<BugType> BT;
+ 
+ public:
+-  SAGenTestChecker() : BT(new BugType(this, "Unchecked return value of request_firmware()")) {}
+-
+-  // Callback to record the firmware pointer coming from the request_firmware() call.
++  SAGenTestChecker()
++      : BT(new BugType(this,
++                       "Unchecked return value of request_firmware()")) {}
++
+   void checkPostCall(const CallEvent &Call, CheckerContext &C) const;
+-
+-  // Callback to detect when the firmware pointer is directly checked in a branch condition.
+-  void checkBranchCondition(const Stmt *Condition, CheckerContext &C) const;
+-
+-private:
+-  // Helper function can be added here if needed.
++  void checkBind(SVal Loc, SVal Val, const Stmt *S,
++                 CheckerContext &C) const;
++  void checkBranchCondition(const Stmt *Condition,
++                            CheckerContext &C) const;
++
++  ProgramStateRef checkRegionChanges(
++      ProgramStateRef State, const InvalidatedSymbols *Invalidated,
++      ArrayRef<const MemRegion *> ExplicitRegions,
++      ArrayRef<const MemRegion *> Regions, const LocationContext *LCtx,
++      const CallEvent *Call) const;
+ };
+ 
+-void SAGenTestChecker::checkPostCall(const CallEvent &Call, CheckerContext &C) const {
++void SAGenTestChecker::checkPostCall(const CallEvent &Call,
++                                     CheckerContext &C) const {
++  if (!isRequestFirmwareCall(Call))
++    return;
++
++  const Expr *OriginExpr = Call.getOriginExpr();
++  const CallExpr *CE = dyn_cast_or_null<CallExpr>(OriginExpr);
++  if (!CE || CE->getNumArgs() < 1)
++    return;
++
++  const MemRegion *FirmwareRegion = getTrackedRegion(CE->getArg(0), C);
++  if (!FirmwareRegion)
++    return;
++
+   ProgramStateRef State = C.getState();
+ 
+-  // Check that the callee is "request_firmware" by using the origin expression.
+-  const Expr *OriginExpr = Call.getOriginExpr();
+-  if (!OriginExpr)
+-    return;
+-
+-  // Verify we are handling a call expression.
+-  const CallExpr *CE = dyn_cast<CallExpr>(OriginExpr);
+-  if (!CE)
+-    return;
+-
+-  // Check the callee's name using the origin expression.
+-  // Instead of using Call.getCalleeIdentifier() (which points to "request_firmware")
+-  // we use the utility function to be more accurate if the source text has been modified.
+-  if (!ExprHasName(OriginExpr, "request_firmware", C))
+-    return;
+-
+-  // For request_firmware(), the first parameter holds the address of a firmware pointer.
+-  if (CE->getNumArgs() < 1)
+-    return;
+-
+-  const Expr *FirstArg = CE->getArg(0);
+-  if (!FirstArg)
+-    return;
+-
+-  // Obtain the memory region corresponding to the firmware pointer.
+-  const MemRegion *MR = getMemRegionFromExpr(FirstArg, C);
+-  if (!MR)
+-    return;
+-
+-  MR = MR->getBaseRegion();
+-  if (!MR)
+-    return;
+-
+-  // Record that this memory region (the firmware pointer variable)
+-  // comes from a request_firmware() call and is currently unverified.
+-  State = State->set<RequestFwMap>(MR, true);
++  // request_firmware() returns an int. Its symbolic value is later associated
++  // with the variable receiving that result by checkBind().
++  SymbolRef ReturnSymbol = Call.getReturnValue().getAsSymbol();
++  State = State->set<RequestFwMap>(FirmwareRegion, ReturnSymbol);
++
+   C.addTransition(State);
+ }
+ 
+-void SAGenTestChecker::checkBranchCondition(const Stmt *Condition, CheckerContext &C) const {
++void SAGenTestChecker::checkBind(SVal Loc, SVal Val, const Stmt *S,
++                                 CheckerContext &C) const {
++  const MemRegion *BoundRegion = Loc.getAsRegion();
++  if (!BoundRegion)
++    return;
++
+   ProgramStateRef State = C.getState();
+ 
+-  // Search downward in the condition expression for a DeclRefExpr.
+-  // This gives us the pointer variable being tested.
+-  const DeclRefExpr *DRE = findSpecificTypeInChildren<DeclRefExpr>(Condition);
+-  if (!DRE)
+-    return;
+-
+-  // Obtain the memory region corresponding to the pointed variable.
+-  const MemRegion *MR = getMemRegionFromExpr(DRE, C);
+-  if (!MR)
+-    return;
+-
+-  MR = MR->getBaseRegion();
+-  if (!MR)
+-    return;
+-
+-  // If the region was recorded as the firmware pointer from request_firmware,
+-  // then this branch is checking the firmware pointer directly.
+-  const bool *Unverified = State->get<RequestFwMap>(MR);
+-  if (Unverified && *Unverified) {
+-    // Create a non-fatal error node to report the bug.
+-    ExplodedNode *N = C.generateNonFatalErrorNode();
+-    if (!N)
+-      return;
+-
+-    auto Report = std::make_unique<PathSensitiveBugReport>(
+-        *BT, "Unchecked return value of request_firmware(): firmware pointer used in condition", N);
+-    Report->addRange(Condition->getSourceRange());
+-    C.emitReport(std::move(Report));
+-
+-    // Optionally, one might clear the entry to avoid duplicate reports.
+-    State = State->remove<RequestFwMap>(MR);
+-  }
+-  C.addTransition(State);
++  // Any assignment invalidates the previous relationship for this variable.
++  // This prevents stale mappings after, for example, "ret = other_call();".
++  ProgramStateRef NewState = State->remove<RequestFwStatusMap>(BoundRegion);
++
++  SymbolRef BoundSymbol = Val.getAsSymbol();
++  if (BoundSymbol && isOutstandingRequestReturn(State, BoundSymbol)) {
++    NewState = NewState->set<RequestFwStatusMap>(BoundRegion, BoundSymbol);
++  }
++
++  if (NewState != State)
++    C.addTransition(NewState);
++}
++
++void SAGenTestChecker::checkBranchCondition(const Stmt *Condition,
++                                            CheckerContext &C) const {
++  if (!Condition)
++    return;
++
++  ProgramStateRef State = C.getState();
++  ProgramStateRef NewState = State;
++
++  BranchConditionVisitor Visitor;
++  Visitor.TraverseStmt(const_cast<Stmt *>(Condition));
++
++  // First recognize checks of a variable that received request_firmware()'s
++  // return value, including comparisons such as "ret == 0" and "!ret".
++  for (const Expr *E : Visitor.getConditionExpressions()) {
++    const MemRegion *Region = getTrackedRegion(E, C);
++    if (!Region)
++      continue;
++
++    if (const SymbolRef *ReturnSymbol =
++            State->get<RequestFwStatusMap>(Region)) {
++      NewState = markRequestReturnAsChecked(NewState, *ReturnSymbol);
++    }
++  }
++
++  // Also support a direct return-value test:
++  //
++  //   if (request_firmware(&fw, file, dev))
++  //     return;
++  //
++  // Only a CallExpr whose result is exactly the pending request return value
++  // can clear the pending firmware entry.
++  for (const CallExpr *CE : Visitor.getCalls()) {
++    SVal CallResult = State->getSVal(CE, C.getLocationContext());
++    NewState =
++        markRequestReturnAsChecked(NewState, CallResult.getAsSymbol());
++  }
++
++  // A firmware pointer remains reportable only when no condition has checked
++  // the associated request_firmware() status result.
++  const MemRegion *UncheckedFirmwareRegion = nullptr;
++
++  for (const Expr *E : Visitor.getConditionExpressions()) {
++    const MemRegion *Region = getTrackedRegion(E, C);
++    if (!Region)
++      continue;
++
++    if (NewState->get<RequestFwMap>(Region)) {
++      UncheckedFirmwareRegion = Region;
++      break;
++    }
++  }
++
++  if (!UncheckedFirmwareRegion) {
++    if (NewState != State)
++      C.addTransition(NewState);
++    return;
++  }
++
++  // Remove the entry on the reporting node to avoid duplicate reports on
++  // subsequent branch-condition callbacks along the same path.
++  NewState = NewState->remove<RequestFwMap>(UncheckedFirmwareRegion);
++
++  ExplodedNode *N = C.generateNonFatalErrorNode(NewState);
++  if (!N)
++    return;
++
++  auto Report = std::make_unique<PathSensitiveBugReport>(
++      *BT,
++      "Unchecked return value of request_firmware(): "
++      "firmware pointer used in condition",
++      N);
++  Report->addRange(Condition->getSourceRange());
++  C.emitReport(std::move(Report));
++}
++
++ProgramStateRef SAGenTestChecker::checkRegionChanges(
++    ProgramStateRef State, const InvalidatedSymbols *Invalidated,
++    ArrayRef<const MemRegion *> ExplicitRegions,
++    ArrayRef<const MemRegion *> Regions, const LocationContext *LCtx,
++    const CallEvent *Call) const {
++  ProgramStateRef NewState = State;
++
++  llvm::SmallVector<const MemRegion *, 8> FirmwareRegionsToRemove;
++  for (const auto &Entry : State->get<RequestFwMap>()) {
++    if (regionWasChanged(Entry.first, ExplicitRegions, Regions))
++      FirmwareRegionsToRemove.push_back(Entry.first);
++  }
++
++  for (const MemRegion *Region : FirmwareRegionsToRemove)
++    NewState = NewState->remove<RequestFwMap>(Region);
++
++  llvm::SmallVector<const MemRegion *, 8> StatusRegionsToRemove;
++  for (const auto &Entry : State->get<RequestFwStatusMap>()) {
++    if (regionWasChanged(Entry.first, ExplicitRegions, Regions))
++      StatusRegionsToRemove.push_back(Entry.first);
++  }
++
++  for (const MemRegion *Region : StatusRegionsToRemove)
++    NewState = NewState->remove<RequestFwStatusMap>(Region);
++
++  return NewState;
+ }
+ 
+ } // end anonymous namespace
+ 
+ extern "C" void clang_registerCheckers(CheckerRegistry &registry) {
+   registry.addChecker<SAGenTestChecker>(
+-      "custom.SAGenTestChecker", 
+-      "Detects when the firmware pointer returned by request_firmware() is directly checked instead of verifying its error code",
++      "custom.SAGenTestChecker",
++      "Detects direct firmware-pointer checks after request_firmware() "
++      "without checking its return code",
+       "");
+ }
+ 

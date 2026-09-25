@@ -1,0 +1,54 @@
+This appendix collects the detailed refinement procedure and the per-sample E1 results summarized in Sections~\ref{sec:approach} and~\ref{sec:results}.
+
+\begin{algorithm}[t]
+\caption{Target-Preserving Evidence-Guided Refinement}
+\label{alg:evidence-guided-refinement-appendix}
+\begin{algorithmic}[1]
+\Require detector $D$, patch $P$, source $S$, scope $V$, backends $A$, budget $K$
+\Ensure refined detector $D^*$ and audit report
+\State $D_0,R_0 \gets \Call{Rehydrate}{D,V}$
+\State $E_p,E_s \gets \Call{Preflight}{P},\ \Call{ExtractSource}{P,S}$
+\State $E_a \gets \textstyle\bigcup_{a\in A}\Call{CollectNative}{a,D_0,P,S}$ \quad $E_v \gets \Call{Feedback}{R_0}$
+\State $B \gets \Call{NormalizeMerge}{E_p,E_s,E_a,E_v}$
+\If{$\Call{PDS}{D_0,P,V}$}
+  \State \Return $\Call{Audit}{D_0,B}$
+\EndIf
+\State $D^* \gets D_0$
+\For{$i=1$ to $K$}
+  \State $Q_i \gets \Call{AgentSelect}{B}$ \quad $V_i \gets \Call{View}{B,Q_i}$
+  \State $C_i \gets \Call{AgentEdit}{D^*,P,V_i}$ \quad $R_i \gets \Call{Validate}{C_i,P,V}$
+  \If{$\Call{Changed}{C_i,D^*} \land \Call{AnalyzerOK}{R_i} \land \Call{PDS}{C_i,P,V}$}
+    \State $D^* \gets C_i$ \quad \textbf{break if} $\Call{AgentStop}{C_i}$
+  \Else
+    \State $E_i \gets \Call{Feedback}{R_i}$ \quad $B \gets \Call{Merge}{B,E_i}$
+  \EndIf
+\EndFor
+\State \Return $\Call{Audit}{D^*,B}$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{table}[t]
+  \centering
+  \scriptsize
+  \setlength{\tabcolsep}{4pt}
+  \caption{Per-sample E1 results on KNighter-derived CSA checkers.  $V/F$ are strict patch-local vulnerable-/fixed-side object alert counts. Refinement targets $V{>}0,\,F{=}0$.  IDs are commit prefixes (full mapping in the artifact).  $^\dagger$validity loss means fixed-side silent but vulnerable hit lost.}
+  \label{tab:e1-persample}
+  \begin{tabular}{@{}llrrc@{}}
+    \toprule
+    ID & Bug type & Base $V/F$ & Refined $V/F$ & Result \\
+    \midrule
+    \texttt{3027e7b1} & Null deref  & $19/2$ & $16/0$ & PDS \\
+    \texttt{c48a4497} & Uninit.     & $2/1$  & $1/0$  & PDS \\
+    \texttt{5aa2184e} & Double free & $10/9$ & $1/0$  & PDS \\
+    \texttt{768f17fd} & Int.\ ovf.  & $8/6$  & $2/0$  & PDS \\
+    \texttt{df94cb2e} & Int.\ ovf.  & $6/5$  & $2/0$  & PDS \\
+    \texttt{f503ae90} & Null deref  & $5/3$  & $2/0$  & PDS \\
+    \texttt{c3d74960} & OOB         & $5/4$  & $2/0$  & PDS \\
+    \texttt{39b13dce} & Double free & $2/1$  & $0/0$  & \emph{loss}$^\dagger$ \\
+    \texttt{d8c56174} & Double free & $2/1$  & $1/0$  & PDS \\
+    \texttt{13e788de} & OOB         & $2/1$  & $1/0$  & PDS \\
+    \texttt{61c43780} & Misuse      & $2/1$  & $1/0$  & PDS \\
+    \texttt{eaa03486} & Uninit.     & $5/3$  & $1/0$  & PDS \\
+    \bottomrule
+  \end{tabular}
+\end{table}

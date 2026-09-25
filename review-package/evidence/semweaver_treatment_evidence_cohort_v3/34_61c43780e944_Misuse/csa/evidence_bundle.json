@@ -1,0 +1,633 @@
+{
+  "records": [
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/devlink/port.c",
+        "function": "devlink_nl_port_get_dump_one"
+      },
+      "location": {
+        "line": 586,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "break;",
+        "summary": "Analyzer CFG for devlink_nl_port_get_dump_one in net/devlink/port.c: bindings: err = devlink_nl_port_fill (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct sk_buff *, struct devlink_port *, enum devlink_command, u32, u32, int, struct netlink_ext_ack *))(msg (ImplicitCastExpr, LValueToRValue, struct sk_buff *), devlink_port (ImplicitCastExpr, LValueToRValue, struct devlink_port *), DEVLINK_CMD_NEW (ImplicitCastExpr, IntegralCast, enum devlink_command), (*(struct netlink_skb_parms *)&(([B4.11]) (ImplicitCastExpr, LValueToRValue, struct sk_buff *)->cb) (CStyleCastExpr, BitCast, struct netlink_skb_parms *)).portid (ImplicitCastExpr, LValueToRValue, __u32), cb (ImplicitCastExpr, LValueToRValue, struct netlink_callback *)->nlh (ImplicitCastExpr, LValueToRValue, const struct nlmsghdr *)->nlmsg_seq (ImplicitCastExpr, LValueToRValue, __u32), flags (ImplicitCastExpr, LValueToRValue, int), cb (ImplicitCastExpr, LValueToRValue, struct netlink_callback *)->extack (ImplicitCastExpr, LValueToRValue, struct netlink_ext_ack *)); struct devlink_nl_dump_state *state = devlink_dump_state(cb); | branches: break;; if err (ImplicitCastExpr, LValueToRValue, int) | calls: devlink_nl_port_get_dump_one -> devlink_dump_state; devlink_nl_port_get_dump_one -> xa_find",
+        "state_before": [
+          "buffer(info->user_ptr)",
+          "buffer(info->snd_portid)",
+          "sinks(nlmsg_new, devlink_nl_port_fill)"
+        ],
+        "state_after": [
+          "cfg_binding(err = devlink_nl_port_fill (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct sk_buff *, struct devlink_port *, enum devlink_command, u32, u32, int, struct netlink_ext_ack *))(msg (ImplicitCastExpr, LValueToRValue, struct sk_buff *), devlink_port (ImplicitCastExpr, LValueToRValue, struct devlink_port *), DEVLINK_CMD_NEW (ImplicitCastExpr, IntegralCast, enum devlink_command), (*(struct netlink_skb_parms *)&(([B4.11]) (ImplicitCastExpr, LValueToRValue, struct sk_buff *)->cb) (CStyleCastExpr, BitCast, struct netlink_skb_parms *)).portid (ImplicitCastExpr, LValueToRValue, __u32), cb (ImplicitCastExpr, LValueToRValue, struct netlink_callback *)->nlh (ImplicitCastExpr, LValueToRValue, const struct nlmsghdr *)->nlmsg_seq (ImplicitCastExpr, LValueToRValue, __u32), flags (ImplicitCastExpr, LValueToRValue, int), cb (ImplicitCastExpr, LValueToRValue, struct netlink_callback *)->extack (ImplicitCastExpr, LValueToRValue, struct netlink_ext_ack *)))",
+          "cfg_binding(struct devlink_nl_dump_state *state = devlink_dump_state(cb);)",
+          "cfg_branch(break;)",
+          "cfg_branch(if err (ImplicitCastExpr, LValueToRValue, int))"
+        ],
+        "functions": [
+          "devlink_nl_port_get_dump_one"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "info->user_ptr",
+          "info->snd_portid",
+          "info->snd_seq",
+          "info->extack",
+          "devlink->ports",
+          "state->idx"
+        ],
+        "buffer_fields": [
+          "info->user_ptr",
+          "info->snd_portid",
+          "info->snd_seq",
+          "info->extack",
+          "devlink->ports",
+          "state->idx"
+        ],
+        "call_targets": [
+          "nlmsg_new",
+          "devlink_nl_port_fill",
+          "nlmsg_free",
+          "genlmsg_reply",
+          "devlink_nl_port_get_dump_one",
+          "devlink_dump_state",
+          "devlink_nl_dumpit",
+          "devlink_port_type_set"
+        ],
+        "call_edges": [
+          "devlink_nl_port_get_dump_one -> devlink_dump_state",
+          "devlink_nl_port_get_dump_one -> xa_find",
+          "devlink_nl_port_get_dump_one -> xa_find_after",
+          "devlink_nl_port_get_dump_one -> devlink_nl_port_fill"
+        ],
+        "cfg_branch_kinds": [
+          "if",
+          "for"
+        ],
+        "branch_conditions": [
+          "break;",
+          "if [B4.35]",
+          "for (...; [B5.2]; ...)"
+        ],
+        "resolved_branch_conditions": [
+          "break;",
+          "if err (ImplicitCastExpr, LValueToRValue, int)",
+          "for (...; devlink_port (ImplicitCastExpr, LValueToRValue, struct devlink_port *); ...)"
+        ],
+        "cfg_value_bindings": [
+          "err = devlink_nl_port_fill (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct sk_buff *, struct devlink_port *, enum devlink_command, u32, u32, int, struct netlink_ext_ack *))(msg (ImplicitCastExpr, LValueToRValue, struct sk_buff *), devlink_port (ImplicitCastExpr, LValueToRValue, struct devlink_port *), DEVLINK_CMD_NEW (ImplicitCastExpr, IntegralCast, enum devlink_command), (*(struct netlink_skb_parms *)&(([B4.11]) (ImplicitCastExpr, LValueToRValue, struct sk_buff *)->cb) (CStyleCastExpr, BitCast, struct netlink_skb_parms *)).portid (ImplicitCastExpr, LValueToRValue, __u32), cb (ImplicitCastExpr, LValueToRValue, struct netlink_callback *)->nlh (ImplicitCastExpr, LValueToRValue, const struct nlmsghdr *)->nlmsg_seq (ImplicitCastExpr, LValueToRValue, __u32), flags (ImplicitCastExpr, LValueToRValue, int), cb (ImplicitCastExpr, LValueToRValue, struct netlink_callback *)->extack (ImplicitCastExpr, LValueToRValue, struct netlink_ext_ack *))",
+          "struct devlink_nl_dump_state *state = devlink_dump_state(cb);",
+          "int err = 0;",
+          "state (ImplicitCastExpr, LValueToRValue, struct devlink_nl_dump_state *)->idx = port_index (ImplicitCastExpr, LValueToRValue, unsigned long) (ImplicitCastExpr, IntegralCast, int)",
+          "port_index = state (ImplicitCastExpr, LValueToRValue, struct devlink_nl_dump_state *)->idx (ImplicitCastExpr, LValueToRValue, int) (ImplicitCastExpr, IntegralCast, unsigned long)",
+          "devlink_port = xa_find (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(struct xarray *, unsigned long *, unsigned long, xa_mark_t))(&devlink (ImplicitCastExpr, LValueToRValue, struct devlink *)->ports, &port_index, (~0UL), ((xa_mark_t)8U (CStyleCastExpr, NoOp, xa_mark_t))) (ImplicitCastExpr, BitCast, struct devlink_port *)"
+        ],
+        "state_statements": [
+          "return [B1.2];",
+          "[B2.4]->ports",
+          "[B2.15] = [B2.14]",
+          "[B3.5]->idx",
+          "[B3.6] = [B3.3]",
+          "[B4.10]->skb"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,net/devlink/.port.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/uapi -I./arch/x86/includ...",
+        "source_file": "net/devlink/port.c",
+        "source_excerpt": "554: int devlink_nl_port_get_doit(struct sk_buff *skb, struct genl_info *info)\n555: {\n556: \tstruct devlink_port *devlink_port = info->user_ptr[1];\n557: \tstruct sk_buff *msg;\n558: \tint err;\n559: \n560: \tmsg = nlmsg_new(NLMSG_DEFAULT_SIZE, GFP_KERNEL);\n561: \tif (!msg)\n562: \t\treturn -ENOMEM;\n563: \n564: \terr = devlink_nl_port_fill(msg, devlink_port, DEVLINK_CMD_PORT_NEW,\n565: \t\t\t\t   info->snd_portid, info->snd_seq, 0,\n566: \t\t\t\t   info->extack);\n567: \tif (err) {\n568: \t\tnlmsg_free(msg);\n569: \t\treturn err;\n570: \t}\n571: \n572: \treturn genlmsg_reply(msg, info);\n573: }\n574: \n575: static int\n576: devlink_nl_port_get_dump_one(struct sk_buff *msg, struct devlink *devlink,\n577: \t\t\t     struct netlink_callback *cb, int flags)\n578: {\n579: \tstruct devlink_nl_dump_state *state = devlink_dump_state(cb);\n580: \tstruct devlink_port *devlink_port;\n581: \tunsigned long port_index;\n582: \tint err = 0;\n583: \n584: \txa_for_each_start(&devlink->ports, port_index, devlink_port, state->idx) {\n585: \t\terr = devlink_nl_port_fill(msg, devlink_port,\n586: \t\t\t\t\t   DEVLINK_CMD_NEW,\n587: \t\t\t\t\t   NETLINK_CB(cb->skb).portid,\n588: \t\t\t\t\t   cb->nlh->nlmsg_seq, flags,\n589: \t\t\t\t\t   cb->extack);\n590: \t\tif (err) {\n591: \t\t\tstate->idx = port_index;\n592: \t\t\tbreak;\n593: \t\t}\n594: \t}\n595: \n596: \treturn err;\n597: }\n598: \n599: int devlink_nl_port_get_dumpit(struct sk_buff *skb, struct netlink_callback *cb)\n600: {\n601: \treturn devlink_nl_dumpit(skb, cb, devlink_nl_port_get_dump_one);\n602: }\n603: \n604: static int devlink_port_type_set(struct devlink_port *devlink_port,\n605: \t\t\t\t enum devlink_port_type port_type)\n606: \n607: {\n608: \tint err;\n609: \n610: \tif (!devlink_port->ops->port_type_set)\n611: \t\treturn -EOPNOTSUPP;\n612: \n613: \tif (port_type == devlink_port->type)\n614: \t\treturn 0;\n615: \n616: \terr = devlink_port->ops->port_type_set(devlink_port, port_type);\n617: \tif (err)\n618: \t\treturn err;",
+        "summary_line": 586,
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/semweaver_treatment_evidence_cohort_v3/34_61c43780e944_Misuse/csa/patchweaver_runtime/csa_raw/net-devlink-port.c-devlink_nl_port_get_dump_one.txt",
+        "raw_output_sha256": "2a300dea84dfac7ccf83e606c7eb56c229c1317ef25815b8433a86e332ddbb70",
+        "command_sha256": "84c29a69e4936b551eb61c7001acea440881896f69ae57bfe98b8160b6e92c6a"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:debug-cfg",
+        "confidence": 0.92,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "net/devlink/port.c",
+          "hunk_index": 0,
+          "source_line": 586
+        },
+        "summary": "Analyzer CFG for devlink_nl_port_get_dump_one in net/devlink/port.c: bindings: err = devlink_nl_port_fill (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct sk_buff *, struct devlink_port *, enum devlink_command, u32, u32, int, struct netlink_ext_ack *))(msg (ImplicitCastExpr, LValueToRValue, struct sk_buff *), devlink_port (ImplicitCastExpr, LValueToRValue, struct devlink_port *), DEVLINK_CMD_NEW (ImplicitCastExpr, IntegralCast, enum devlink_command), (*(struct netlink_skb_parms *)&(([B4.11]) (ImplicitCastExpr, LValueToRValue, struct sk_buff *)->cb) (CStyleCastExpr, BitCast, struct netlink_skb_parms *)).portid (ImplicitCastExpr, LValueToRValue, __u32), cb (ImplicitCastExpr, LValueToRValue, struct netlink_callback *)->nlh (ImplicitCastExpr, LValueToRValue, const struct nlmsghdr *)->nlmsg_seq (ImplicitCastExpr, LValueToRValue, __u32), flags (ImplicitCastExpr, LValueToRValue, int), cb (ImplicitCastExpr, LValueToRValue, struct netlink_callback *)->extack (ImplicitCastExpr, LValueToRValue, struct netlink_ext_ack *)); struct devlink_nl_dump_state *state = devlink_dump_state(cb); | branches: break;; if err (ImplicitCastExpr, LValueToRValue, int) | calls: devlink_nl_port_get_dump_one -> devlink_dump_state; devlink_nl_port_get_dump_one -> xa_find",
+        "statements": [
+          "554: int devlink_nl_port_get_doit(struct sk_buff *skb, struct genl_info *info)",
+          "555: {",
+          "556: \tstruct devlink_port *devlink_port = info->user_ptr[1];",
+          "557: \tstruct sk_buff *msg;",
+          "558: \tint err;",
+          "559:"
+        ],
+        "guards": [
+          "break;",
+          "if err (ImplicitCastExpr, LValueToRValue, int)",
+          "for (...; devlink_port (ImplicitCastExpr, LValueToRValue, struct devlink_port *); ...)",
+          "if [B4.35]"
+        ],
+        "call_boundary": [
+          "nlmsg_new",
+          "devlink_nl_port_fill",
+          "nlmsg_free",
+          "genlmsg_reply",
+          "devlink_nl_port_get_dump_one",
+          "devlink_dump_state"
+        ],
+        "call_edges": [
+          "devlink_nl_port_get_dump_one -> devlink_dump_state",
+          "devlink_nl_port_get_dump_one -> xa_find",
+          "devlink_nl_port_get_dump_one -> xa_find_after",
+          "devlink_nl_port_get_dump_one -> devlink_nl_port_fill"
+        ],
+        "state_transitions": [
+          "cfg_binding(err = devlink_nl_port_fill (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct sk_buff *, struct devlink_port *, enum devlink_command, u32, u32, int, struct netlink_ext_ack *))(msg (ImplicitCastExpr, LValueToRValue, struct sk_buff *), devlink_port (ImplicitCastExpr, LValueToRValue, struct devlink_port *), DEVLINK_CMD_NEW (ImplicitCastExpr, IntegralCast, enum devlink_command), (*(struct netlink_skb_parms *)&(([B4.11]) (ImplicitCastExpr, LValueToRValue, struct sk_buff *)->cb) (CStyleCastExpr, BitCast, struct netlink_skb_parms *)).portid (ImplicitCastExpr, LValueToRValue, __u32), cb (ImplicitCastExpr, LValueToRValue, struct netlink_callback *)->nlh (ImplicitCastExpr, LValueToRValue, const struct nlmsghdr *)->nlmsg_seq (ImplicitCastExpr, LValueToRValue, __u32), flags (ImplicitCastExpr, LValueToRValue, int), cb (ImplicitCastExpr, LValueToRValue, struct netlink_callback *)->extack (ImplicitCastExpr, LValueToRValue, struct netlink_ext_ack *)))",
+          "cfg_binding(struct devlink_nl_dump_state *state = devlink_dump_state(cb);)",
+          "cfg_branch(break;)",
+          "cfg_branch(if err (ImplicitCastExpr, LValueToRValue, int))",
+          "return [B1.2];",
+          "[B2.4]->ports"
+        ],
+        "api_terms": [
+          "devlink_dump_state",
+          "xa_find",
+          "xa_find_after",
+          "devlink_nl_port_fill"
+        ],
+        "related_symbols": [
+          "info->user_ptr",
+          "info->snd_portid",
+          "info->snd_seq",
+          "info->extack",
+          "devlink->ports",
+          "state->idx"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/devlink/port.c",
+        "function": "devlink_nl_port_get_dump_one"
+      },
+      "location": {
+        "line": 586,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "devlink_nl_port_get_dump_one in net/devlink/port.c: cfg_calls=devlink_nl_port_get_dump_one -> devlink_dump_state; devlink_nl_port_get_dump_one -> xa_find",
+        "state_before": [
+          "buffer(info->user_ptr)",
+          "buffer(info->snd_portid)",
+          "sinks(nlmsg_new, devlink_nl_port_fill)"
+        ],
+        "state_after": [
+          "transition(return [B1.2];)",
+          "transition([B2.4]->ports)",
+          "transition([B2.15] = [B2.14])"
+        ],
+        "functions": [
+          "devlink_nl_port_get_dump_one"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "info->user_ptr",
+          "info->snd_portid",
+          "info->snd_seq",
+          "info->extack",
+          "devlink->ports",
+          "state->idx"
+        ],
+        "buffer_fields": [
+          "info->user_ptr",
+          "info->snd_portid",
+          "info->snd_seq",
+          "info->extack",
+          "devlink->ports",
+          "state->idx"
+        ],
+        "call_targets": [
+          "nlmsg_new",
+          "devlink_nl_port_fill",
+          "nlmsg_free",
+          "genlmsg_reply",
+          "devlink_nl_port_get_dump_one",
+          "devlink_dump_state",
+          "devlink_nl_dumpit",
+          "devlink_port_type_set"
+        ],
+        "call_edges": [
+          "devlink_nl_port_get_dump_one -> devlink_dump_state",
+          "devlink_nl_port_get_dump_one -> xa_find",
+          "devlink_nl_port_get_dump_one -> xa_find_after",
+          "devlink_nl_port_get_dump_one -> devlink_nl_port_fill"
+        ],
+        "cfg_branch_kinds": [
+          "if",
+          "for"
+        ],
+        "branch_conditions": [
+          "break;",
+          "if [B4.35]",
+          "for (...; [B5.2]; ...)"
+        ],
+        "state_statements": [
+          "return [B1.2];",
+          "[B2.4]->ports",
+          "[B2.15] = [B2.14]",
+          "[B3.5]->idx",
+          "[B3.6] = [B3.3]",
+          "[B4.10]->skb",
+          "[B4.12]->cb",
+          "[B4.20]->nlh"
+        ],
+        "return_statements": [
+          "return [B1.2];"
+        ],
+        "source_file": "net/devlink/port.c",
+        "source_excerpt": "554: int devlink_nl_port_get_doit(struct sk_buff *skb, struct genl_info *info)\n555: {\n556: \tstruct devlink_port *devlink_port = info->user_ptr[1];\n557: \tstruct sk_buff *msg;\n558: \tint err;\n559: \n560: \tmsg = nlmsg_new(NLMSG_DEFAULT_SIZE, GFP_KERNEL);\n561: \tif (!msg)\n562: \t\treturn -ENOMEM;\n563: \n564: \terr = devlink_nl_port_fill(msg, devlink_port, DEVLINK_CMD_PORT_NEW,\n565: \t\t\t\t   info->snd_portid, info->snd_seq, 0,\n566: \t\t\t\t   info->extack);\n567: \tif (err) {\n568: \t\tnlmsg_free(msg);\n569: \t\treturn err;\n570: \t}\n571: \n572: \treturn genlmsg_reply(msg, info);\n573: }\n574: \n575: static int\n576: devlink_nl_port_get_dump_one(struct sk_buff *msg, struct devlink *devlink,\n577: \t\t\t     struct netlink_callback *cb, int flags)\n578: {\n579: \tstruct devlink_nl_dump_state *state = devlink_dump_state(cb);\n580: \tstruct devlink_port *devlink_port;\n581: \tunsigned long port_index;\n582: \tint err = 0;\n583: \n584: \txa_for_each_start(&devlink->ports, port_index, devlink_port, state->idx) {\n585: \t\terr = devlink_nl_port_fill(msg, devlink_port,\n586: \t\t\t\t\t   DEVLINK_CMD_NEW,\n587: \t\t\t\t\t   NETLINK_CB(cb->skb).portid,\n588: \t\t\t\t\t   cb->nlh->nlmsg_seq, flags,\n589: \t\t\t\t\t   cb->extack);\n590: \t\tif (err) {\n591: \t\t\tstate->idx = port_index;\n592: \t\t\tbreak;\n593: \t\t}\n594: \t}\n595: \n596: \treturn err;\n597: }\n598: \n599: int devlink_nl_port_get_dumpit(struct sk_buff *skb, struct netlink_callback *cb)\n600: {\n601: \treturn devlink_nl_dumpit(skb, cb, devlink_nl_port_get_dump_one);\n602: }\n603: \n604: static int devlink_port_type_set(struct devlink_port *devlink_port,\n605: \t\t\t\t enum devlink_port_type port_type)\n606: \n607: {\n608: \tint err;\n609: \n610: \tif (!devlink_port->ops->port_type_set)\n611: \t\treturn -EOPNOTSUPP;\n612: \n613: \tif (port_type == devlink_port->type)\n614: \t\treturn 0;\n615: \n616: \terr = devlink_port->ops->port_type_set(devlink_port, port_type);\n617: \tif (err)\n618: \t\treturn err;",
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/semweaver_treatment_evidence_cohort_v3/34_61c43780e944_Misuse/csa/patchweaver_runtime/csa_raw/net-devlink-port.c-devlink_nl_port_get_dump_one.txt",
+        "raw_output_sha256": "2a300dea84dfac7ccf83e606c7eb56c229c1317ef25815b8433a86e332ddbb70",
+        "command_sha256": "84c29a69e4936b551eb61c7001acea440881896f69ae57bfe98b8160b6e92c6a"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:symbolic-state",
+        "confidence": 0.88,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "net/devlink/port.c",
+          "hunk_index": 0,
+          "source_line": 586
+        },
+        "summary": "devlink_nl_port_get_dump_one in net/devlink/port.c: cfg_calls=devlink_nl_port_get_dump_one -> devlink_dump_state; devlink_nl_port_get_dump_one -> xa_find",
+        "statements": [
+          "554: int devlink_nl_port_get_doit(struct sk_buff *skb, struct genl_info *info)",
+          "555: {",
+          "556: \tstruct devlink_port *devlink_port = info->user_ptr[1];",
+          "557: \tstruct sk_buff *msg;",
+          "558: \tint err;",
+          "559:"
+        ],
+        "guards": [
+          "break;",
+          "if [B4.35]",
+          "for (...; [B5.2]; ...)"
+        ],
+        "call_boundary": [
+          "nlmsg_new",
+          "devlink_nl_port_fill",
+          "nlmsg_free",
+          "genlmsg_reply",
+          "devlink_nl_port_get_dump_one",
+          "devlink_dump_state"
+        ],
+        "call_edges": [
+          "devlink_nl_port_get_dump_one -> devlink_dump_state",
+          "devlink_nl_port_get_dump_one -> xa_find",
+          "devlink_nl_port_get_dump_one -> xa_find_after",
+          "devlink_nl_port_get_dump_one -> devlink_nl_port_fill"
+        ],
+        "state_transitions": [
+          "transition(return [B1.2];)",
+          "transition([B2.4]->ports)",
+          "transition([B2.15] = [B2.14])",
+          "return [B1.2];",
+          "[B2.4]->ports",
+          "[B2.15] = [B2.14]"
+        ],
+        "api_terms": [
+          "devlink_dump_state",
+          "xa_find",
+          "xa_find_after",
+          "devlink_nl_port_fill"
+        ],
+        "related_symbols": [
+          "info->user_ptr",
+          "info->snd_portid",
+          "info->snd_seq",
+          "info->extack",
+          "devlink->ports",
+          "state->idx"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_validation_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/devlink/port.c",
+        "function": "devlink_nl_port_get_dump_one"
+      },
+      "location": {
+        "line": 586,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at net/devlink/port.c:586",
+        "diagnostic_message": "",
+        "diagnostic_checker": "",
+        "state_before": [
+          "buffer(info->user_ptr)",
+          "buffer(info->snd_portid)",
+          "sinks(nlmsg_new, devlink_nl_port_fill)"
+        ],
+        "state_after": [
+          "diagnostic(csa)"
+        ],
+        "functions": [
+          "devlink_nl_port_get_dump_one"
+        ],
+        "globals": [],
+        "tracked_symbols": [],
+        "buffer_fields": [
+          "info->user_ptr",
+          "info->snd_portid",
+          "info->snd_seq",
+          "info->extack",
+          "devlink->ports",
+          "state->idx"
+        ],
+        "call_targets": [
+          "nlmsg_new",
+          "devlink_nl_port_fill",
+          "nlmsg_free",
+          "genlmsg_reply",
+          "devlink_nl_port_get_dump_one",
+          "devlink_dump_state"
+        ],
+        "call_edges": [
+          "devlink_nl_port_get_dump_one -> devlink_dump_state",
+          "devlink_nl_port_get_dump_one -> xa_find",
+          "devlink_nl_port_get_dump_one -> xa_find_after",
+          "devlink_nl_port_get_dump_one -> devlink_nl_port_fill"
+        ],
+        "state_statements": [
+          "return [B1.2];",
+          "[B2.4]->ports",
+          "[B2.15] = [B2.14]",
+          "[B3.5]->idx",
+          "[B3.6] = [B3.3]",
+          "[B4.10]->skb"
+        ],
+        "source_file": "net/devlink/port.c",
+        "source_excerpt": "554: int devlink_nl_port_get_doit(struct sk_buff *skb, struct genl_info *info)\n555: {\n556: \tstruct devlink_port *devlink_port = info->user_ptr[1];\n557: \tstruct sk_buff *msg;\n558: \tint err;\n559: \n560: \tmsg = nlmsg_new(NLMSG_DEFAULT_SIZE, GFP_KERNEL);\n561: \tif (!msg)\n562: \t\treturn -ENOMEM;\n563: \n564: \terr = devlink_nl_port_fill(msg, devlink_port, DEVLINK_CMD_PORT_NEW,\n565: \t\t\t\t   info->snd_portid, info->snd_seq, 0,\n566: \t\t\t\t   info->extack);\n567: \tif (err) {\n568: \t\tnlmsg_free(msg);\n569: \t\treturn err;\n570: \t}\n571: \n572: \treturn genlmsg_reply(msg, info);\n573: }\n574: \n575: static int\n576: devlink_nl_port_get_dump_one(struct sk_buff *msg, struct devlink *devlink,\n577: \t\t\t     struct netlink_callback *cb, int flags)\n578: {\n579: \tstruct devlink_nl_dump_state *state = devlink_dump_state(cb);\n580: \tstruct devlink_port *devlink_port;\n581: \tunsigned long port_index;\n582: \tint err = 0;\n583: \n584: \txa_for_each_start(&devlink->ports, port_index, devlink_port, state->idx) {\n585: \t\terr = devlink_nl_port_fill(msg, devlink_port,\n586: \t\t\t\t\t   DEVLINK_CMD_NEW,\n587: \t\t\t\t\t   NETLINK_CB(cb->skb).portid,\n588: \t\t\t\t\t   cb->nlh->nlmsg_seq, flags,\n589: \t\t\t\t\t   cb->extack);\n590: \t\tif (err) {\n591: \t\t\tstate->idx = port_index;\n592: \t\t\tbreak;\n593: \t\t}\n594: \t}\n595: \n596: \treturn err;\n597: }\n598: \n599: int devlink_nl_port_get_dumpit(struct sk_buff *skb, struct netlink_callback *cb)\n600: {\n601: \treturn devlink_nl_dumpit(skb, cb, devlink_nl_port_get_dump_one);\n602: }\n603: \n604: static int devlink_port_type_set(struct devlink_port *devlink_port,\n605: \t\t\t\t enum devlink_port_type port_type)\n606: \n607: {\n608: \tint err;\n609: \n610: \tif (!devlink_port->ops->port_type_set)\n611: \t\treturn -EOPNOTSUPP;\n612: \n613: \tif (port_type == devlink_port->type)\n614: \t\treturn 0;\n615: \n616: \terr = devlink_port->ops->port_type_set(devlink_port, port_type);\n617: \tif (err)\n618: \t\treturn err;",
+        "coverage_status": "partial",
+        "contract_type": "",
+        "guard_exprs": [
+          "!msg",
+          "err",
+          "!devlink_port->ops->port_type_set",
+          "port_type == devlink_port->type"
+        ],
+        "sink_calls": [
+          "nlmsg_new",
+          "devlink_nl_port_fill",
+          "nlmsg_free",
+          "genlmsg_reply"
+        ]
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.72,
+        "origin": "analyzer_output"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "net/devlink/port.c",
+          "hunk_index": 0,
+          "source_line": 586
+        },
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at net/devlink/port.c:586",
+        "statements": [
+          "554: int devlink_nl_port_get_doit(struct sk_buff *skb, struct genl_info *info)",
+          "555: {",
+          "556: \tstruct devlink_port *devlink_port = info->user_ptr[1];",
+          "557: \tstruct sk_buff *msg;",
+          "558: \tint err;",
+          "559:"
+        ],
+        "guards": [
+          "!msg",
+          "err",
+          "!devlink_port->ops->port_type_set",
+          "port_type == devlink_port->type"
+        ],
+        "call_boundary": [
+          "nlmsg_new",
+          "devlink_nl_port_fill",
+          "nlmsg_free",
+          "genlmsg_reply",
+          "devlink_nl_port_get_dump_one",
+          "devlink_dump_state"
+        ],
+        "call_edges": [
+          "devlink_nl_port_get_dump_one -> devlink_dump_state",
+          "devlink_nl_port_get_dump_one -> xa_find",
+          "devlink_nl_port_get_dump_one -> xa_find_after",
+          "devlink_nl_port_get_dump_one -> devlink_nl_port_fill"
+        ],
+        "state_transitions": [
+          "diagnostic(csa)"
+        ],
+        "api_terms": [
+          "return [B1.2];",
+          "[B2.4]->ports",
+          "[B2.15] = [B2.14]",
+          "[B3.5]->idx",
+          "[B3.6] = [B3.3]",
+          "[B4.10]->skb"
+        ],
+        "related_symbols": [],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      }
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_1",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/devlink/port.c",
+        "function": "devlink_nl_port_get_dump_one"
+      },
+      "location": {
+        "line": 586,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "devlink_nl_port_get_dump_one in net/devlink/port.c provides CSA-backed pointer/resource lifecycle context near line 586",
+        "diagnostic_message": "",
+        "diagnostic_checker": "",
+        "state_before": [
+          "buffer(info->user_ptr)",
+          "buffer(info->snd_portid)",
+          "sinks(nlmsg_new, devlink_nl_port_fill)"
+        ],
+        "state_after": [
+          "operation(return [B1.2];)",
+          "operation([B2.4]->ports)",
+          "operation([B2.15] = [B2.14])",
+          "operation([B3.5]->idx)"
+        ],
+        "functions": [
+          "devlink_nl_port_get_dump_one"
+        ],
+        "globals": [],
+        "tracked_symbols": [],
+        "buffer_fields": [
+          "info->user_ptr",
+          "info->snd_portid",
+          "info->snd_seq",
+          "info->extack",
+          "devlink->ports",
+          "state->idx"
+        ],
+        "call_targets": [
+          "nlmsg_new",
+          "devlink_nl_port_fill",
+          "nlmsg_free",
+          "genlmsg_reply",
+          "devlink_nl_port_get_dump_one",
+          "devlink_dump_state"
+        ],
+        "call_edges": [
+          "devlink_nl_port_get_dump_one -> devlink_dump_state",
+          "devlink_nl_port_get_dump_one -> xa_find",
+          "devlink_nl_port_get_dump_one -> xa_find_after",
+          "devlink_nl_port_get_dump_one -> devlink_nl_port_fill"
+        ],
+        "state_statements": [
+          "return [B1.2];",
+          "[B2.4]->ports",
+          "[B2.15] = [B2.14]",
+          "[B3.5]->idx",
+          "[B3.6] = [B3.3]",
+          "[B4.10]->skb"
+        ],
+        "source_file": "net/devlink/port.c",
+        "source_excerpt": "554: int devlink_nl_port_get_doit(struct sk_buff *skb, struct genl_info *info)\n555: {\n556: \tstruct devlink_port *devlink_port = info->user_ptr[1];\n557: \tstruct sk_buff *msg;\n558: \tint err;\n559: \n560: \tmsg = nlmsg_new(NLMSG_DEFAULT_SIZE, GFP_KERNEL);\n561: \tif (!msg)\n562: \t\treturn -ENOMEM;\n563: \n564: \terr = devlink_nl_port_fill(msg, devlink_port, DEVLINK_CMD_PORT_NEW,\n565: \t\t\t\t   info->snd_portid, info->snd_seq, 0,\n566: \t\t\t\t   info->extack);\n567: \tif (err) {\n568: \t\tnlmsg_free(msg);\n569: \t\treturn err;\n570: \t}\n571: \n572: \treturn genlmsg_reply(msg, info);\n573: }\n574: \n575: static int\n576: devlink_nl_port_get_dump_one(struct sk_buff *msg, struct devlink *devlink,\n577: \t\t\t     struct netlink_callback *cb, int flags)\n578: {\n579: \tstruct devlink_nl_dump_state *state = devlink_dump_state(cb);\n580: \tstruct devlink_port *devlink_port;\n581: \tunsigned long port_index;\n582: \tint err = 0;\n583: \n584: \txa_for_each_start(&devlink->ports, port_index, devlink_port, state->idx) {\n585: \t\terr = devlink_nl_port_fill(msg, devlink_port,\n586: \t\t\t\t\t   DEVLINK_CMD_NEW,\n587: \t\t\t\t\t   NETLINK_CB(cb->skb).portid,\n588: \t\t\t\t\t   cb->nlh->nlmsg_seq, flags,\n589: \t\t\t\t\t   cb->extack);\n590: \t\tif (err) {\n591: \t\t\tstate->idx = port_index;\n592: \t\t\tbreak;\n593: \t\t}\n594: \t}\n595: \n596: \treturn err;\n597: }\n598: \n599: int devlink_nl_port_get_dumpit(struct sk_buff *skb, struct netlink_callback *cb)\n600: {\n601: \treturn devlink_nl_dumpit(skb, cb, devlink_nl_port_get_dump_one);\n602: }\n603: \n604: static int devlink_port_type_set(struct devlink_port *devlink_port,\n605: \t\t\t\t enum devlink_port_type port_type)\n606: \n607: {\n608: \tint err;\n609: \n610: \tif (!devlink_port->ops->port_type_set)\n611: \t\treturn -EOPNOTSUPP;\n612: \n613: \tif (port_type == devlink_port->type)\n614: \t\treturn 0;\n615: \n616: \terr = devlink_port->ops->port_type_set(devlink_port, port_type);\n617: \tif (err)\n618: \t\treturn err;",
+        "coverage_status": "partial",
+        "operations": [
+          "return [B1.2];",
+          "[B2.4]->ports",
+          "[B2.15] = [B2.14]",
+          "[B3.5]->idx",
+          "[B3.6] = [B3.3]",
+          "[B4.10]->skb"
+        ],
+        "acquisition_ops": [],
+        "release_ops": []
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.72,
+        "origin": "analyzer_output"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "net/devlink/port.c",
+          "hunk_index": 0,
+          "source_line": 586
+        },
+        "summary": "devlink_nl_port_get_dump_one in net/devlink/port.c provides CSA-backed pointer/resource lifecycle context near line 586",
+        "statements": [
+          "554: int devlink_nl_port_get_doit(struct sk_buff *skb, struct genl_info *info)",
+          "555: {",
+          "556: \tstruct devlink_port *devlink_port = info->user_ptr[1];",
+          "557: \tstruct sk_buff *msg;",
+          "558: \tint err;",
+          "559:"
+        ],
+        "guards": [
+          "!msg",
+          "err",
+          "!devlink_port->ops->port_type_set",
+          "port_type == devlink_port->type"
+        ],
+        "call_boundary": [
+          "nlmsg_new",
+          "devlink_nl_port_fill",
+          "nlmsg_free",
+          "genlmsg_reply",
+          "devlink_nl_port_get_dump_one",
+          "devlink_dump_state"
+        ],
+        "call_edges": [
+          "devlink_nl_port_get_dump_one -> devlink_dump_state",
+          "devlink_nl_port_get_dump_one -> xa_find",
+          "devlink_nl_port_get_dump_one -> xa_find_after",
+          "devlink_nl_port_get_dump_one -> devlink_nl_port_fill"
+        ],
+        "state_transitions": [
+          "operation(return [B1.2];)",
+          "operation([B2.4]->ports)",
+          "operation([B2.15] = [B2.14])",
+          "operation([B3.5]->idx)"
+        ],
+        "api_terms": [
+          "return [B1.2];",
+          "[B2.4]->ports",
+          "[B2.15] = [B2.14]",
+          "[B3.5]->idx",
+          "[B3.6] = [B3.3]",
+          "[B4.10]->skb"
+        ],
+        "related_symbols": [],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "collected_analyzers": [
+    "csa"
+  ],
+  "provenance_summary": {
+    "total_records": 4,
+    "origin_counts": {
+      "analyzer_internal": 2,
+      "analyzer_output": 2
+    },
+    "analyzer_internal_records": 2,
+    "analyzer_internal_fraction": 0.5,
+    "analyzer_backed_records": 4,
+    "analyzer_backed_fraction": 1.0,
+    "source_derived_records": 0,
+    "source_derived_fraction": 0.0
+  }
+}

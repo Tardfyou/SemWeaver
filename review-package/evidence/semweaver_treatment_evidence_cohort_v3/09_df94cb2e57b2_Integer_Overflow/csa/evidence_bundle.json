@@ -1,0 +1,1198 @@
+{
+  "records": [
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "fs/bcachefs/buckets.c",
+        "function": "bch2_trans_fs_usage_apply"
+      },
+      "location": {
+        "line": 1325,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "(__UNIQUE_ID___x2500) (ImplicitCastExpr, LValueToRValue, typeof ((s64)(0))) > (__UNIQUE_ID___y2501) (ImplicitCastExpr, LValueToRValue, typeof ((s64)(old - should_not_have_added))) ? ... : ...",
+        "summary": "Analyzer CFG for bch2_trans_fs_usage_apply in fs/bcachefs/buckets.c: bindings: added -= should_not_have_added (ImplicitCastExpr, LValueToRValue, s64); typeof ((s64)(old - should_not_have_added)) __UNIQUE_ID___y2501 = ((s64)(old - should_not_have_added)); | branches: (__UNIQUE_ID___x2500) (ImplicitCastExpr, LValueToRValue, typeof ((s64)(0))) > (__UNIQUE_ID___y2501) (ImplicitCastExpr, LValueToRValue, typeof ((s64)(old - should_not_have_added))) ? ... : ...; if __builtin_expect (ImplicitCastExpr, BuiltinFnToFnPtr, long (*)(long, long))(!!(should_not_have_added (ImplicitCastExpr, LValueToRValue, s64) > 0 (ImplicitCastExpr, IntegralCast, s64)) (ImplicitCastExpr, IntegralCast, long), 0 (ImplicitCastExpr, IntegralCast, long)) | calls: bch2_trans_fs_usage_apply -> percpu_down_read; bch2_trans_fs_usage_apply -> preempt_count_add",
+        "state_before": [
+          "buffer(c->online_reserved)",
+          "buffer(c->sectors_available)",
+          "sinks(__update_replicas, this_cpu_add)"
+        ],
+        "state_after": [
+          "cfg_binding(added -= should_not_have_added (ImplicitCastExpr, LValueToRValue, s64))",
+          "cfg_binding(typeof ((s64)(old - should_not_have_added)) __UNIQUE_ID___y2501 = ((s64)(old - should_not_have_added));)",
+          "cfg_branch((__UNIQUE_ID___x2500) (ImplicitCastExpr, LValueToRValue, typeof ((s64)(0))) > (__UNIQUE_ID___y2501) (ImplicitCastExpr, LValueToRValue, typeof ((s64)(old - should_not_have_added))) ? ... : ...)",
+          "cfg_branch(if __builtin_expect (ImplicitCastExpr, BuiltinFnToFnPtr, long (*)(long, long))(!!(should_not_have_added (ImplicitCastExpr, LValueToRValue, s64) > 0 (ImplicitCastExpr, IntegralCast, s64)) (ImplicitCastExpr, IntegralCast, long), 0 (ImplicitCastExpr, IntegralCast, long)))"
+        ],
+        "functions": [
+          "bch2_trans_fs_usage_apply"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "c->online_reserved",
+          "c->sectors_available",
+          "trans->disk_res",
+          "deltas->d",
+          "deltas->used",
+          "trans->c"
+        ],
+        "buffer_fields": [
+          "c->online_reserved",
+          "c->sectors_available",
+          "trans->disk_res",
+          "deltas->d",
+          "deltas->used",
+          "trans->c"
+        ],
+        "call_targets": [
+          "__update_replicas",
+          "this_cpu_add",
+          "preempt_enable",
+          "percpu_up_read",
+          "bch2_trans_fs_usage_apply",
+          "percpu_down_read",
+          "preempt_disable",
+          "fs_usage_ptr"
+        ],
+        "call_edges": [
+          "bch2_trans_fs_usage_apply -> percpu_down_read",
+          "bch2_trans_fs_usage_apply -> preempt_count_add",
+          "bch2_trans_fs_usage_apply -> fs_usage_ptr",
+          "bch2_trans_fs_usage_apply -> replicas_delta_next",
+          "bch2_trans_fs_usage_apply -> __update_replicas",
+          "bch2_trans_fs_usage_apply -> __builtin_expect"
+        ],
+        "cfg_branch_kinds": [
+          "if",
+          "for",
+          "switch"
+        ],
+        "branch_conditions": [
+          "do ... while [B2.1]",
+          "do ... while [B3.1]",
+          "static init __UNIQUE_ID___addressable___SCK__preempt_schedule2504",
+          "if [B8.18]",
+          "do ... while [B11.1]",
+          "do ... while [B12.1]"
+        ],
+        "resolved_branch_conditions": [
+          "(__UNIQUE_ID___x2500) (ImplicitCastExpr, LValueToRValue, typeof ((s64)(0))) > (__UNIQUE_ID___y2501) (ImplicitCastExpr, LValueToRValue, typeof ((s64)(old - should_not_have_added))) ? ... : ...",
+          "if __builtin_expect (ImplicitCastExpr, BuiltinFnToFnPtr, long (*)(long, long))(!!(should_not_have_added (ImplicitCastExpr, LValueToRValue, s64) > 0 (ImplicitCastExpr, IntegralCast, s64)) (ImplicitCastExpr, IntegralCast, long), 0 (ImplicitCastExpr, IntegralCast, long))",
+          "do ... while 0",
+          "static init __UNIQUE_ID___addressable___SCK__preempt_schedule2504",
+          "if __builtin_expect (ImplicitCastExpr, BuiltinFnToFnPtr, long (*)(long, long))(!!(({ ... ; should_resched (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(int))(0) })) (ImplicitCastExpr, IntegralCast, long), 0 (ImplicitCastExpr, IntegralCast, long))",
+          "if __builtin_expect (ImplicitCastExpr, BuiltinFnToFnPtr, long (*)(long, long))(!!(__update_replicas (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct bch_fs *, struct bch_fs_usage *, struct bch_replicas_entry *, s64))(c (ImplicitCastExpr, LValueToRValue, struct bch_fs *), dst (ImplicitCastExpr, LValueToRValue, struct bch_fs_usage *), &[B19.9] (ImplicitCastExpr, LValueToRValue, struct replicas_delta *)->r, -[B19.14]->delta (ImplicitCastExpr, LValueToRValue, s64))) (ImplicitCastExpr, IntegralCast, long), 0 (ImplicitCastExpr, IntegralCast, long))"
+        ],
+        "cfg_value_bindings": [
+          "added -= should_not_have_added (ImplicitCastExpr, LValueToRValue, s64)",
+          "typeof ((s64)(old - should_not_have_added)) __UNIQUE_ID___y2501 = ((s64)(old - should_not_have_added));",
+          "should_not_have_added = added (ImplicitCastExpr, LValueToRValue, s64) - (s64)disk_res_sectors (ImplicitCastExpr, LValueToRValue, unsigned int) (CStyleCastExpr, IntegralCast, s64)",
+          "__builtin_choose_expr(((!!(sizeof ((typeof ((s64)(0)) *)1 == (typeof ((s64)(old - should_not_have_added)) *)1))) && ((sizeof(int) == sizeof (*(8 ? ((void *)((long)((s64)(0)) * 0L)) : (int *)8))) && (sizeof(int) == sizeof (*(8 ? ((void *)((long)((s64)(old - should_not_have_added)) * 0L)) : (int *)8))))), (((s64)(0)) > ((s64)(old - should_not_have_added)) ? ((s64)(0)) : ((s64)(old - should_not_have_added))), ({ ... ;  })) (ImplicitCastExpr, IntegralCast, u64)",
+          "new = __builtin_choose_expr(((!!(sizeof ((typeof ((s64)(0)) *)1 == (typeof ((s64)(old - should_not_have_added)) *)1))) && ((sizeof(int) == sizeof (*(8 ? ((void *)((long)((s64)(0)) * 0L)) : (int *)8))) && (sizeof(int) == sizeof (*(8 ? ((void *)((long)((s64)(old - should_not_have_added)) * 0L)) : (int *)8))))), (((s64)(0)) > ((s64)(old - should_not_have_added)) ? ((s64)(0)) : ((s64)(old - should_not_have_added))), ({ ... ;  })) (ImplicitCastExpr, IntegralCast, u64)",
+          "u64 v = atomic64_read(&c->sectors_available);"
+        ],
+        "state_statements": [
+          "[B1.4]->mark_lock",
+          "return [B1.9];",
+          "static void *__UNIQUE_ID___addressable___SCK__preempt_schedule2504 __attribute__((used)) __attribute__((section(\".discard.addressable\"))) = (void *)&__SCK__preempt_schedule;",
+          "[B10.6] = [B10.5]",
+          "sizeof(struct bug_entry)",
+          "[B19.10]->r"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,fs/bcachefs/.buckets.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/uapi -I./arch/x86/inc...",
+        "source_file": "fs/bcachefs/buckets.c",
+        "source_excerpt": "1293: \t\tswitch (d->r.data_type) {\n1294: \t\tcase BCH_DATA_btree:\n1295: \t\tcase BCH_DATA_user:\n1296: \t\tcase BCH_DATA_parity:\n1297: \t\t\tadded += d->delta;\n1298: \t\t}\n1299: \t\tBUG_ON(__update_replicas(c, dst, &d->r, -d->delta));\n1300: \t}\n1301: \n1302: \tdst->nr_inodes -= deltas->nr_inodes;\n1303: \n1304: \tfor (i = 0; i < BCH_REPLICAS_MAX; i++) {\n1305: \t\tadded\t\t\t\t-= deltas->persistent_reserved[i];\n1306: \t\tdst->reserved\t\t\t-= deltas->persistent_reserved[i];\n1307: \t\tdst->persistent_reserved[i]\t-= deltas->persistent_reserved[i];\n1308: \t}\n1309: \n1310: \tif (added > 0) {\n1311: \t\ttrans->disk_res->sectors += added;\n1312: \t\tthis_cpu_add(*c->online_reserved, added);\n1313: \t}\n1314: \n1315: \tpreempt_enable();\n1316: \tpercpu_up_read(&c->mark_lock);\n1317: }\n1318: \n1319: int bch2_trans_fs_usage_apply(struct btree_trans *trans,\n1320: \t\t\t      struct replicas_delta_list *deltas)\n1321: {\n1322: \tstruct bch_fs *c = trans->c;\n1323: \tstatic int warned_disk_usage = 0;\n1324: \tbool warn = false;\n1325: \tunsigned disk_res_sectors = trans->disk_res ? trans->disk_res->sectors : 0;\n1326: \tstruct replicas_delta *d, *d2;\n1327: \tstruct replicas_delta *top = (void *) deltas->d + deltas->used;\n1328: \tstruct bch_fs_usage *dst;\n1329: \ts64 added = 0, should_not_have_added;\n1330: \tunsigned i;\n1331: \n1332: \tpercpu_down_read(&c->mark_lock);\n1333: \tpreempt_disable();\n1334: \tdst = fs_usage_ptr(c, trans->journal_res.seq, false);\n1335: \n1336: \tfor (d = deltas->d; d != top; d = replicas_delta_next(d)) {\n1337: \t\tswitch (d->r.data_type) {\n1338: \t\tcase BCH_DATA_btree:\n1339: \t\tcase BCH_DATA_user:\n1340: \t\tcase BCH_DATA_parity:\n1341: \t\t\tadded += d->delta;\n1342: \t\t}\n1343: \n1344: \t\tif (__update_replicas(c, dst, &d->r, d->delta))\n1345: \t\t\tgoto need_mark;\n1346: \t}\n1347: \n1348: \tdst->nr_inodes += deltas->nr_inodes;\n1349: \n1350: \tfor (i = 0; i < BCH_REPLICAS_MAX; i++) {\n1351: \t\tadded\t\t\t\t+= deltas->persistent_reserved[i];\n1352: \t\tdst->reserved\t\t\t+= deltas->persistent_reserved[i];\n1353: \t\tdst->persistent_reserved[i]\t+= deltas->persistent_reserved[i];\n1354: \t}\n1355: \n1356: \t/*\n1357: \t * Not allowed to reduce sectors_available except by getting a",
+        "summary_line": 1325,
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/semweaver_treatment_evidence_cohort_v3/09_df94cb2e57b2_Integer_Overflow/csa/patchweaver_runtime/csa_raw/fs-bcachefs-buckets.c-bch2_trans_fs_usage_apply.txt",
+        "raw_output_sha256": "381ba496d374e77f9caac8211e351bdf7f30be1c8f46632ffe0ea53afe3a313a",
+        "command_sha256": "f00fa695fb22b4094411eea0fdaaffc6f991f087d8154510c21d30b5a546b570"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:debug-cfg",
+        "confidence": 0.92,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "fs/bcachefs/buckets.c",
+          "hunk_index": 0,
+          "source_line": 1325
+        },
+        "summary": "Analyzer CFG for bch2_trans_fs_usage_apply in fs/bcachefs/buckets.c: bindings: added -= should_not_have_added (ImplicitCastExpr, LValueToRValue, s64); typeof ((s64)(old - should_not_have_added)) __UNIQUE_ID___y2501 = ((s64)(old - should_not_have_added)); | branches: (__UNIQUE_ID___x2500) (ImplicitCastExpr, LValueToRValue, typeof ((s64)(0))) > (__UNIQUE_ID___y2501) (ImplicitCastExpr, LValueToRValue, typeof ((s64)(old - should_not_have_added))) ? ... : ...; if __builtin_expect (ImplicitCastExpr, BuiltinFnToFnPtr, long (*)(long, long))(!!(should_not_have_added (ImplicitCastExpr, LValueToRValue, s64) > 0 (ImplicitCastExpr, IntegralCast, s64)) (ImplicitCastExpr, IntegralCast, long), 0 (ImplicitCastExpr, IntegralCast, long)) | calls: bch2_trans_fs_usage_apply -> percpu_down_read; bch2_trans_fs_usage_apply -> preempt_count_add",
+        "statements": [
+          "1293: \t\tswitch (d->r.data_type) {",
+          "1294: \t\tcase BCH_DATA_btree:",
+          "1295: \t\tcase BCH_DATA_user:",
+          "1296: \t\tcase BCH_DATA_parity:",
+          "1297: \t\t\tadded += d->delta;",
+          "1298: \t\t}"
+        ],
+        "guards": [
+          "(__UNIQUE_ID___x2500) (ImplicitCastExpr, LValueToRValue, typeof ((s64)(0))) > (__UNIQUE_ID___y2501) (ImplicitCastExpr, LValueToRValue, typeof ((s64)(old - should_not_have_added))) ? ... : ...",
+          "if __builtin_expect (ImplicitCastExpr, BuiltinFnToFnPtr, long (*)(long, long))(!!(should_not_have_added (ImplicitCastExpr, LValueToRValue, s64) > 0 (ImplicitCastExpr, IntegralCast, s64)) (ImplicitCastExpr, IntegralCast, long), 0 (ImplicitCastExpr, IntegralCast, long))",
+          "do ... while 0",
+          "static init __UNIQUE_ID___addressable___SCK__preempt_schedule2504"
+        ],
+        "call_boundary": [
+          "__update_replicas",
+          "this_cpu_add",
+          "preempt_enable",
+          "percpu_up_read",
+          "bch2_trans_fs_usage_apply",
+          "percpu_down_read"
+        ],
+        "call_edges": [
+          "bch2_trans_fs_usage_apply -> percpu_down_read",
+          "bch2_trans_fs_usage_apply -> preempt_count_add",
+          "bch2_trans_fs_usage_apply -> fs_usage_ptr",
+          "bch2_trans_fs_usage_apply -> replicas_delta_next",
+          "bch2_trans_fs_usage_apply -> __update_replicas",
+          "bch2_trans_fs_usage_apply -> __builtin_expect",
+          "bch2_trans_fs_usage_apply -> atomic64_read",
+          "bch2_trans_fs_usage_apply -> atomic64_cmpxchg"
+        ],
+        "state_transitions": [
+          "cfg_binding(added -= should_not_have_added (ImplicitCastExpr, LValueToRValue, s64))",
+          "cfg_binding(typeof ((s64)(old - should_not_have_added)) __UNIQUE_ID___y2501 = ((s64)(old - should_not_have_added));)",
+          "cfg_branch((__UNIQUE_ID___x2500) (ImplicitCastExpr, LValueToRValue, typeof ((s64)(0))) > (__UNIQUE_ID___y2501) (ImplicitCastExpr, LValueToRValue, typeof ((s64)(old - should_not_have_added))) ? ... : ...)",
+          "cfg_branch(if __builtin_expect (ImplicitCastExpr, BuiltinFnToFnPtr, long (*)(long, long))(!!(should_not_have_added (ImplicitCastExpr, LValueToRValue, s64) > 0 (ImplicitCastExpr, IntegralCast, s64)) (ImplicitCastExpr, IntegralCast, long), 0 (ImplicitCastExpr, IntegralCast, long)))",
+          "[B1.4]->mark_lock",
+          "return [B1.9];"
+        ],
+        "api_terms": [
+          "percpu_down_read",
+          "preempt_count_add",
+          "fs_usage_ptr",
+          "replicas_delta_next",
+          "__update_replicas",
+          "__builtin_expect"
+        ],
+        "related_symbols": [
+          "c->online_reserved",
+          "c->sectors_available",
+          "trans->disk_res",
+          "deltas->d",
+          "deltas->used",
+          "trans->c"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_guard_1",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "fs/bcachefs/io_misc.c",
+        "function": "bch2_extent_fallocate"
+      },
+      "location": {
+        "line": 108,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "if !ret (ImplicitCastExpr, LValueToRValue, int) && sectors_allocated (ImplicitCastExpr, LValueToRValue, unsigned int)",
+        "summary": "Analyzer CFG for bch2_extent_fallocate in fs/bcachefs/io_misc.c: bindings: ret = bch2_extent_update (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct btree_trans *, subvol_inum, struct btree_iter *, struct bkey_i *, struct disk_reservation *, u64, s64 *, bool))(trans (ImplicitCastExpr, LValueToRValue, struct btree_trans *), inum (ImplicitCastExpr, LValueToRValue, subvol_inum), iter (ImplicitCastExpr, LValueToRValue, struct btree_iter *), new.k (ImplicitCastExpr, LValueToRValue, struct bkey_i *), &disk_res, 0 (ImplicitCastExpr, IntegralCast, u64), i_sectors_delta (ImplicitCastExpr, LValueToRValue, s64 *), true (ImplicitCastExpr, IntegralToBoolean, bool)); ret = bch2_alloc_sectors_start_trans (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct btree_trans *, unsigned int, unsigned int, struct write_point_specifier, struct bch_devs_list *, unsigned int, unsigned int, enum bch_watermark, unsigned int, struct closure *, struct write_point **))(trans (ImplicitCastExpr, LValueToRValue, struct btree_trans *), opts.foreground_target (ImplicitCastExpr, LValueToRValue, u16) (ImplicitCastExpr, IntegralCast, unsigned int), false (ImplicitCastExpr, IntegralCast, unsigned int), write_point (ImplicitCastExpr, LValueToRValue, struct write_point_specifier), &devs_have, opts.data_replicas (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, unsigned int), opts.data_replicas (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, unsigned int), BCH_WATERMARK_normal (ImplicitCastExpr, IntegralCast, enum bch_watermark), 0 (ImplicitCastExpr, IntegralCast, unsigned int), &cl, &wp) | branches: if !ret (ImplicitCastExpr, LValueToRValue, int) && sectors_allocated (ImplicitCastExpr, LValueToRValue, unsigned int); !ret (ImplicitCastExpr, LValueToRValue, int) && ... | calls: bch2_extent_fallocate -> bch2_bkey_buf_init; bch2_extent_fallocate -> closure_init_stack",
+        "state_before": [
+          "buffer(v->start)",
+          "buffer(wp->sectors_free)",
+          "sinks(bch2_bkey_buf_realloc, bkey_reservation_init)"
+        ],
+        "state_after": [
+          "cfg_binding(ret = bch2_extent_update (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct btree_trans *, subvol_inum, struct btree_iter *, struct bkey_i *, struct disk_reservation *, u64, s64 *, bool))(trans (ImplicitCastExpr, LValueToRValue, struct btree_trans *), inum (ImplicitCastExpr, LValueToRValue, subvol_inum), iter (ImplicitCastExpr, LValueToRValue, struct btree_iter *), new.k (ImplicitCastExpr, LValueToRValue, struct bkey_i *), &disk_res, 0 (ImplicitCastExpr, IntegralCast, u64), i_sectors_delta (ImplicitCastExpr, LValueToRValue, s64 *), true (ImplicitCastExpr, IntegralToBoolean, bool)))",
+          "cfg_binding(ret = bch2_alloc_sectors_start_trans (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct btree_trans *, unsigned int, unsigned int, struct write_point_specifier, struct bch_devs_list *, unsigned int, unsigned int, enum bch_watermark, unsigned int, struct closure *, struct write_point **))(trans (ImplicitCastExpr, LValueToRValue, struct btree_trans *), opts.foreground_target (ImplicitCastExpr, LValueToRValue, u16) (ImplicitCastExpr, IntegralCast, unsigned int), false (ImplicitCastExpr, IntegralCast, unsigned int), write_point (ImplicitCastExpr, LValueToRValue, struct write_point_specifier), &devs_have, opts.data_replicas (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, unsigned int), opts.data_replicas (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, unsigned int), BCH_WATERMARK_normal (ImplicitCastExpr, IntegralCast, enum bch_watermark), 0 (ImplicitCastExpr, IntegralCast, unsigned int), &cl, &wp))",
+          "cfg_branch(if !ret (ImplicitCastExpr, LValueToRValue, int) && sectors_allocated (ImplicitCastExpr, LValueToRValue, unsigned int))",
+          "cfg_branch(!ret (ImplicitCastExpr, LValueToRValue, int) && ...)"
+        ],
+        "functions": [
+          "bch2_extent_fallocate"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "v->start",
+          "wp->sectors_free",
+          "k->p",
+          "iter->pos",
+          "c->sb",
+          "trans->c"
+        ],
+        "buffer_fields": [
+          "v->start",
+          "wp->sectors_free",
+          "k->p",
+          "iter->pos",
+          "c->sb",
+          "trans->c"
+        ],
+        "call_targets": [
+          "bch2_bkey_buf_realloc",
+          "bkey_reservation_init",
+          "bch2_key_resize",
+          "bkey_extent_init",
+          "bch2_alloc_sectors_start_trans",
+          "min",
+          "bch2_open_bucket_get",
+          "bch2_alloc_sectors_append_ptrs"
+        ],
+        "call_edges": [
+          "bch2_extent_fallocate -> bch2_bkey_buf_init",
+          "bch2_extent_fallocate -> closure_init_stack",
+          "bch2_extent_fallocate -> bch2_btree_iter_peek_slot",
+          "bch2_extent_fallocate -> __bkey_err",
+          "bch2_extent_fallocate -> bch2_bkey_nr_ptrs_fully_allocated",
+          "bch2_extent_fallocate -> bch2_disk_reservation_get"
+        ],
+        "cfg_branch_kinds": [
+          "if",
+          "for"
+        ],
+        "branch_conditions": [
+          "if [B3.36]",
+          "if [B6.3] && [B5.2]",
+          "[B6.3] && ...",
+          "for (...; ([B10.4]); ...)",
+          "do ... while [B12.1]",
+          "do ... while [B13.1]"
+        ],
+        "resolved_branch_conditions": [
+          "if !ret (ImplicitCastExpr, LValueToRValue, int) && sectors_allocated (ImplicitCastExpr, LValueToRValue, unsigned int)",
+          "!ret (ImplicitCastExpr, LValueToRValue, int) && ...",
+          "if ret (ImplicitCastExpr, LValueToRValue, int)",
+          "if ({ ... ; __builtin_expect (ImplicitCastExpr, BuiltinFnToFnPtr, long (*)(long, long))(!!(_bch2_err_matches (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(int, int))(ret (ImplicitCastExpr, LValueToRValue, int), BCH_ERR_operation_blocked)) (ImplicitCastExpr, IntegralCast, long), 0 (ImplicitCastExpr, IntegralCast, long)) })",
+          "if !(!(!__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(BCH_ERR_operation_blocked)))",
+          "if __builtin_expect (ImplicitCastExpr, BuiltinFnToFnPtr, long (*)(long, long))(!!(ret) (ImplicitCastExpr, LValueToRValue, int) (ImplicitCastExpr, IntegralCast, long), 0 (ImplicitCastExpr, IntegralCast, long))"
+        ],
+        "cfg_value_bindings": [
+          "ret = bch2_extent_update (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct btree_trans *, subvol_inum, struct btree_iter *, struct bkey_i *, struct disk_reservation *, u64, s64 *, bool))(trans (ImplicitCastExpr, LValueToRValue, struct btree_trans *), inum (ImplicitCastExpr, LValueToRValue, subvol_inum), iter (ImplicitCastExpr, LValueToRValue, struct btree_iter *), new.k (ImplicitCastExpr, LValueToRValue, struct bkey_i *), &disk_res, 0 (ImplicitCastExpr, IntegralCast, u64), i_sectors_delta (ImplicitCastExpr, LValueToRValue, s64 *), true (ImplicitCastExpr, IntegralToBoolean, bool))",
+          "ret = bch2_alloc_sectors_start_trans (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct btree_trans *, unsigned int, unsigned int, struct write_point_specifier, struct bch_devs_list *, unsigned int, unsigned int, enum bch_watermark, unsigned int, struct closure *, struct write_point **))(trans (ImplicitCastExpr, LValueToRValue, struct btree_trans *), opts.foreground_target (ImplicitCastExpr, LValueToRValue, u16) (ImplicitCastExpr, IntegralCast, unsigned int), false (ImplicitCastExpr, IntegralCast, unsigned int), write_point (ImplicitCastExpr, LValueToRValue, struct write_point_specifier), &devs_have, opts.data_replicas (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, unsigned int), opts.data_replicas (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, unsigned int), BCH_WATERMARK_normal (ImplicitCastExpr, IntegralCast, enum bch_watermark), 0 (ImplicitCastExpr, IntegralCast, unsigned int), &cl, &wp)",
+          "ret = -BCH_ERR_transaction_restart_nested",
+          "ret = __bkey_err (ImplicitCastExpr, FunctionToPointerDecay, int (*)(const struct bkey *))((k).k (ImplicitCastExpr, LValueToRValue, const struct bkey *))",
+          "ret = bch2_disk_reservation_get (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct bch_fs *, struct disk_reservation *, u64, unsigned int, int))(c (ImplicitCastExpr, LValueToRValue, struct bch_fs *), &disk_res, sectors (ImplicitCastExpr, LValueToRValue, unsigned int) (ImplicitCastExpr, IntegralCast, u64), new_replicas (ImplicitCastExpr, LValueToRValue, unsigned int), 0)",
+          "e = bkey_extent_init (ImplicitCastExpr, FunctionToPointerDecay, struct bkey_i_extent *(*)(struct bkey_i *))(new.k (ImplicitCastExpr, LValueToRValue, struct bkey_i *))"
+        ],
+        "state_statements": [
+          "return [B1.2];",
+          "[B3.33] != [B3.35]",
+          "[B7.3] = [B7.2]",
+          "[B7.25] = [B7.24]",
+          "([B8.1])++",
+          "[B9.4]->unwritten"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,fs/bcachefs/.io_misc.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/uapi -I./arch/x86/inc...",
+        "source_file": "fs/bcachefs/io_misc.c",
+        "source_excerpt": "76: \n77: \t\tbch2_bkey_buf_realloc(&new, c, sizeof(*reservation) / sizeof(u64));\n78: \t\treservation = bkey_reservation_init(new.k);\n79: \t\treservation->k.p = iter->pos;\n80: \t\tbch2_key_resize(&reservation->k, sectors);\n81: \t\treservation->v.nr_replicas = opts.data_replicas;\n82: \t} else {\n83: \t\tstruct bkey_i_extent *e;\n84: \t\tstruct bch_devs_list devs_have;\n85: \t\tstruct write_point *wp;\n86: \t\tstruct bch_extent_ptr *ptr;\n87: \n88: \t\tdevs_have.nr = 0;\n89: \n90: \t\tbch2_bkey_buf_realloc(&new, c, BKEY_EXTENT_U64s_MAX);\n91: \n92: \t\te = bkey_extent_init(new.k);\n93: \t\te->k.p = iter->pos;\n94: \n95: \t\tret = bch2_alloc_sectors_start_trans(trans,\n96: \t\t\t\topts.foreground_target,\n97: \t\t\t\tfalse,\n98: \t\t\t\twrite_point,\n99: \t\t\t\t&devs_have,\n100: \t\t\t\topts.data_replicas,\n101: \t\t\t\topts.data_replicas,\n102: \t\t\t\tBCH_WATERMARK_normal, 0, &cl, &wp);\n103: \t\tif (bch2_err_matches(ret, BCH_ERR_operation_blocked))\n104: \t\t\tret = -BCH_ERR_transaction_restart_nested;\n105: \t\tif (ret)\n106: \t\t\tgoto err;\n107: \n108: \t\tsectors = min(sectors, wp->sectors_free);\n109: \t\tsectors_allocated = sectors;\n110: \n111: \t\tbch2_key_resize(&e->k, sectors);\n112: \n113: \t\tbch2_open_bucket_get(c, wp, &open_buckets);\n114: \t\tbch2_alloc_sectors_append_ptrs(c, wp, &e->k_i, sectors, false);\n115: \t\tbch2_alloc_sectors_done(c, wp);\n116: \n117: \t\textent_for_each_ptr(extent_i_to_s(e), ptr)\n118: \t\t\tptr->unwritten = true;\n119: \t}\n120: \n121: \thave_reservation = true;\n122: \n123: \tret = bch2_extent_update(trans, inum, iter, new.k, &disk_res,\n124: \t\t\t\t 0, i_sectors_delta, true);\n125: err:\n126: \tif (!ret && sectors_allocated)\n127: \t\tbch2_increment_clock(c, sectors_allocated, WRITE);\n128: \n129: \tbch2_open_buckets_put(c, &open_buckets);\n130: \tbch2_disk_reservation_put(c, &disk_res);\n131: \tbch2_bkey_buf_exit(&new, c);\n132: \tbch2_bkey_buf_exit(&old, c);\n133: \n134: \tif (closure_nr_remaining(&cl) != 1) {\n135: \t\tbch2_trans_unlock(trans);\n136: \t\tclosure_sync(&cl);\n137: \t}\n138: \n139: \treturn ret;\n140: }",
+        "summary_line": 108,
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/semweaver_treatment_evidence_cohort_v3/09_df94cb2e57b2_Integer_Overflow/csa/patchweaver_runtime/csa_raw/fs-bcachefs-io_misc.c-bch2_extent_fallocate.txt",
+        "raw_output_sha256": "7c5b756570688a9755a94e6c8433c7e675c9ed9c03cf882ad198f28f2129bf2c",
+        "command_sha256": "0872a069b5c78fdca7167e44dee9815dcaf85e5416b6b53abe6ab3134783dada"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:debug-cfg",
+        "confidence": 0.92,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "fs/bcachefs/io_misc.c",
+          "hunk_index": 1,
+          "source_line": 108
+        },
+        "summary": "Analyzer CFG for bch2_extent_fallocate in fs/bcachefs/io_misc.c: bindings: ret = bch2_extent_update (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct btree_trans *, subvol_inum, struct btree_iter *, struct bkey_i *, struct disk_reservation *, u64, s64 *, bool))(trans (ImplicitCastExpr, LValueToRValue, struct btree_trans *), inum (ImplicitCastExpr, LValueToRValue, subvol_inum), iter (ImplicitCastExpr, LValueToRValue, struct btree_iter *), new.k (ImplicitCastExpr, LValueToRValue, struct bkey_i *), &disk_res, 0 (ImplicitCastExpr, IntegralCast, u64), i_sectors_delta (ImplicitCastExpr, LValueToRValue, s64 *), true (ImplicitCastExpr, IntegralToBoolean, bool)); ret = bch2_alloc_sectors_start_trans (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct btree_trans *, unsigned int, unsigned int, struct write_point_specifier, struct bch_devs_list *, unsigned int, unsigned int, enum bch_watermark, unsigned int, struct closure *, struct write_point **))(trans (ImplicitCastExpr, LValueToRValue, struct btree_trans *), opts.foreground_target (ImplicitCastExpr, LValueToRValue, u16) (ImplicitCastExpr, IntegralCast, unsigned int), false (ImplicitCastExpr, IntegralCast, unsigned int), write_point (ImplicitCastExpr, LValueToRValue, struct write_point_specifier), &devs_have, opts.data_replicas (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, unsigned int), opts.data_replicas (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, unsigned int), BCH_WATERMARK_normal (ImplicitCastExpr, IntegralCast, enum bch_watermark), 0 (ImplicitCastExpr, IntegralCast, unsigned int), &cl, &wp) | branches: if !ret (ImplicitCastExpr, LValueToRValue, int) && sectors_allocated (ImplicitCastExpr, LValueToRValue, unsigned int); !ret (ImplicitCastExpr, LValueToRValue, int) && ... | calls: bch2_extent_fallocate -> bch2_bkey_buf_init; bch2_extent_fallocate -> closure_init_stack",
+        "statements": [
+          "76:",
+          "77: \t\tbch2_bkey_buf_realloc(&new, c, sizeof(*reservation) / sizeof(u64));",
+          "78: \t\treservation = bkey_reservation_init(new.k);",
+          "79: \t\treservation->k.p = iter->pos;",
+          "80: \t\tbch2_key_resize(&reservation->k, sectors);",
+          "81: \t\treservation->v.nr_replicas = opts.data_replicas;"
+        ],
+        "guards": [
+          "if !ret (ImplicitCastExpr, LValueToRValue, int) && sectors_allocated (ImplicitCastExpr, LValueToRValue, unsigned int)",
+          "!ret (ImplicitCastExpr, LValueToRValue, int) && ...",
+          "if ret (ImplicitCastExpr, LValueToRValue, int)",
+          "if ({ ... ; __builtin_expect (ImplicitCastExpr, BuiltinFnToFnPtr, long (*)(long, long))(!!(_bch2_err_matches (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(int, int))(ret (ImplicitCastExpr, LValueToRValue, int), BCH_ERR_operation_blocked)) (ImplicitCastExpr, IntegralCast, long), 0 (ImplicitCastExpr, IntegralCast, long)) })"
+        ],
+        "call_boundary": [
+          "bch2_bkey_buf_realloc",
+          "bkey_reservation_init",
+          "bch2_key_resize",
+          "bkey_extent_init",
+          "bch2_alloc_sectors_start_trans",
+          "min"
+        ],
+        "call_edges": [
+          "bch2_extent_fallocate -> bch2_bkey_buf_init",
+          "bch2_extent_fallocate -> closure_init_stack",
+          "bch2_extent_fallocate -> bch2_btree_iter_peek_slot",
+          "bch2_extent_fallocate -> __bkey_err",
+          "bch2_extent_fallocate -> bch2_bkey_nr_ptrs_fully_allocated",
+          "bch2_extent_fallocate -> bch2_disk_reservation_get",
+          "bch2_extent_fallocate -> __builtin_expect",
+          "bch2_extent_fallocate -> bch2_bkey_buf_reassemble"
+        ],
+        "state_transitions": [
+          "cfg_binding(ret = bch2_extent_update (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct btree_trans *, subvol_inum, struct btree_iter *, struct bkey_i *, struct disk_reservation *, u64, s64 *, bool))(trans (ImplicitCastExpr, LValueToRValue, struct btree_trans *), inum (ImplicitCastExpr, LValueToRValue, subvol_inum), iter (ImplicitCastExpr, LValueToRValue, struct btree_iter *), new.k (ImplicitCastExpr, LValueToRValue, struct bkey_i *), &disk_res, 0 (ImplicitCastExpr, IntegralCast, u64), i_sectors_delta (ImplicitCastExpr, LValueToRValue, s64 *), true (ImplicitCastExpr, IntegralToBoolean, bool)))",
+          "cfg_binding(ret = bch2_alloc_sectors_start_trans (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct btree_trans *, unsigned int, unsigned int, struct write_point_specifier, struct bch_devs_list *, unsigned int, unsigned int, enum bch_watermark, unsigned int, struct closure *, struct write_point **))(trans (ImplicitCastExpr, LValueToRValue, struct btree_trans *), opts.foreground_target (ImplicitCastExpr, LValueToRValue, u16) (ImplicitCastExpr, IntegralCast, unsigned int), false (ImplicitCastExpr, IntegralCast, unsigned int), write_point (ImplicitCastExpr, LValueToRValue, struct write_point_specifier), &devs_have, opts.data_replicas (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, unsigned int), opts.data_replicas (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, unsigned int), BCH_WATERMARK_normal (ImplicitCastExpr, IntegralCast, enum bch_watermark), 0 (ImplicitCastExpr, IntegralCast, unsigned int), &cl, &wp))",
+          "cfg_branch(if !ret (ImplicitCastExpr, LValueToRValue, int) && sectors_allocated (ImplicitCastExpr, LValueToRValue, unsigned int))",
+          "cfg_branch(!ret (ImplicitCastExpr, LValueToRValue, int) && ...)",
+          "return [B1.2];",
+          "[B3.33] != [B3.35]"
+        ],
+        "api_terms": [
+          "bch2_bkey_buf_init",
+          "closure_init_stack",
+          "bch2_btree_iter_peek_slot",
+          "__bkey_err",
+          "bch2_bkey_nr_ptrs_fully_allocated",
+          "bch2_disk_reservation_get"
+        ],
+        "related_symbols": [
+          "v->start",
+          "wp->sectors_free",
+          "k->p",
+          "iter->pos",
+          "c->sb",
+          "trans->c"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "fs/bcachefs/buckets.c",
+        "function": "bch2_trans_fs_usage_apply"
+      },
+      "location": {
+        "line": 1325,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "bch2_trans_fs_usage_apply in fs/bcachefs/buckets.c: state_ops=for (i = 0; i < BCH_REPLICAS_MAX; i++) { | cfg_calls=bch2_trans_fs_usage_apply -> percpu_down_read; bch2_trans_fs_usage_apply -> preempt_count_add",
+        "state_before": [
+          "buffer(c->online_reserved)",
+          "buffer(c->sectors_available)",
+          "sinks(__update_replicas, this_cpu_add)"
+        ],
+        "state_after": [
+          "transition(for (i = 0; i < BCH_REPLICAS_MAX; i++) {)",
+          "transition([B1.4]->mark_lock)",
+          "transition(return [B1.9];)"
+        ],
+        "functions": [
+          "bch2_trans_fs_usage_apply"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "c->online_reserved",
+          "c->sectors_available",
+          "trans->disk_res",
+          "deltas->d",
+          "deltas->used",
+          "trans->c"
+        ],
+        "buffer_fields": [
+          "c->online_reserved",
+          "c->sectors_available",
+          "trans->disk_res",
+          "deltas->d",
+          "deltas->used",
+          "trans->c"
+        ],
+        "call_targets": [
+          "__update_replicas",
+          "this_cpu_add",
+          "preempt_enable",
+          "percpu_up_read",
+          "bch2_trans_fs_usage_apply",
+          "percpu_down_read",
+          "preempt_disable",
+          "fs_usage_ptr"
+        ],
+        "call_edges": [
+          "bch2_trans_fs_usage_apply -> percpu_down_read",
+          "bch2_trans_fs_usage_apply -> preempt_count_add",
+          "bch2_trans_fs_usage_apply -> fs_usage_ptr",
+          "bch2_trans_fs_usage_apply -> replicas_delta_next",
+          "bch2_trans_fs_usage_apply -> __update_replicas",
+          "bch2_trans_fs_usage_apply -> __builtin_expect"
+        ],
+        "cfg_branch_kinds": [
+          "if",
+          "for",
+          "switch"
+        ],
+        "branch_conditions": [
+          "do ... while [B2.1]",
+          "do ... while [B3.1]",
+          "static init __UNIQUE_ID___addressable___SCK__preempt_schedule2504",
+          "if [B8.18]"
+        ],
+        "state_statements": [
+          "[B1.4]->mark_lock",
+          "return [B1.9];",
+          "static void *__UNIQUE_ID___addressable___SCK__preempt_schedule2504 __attribute__((used)) __attribute__((section(\".discard.addressable\"))) = (void *)&__SCK__preempt_schedule;",
+          "[B10.6] = [B10.5]",
+          "sizeof(struct bug_entry)",
+          "[B19.10]->r",
+          "[B19.14]->delta",
+          "[B21.2] != [B21.4]"
+        ],
+        "return_statements": [
+          "return [B1.9];",
+          "return [B23.1];"
+        ],
+        "source_file": "fs/bcachefs/buckets.c",
+        "source_excerpt": "1293: \t\tswitch (d->r.data_type) {\n1294: \t\tcase BCH_DATA_btree:\n1295: \t\tcase BCH_DATA_user:\n1296: \t\tcase BCH_DATA_parity:\n1297: \t\t\tadded += d->delta;\n1298: \t\t}\n1299: \t\tBUG_ON(__update_replicas(c, dst, &d->r, -d->delta));\n1300: \t}\n1301: \n1302: \tdst->nr_inodes -= deltas->nr_inodes;\n1303: \n1304: \tfor (i = 0; i < BCH_REPLICAS_MAX; i++) {\n1305: \t\tadded\t\t\t\t-= deltas->persistent_reserved[i];\n1306: \t\tdst->reserved\t\t\t-= deltas->persistent_reserved[i];\n1307: \t\tdst->persistent_reserved[i]\t-= deltas->persistent_reserved[i];\n1308: \t}\n1309: \n1310: \tif (added > 0) {\n1311: \t\ttrans->disk_res->sectors += added;\n1312: \t\tthis_cpu_add(*c->online_reserved, added);\n1313: \t}\n1314: \n1315: \tpreempt_enable();\n1316: \tpercpu_up_read(&c->mark_lock);\n1317: }\n1318: \n1319: int bch2_trans_fs_usage_apply(struct btree_trans *trans,\n1320: \t\t\t      struct replicas_delta_list *deltas)\n1321: {\n1322: \tstruct bch_fs *c = trans->c;\n1323: \tstatic int warned_disk_usage = 0;\n1324: \tbool warn = false;\n1325: \tunsigned disk_res_sectors = trans->disk_res ? trans->disk_res->sectors : 0;\n1326: \tstruct replicas_delta *d, *d2;\n1327: \tstruct replicas_delta *top = (void *) deltas->d + deltas->used;\n1328: \tstruct bch_fs_usage *dst;\n1329: \ts64 added = 0, should_not_have_added;\n1330: \tunsigned i;\n1331: \n1332: \tpercpu_down_read(&c->mark_lock);\n1333: \tpreempt_disable();\n1334: \tdst = fs_usage_ptr(c, trans->journal_res.seq, false);\n1335: \n1336: \tfor (d = deltas->d; d != top; d = replicas_delta_next(d)) {\n1337: \t\tswitch (d->r.data_type) {\n1338: \t\tcase BCH_DATA_btree:\n1339: \t\tcase BCH_DATA_user:\n1340: \t\tcase BCH_DATA_parity:\n1341: \t\t\tadded += d->delta;\n1342: \t\t}\n1343: \n1344: \t\tif (__update_replicas(c, dst, &d->r, d->delta))\n1345: \t\t\tgoto need_mark;\n1346: \t}\n1347: \n1348: \tdst->nr_inodes += deltas->nr_inodes;\n1349: \n1350: \tfor (i = 0; i < BCH_REPLICAS_MAX; i++) {\n1351: \t\tadded\t\t\t\t+= deltas->persistent_reserved[i];\n1352: \t\tdst->reserved\t\t\t+= deltas->persistent_reserved[i];\n1353: \t\tdst->persistent_reserved[i]\t+= deltas->persistent_reserved[i];\n1354: \t}\n1355: \n1356: \t/*\n1357: \t * Not allowed to reduce sectors_available except by getting a",
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/semweaver_treatment_evidence_cohort_v3/09_df94cb2e57b2_Integer_Overflow/csa/patchweaver_runtime/csa_raw/fs-bcachefs-buckets.c-bch2_trans_fs_usage_apply.txt",
+        "raw_output_sha256": "381ba496d374e77f9caac8211e351bdf7f30be1c8f46632ffe0ea53afe3a313a",
+        "command_sha256": "f00fa695fb22b4094411eea0fdaaffc6f991f087d8154510c21d30b5a546b570"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:symbolic-state",
+        "confidence": 0.88,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "fs/bcachefs/buckets.c",
+          "hunk_index": 0,
+          "source_line": 1325
+        },
+        "summary": "bch2_trans_fs_usage_apply in fs/bcachefs/buckets.c: state_ops=for (i = 0; i < BCH_REPLICAS_MAX; i++) { | cfg_calls=bch2_trans_fs_usage_apply -> percpu_down_read; bch2_trans_fs_usage_apply -> preempt_count_add",
+        "statements": [
+          "1293: \t\tswitch (d->r.data_type) {",
+          "1294: \t\tcase BCH_DATA_btree:",
+          "1295: \t\tcase BCH_DATA_user:",
+          "1296: \t\tcase BCH_DATA_parity:",
+          "1297: \t\t\tadded += d->delta;",
+          "1298: \t\t}"
+        ],
+        "guards": [
+          "do ... while [B2.1]",
+          "do ... while [B3.1]",
+          "static init __UNIQUE_ID___addressable___SCK__preempt_schedule2504"
+        ],
+        "call_boundary": [
+          "__update_replicas",
+          "this_cpu_add",
+          "preempt_enable",
+          "percpu_up_read",
+          "bch2_trans_fs_usage_apply",
+          "percpu_down_read"
+        ],
+        "call_edges": [
+          "bch2_trans_fs_usage_apply -> percpu_down_read",
+          "bch2_trans_fs_usage_apply -> preempt_count_add",
+          "bch2_trans_fs_usage_apply -> fs_usage_ptr",
+          "bch2_trans_fs_usage_apply -> replicas_delta_next",
+          "bch2_trans_fs_usage_apply -> __update_replicas",
+          "bch2_trans_fs_usage_apply -> __builtin_expect",
+          "bch2_trans_fs_usage_apply -> atomic64_read",
+          "bch2_trans_fs_usage_apply -> atomic64_cmpxchg"
+        ],
+        "state_transitions": [
+          "transition(for (i = 0; i < BCH_REPLICAS_MAX; i++) {)",
+          "transition([B1.4]->mark_lock)",
+          "transition(return [B1.9];)",
+          "[B1.4]->mark_lock",
+          "return [B1.9];",
+          "static void *__UNIQUE_ID___addressable___SCK__preempt_schedule2504 __attribute__((used)) __attribute__((section(\".discard.addressable\"))) = (void *)&__SCK__preempt_schedule;"
+        ],
+        "api_terms": [
+          "percpu_down_read",
+          "preempt_count_add",
+          "fs_usage_ptr",
+          "replicas_delta_next",
+          "__update_replicas",
+          "__builtin_expect"
+        ],
+        "related_symbols": [
+          "c->online_reserved",
+          "c->sectors_available",
+          "trans->disk_res",
+          "deltas->d",
+          "deltas->used",
+          "trans->c"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_state_1",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "fs/bcachefs/buckets.c",
+        "function": "bch2_trans_fs_usage_apply"
+      },
+      "location": {
+        "line": 1384,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "bch2_trans_fs_usage_apply in fs/bcachefs/buckets.c: cfg_calls=bch2_trans_fs_usage_apply -> percpu_down_read; bch2_trans_fs_usage_apply -> preempt_count_add",
+        "state_before": [
+          "buffer(c->online_reserved)",
+          "buffer(c->sectors_available)",
+          "sinks(atomic64_read, max_t)"
+        ],
+        "state_after": [
+          "transition([B1.4]->mark_lock)",
+          "transition(return [B1.9];)",
+          "transition(static void *__UNIQUE_ID___addressable___SCK__preempt_schedule2504 __attribute__((used)) __attribute__((section(\".discard.addressable\"))) = (void *)&__SCK__preempt_schedule;)"
+        ],
+        "functions": [
+          "bch2_trans_fs_usage_apply"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "c->online_reserved",
+          "c->sectors_available",
+          "trans->disk_res",
+          "deltas->d",
+          "deltas->used",
+          "trans->c"
+        ],
+        "buffer_fields": [
+          "c->online_reserved",
+          "c->sectors_available",
+          "trans->disk_res",
+          "deltas->d",
+          "deltas->used",
+          "trans->c"
+        ],
+        "call_targets": [
+          "atomic64_read",
+          "max_t",
+          "atomic64_cmpxchg",
+          "this_cpu_sub",
+          "preempt_enable",
+          "percpu_up_read",
+          "bch2_trans_inconsistent",
+          "replicas_delta_next"
+        ],
+        "call_edges": [
+          "bch2_trans_fs_usage_apply -> percpu_down_read",
+          "bch2_trans_fs_usage_apply -> preempt_count_add",
+          "bch2_trans_fs_usage_apply -> fs_usage_ptr",
+          "bch2_trans_fs_usage_apply -> replicas_delta_next",
+          "bch2_trans_fs_usage_apply -> __update_replicas",
+          "bch2_trans_fs_usage_apply -> __builtin_expect"
+        ],
+        "cfg_branch_kinds": [
+          "if",
+          "for",
+          "switch"
+        ],
+        "branch_conditions": [
+          "do ... while [B2.1]",
+          "do ... while [B3.1]",
+          "static init __UNIQUE_ID___addressable___SCK__preempt_schedule2504",
+          "if [B8.18]"
+        ],
+        "state_statements": [
+          "[B1.4]->mark_lock",
+          "return [B1.9];",
+          "static void *__UNIQUE_ID___addressable___SCK__preempt_schedule2504 __attribute__((used)) __attribute__((section(\".discard.addressable\"))) = (void *)&__SCK__preempt_schedule;",
+          "[B10.6] = [B10.5]",
+          "sizeof(struct bug_entry)",
+          "[B19.10]->r",
+          "[B19.14]->delta",
+          "[B21.2] != [B21.4]"
+        ],
+        "return_statements": [
+          "return [B1.9];",
+          "return [B23.1];"
+        ],
+        "source_file": "fs/bcachefs/buckets.c",
+        "source_excerpt": "1352: \t\tdst->reserved\t\t\t+= deltas->persistent_reserved[i];\n1353: \t\tdst->persistent_reserved[i]\t+= deltas->persistent_reserved[i];\n1354: \t}\n1355: \n1356: \t/*\n1357: \t * Not allowed to reduce sectors_available except by getting a\n1358: \t * reservation:\n1359: \t */\n1360: \tshould_not_have_added = added - (s64) disk_res_sectors;\n1361: \tif (unlikely(should_not_have_added > 0)) {\n1362: \t\tu64 old, new, v = atomic64_read(&c->sectors_available);\n1363: \n1364: \t\tdo {\n1365: \t\t\told = v;\n1366: \t\t\tnew = max_t(s64, 0, old - should_not_have_added);\n1367: \t\t} while ((v = atomic64_cmpxchg(&c->sectors_available,\n1368: \t\t\t\t\t       old, new)) != old);\n1369: \n1370: \t\tadded -= should_not_have_added;\n1371: \t\twarn = true;\n1372: \t}\n1373: \n1374: \tif (added > 0) {\n1375: \t\ttrans->disk_res->sectors -= added;\n1376: \t\tthis_cpu_sub(*c->online_reserved, added);\n1377: \t}\n1378: \n1379: \tpreempt_enable();\n1380: \tpercpu_up_read(&c->mark_lock);\n1381: \n1382: \tif (unlikely(warn) && !xchg(&warned_disk_usage, 1))\n1383: \t\tbch2_trans_inconsistent(trans,\n1384: \t\t\t\t\t\"disk usage increased %lli more than %u sectors reserved)\",\n1385: \t\t\t\t\tshould_not_have_added, disk_res_sectors);\n1386: \treturn 0;\n1387: need_mark:\n1388: \t/* revert changes: */\n1389: \tfor (d2 = deltas->d; d2 != d; d2 = replicas_delta_next(d2))\n1390: \t\tBUG_ON(__update_replicas(c, dst, &d2->r, -d2->delta));\n1391: \n1392: \tpreempt_enable();\n1393: \tpercpu_up_read(&c->mark_lock);\n1394: \treturn -1;\n1395: }\n1396: \n1397: /* trans_mark: */\n1398: \n1399: static inline int bch2_trans_mark_pointer(struct btree_trans *trans,\n1400: \t\t\t\t   enum btree_id btree_id, unsigned level,\n1401: \t\t\t\t   struct bkey_s_c k, struct extent_ptr_decoded p,\n1402: \t\t\t\t   unsigned flags)\n1403: {\n1404: \tbool insert = !(flags & BTREE_TRIGGER_OVERWRITE);\n1405: \tstruct btree_iter iter;\n1406: \tstruct bkey_i_alloc_v4 *a;\n1407: \tstruct bpos bucket;\n1408: \tstruct bch_backpointer bp;\n1409: \ts64 sectors;\n1410: \tint ret;\n1411: \n1412: \tbch2_extent_ptr_to_bp(trans->c, btree_id, level, k, p, &bucket, &bp);\n1413: \tsectors = bp.bucket_len;\n1414: \tif (!insert)\n1415: \t\tsectors = -sectors;\n1416: ",
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/semweaver_treatment_evidence_cohort_v3/09_df94cb2e57b2_Integer_Overflow/csa/patchweaver_runtime/csa_raw/fs-bcachefs-buckets.c-bch2_trans_fs_usage_apply.txt",
+        "raw_output_sha256": "381ba496d374e77f9caac8211e351bdf7f30be1c8f46632ffe0ea53afe3a313a",
+        "command_sha256": "f00fa695fb22b4094411eea0fdaaffc6f991f087d8154510c21d30b5a546b570"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:symbolic-state",
+        "confidence": 0.88,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "fs/bcachefs/buckets.c",
+          "hunk_index": 1,
+          "source_line": 1384
+        },
+        "summary": "bch2_trans_fs_usage_apply in fs/bcachefs/buckets.c: cfg_calls=bch2_trans_fs_usage_apply -> percpu_down_read; bch2_trans_fs_usage_apply -> preempt_count_add",
+        "statements": [
+          "1352: \t\tdst->reserved\t\t\t+= deltas->persistent_reserved[i];",
+          "1353: \t\tdst->persistent_reserved[i]\t+= deltas->persistent_reserved[i];",
+          "1354: \t}",
+          "1355:",
+          "1356: \t/*",
+          "1357: \t * Not allowed to reduce sectors_available except by getting a"
+        ],
+        "guards": [
+          "do ... while [B2.1]",
+          "do ... while [B3.1]",
+          "static init __UNIQUE_ID___addressable___SCK__preempt_schedule2504"
+        ],
+        "call_boundary": [
+          "atomic64_read",
+          "max_t",
+          "atomic64_cmpxchg",
+          "this_cpu_sub",
+          "preempt_enable",
+          "percpu_up_read"
+        ],
+        "call_edges": [
+          "bch2_trans_fs_usage_apply -> percpu_down_read",
+          "bch2_trans_fs_usage_apply -> preempt_count_add",
+          "bch2_trans_fs_usage_apply -> fs_usage_ptr",
+          "bch2_trans_fs_usage_apply -> replicas_delta_next",
+          "bch2_trans_fs_usage_apply -> __update_replicas",
+          "bch2_trans_fs_usage_apply -> __builtin_expect",
+          "bch2_trans_fs_usage_apply -> atomic64_read",
+          "bch2_trans_fs_usage_apply -> atomic64_cmpxchg"
+        ],
+        "state_transitions": [
+          "transition([B1.4]->mark_lock)",
+          "transition(return [B1.9];)",
+          "transition(static void *__UNIQUE_ID___addressable___SCK__preempt_schedule2504 __attribute__((used)) __attribute__((section(\".discard.addressable\"))) = (void *)&__SCK__preempt_schedule;)",
+          "[B1.4]->mark_lock",
+          "return [B1.9];",
+          "static void *__UNIQUE_ID___addressable___SCK__preempt_schedule2504 __attribute__((used)) __attribute__((section(\".discard.addressable\"))) = (void *)&__SCK__preempt_schedule;"
+        ],
+        "api_terms": [
+          "percpu_down_read",
+          "preempt_count_add",
+          "fs_usage_ptr",
+          "replicas_delta_next",
+          "__update_replicas",
+          "__builtin_expect"
+        ],
+        "related_symbols": [
+          "c->online_reserved",
+          "c->sectors_available",
+          "trans->disk_res",
+          "deltas->d",
+          "deltas->used",
+          "trans->c"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_state_2",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "fs/bcachefs/io_misc.c",
+        "function": "bch2_extent_fallocate"
+      },
+      "location": {
+        "line": 108,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "bch2_extent_fallocate in fs/bcachefs/io_misc.c: cfg_calls=bch2_extent_fallocate -> bch2_bkey_buf_init; bch2_extent_fallocate -> closure_init_stack",
+        "state_before": [
+          "buffer(v->start)",
+          "buffer(wp->sectors_free)",
+          "sinks(bch2_bkey_buf_realloc, bkey_reservation_init)"
+        ],
+        "state_after": [
+          "transition(return [B1.2];)",
+          "transition([B3.33] != [B3.35])",
+          "transition([B7.3] = [B7.2])"
+        ],
+        "functions": [
+          "bch2_extent_fallocate"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "v->start",
+          "wp->sectors_free",
+          "k->p",
+          "iter->pos",
+          "c->sb",
+          "trans->c"
+        ],
+        "buffer_fields": [
+          "v->start",
+          "wp->sectors_free",
+          "k->p",
+          "iter->pos",
+          "c->sb",
+          "trans->c"
+        ],
+        "call_targets": [
+          "bch2_bkey_buf_realloc",
+          "bkey_reservation_init",
+          "bch2_key_resize",
+          "bkey_extent_init",
+          "bch2_alloc_sectors_start_trans",
+          "min",
+          "bch2_open_bucket_get",
+          "bch2_alloc_sectors_append_ptrs"
+        ],
+        "call_edges": [
+          "bch2_extent_fallocate -> bch2_bkey_buf_init",
+          "bch2_extent_fallocate -> closure_init_stack",
+          "bch2_extent_fallocate -> bch2_btree_iter_peek_slot",
+          "bch2_extent_fallocate -> __bkey_err",
+          "bch2_extent_fallocate -> bch2_bkey_nr_ptrs_fully_allocated",
+          "bch2_extent_fallocate -> bch2_disk_reservation_get"
+        ],
+        "cfg_branch_kinds": [
+          "if",
+          "for"
+        ],
+        "branch_conditions": [
+          "if [B3.36]",
+          "if [B6.3] && [B5.2]",
+          "[B6.3] && ...",
+          "for (...; ([B10.4]); ...)"
+        ],
+        "state_statements": [
+          "return [B1.2];",
+          "[B3.33] != [B3.35]",
+          "[B7.3] = [B7.2]",
+          "[B7.25] = [B7.24]",
+          "([B8.1])++",
+          "[B9.4]->unwritten",
+          "[B9.5] = [B9.2]",
+          "([B10.3]) = [B10.2]"
+        ],
+        "return_statements": [
+          "return [B1.2];",
+          "return [B74.2];"
+        ],
+        "source_file": "fs/bcachefs/io_misc.c",
+        "source_excerpt": "76: \n77: \t\tbch2_bkey_buf_realloc(&new, c, sizeof(*reservation) / sizeof(u64));\n78: \t\treservation = bkey_reservation_init(new.k);\n79: \t\treservation->k.p = iter->pos;\n80: \t\tbch2_key_resize(&reservation->k, sectors);\n81: \t\treservation->v.nr_replicas = opts.data_replicas;\n82: \t} else {\n83: \t\tstruct bkey_i_extent *e;\n84: \t\tstruct bch_devs_list devs_have;\n85: \t\tstruct write_point *wp;\n86: \t\tstruct bch_extent_ptr *ptr;\n87: \n88: \t\tdevs_have.nr = 0;\n89: \n90: \t\tbch2_bkey_buf_realloc(&new, c, BKEY_EXTENT_U64s_MAX);\n91: \n92: \t\te = bkey_extent_init(new.k);\n93: \t\te->k.p = iter->pos;\n94: \n95: \t\tret = bch2_alloc_sectors_start_trans(trans,\n96: \t\t\t\topts.foreground_target,\n97: \t\t\t\tfalse,\n98: \t\t\t\twrite_point,\n99: \t\t\t\t&devs_have,\n100: \t\t\t\topts.data_replicas,\n101: \t\t\t\topts.data_replicas,\n102: \t\t\t\tBCH_WATERMARK_normal, 0, &cl, &wp);\n103: \t\tif (bch2_err_matches(ret, BCH_ERR_operation_blocked))\n104: \t\t\tret = -BCH_ERR_transaction_restart_nested;\n105: \t\tif (ret)\n106: \t\t\tgoto err;\n107: \n108: \t\tsectors = min(sectors, wp->sectors_free);\n109: \t\tsectors_allocated = sectors;\n110: \n111: \t\tbch2_key_resize(&e->k, sectors);\n112: \n113: \t\tbch2_open_bucket_get(c, wp, &open_buckets);\n114: \t\tbch2_alloc_sectors_append_ptrs(c, wp, &e->k_i, sectors, false);\n115: \t\tbch2_alloc_sectors_done(c, wp);\n116: \n117: \t\textent_for_each_ptr(extent_i_to_s(e), ptr)\n118: \t\t\tptr->unwritten = true;\n119: \t}\n120: \n121: \thave_reservation = true;\n122: \n123: \tret = bch2_extent_update(trans, inum, iter, new.k, &disk_res,\n124: \t\t\t\t 0, i_sectors_delta, true);\n125: err:\n126: \tif (!ret && sectors_allocated)\n127: \t\tbch2_increment_clock(c, sectors_allocated, WRITE);\n128: \n129: \tbch2_open_buckets_put(c, &open_buckets);\n130: \tbch2_disk_reservation_put(c, &disk_res);\n131: \tbch2_bkey_buf_exit(&new, c);\n132: \tbch2_bkey_buf_exit(&old, c);\n133: \n134: \tif (closure_nr_remaining(&cl) != 1) {\n135: \t\tbch2_trans_unlock(trans);\n136: \t\tclosure_sync(&cl);\n137: \t}\n138: \n139: \treturn ret;\n140: }",
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/semweaver_treatment_evidence_cohort_v3/09_df94cb2e57b2_Integer_Overflow/csa/patchweaver_runtime/csa_raw/fs-bcachefs-io_misc.c-bch2_extent_fallocate.txt",
+        "raw_output_sha256": "7c5b756570688a9755a94e6c8433c7e675c9ed9c03cf882ad198f28f2129bf2c",
+        "command_sha256": "0872a069b5c78fdca7167e44dee9815dcaf85e5416b6b53abe6ab3134783dada"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:symbolic-state",
+        "confidence": 0.88,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "fs/bcachefs/io_misc.c",
+          "hunk_index": 1,
+          "source_line": 108
+        },
+        "summary": "bch2_extent_fallocate in fs/bcachefs/io_misc.c: cfg_calls=bch2_extent_fallocate -> bch2_bkey_buf_init; bch2_extent_fallocate -> closure_init_stack",
+        "statements": [
+          "76:",
+          "77: \t\tbch2_bkey_buf_realloc(&new, c, sizeof(*reservation) / sizeof(u64));",
+          "78: \t\treservation = bkey_reservation_init(new.k);",
+          "79: \t\treservation->k.p = iter->pos;",
+          "80: \t\tbch2_key_resize(&reservation->k, sectors);",
+          "81: \t\treservation->v.nr_replicas = opts.data_replicas;"
+        ],
+        "guards": [
+          "if [B3.36]",
+          "if [B6.3] && [B5.2]",
+          "[B6.3] && ..."
+        ],
+        "call_boundary": [
+          "bch2_bkey_buf_realloc",
+          "bkey_reservation_init",
+          "bch2_key_resize",
+          "bkey_extent_init",
+          "bch2_alloc_sectors_start_trans",
+          "min"
+        ],
+        "call_edges": [
+          "bch2_extent_fallocate -> bch2_bkey_buf_init",
+          "bch2_extent_fallocate -> closure_init_stack",
+          "bch2_extent_fallocate -> bch2_btree_iter_peek_slot",
+          "bch2_extent_fallocate -> __bkey_err",
+          "bch2_extent_fallocate -> bch2_bkey_nr_ptrs_fully_allocated",
+          "bch2_extent_fallocate -> bch2_disk_reservation_get",
+          "bch2_extent_fallocate -> __builtin_expect",
+          "bch2_extent_fallocate -> bch2_bkey_buf_reassemble"
+        ],
+        "state_transitions": [
+          "transition(return [B1.2];)",
+          "transition([B3.33] != [B3.35])",
+          "transition([B7.3] = [B7.2])",
+          "return [B1.2];",
+          "[B3.33] != [B3.35]",
+          "[B7.3] = [B7.2]"
+        ],
+        "api_terms": [
+          "bch2_bkey_buf_init",
+          "closure_init_stack",
+          "bch2_btree_iter_peek_slot",
+          "__bkey_err",
+          "bch2_bkey_nr_ptrs_fully_allocated",
+          "bch2_disk_reservation_get"
+        ],
+        "related_symbols": [
+          "v->start",
+          "wp->sectors_free",
+          "k->p",
+          "iter->pos",
+          "c->sb",
+          "trans->c"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_validation_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "fs/bcachefs/buckets.c",
+        "function": "bch2_trans_fs_usage_apply"
+      },
+      "location": {
+        "line": 1325,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at fs/bcachefs/buckets.c:1325",
+        "diagnostic_message": "",
+        "diagnostic_checker": "",
+        "state_before": [
+          "buffer(c->online_reserved)",
+          "buffer(c->sectors_available)",
+          "sinks(__update_replicas, this_cpu_add)"
+        ],
+        "state_after": [
+          "diagnostic(csa)"
+        ],
+        "functions": [
+          "bch2_trans_fs_usage_apply"
+        ],
+        "globals": [],
+        "tracked_symbols": [],
+        "buffer_fields": [
+          "c->online_reserved",
+          "c->sectors_available",
+          "trans->disk_res",
+          "deltas->d",
+          "deltas->used",
+          "trans->c"
+        ],
+        "call_targets": [
+          "__update_replicas",
+          "this_cpu_add",
+          "preempt_enable",
+          "percpu_up_read",
+          "bch2_trans_fs_usage_apply",
+          "percpu_down_read"
+        ],
+        "call_edges": [
+          "bch2_trans_fs_usage_apply -> percpu_down_read",
+          "bch2_trans_fs_usage_apply -> preempt_count_add",
+          "bch2_trans_fs_usage_apply -> fs_usage_ptr",
+          "bch2_trans_fs_usage_apply -> replicas_delta_next",
+          "bch2_trans_fs_usage_apply -> __update_replicas",
+          "bch2_trans_fs_usage_apply -> __builtin_expect"
+        ],
+        "state_statements": [
+          "for (i = 0; i < BCH_REPLICAS_MAX; i++) {",
+          "[B1.4]->mark_lock",
+          "return [B1.9];",
+          "static void *__UNIQUE_ID___addressable___SCK__preempt_schedule2504 __attribute__((used)) __attribute__((section(\".discard.addressable\"))) = (void *)&__SCK__preempt_schedule;",
+          "[B10.6] = [B10.5]",
+          "sizeof(struct bug_entry)"
+        ],
+        "source_file": "fs/bcachefs/buckets.c",
+        "source_excerpt": "1293: \t\tswitch (d->r.data_type) {\n1294: \t\tcase BCH_DATA_btree:\n1295: \t\tcase BCH_DATA_user:\n1296: \t\tcase BCH_DATA_parity:\n1297: \t\t\tadded += d->delta;\n1298: \t\t}\n1299: \t\tBUG_ON(__update_replicas(c, dst, &d->r, -d->delta));\n1300: \t}\n1301: \n1302: \tdst->nr_inodes -= deltas->nr_inodes;\n1303: \n1304: \tfor (i = 0; i < BCH_REPLICAS_MAX; i++) {\n1305: \t\tadded\t\t\t\t-= deltas->persistent_reserved[i];\n1306: \t\tdst->reserved\t\t\t-= deltas->persistent_reserved[i];\n1307: \t\tdst->persistent_reserved[i]\t-= deltas->persistent_reserved[i];\n1308: \t}\n1309: \n1310: \tif (added > 0) {\n1311: \t\ttrans->disk_res->sectors += added;\n1312: \t\tthis_cpu_add(*c->online_reserved, added);\n1313: \t}\n1314: \n1315: \tpreempt_enable();\n1316: \tpercpu_up_read(&c->mark_lock);\n1317: }\n1318: \n1319: int bch2_trans_fs_usage_apply(struct btree_trans *trans,\n1320: \t\t\t      struct replicas_delta_list *deltas)\n1321: {\n1322: \tstruct bch_fs *c = trans->c;\n1323: \tstatic int warned_disk_usage = 0;\n1324: \tbool warn = false;\n1325: \tunsigned disk_res_sectors = trans->disk_res ? trans->disk_res->sectors : 0;\n1326: \tstruct replicas_delta *d, *d2;\n1327: \tstruct replicas_delta *top = (void *) deltas->d + deltas->used;\n1328: \tstruct bch_fs_usage *dst;\n1329: \ts64 added = 0, should_not_have_added;\n1330: \tunsigned i;\n1331: \n1332: \tpercpu_down_read(&c->mark_lock);\n1333: \tpreempt_disable();\n1334: \tdst = fs_usage_ptr(c, trans->journal_res.seq, false);\n1335: \n1336: \tfor (d = deltas->d; d != top; d = replicas_delta_next(d)) {\n1337: \t\tswitch (d->r.data_type) {\n1338: \t\tcase BCH_DATA_btree:\n1339: \t\tcase BCH_DATA_user:\n1340: \t\tcase BCH_DATA_parity:\n1341: \t\t\tadded += d->delta;\n1342: \t\t}\n1343: \n1344: \t\tif (__update_replicas(c, dst, &d->r, d->delta))\n1345: \t\t\tgoto need_mark;\n1346: \t}\n1347: \n1348: \tdst->nr_inodes += deltas->nr_inodes;\n1349: \n1350: \tfor (i = 0; i < BCH_REPLICAS_MAX; i++) {\n1351: \t\tadded\t\t\t\t+= deltas->persistent_reserved[i];\n1352: \t\tdst->reserved\t\t\t+= deltas->persistent_reserved[i];\n1353: \t\tdst->persistent_reserved[i]\t+= deltas->persistent_reserved[i];\n1354: \t}\n1355: \n1356: \t/*\n1357: \t * Not allowed to reduce sectors_available except by getting a",
+        "coverage_status": "partial",
+        "contract_type": "",
+        "guard_exprs": [
+          "i = 0; i < BCH_REPLICAS_MAX; i++",
+          "added > 0",
+          "d = deltas->d; d != top; d = replicas_delta_next(d)",
+          "__update_replicas(c, dst, &d->r, d->delta)"
+        ],
+        "sink_calls": [
+          "__update_replicas",
+          "this_cpu_add",
+          "preempt_enable",
+          "percpu_up_read"
+        ]
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.72,
+        "origin": "analyzer_output"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "fs/bcachefs/buckets.c",
+          "hunk_index": 0,
+          "source_line": 1325
+        },
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at fs/bcachefs/buckets.c:1325",
+        "statements": [
+          "1293: \t\tswitch (d->r.data_type) {",
+          "1294: \t\tcase BCH_DATA_btree:",
+          "1295: \t\tcase BCH_DATA_user:",
+          "1296: \t\tcase BCH_DATA_parity:",
+          "1297: \t\t\tadded += d->delta;",
+          "1298: \t\t}"
+        ],
+        "guards": [
+          "i = 0; i < BCH_REPLICAS_MAX; i++",
+          "added > 0",
+          "d = deltas->d; d != top; d = replicas_delta_next(d)",
+          "__update_replicas(c, dst, &d->r, d->delta)"
+        ],
+        "call_boundary": [
+          "__update_replicas",
+          "this_cpu_add",
+          "preempt_enable",
+          "percpu_up_read",
+          "bch2_trans_fs_usage_apply",
+          "percpu_down_read"
+        ],
+        "call_edges": [
+          "bch2_trans_fs_usage_apply -> percpu_down_read",
+          "bch2_trans_fs_usage_apply -> preempt_count_add",
+          "bch2_trans_fs_usage_apply -> fs_usage_ptr",
+          "bch2_trans_fs_usage_apply -> replicas_delta_next",
+          "bch2_trans_fs_usage_apply -> __update_replicas",
+          "bch2_trans_fs_usage_apply -> __builtin_expect"
+        ],
+        "state_transitions": [
+          "diagnostic(csa)"
+        ],
+        "api_terms": [
+          "for (i = 0; i < BCH_REPLICAS_MAX; i++) {",
+          "[B1.4]->mark_lock",
+          "return [B1.9];",
+          "static void *__UNIQUE_ID___addressable___SCK__preempt_schedule2504 __attribute__((used)) __attribute__((section(\".discard.addressable\"))) = (void *)&__SCK__preempt_schedule;",
+          "[B10.6] = [B10.5]",
+          "sizeof(struct bug_entry)"
+        ],
+        "related_symbols": [],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      }
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_1",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "fs/bcachefs/buckets.c",
+        "function": "bch2_trans_fs_usage_apply"
+      },
+      "location": {
+        "line": 1325,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "bch2_trans_fs_usage_apply in fs/bcachefs/buckets.c provides CSA-backed pointer/resource lifecycle context near line 1325",
+        "diagnostic_message": "",
+        "diagnostic_checker": "",
+        "state_before": [
+          "buffer(c->online_reserved)",
+          "buffer(c->sectors_available)",
+          "sinks(__update_replicas, this_cpu_add)"
+        ],
+        "state_after": [
+          "operation(for (i = 0; i < BCH_REPLICAS_MAX; i++) {)",
+          "operation([B1.4]->mark_lock)",
+          "operation(return [B1.9];)",
+          "operation(static void *__UNIQUE_ID___addressable___SCK__preempt_schedule2504 __attribute__((used)) __attribute__((section(\".discard.addressable\"))) = (void *)&__SCK__preempt_schedule;)"
+        ],
+        "functions": [
+          "bch2_trans_fs_usage_apply"
+        ],
+        "globals": [],
+        "tracked_symbols": [],
+        "buffer_fields": [
+          "c->online_reserved",
+          "c->sectors_available",
+          "trans->disk_res",
+          "deltas->d",
+          "deltas->used",
+          "trans->c"
+        ],
+        "call_targets": [
+          "__update_replicas",
+          "this_cpu_add",
+          "preempt_enable",
+          "percpu_up_read",
+          "bch2_trans_fs_usage_apply",
+          "percpu_down_read"
+        ],
+        "call_edges": [
+          "bch2_trans_fs_usage_apply -> percpu_down_read",
+          "bch2_trans_fs_usage_apply -> preempt_count_add",
+          "bch2_trans_fs_usage_apply -> fs_usage_ptr",
+          "bch2_trans_fs_usage_apply -> replicas_delta_next",
+          "bch2_trans_fs_usage_apply -> __update_replicas",
+          "bch2_trans_fs_usage_apply -> __builtin_expect"
+        ],
+        "state_statements": [
+          "for (i = 0; i < BCH_REPLICAS_MAX; i++) {",
+          "[B1.4]->mark_lock",
+          "return [B1.9];",
+          "static void *__UNIQUE_ID___addressable___SCK__preempt_schedule2504 __attribute__((used)) __attribute__((section(\".discard.addressable\"))) = (void *)&__SCK__preempt_schedule;",
+          "[B10.6] = [B10.5]",
+          "sizeof(struct bug_entry)"
+        ],
+        "source_file": "fs/bcachefs/buckets.c",
+        "source_excerpt": "1293: \t\tswitch (d->r.data_type) {\n1294: \t\tcase BCH_DATA_btree:\n1295: \t\tcase BCH_DATA_user:\n1296: \t\tcase BCH_DATA_parity:\n1297: \t\t\tadded += d->delta;\n1298: \t\t}\n1299: \t\tBUG_ON(__update_replicas(c, dst, &d->r, -d->delta));\n1300: \t}\n1301: \n1302: \tdst->nr_inodes -= deltas->nr_inodes;\n1303: \n1304: \tfor (i = 0; i < BCH_REPLICAS_MAX; i++) {\n1305: \t\tadded\t\t\t\t-= deltas->persistent_reserved[i];\n1306: \t\tdst->reserved\t\t\t-= deltas->persistent_reserved[i];\n1307: \t\tdst->persistent_reserved[i]\t-= deltas->persistent_reserved[i];\n1308: \t}\n1309: \n1310: \tif (added > 0) {\n1311: \t\ttrans->disk_res->sectors += added;\n1312: \t\tthis_cpu_add(*c->online_reserved, added);\n1313: \t}\n1314: \n1315: \tpreempt_enable();\n1316: \tpercpu_up_read(&c->mark_lock);\n1317: }\n1318: \n1319: int bch2_trans_fs_usage_apply(struct btree_trans *trans,\n1320: \t\t\t      struct replicas_delta_list *deltas)\n1321: {\n1322: \tstruct bch_fs *c = trans->c;\n1323: \tstatic int warned_disk_usage = 0;\n1324: \tbool warn = false;\n1325: \tunsigned disk_res_sectors = trans->disk_res ? trans->disk_res->sectors : 0;\n1326: \tstruct replicas_delta *d, *d2;\n1327: \tstruct replicas_delta *top = (void *) deltas->d + deltas->used;\n1328: \tstruct bch_fs_usage *dst;\n1329: \ts64 added = 0, should_not_have_added;\n1330: \tunsigned i;\n1331: \n1332: \tpercpu_down_read(&c->mark_lock);\n1333: \tpreempt_disable();\n1334: \tdst = fs_usage_ptr(c, trans->journal_res.seq, false);\n1335: \n1336: \tfor (d = deltas->d; d != top; d = replicas_delta_next(d)) {\n1337: \t\tswitch (d->r.data_type) {\n1338: \t\tcase BCH_DATA_btree:\n1339: \t\tcase BCH_DATA_user:\n1340: \t\tcase BCH_DATA_parity:\n1341: \t\t\tadded += d->delta;\n1342: \t\t}\n1343: \n1344: \t\tif (__update_replicas(c, dst, &d->r, d->delta))\n1345: \t\t\tgoto need_mark;\n1346: \t}\n1347: \n1348: \tdst->nr_inodes += deltas->nr_inodes;\n1349: \n1350: \tfor (i = 0; i < BCH_REPLICAS_MAX; i++) {\n1351: \t\tadded\t\t\t\t+= deltas->persistent_reserved[i];\n1352: \t\tdst->reserved\t\t\t+= deltas->persistent_reserved[i];\n1353: \t\tdst->persistent_reserved[i]\t+= deltas->persistent_reserved[i];\n1354: \t}\n1355: \n1356: \t/*\n1357: \t * Not allowed to reduce sectors_available except by getting a",
+        "coverage_status": "partial",
+        "operations": [
+          "for (i = 0; i < BCH_REPLICAS_MAX; i++) {",
+          "[B1.4]->mark_lock",
+          "return [B1.9];",
+          "static void *__UNIQUE_ID___addressable___SCK__preempt_schedule2504 __attribute__((used)) __attribute__((section(\".discard.addressable\"))) = (void *)&__SCK__preempt_schedule;",
+          "[B10.6] = [B10.5]",
+          "sizeof(struct bug_entry)"
+        ],
+        "acquisition_ops": [],
+        "release_ops": []
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.72,
+        "origin": "analyzer_output"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "fs/bcachefs/buckets.c",
+          "hunk_index": 0,
+          "source_line": 1325
+        },
+        "summary": "bch2_trans_fs_usage_apply in fs/bcachefs/buckets.c provides CSA-backed pointer/resource lifecycle context near line 1325",
+        "statements": [
+          "1293: \t\tswitch (d->r.data_type) {",
+          "1294: \t\tcase BCH_DATA_btree:",
+          "1295: \t\tcase BCH_DATA_user:",
+          "1296: \t\tcase BCH_DATA_parity:",
+          "1297: \t\t\tadded += d->delta;",
+          "1298: \t\t}"
+        ],
+        "guards": [
+          "i = 0; i < BCH_REPLICAS_MAX; i++",
+          "added > 0",
+          "d = deltas->d; d != top; d = replicas_delta_next(d)",
+          "__update_replicas(c, dst, &d->r, d->delta)"
+        ],
+        "call_boundary": [
+          "__update_replicas",
+          "this_cpu_add",
+          "preempt_enable",
+          "percpu_up_read",
+          "bch2_trans_fs_usage_apply",
+          "percpu_down_read"
+        ],
+        "call_edges": [
+          "bch2_trans_fs_usage_apply -> percpu_down_read",
+          "bch2_trans_fs_usage_apply -> preempt_count_add",
+          "bch2_trans_fs_usage_apply -> fs_usage_ptr",
+          "bch2_trans_fs_usage_apply -> replicas_delta_next",
+          "bch2_trans_fs_usage_apply -> __update_replicas",
+          "bch2_trans_fs_usage_apply -> __builtin_expect"
+        ],
+        "state_transitions": [
+          "operation(for (i = 0; i < BCH_REPLICAS_MAX; i++) {)",
+          "operation([B1.4]->mark_lock)",
+          "operation(return [B1.9];)",
+          "operation(static void *__UNIQUE_ID___addressable___SCK__preempt_schedule2504 __attribute__((used)) __attribute__((section(\".discard.addressable\"))) = (void *)&__SCK__preempt_schedule;)"
+        ],
+        "api_terms": [
+          "for (i = 0; i < BCH_REPLICAS_MAX; i++) {",
+          "[B1.4]->mark_lock",
+          "return [B1.9];",
+          "static void *__UNIQUE_ID___addressable___SCK__preempt_schedule2504 __attribute__((used)) __attribute__((section(\".discard.addressable\"))) = (void *)&__SCK__preempt_schedule;",
+          "[B10.6] = [B10.5]",
+          "sizeof(struct bug_entry)"
+        ],
+        "related_symbols": [],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "collected_analyzers": [
+    "csa"
+  ],
+  "provenance_summary": {
+    "total_records": 7,
+    "origin_counts": {
+      "analyzer_internal": 5,
+      "analyzer_output": 2
+    },
+    "analyzer_internal_records": 5,
+    "analyzer_internal_fraction": 0.7142857142857143,
+    "analyzer_backed_records": 7,
+    "analyzer_backed_fraction": 1.0,
+    "source_derived_records": 0,
+    "source_derived_fraction": 0.0
+  }
+}

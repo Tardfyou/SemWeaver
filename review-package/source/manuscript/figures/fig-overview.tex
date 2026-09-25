@@ -1,0 +1,166 @@
+% Fig. 1 -- Front-page teaser: semantic gap + typed evidence layer + headline result.
+% Body only: wrap with figure*/caption/label in the Introduction.
+% Sized to span the IEEE two-column \textwidth (<=516pt) at body font (no \resizebox).
+% Numbers are sourced from artifacts (do NOT hand-edit):
+%   E1  artifacts/research/e2/results/final/e2_final_results.csv
+%       PDS 0/12 -> 11/12 ; fixed-side alerts 37 -> 0 ; motivating case 07 10/9 -> 1/0
+%   E2  artifacts/v2_experiments/tables/refine_results.csv
+%       PDS 8/20 -> 12/20 (CSA 5/10->7/10, CodeQL 3/10->5/10)
+\begin{tikzpicture}[sw,
+    pcap/.style={font=\footnotesize\bfseries, text=swink, anchor=west},
+    psub/.style={font=\scriptsize\bfseries, text=swmuted, anchor=west},
+    chip/.style={swio, font=\scriptsize, align=center, inner sep=2.2pt,
+                 minimum height=5.6mm, rounded corners=1.2pt},
+    bignum/.style={font=\bfseries},
+  ]
+  % ============================ geometry ===============================
+  \def\Wp{5.00}         % panel inner width
+  \def\xA{0}            % panel A origin (left edge of content area)
+  \def\xB{5.60}         % panel B origin
+  \def\xC{11.10}        % panel C origin
+  \def\Top{0.05}        % panel top edge
+  \def\Bot{-5.55}       % panel bottom edge
+
+  % =====================================================================
+  % PANEL A -- the patch-discrimination gap (problem hook)
+  % =====================================================================
+  \begin{scope}[shift={(\xA,0)}]
+    \node[pcap] at (0.05,-0.28) {(a) Patch-discrimination gap};
+    \draw[swrule] (-0.02,-0.52) -- (\Wp,-0.52);
+
+    % --- tiny cleanup-edge case: vulnerable vs. fixed --------------------
+    \node[psub] (avt) at (0.05,-0.78) {Vulnerable};
+    \node[swproc, font=\scriptsize, anchor=north west, minimum width=21mm,
+          minimum height=5.4mm] (aif) at (0.10,-1.00) {\ttfamily if (ret)};
+    \node[swbug, font=\scriptsize, below=2.6mm of aif.south west, anchor=north west,
+          minimum width=21mm, minimum height=7.2mm, align=center]
+          (afree) {\ttfamily goto free\_fc;\\[-1pt]\ttfamily kfree(mt->fc)};
+    \draw[swbugedge] (aif) -- (afree);
+
+    \node[psub] (aft) at (2.70,-0.78) {Fixed};
+    \node[swproc, font=\scriptsize, anchor=north west, minimum width=22mm,
+          minimum height=5.4mm] (fif) at (2.66,-1.00) {\ttfamily if (ret)};
+    \node[swsafe, font=\scriptsize, below=2.6mm of fif.south west, anchor=north west,
+          minimum width=22mm, minimum height=7.2mm, align=center]
+          (ffree) {\ttfamily goto\\[-1pt]\ttfamily free\_match\_hl};
+    \draw[swsafeedge] (fif) -- (ffree);
+
+    \node[swbadge, draw=sworange, fill=sworangefill, text=sworange]
+          (bar) at (2.54,-1.70) {barrier};
+    \draw[swaccent] (afree.east) to[out=20,in=200] (bar.west);
+    \draw[swaccent] (bar.east) to[out=-20,in=160] (ffree.west);
+
+    % --- the dilemma table ----------------------------------------------
+    \coordinate (t0) at (0.05,-2.78);
+    \node[font=\scriptsize\bfseries, anchor=west] at ($(t0)+(0.00,0)$) {Setting};
+    \node[font=\scriptsize\bfseries] at ($(t0)+(1.90,0)$) {Bug};
+    \node[font=\scriptsize\bfseries] at ($(t0)+(2.52,0)$) {Fix};
+    \node[font=\scriptsize\bfseries, anchor=west] at ($(t0)+(2.96,0)$) {Verdict};
+    \draw[swrule] ($(t0)+(-0.02,-0.20)$) -- ($(t0)+(4.92,-0.20)$);
+
+    \foreach \i/\name/\b/\bc/\f/\fc/\v/\vc in {%
+        1/Baseline/{$\checkmark$}/swteal/{$\times$}/swred/fixed-noisy/swred,
+        2/{Na\"ive refine}/{$\times$}/swred/{$\checkmark$}/swteal/over-pruned/swred,
+        3/\textbf{\toolname}/{$\checkmark$}/swteal/{$\checkmark$}/swteal/{PDS}/swteal}{
+      \node[anchor=west, font=\scriptsize] at ($(t0)+(0.00,-\i*0.42-0.10)$) {\name};
+      \node[font=\scriptsize\bfseries, text=\bc] at ($(t0)+(1.90,-\i*0.42-0.10)$) {\b};
+      \node[font=\scriptsize\bfseries, text=\fc] at ($(t0)+(2.52,-\i*0.42-0.10)$) {\f};
+      \node[anchor=west, font=\scriptsize\bfseries\itshape, text=\vc]
+            at ($(t0)+(2.96,-\i*0.42-0.10)$) {\v};
+    }
+    \draw[swrule] ($(t0)+(-0.02,-1.46)$) -- ($(t0)+(4.92,-1.46)$);
+    \node[swnote, anchor=west, align=left, text width=49mm] at ($(t0)+(0.00,-1.86)$)
+         {Fixed silence \emph{alone} risks over-pruning;
+          here $10/9\!\rightarrow\!1/0$ alerts.};
+
+    \begin{scope}[on background layer]
+      \node[swpanel, fit={(-0.12,\Top) (\Wp,\Bot)}] {};
+    \end{scope}
+  \end{scope}
+
+  % =====================================================================
+  % PANEL B -- typed evidence layer (method hook)
+  % =====================================================================
+  \begin{scope}[shift={(\xB,0)}]
+    \node[pcap] at (0.05,-0.28) {(b) Typed evidence layer};
+    \draw[swrule] (-0.02,-0.52) -- (\Wp,-0.52);
+
+    \node[psub] at (0.05,-0.74) {evidence sources};
+    \node[chip, anchor=north west, minimum width=23mm] (bpf) at (0.06,-1.02)
+         {patch facts};
+    \node[chip, anchor=north west, minimum width=23mm] (bss) at (2.58,-1.02)
+         {source slice};
+    \node[chip, draw=swblue, fill=swbluefill, anchor=north west, minimum width=23mm]
+         (bcsa) at (0.06,-1.78) {CSA path/lifetime};
+    \node[chip, draw=sworange, fill=sworangefill, anchor=north west, minimum width=23mm]
+         (bql) at (2.58,-1.78) {CodeQL flow/call};
+
+    \node[swhub, font=\scriptsize, align=center, minimum width=46mm,
+          minimum height=9.4mm] (bb) at (2.50,-3.06)
+         {\textbf{Evidence bundle}\,: typed, bounded\\[-1pt]
+          {\tiny\itshape\color{swmuted}roles: guard\,$\cdot$\,flow\,$\cdot$\,state\,$\cdot$\,lifetime\,$\cdot$\,type/API}};
+    \node[swproc, font=\scriptsize, minimum width=38mm, minimum height=5.6mm]
+          (bag) at (2.50,-4.00) {Refinement agent};
+    \node[swhi, font=\scriptsize, align=center, minimum width=45mm,
+          minimum height=7.0mm] (bg) at (2.50,-4.92)
+         {\textbf{Target-preserving gate}\\[-1pt]
+          accept iff \emph{bug hit} $\wedge$ \emph{fix silent}};
+
+    \foreach \n in {bpf,bss,bcsa,bql}{
+      \draw[swthin] (\n.south) -- ($(bb.north)+(0,0.02)$);}
+    \draw[swflow] (bb) -- (bag);
+    \draw[swflow] (bag) -- node[right=1pt,font=\tiny,text=swmuted,fill=swwhite,
+          inner sep=0.6pt] {candidate} (bg);
+    % validation feedback is normalized back into the bundle each round
+    \draw[swfeedback] (bg.east) -- ($(bg.east)+(0.20,0)$)
+          |- node[pos=0.25,font=\tiny,text=swmuted,rotate=-90,anchor=south,
+                  fill=swwhite,inner sep=0.6pt] {validation feedback}
+          (bb.east);
+
+    \begin{scope}[on background layer]
+      \node[swpanel, fit={(-0.12,\Top) (\Wp,\Bot)}] {};
+    \end{scope}
+  \end{scope}
+
+  % =====================================================================
+  % PANEL C -- headline results (result hook)
+  % =====================================================================
+  \begin{scope}[shift={(\xC,0)}]
+    \node[pcap] at (0.05,-0.28) {(c) Patch-discrimination gains};
+    \draw[swrule] (-0.02,-0.52) -- (\Wp,-0.52);
+
+    % card maker: y / title / before / after / delta / afterColor
+    \foreach \y/\title/\bef/\aft/\del/\ac in {%
+        -0.74/{E1\,: strict PDS, KNighter CSA ($n{=}12$)}/{0/12}/{11/12}/{$+11$}/swteal,
+        -2.36/{E1\,: fixed-side false alerts}/{37}/{0}/{$-37$}/swteal,
+        -3.98/{E2\,: cross-backend PDS ($n{=}20$)}/{8/20}/{12/20}/{$+4$}/swteal}{
+      \node[font=\scriptsize\bfseries, text=swmuted, anchor=west] at (0.05,\y) {\title};
+      \node[bignum, font=\large, text=swgray, anchor=west] (cb) at (0.55,\y-0.60) {\bef};
+      \node[bignum, font=\large, text=\ac, anchor=east] (ca) at (4.72,\y-0.60) {\aft};
+      \draw[-{Latex[length=2.0mm,width=1.8mm]}, line width=1.1pt, swink]
+            ($(cb.east)+(0.12,0)$) -- ($(ca.west)-(0.12,0)$);
+      \node[swbadge, draw=\ac, fill=swtealfill, text=\ac, font=\tiny\bfseries]
+            at ($(cb.east)!0.5!(ca.west)+(0,0.30)$) {\del};
+    }
+    \draw[swrule] (-0.02,-1.80) -- (\Wp,-1.80);
+    \draw[swrule] (-0.02,-3.42) -- (\Wp,-3.42);
+
+    \node[swnote, anchor=west, align=left, text width=49mm] at (0.05,-5.04)
+         {Patch-local objects only. E2 split: CSA $5\!\rightarrow\!7$, CodeQL $3\!\rightarrow\!5$ (/10).};
+
+    \begin{scope}[on background layer]
+      \node[swpanel, fit={(-0.12,\Top) (\Wp,\Bot)}] {};
+    \end{scope}
+  \end{scope}
+
+  % ===================== inter-panel narrative arrows ===================
+  \def\ymid{-2.75}
+  \draw[-{Latex[length=2.2mm,width=2.0mm]}, line width=1.0pt, swgray]
+        (\Wp+0.02,\ymid) -- (\xB-0.14,\ymid);
+  \node[font=\scriptsize\itshape, text=swmuted, anchor=south, align=center]
+        at ({(\Wp+\xB-0.12)/2},\ymid+0.04) {recover};
+  \draw[-{Latex[length=2.2mm,width=2.0mm]}, line width=1.0pt, swgray]
+        (\xB+\Wp+0.02,\ymid) -- (\xC-0.14,\ymid);
+  \node[font=\scriptsize\itshape, text=swmuted, anchor=south, align=center]
+        at ({(\xB+\Wp+\xC-0.12)/2},\ymid+0.04) {measure};
+\end{tikzpicture}

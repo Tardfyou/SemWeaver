@@ -1,0 +1,356 @@
+--- original_code.cpp+++ syntax_correct_refine_code.cpp@@ -1,7 +1,9 @@-// /external/upstream-study/SAGEN/result-0224-bugfail-multi-o3mini/test-Integer-Overflow-768f17fd25e4a98bf5166148629ecf6f647d5efc/checkers/checker1.cpp
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/Expr.h"
++#include "clang/AST/RecursiveASTVisitor.h"
+ #include "clang/AST/Stmt.h"
++#include "clang/Lex/Lexer.h"
++#include "clang/StaticAnalyzer/Checkers/utility.h"
+ #include "clang/StaticAnalyzer/Core/BugReporter/BugReporter.h"
+ #include "clang/StaticAnalyzer/Core/BugReporter/BugType.h"
+ #include "clang/StaticAnalyzer/Core/Checker.h"
+@@ -9,83 +11,289 @@ #include "clang/StaticAnalyzer/Core/PathSensitive/ProgramState.h"
+ #include "clang/StaticAnalyzer/Core/PathSensitive/SymExpr.h"
+ #include "clang/StaticAnalyzer/Frontend/CheckerRegistry.h"
+-#include "clang/AST/RecursiveASTVisitor.h"
+-#include "clang/StaticAnalyzer/Checkers/utility.h"
+ #include "llvm/Support/raw_ostream.h"
+ 
+ using namespace clang;
+ using namespace ento;
+ 
++// This macro declares the trait specialization within clang::ento itself,
++// so it must be invoked from the global namespace.
++REGISTER_SET_WITH_PROGRAMSTATE(ReportedNarrowShifts, const BinaryOperator *)
++
+ namespace {
+ 
+-// The checker only needs to hook the PreStmt callback for BinaryOperator.
+-class SAGenTestChecker : public Checker< check::PreStmt<BinaryOperator> > {
++class SAGenTestChecker : public Checker<check::PreStmt<BinaryOperator>> {
+   mutable std::unique_ptr<BugType> BT;
+ 
+ public:
+   SAGenTestChecker()
+-      : BT(new BugType(this, "Potential 32-bit left shift without 64-bit upcasting")) {}
++      : BT(new BugType(
++            this, "Potential 32-bit left shift without 64-bit upcasting")) {}
+ 
+   void checkPreStmt(const BinaryOperator *BOp, CheckerContext &C) const;
+ 
+ private:
+-  // Helper function that uses downward AST traversal to look for a CastExpr that upcasts
+-  // an integer expression to a 64-bit type.
+-  bool isProperlyCastTo64(const Expr *E, CheckerContext &C) const;
++  bool isAtLeast64BitInteger(QualType Ty, CheckerContext &C) const;
++  bool isNarrowIntegerType(QualType Ty, CheckerContext &C) const;
++
++  // Determines whether the result of a narrow shift is subsequently consumed
++  // as a 64-bit integer value. This distinguishes intended 64-bit arithmetic
++  // from deliberate 32-bit register-field construction.
++  bool shiftResultFlowsTo64BitUse(const Expr *ShiftExpr,
++                                  CheckerContext &C) const;
++
++  // Avoid reports for shifts whose operands are concrete and whose result is
++  // provably representable in the shift expression's native type.
++  bool canOverflowAtNarrowWidth(const BinaryOperator *BOp,
++                                CheckerContext &C) const;
++
++  // FIELD_PREP-style macros intentionally place values into fixed-width
++  // register fields. Their shifts are not candidates for this checker.
++  bool isRegisterFieldPreparation(const BinaryOperator *BOp,
++                                  CheckerContext &C) const;
+ };
+ 
+-bool SAGenTestChecker::isProperlyCastTo64(const Expr *E, CheckerContext &C) const {
+-  // Look for any cast expression in the subtree of E.
+-  const CastExpr *CE = findSpecificTypeInChildren<CastExpr>(E);
+-  if (!CE)
+-    // Also check if E itself is a CastExpr.
+-    if (const CastExpr *SelfCE = dyn_cast<CastExpr>(E))
+-      CE = SelfCE;
+-
+-  if (CE) {
+-    QualType DestTy = CE->getType();
+-    if (DestTy->isIntegerType()) {
+-      // Get the bit-width of the destination type.
+-      unsigned width = C.getASTContext().getTypeSize(DestTy);
+-      if (width >= 64)
++bool SAGenTestChecker::isAtLeast64BitInteger(QualType Ty,
++                                             CheckerContext &C) const {
++  if (Ty.isNull() || !Ty->isIntegerType() || Ty->isDependentType())
++    return false;
++
++  return C.getASTContext().getTypeSize(Ty) >= 64;
++}
++
++bool SAGenTestChecker::isNarrowIntegerType(QualType Ty,
++                                           CheckerContext &C) const {
++  if (Ty.isNull() || !Ty->isIntegerType() || Ty->isDependentType())
++    return false;
++
++  return C.getASTContext().getTypeSize(Ty) < 64;
++}
++
++bool SAGenTestChecker::shiftResultFlowsTo64BitUse(
++    const Expr *ShiftExpr, CheckerContext &C) const {
++  const Expr *Current = ShiftExpr;
++  ASTContext &ACtx = C.getASTContext();
++
++  while (Current) {
++    auto Parents = ACtx.getParents(*Current);
++    if (Parents.size() != 1)
++      return false;
++
++    const DynTypedNode &Parent = Parents[0];
++
++    if (const auto *Cast = Parent.get<CastExpr>()) {
++      if (isAtLeast64BitInteger(Cast->getType(), C))
+         return true;
+-    }
++
++      Current = Cast;
++      continue;
++    }
++
++    if (const auto *Paren = Parent.get<ParenExpr>()) {
++      Current = Paren;
++      continue;
++    }
++
++    if (const auto *Cleanups = Parent.get<ExprWithCleanups>()) {
++      Current = Cleanups;
++      continue;
++    }
++
++    if (const auto *ParentBOp = Parent.get<BinaryOperator>()) {
++      if (ParentBOp->isAssignmentOp()) {
++        if (ParentBOp->getRHS() == Current)
++          return isAtLeast64BitInteger(ParentBOp->getLHS()->getType(), C);
++
++        return false;
++      }
++
++      if (!ParentBOp->getType()->isIntegerType())
++        return false;
++
++      if (isAtLeast64BitInteger(ParentBOp->getType(), C))
++        return true;
++
++      Current = ParentBOp;
++      continue;
++    }
++
++    if (const auto *ParentUOp = Parent.get<UnaryOperator>()) {
++      if (!ParentUOp->getType()->isIntegerType())
++        return false;
++
++      if (isAtLeast64BitInteger(ParentUOp->getType(), C))
++        return true;
++
++      Current = ParentUOp;
++      continue;
++    }
++
++    if (const auto *Conditional = Parent.get<ConditionalOperator>()) {
++      if (!Conditional->getType()->isIntegerType())
++        return false;
++
++      if (isAtLeast64BitInteger(Conditional->getType(), C))
++        return true;
++
++      Current = Conditional;
++      continue;
++    }
++
++    if (const auto *VD = Parent.get<VarDecl>()) {
++      if (VD->getInit() != Current)
++        return false;
++
++      return isAtLeast64BitInteger(VD->getType(), C);
++    }
++
++    if (const auto *Call = Parent.get<CallExpr>()) {
++      const FunctionDecl *Callee = Call->getDirectCallee();
++      if (!Callee)
++        return false;
++
++      for (unsigned I = 0; I < Call->getNumArgs(); ++I) {
++        if (Call->getArg(I) != Current)
++          continue;
++
++        if (I >= Callee->getNumParams())
++          return false;
++
++        return isAtLeast64BitInteger(Callee->getParamDecl(I)->getType(), C);
++      }
++
++      return false;
++    }
++
++    if (Parent.get<ReturnStmt>()) {
++      const auto *FD =
++          dyn_cast<FunctionDecl>(C.getLocationContext()->getDecl());
++      return FD && isAtLeast64BitInteger(FD->getReturnType(), C);
++    }
++
++    return false;
+   }
++
+   return false;
+ }
+ 
+-void SAGenTestChecker::checkPreStmt(const BinaryOperator *BOp, CheckerContext &C) const {
+-  // We are only interested in left shift operators.
++bool SAGenTestChecker::canOverflowAtNarrowWidth(
++    const BinaryOperator *BOp, CheckerContext &C) const {
++  const Expr *LHS = BOp->getLHS();
++  const Expr *RHS = BOp->getRHS();
++  QualType LHSType = LHS->getType();
++
++  if (!isNarrowIntegerType(LHSType, C))
++    return false;
++
++  const unsigned Width = C.getASTContext().getTypeSize(LHSType);
++  ProgramStateRef State = C.getState();
++
++  SVal LHSVal = State->getSVal(LHS, C.getLocationContext());
++  SVal RHSVal = State->getSVal(RHS, C.getLocationContext());
++
++  auto LHSConcrete = LHSVal.getAs<nonloc::ConcreteInt>();
++  auto RHSConcrete = RHSVal.getAs<nonloc::ConcreteInt>();
++
++  // If either value is symbolic, retain the warning: the analyzer cannot
++  // establish that the shift stays within the native integer width.
++  if (!LHSConcrete || !RHSConcrete)
++    return true;
++
++  const llvm::APSInt &Left = LHSConcrete->getValue();
++  const llvm::APSInt &Right = RHSConcrete->getValue();
++
++  // Invalid shift counts are handled by Clang's core undefined-behavior
++  // diagnostics. This checker is specifically for premature narrow arithmetic.
++  if (Right.isNegative())
++    return false;
++
++  uint64_t ShiftAmount = Right.getZExtValue();
++  if (ShiftAmount >= Width)
++    return false;
++
++  if (Left.isZero())
++    return false;
++
++  // A negative signed left operand is already undefined. Preserve a report for
++  // it instead of treating it as a harmless fixed-width encoding operation.
++  if (!LHSType->isUnsignedIntegerType() && Left.isNegative())
++    return true;
++
++  llvm::APInt Value = Left.extOrTrunc(Width);
++  llvm::APInt MaxValue = LHSType->isUnsignedIntegerType()
++                             ? llvm::APInt::getMaxValue(Width)
++                             : llvm::APInt::getSignedMaxValue(Width);
++
++  return Value.ugt(MaxValue.lshr(ShiftAmount));
++}
++
++bool SAGenTestChecker::isRegisterFieldPreparation(
++    const BinaryOperator *BOp, CheckerContext &C) const {
++  const SourceManager &SM = C.getSourceManager();
++  SourceLocation Loc = BOp->getOperatorLoc();
++
++  while (Loc.isMacroID()) {
++    StringRef MacroName =
++        Lexer::getImmediateMacroName(Loc, SM, C.getLangOpts());
++
++    if (MacroName == "FIELD_PREP" || MacroName == "REG_FIELD_PREP")
++      return true;
++
++    SourceLocation CallerLoc = SM.getImmediateMacroCallerLoc(Loc);
++    if (CallerLoc == Loc)
++      break;
++
++    Loc = CallerLoc;
++  }
++
++  return false;
++}
++
++void SAGenTestChecker::checkPreStmt(const BinaryOperator *BOp,
++                                    CheckerContext &C) const {
+   if (BOp->getOpcode() != BO_Shl)
+     return;
+ 
+   const Expr *LHS = BOp->getLHS();
+-  if (!LHS)
+-    return;
+-
+-  // If the LHS expression is explicitly cast to a 64-bit integer, then no bug.
+-  if (isProperlyCastTo64(LHS, C))
+-    return;
+-
+-  QualType LHSType = LHS->getType();
+-  // Proceed only if the LHS is an integer type.
+-  if (!LHSType->isIntegerType())
+-    return;
+-
+-  unsigned typeWidth = C.getASTContext().getTypeSize(LHSType);
+-  // If the width is less than 64 bits, then shifting might lead to overflow.
+-  if (typeWidth >= 64)
+-    return;
+-
+-  // Report a bug if a 32-bit (or sub-64-bit) integer is left-shifted without upcasting.
+-  ExplodedNode *N = C.generateNonFatalErrorNode();
++  if (!LHS || !isNarrowIntegerType(LHS->getType(), C))
++    return;
++
++  // The fixed i915 form casts the entire left operand before shifting:
++  //
++  //   (u64)((1 << x_w) | x) << y
++  //
++  // Therefore the outer BO_Shl has a 64-bit LHS and is rejected above.
++  // Do not diagnose low-level field construction inside FIELD_PREP macros.
++  if (isRegisterFieldPreparation(BOp, C))
++    return;
++
++  // A 32-bit field encoding stored in u32 is not the target bug pattern.
++  // The target is a narrow intermediate whose value is later intended for
++  // 64-bit arithmetic or storage.
++  if (!shiftResultFlowsTo64BitUse(BOp, C))
++    return;
++
++  // This also prevents warning on the safe helper expression `1 << x_w`
++  // in the fixed form when x_w is concretely known to be 2.
++  if (!canOverflowAtNarrowWidth(BOp, C))
++    return;
++
++  ProgramStateRef State = C.getState();
++  if (State->contains<ReportedNarrowShifts>(BOp))
++    return;
++
++  State = State->add<ReportedNarrowShifts>(BOp);
++  ExplodedNode *N = C.generateNonFatalErrorNode(State);
+   if (!N)
+     return;
+ 
+-  auto report = std::make_unique<PathSensitiveBugReport>(
+-      *BT, "Potential integer overflow: left shift performed on a 32-bit value without upcasting to 64-bit", N);
+-  report->addRange(BOp->getSourceRange());
+-  C.emitReport(std::move(report));
++  auto Report = std::make_unique<PathSensitiveBugReport>(
++      *BT,
++      "Potential integer overflow: left shift performed on a 32-bit value "
++      "without upcasting to 64-bit",
++      N);
++  Report->addRange(BOp->getSourceRange());
++  C.emitReport(std::move(Report));
+ }
+ 
+ } // end anonymous namespace
+@@ -93,7 +301,8 @@ extern "C" void clang_registerCheckers(CheckerRegistry &registry) {
+   registry.addChecker<SAGenTestChecker>(
+       "custom.SAGenTestChecker",
+-      "Detects arithmetic shifts on 32-bit integers without prior upcasting to 64-bit",
++      "Detects narrow arithmetic shifts whose results are later used as "
++      "64-bit values",
+       "");
+ }
+ 

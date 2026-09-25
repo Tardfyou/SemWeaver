@@ -1,0 +1,982 @@
+{
+  "records": [
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/base/regmap/regcache-maple.c",
+        "function": "regcache_maple_drop"
+      },
+      "location": {
+        "line": 196,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "if ret (ImplicitCastExpr, LValueToRValue, int) != 0",
+        "summary": "Analyzer CFG for regcache_maple_drop in drivers/base/regmap/regcache-maple.c: bindings: ret = mas_store_gfp (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct ma_state *, void *, gfp_t))(&mas, upper (ImplicitCastExpr, LValueToRValue, unsigned long *) (ImplicitCastExpr, BitCast, void *), map (ImplicitCastExpr, LValueToRValue, struct regmap *)->alloc_flags (ImplicitCastExpr, LValueToRValue, gfp_t)); ret = mas_store_gfp (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct ma_state *, void *, gfp_t))(&mas, lower (ImplicitCastExpr, LValueToRValue, unsigned long *) (ImplicitCastExpr, BitCast, void *), map (ImplicitCastExpr, LValueToRValue, struct regmap *)->alloc_flags (ImplicitCastExpr, LValueToRValue, gfp_t)) | branches: if ret (ImplicitCastExpr, LValueToRValue, int) != 0; goto out; | calls: regcache_maple_drop -> spin_lock; regcache_maple_drop -> mas_find",
+        "state_before": [
+          "buffer(map->cache)",
+          "buffer(map->alloc_flags)",
+          "sinks(mas_set_range, mas_store_gfp)"
+        ],
+        "state_after": [
+          "cfg_binding(ret = mas_store_gfp (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct ma_state *, void *, gfp_t))(&mas, upper (ImplicitCastExpr, LValueToRValue, unsigned long *) (ImplicitCastExpr, BitCast, void *), map (ImplicitCastExpr, LValueToRValue, struct regmap *)->alloc_flags (ImplicitCastExpr, LValueToRValue, gfp_t)))",
+          "cfg_binding(ret = mas_store_gfp (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct ma_state *, void *, gfp_t))(&mas, lower (ImplicitCastExpr, LValueToRValue, unsigned long *) (ImplicitCastExpr, BitCast, void *), map (ImplicitCastExpr, LValueToRValue, struct regmap *)->alloc_flags (ImplicitCastExpr, LValueToRValue, gfp_t)))",
+          "cfg_branch(if ret (ImplicitCastExpr, LValueToRValue, int) != 0)",
+          "cfg_branch(goto out;)"
+        ],
+        "functions": [
+          "regcache_maple_drop"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "map->cache",
+          "map->alloc_flags",
+          "map->format",
+          "mas->index"
+        ],
+        "buffer_fields": [
+          "map->cache",
+          "map->alloc_flags",
+          "map->format",
+          "mas->index"
+        ],
+        "call_targets": [
+          "mas_set_range",
+          "mas_store_gfp",
+          "mas_unlock",
+          "kfree",
+          "regcache_maple_sync_block",
+          "mas_pause",
+          "rcu_read_unlock",
+          "kmalloc"
+        ],
+        "call_edges": [
+          "regcache_maple_drop -> spin_lock",
+          "regcache_maple_drop -> mas_find",
+          "regcache_maple_drop -> spin_unlock",
+          "regcache_maple_drop -> kmemdup",
+          "regcache_maple_drop -> kfree",
+          "regcache_maple_drop -> mas_erase"
+        ],
+        "cfg_branch_kinds": [
+          "if",
+          "while"
+        ],
+        "branch_conditions": [
+          "goto out;",
+          "if [B6.27]",
+          "if [B7.2]",
+          "if [B10.27]",
+          "if [B11.23]",
+          "goto out_unlocked;"
+        ],
+        "resolved_branch_conditions": [
+          "if ret (ImplicitCastExpr, LValueToRValue, int) != 0",
+          "goto out;",
+          "if upper (ImplicitCastExpr, LValueToRValue, unsigned long *)",
+          "if lower (ImplicitCastExpr, LValueToRValue, unsigned long *)",
+          "goto out_unlocked;",
+          "if !upper (ImplicitCastExpr, LValueToRValue, unsigned long *)"
+        ],
+        "cfg_value_bindings": [
+          "ret = mas_store_gfp (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct ma_state *, void *, gfp_t))(&mas, upper (ImplicitCastExpr, LValueToRValue, unsigned long *) (ImplicitCastExpr, BitCast, void *), map (ImplicitCastExpr, LValueToRValue, struct regmap *)->alloc_flags (ImplicitCastExpr, LValueToRValue, gfp_t))",
+          "ret = mas_store_gfp (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct ma_state *, void *, gfp_t))(&mas, lower (ImplicitCastExpr, LValueToRValue, unsigned long *) (ImplicitCastExpr, BitCast, void *), map (ImplicitCastExpr, LValueToRValue, struct regmap *)->alloc_flags (ImplicitCastExpr, LValueToRValue, gfp_t))",
+          "ret = -12",
+          "ret (ImplicitCastExpr, LValueToRValue, int) != 0",
+          "struct maple_tree *mt = map->cache;",
+          "upper_last = mas.last (ImplicitCastExpr, LValueToRValue, unsigned long)"
+        ],
+        "state_statements": [
+          "kfree",
+          "return [B1.14];",
+          "([B2.4])->tree",
+          "[B2.6]->",
+          "[B4.4] = [B4.3]",
+          "[B6.18]->alloc_flags"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,drivers/base/regmap/.regcache-maple.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/uapi -...",
+        "source_file": "drivers/base/regmap/regcache-maple.c",
+        "source_excerpt": "164: \t\t\tmas_set_range(&mas, lower_index, lower_last);\n165: \t\t\tret = mas_store_gfp(&mas, lower, map->alloc_flags);\n166: \t\t\tif (ret != 0)\n167: \t\t\t\tgoto out;\n168: \t\t\tlower = NULL;\n169: \t\t}\n170: \n171: \t\tif (upper) {\n172: \t\t\tmas_set_range(&mas, upper_index, upper_last);\n173: \t\t\tret = mas_store_gfp(&mas, upper, map->alloc_flags);\n174: \t\t\tif (ret != 0)\n175: \t\t\t\tgoto out;\n176: \t\t\tupper = NULL;\n177: \t\t}\n178: \t}\n179: \n180: out:\n181: \tmas_unlock(&mas);\n182: out_unlocked:\n183: \tkfree(lower);\n184: \tkfree(upper);\n185: \n186: \treturn ret;\n187: }\n188: \n189: static int regcache_maple_sync_block(struct regmap *map, unsigned long *entry,\n190: \t\t\t\t     struct ma_state *mas,\n191: \t\t\t\t     unsigned int min, unsigned int max)\n192: {\n193: \tvoid *buf;\n194: \tunsigned long r;\n195: \tsize_t val_bytes = map->format.val_bytes;\n196: \tint ret = 0;\n197: \n198: \tmas_pause(mas);\n199: \trcu_read_unlock();\n200: \n201: \t/*\n202: \t * Use a raw write if writing more than one register to a\n203: \t * device that supports raw writes to reduce transaction\n204: \t * overheads.\n205: \t */\n206: \tif (max - min > 1 && regmap_can_raw_write(map)) {\n207: \t\tbuf = kmalloc(val_bytes * (max - min), map->alloc_flags);\n208: \t\tif (!buf) {\n209: \t\t\tret = -ENOMEM;\n210: \t\t\tgoto out;\n211: \t\t}\n212: \n213: \t\t/* Render the data for a raw write */\n214: \t\tfor (r = min; r < max; r++) {\n215: \t\t\tregcache_set_val(map, buf, r - min,\n216: \t\t\t\t\t entry[r - mas->index]);\n217: \t\t}\n218: \n219: \t\tret = _regmap_raw_write(map, min, buf, (max - min) * val_bytes,\n220: \t\t\t\t\tfalse);\n221: \n222: \t\tkfree(buf);\n223: \t} else {\n224: \t\tfor (r = min; r < max; r++) {\n225: \t\t\tret = _regmap_write(map, r,\n226: \t\t\t\t\t    entry[r - mas->index]);\n227: \t\t\tif (ret != 0)\n228: \t\t\t\tgoto out;",
+        "summary_line": 196,
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/semweaver_treatment_evidence_cohort_v3/39_eaa03486d932_Uninit_Data/csa/patchweaver_runtime/csa_raw/drivers-base-regmap-regcache-maple.c-regcache_maple_drop.txt",
+        "raw_output_sha256": "ab4b95dbd29d7d92f7b5ff5341c65b4bf1a1ebcdfb5532fe042acd30eb8e5ef1",
+        "command_sha256": "e3f11c4b6be5ebd97d5b0a2185f1499ba8250260bd4dd7331560f318120f8e2f"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:debug-cfg",
+        "confidence": 0.92,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/base/regmap/regcache-maple.c",
+          "hunk_index": 0,
+          "source_line": 196
+        },
+        "summary": "Analyzer CFG for regcache_maple_drop in drivers/base/regmap/regcache-maple.c: bindings: ret = mas_store_gfp (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct ma_state *, void *, gfp_t))(&mas, upper (ImplicitCastExpr, LValueToRValue, unsigned long *) (ImplicitCastExpr, BitCast, void *), map (ImplicitCastExpr, LValueToRValue, struct regmap *)->alloc_flags (ImplicitCastExpr, LValueToRValue, gfp_t)); ret = mas_store_gfp (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct ma_state *, void *, gfp_t))(&mas, lower (ImplicitCastExpr, LValueToRValue, unsigned long *) (ImplicitCastExpr, BitCast, void *), map (ImplicitCastExpr, LValueToRValue, struct regmap *)->alloc_flags (ImplicitCastExpr, LValueToRValue, gfp_t)) | branches: if ret (ImplicitCastExpr, LValueToRValue, int) != 0; goto out; | calls: regcache_maple_drop -> spin_lock; regcache_maple_drop -> mas_find",
+        "statements": [
+          "164: \t\t\tmas_set_range(&mas, lower_index, lower_last);",
+          "165: \t\t\tret = mas_store_gfp(&mas, lower, map->alloc_flags);",
+          "166: \t\t\tif (ret != 0)",
+          "167: \t\t\t\tgoto out;",
+          "168: \t\t\tlower = NULL;",
+          "169: \t\t}"
+        ],
+        "guards": [
+          "if ret (ImplicitCastExpr, LValueToRValue, int) != 0",
+          "goto out;",
+          "if upper (ImplicitCastExpr, LValueToRValue, unsigned long *)",
+          "if lower (ImplicitCastExpr, LValueToRValue, unsigned long *)"
+        ],
+        "call_boundary": [
+          "mas_set_range",
+          "mas_store_gfp",
+          "mas_unlock",
+          "kfree",
+          "regcache_maple_sync_block",
+          "mas_pause"
+        ],
+        "call_edges": [
+          "regcache_maple_drop -> spin_lock",
+          "regcache_maple_drop -> mas_find",
+          "regcache_maple_drop -> spin_unlock",
+          "regcache_maple_drop -> kmemdup",
+          "regcache_maple_drop -> kfree",
+          "regcache_maple_drop -> mas_erase",
+          "regcache_maple_drop -> mas_set_range",
+          "regcache_maple_drop -> mas_store_gfp"
+        ],
+        "state_transitions": [
+          "cfg_binding(ret = mas_store_gfp (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct ma_state *, void *, gfp_t))(&mas, upper (ImplicitCastExpr, LValueToRValue, unsigned long *) (ImplicitCastExpr, BitCast, void *), map (ImplicitCastExpr, LValueToRValue, struct regmap *)->alloc_flags (ImplicitCastExpr, LValueToRValue, gfp_t)))",
+          "cfg_binding(ret = mas_store_gfp (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct ma_state *, void *, gfp_t))(&mas, lower (ImplicitCastExpr, LValueToRValue, unsigned long *) (ImplicitCastExpr, BitCast, void *), map (ImplicitCastExpr, LValueToRValue, struct regmap *)->alloc_flags (ImplicitCastExpr, LValueToRValue, gfp_t)))",
+          "cfg_branch(if ret (ImplicitCastExpr, LValueToRValue, int) != 0)",
+          "cfg_branch(goto out;)",
+          "kfree",
+          "return [B1.14];"
+        ],
+        "api_terms": [
+          "spin_lock",
+          "mas_find",
+          "spin_unlock",
+          "kmemdup",
+          "kfree",
+          "mas_erase"
+        ],
+        "related_symbols": [
+          "map->cache",
+          "map->alloc_flags",
+          "map->format",
+          "mas->index"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_guard_1",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/base/regmap/regcache-maple.c",
+        "function": "regcache_maple_sync"
+      },
+      "location": {
+        "line": 247,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "if regcache_reg_needs_sync (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(struct regmap *, unsigned int, unsigned int))(map (ImplicitCastExpr, LValueToRValue, struct regmap *), r (ImplicitCastExpr, LValueToRValue, unsigned int), v (ImplicitCastExpr, LValueToRValue, unsigned int))",
+        "summary": "Analyzer CFG for regcache_maple_sync in drivers/base/regmap/regcache-maple.c: bindings: unsigned long lmin = min;; unsigned long lmax = max; | branches: if regcache_reg_needs_sync (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(struct regmap *, unsigned int, unsigned int))(map (ImplicitCastExpr, LValueToRValue, struct regmap *), r (ImplicitCastExpr, LValueToRValue, unsigned int), v (ImplicitCastExpr, LValueToRValue, unsigned int)); for (...; r (ImplicitCastExpr, LValueToRValue, unsigned int) (ImplicitCastExpr, IntegralCast, unsigned long) <= __builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)((mas.last) - (lmax)) * 0L)) : (int *)8))), ((mas.last) < (lmax) ? (mas.last) : (lmax)), ({ ... ;  })); ...) | calls: regcache_maple_sync -> rcu_read_lock; regcache_maple_sync -> mas_find",
+        "state_before": [
+          "buffer(map->cache)",
+          "buffer(mas->index)",
+          "sinks(regcache_set_val, _regmap_raw_write)"
+        ],
+        "state_after": [
+          "cfg_binding(unsigned long lmin = min;)",
+          "cfg_binding(unsigned long lmax = max;)",
+          "cfg_branch(if regcache_reg_needs_sync (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(struct regmap *, unsigned int, unsigned int))(map (ImplicitCastExpr, LValueToRValue, struct regmap *), r (ImplicitCastExpr, LValueToRValue, unsigned int), v (ImplicitCastExpr, LValueToRValue, unsigned int)))",
+          "cfg_branch(for (...; r (ImplicitCastExpr, LValueToRValue, unsigned int) (ImplicitCastExpr, IntegralCast, unsigned long) <= __builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)((mas.last) - (lmax)) * 0L)) : (int *)8))), ((mas.last) < (lmax) ? (mas.last) : (lmax)), ({ ... ;  })); ...))"
+        ],
+        "functions": [
+          "regcache_maple_sync"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "map->cache",
+          "mas->index",
+          "map->cache_bypass"
+        ],
+        "buffer_fields": [
+          "map->cache",
+          "mas->index",
+          "map->cache_bypass"
+        ],
+        "call_targets": [
+          "regcache_set_val",
+          "_regmap_raw_write",
+          "kfree",
+          "_regmap_write",
+          "rcu_read_lock",
+          "regcache_maple_sync",
+          "max",
+          "min"
+        ],
+        "call_edges": [
+          "regcache_maple_sync -> rcu_read_lock",
+          "regcache_maple_sync -> mas_find",
+          "regcache_maple_sync -> regcache_reg_needs_sync",
+          "regcache_maple_sync -> regcache_maple_sync_block",
+          "regcache_maple_sync -> rcu_read_unlock"
+        ],
+        "cfg_branch_kinds": [
+          "if",
+          "for",
+          "while"
+        ],
+        "branch_conditions": [
+          "goto out;",
+          "if [B5.19]",
+          "if [B6.2]",
+          "if [B10.19]",
+          "continue;",
+          "if [B12.3]"
+        ],
+        "resolved_branch_conditions": [
+          "if regcache_reg_needs_sync (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(struct regmap *, unsigned int, unsigned int))(map (ImplicitCastExpr, LValueToRValue, struct regmap *), r (ImplicitCastExpr, LValueToRValue, unsigned int), v (ImplicitCastExpr, LValueToRValue, unsigned int))",
+          "for (...; r (ImplicitCastExpr, LValueToRValue, unsigned int) (ImplicitCastExpr, IntegralCast, unsigned long) <= __builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)((mas.last) - (lmax)) * 0L)) : (int *)8))), ((mas.last) < (lmax) ? (mas.last) : (lmax)), ({ ... ;  })); ...)",
+          "while ((entry) = mas_find (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(struct ma_state *, unsigned long))((&mas), (max) (ImplicitCastExpr, LValueToRValue, unsigned int) (ImplicitCastExpr, IntegralCast, unsigned long)) (ImplicitCastExpr, BitCast, unsigned long *)) != ((void *)0 (CStyleCastExpr, NullToPointer, void *)) (ImplicitCastExpr, BitCast, unsigned long *)",
+          "goto out;",
+          "if ret (ImplicitCastExpr, LValueToRValue, int) != 0",
+          "if sync_needed (ImplicitCastExpr, LValueToRValue, bool)"
+        ],
+        "cfg_value_bindings": [
+          "unsigned long lmin = min;",
+          "unsigned long lmax = max;",
+          "struct ma_state mas = {.tree = mt, .index = min, .last = max, .node = ((void *)0), .status = ma_start, .min = 0, .max = (~0UL), .alloc = ((void *)0), .mas_flags = 0};",
+          "r = __builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)((mas.index) - (lmin)) * 0L)) : (int *)8))), ((mas.index) > (lmin) ? (mas.index) : (lmin)), ({ ... ;  })) (ImplicitCastExpr, IntegralCast, unsigned int)",
+          "(entry) = mas_find (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(struct ma_state *, unsigned long))((&mas), (max) (ImplicitCastExpr, LValueToRValue, unsigned int) (ImplicitCastExpr, IntegralCast, unsigned long)) (ImplicitCastExpr, BitCast, unsigned long *)",
+          "r (ImplicitCastExpr, LValueToRValue, unsigned int) (ImplicitCastExpr, IntegralCast, unsigned long) <= __builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)((mas.last) - (lmax)) * 0L)) : (int *)8))), ((mas.last) < (lmax) ? (mas.last) : (lmax)), ({ ... ;  }))"
+        ],
+        "state_statements": [
+          "[B1.7]->cache_bypass",
+          "[B1.8] = [B1.5]",
+          "return [B1.11];",
+          "[B3.3] = [B3.2]",
+          "[B5.14] = [B5.13]",
+          "[B5.17] != [B5.18]"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,drivers/base/regmap/.regcache-maple.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/uapi -...",
+        "source_file": "drivers/base/regmap/regcache-maple.c",
+        "source_excerpt": "215: \t\t\tregcache_set_val(map, buf, r - min,\n216: \t\t\t\t\t entry[r - mas->index]);\n217: \t\t}\n218: \n219: \t\tret = _regmap_raw_write(map, min, buf, (max - min) * val_bytes,\n220: \t\t\t\t\tfalse);\n221: \n222: \t\tkfree(buf);\n223: \t} else {\n224: \t\tfor (r = min; r < max; r++) {\n225: \t\t\tret = _regmap_write(map, r,\n226: \t\t\t\t\t    entry[r - mas->index]);\n227: \t\t\tif (ret != 0)\n228: \t\t\t\tgoto out;\n229: \t\t}\n230: \t}\n231: \n232: out:\n233: \trcu_read_lock();\n234: \n235: \treturn ret;\n236: }\n237: \n238: static int regcache_maple_sync(struct regmap *map, unsigned int min,\n239: \t\t\t       unsigned int max)\n240: {\n241: \tstruct maple_tree *mt = map->cache;\n242: \tunsigned long *entry;\n243: \tMA_STATE(mas, mt, min, max);\n244: \tunsigned long lmin = min;\n245: \tunsigned long lmax = max;\n246: \tunsigned int r, v, sync_start;\n247: \tint ret;\n248: \tbool sync_needed = false;\n249: \n250: \tmap->cache_bypass = true;\n251: \n252: \trcu_read_lock();\n253: \n254: \tmas_for_each(&mas, entry, max) {\n255: \t\tfor (r = max(mas.index, lmin); r <= min(mas.last, lmax); r++) {\n256: \t\t\tv = entry[r - mas.index];\n257: \n258: \t\t\tif (regcache_reg_needs_sync(map, r, v)) {\n259: \t\t\t\tif (!sync_needed) {\n260: \t\t\t\t\tsync_start = r;\n261: \t\t\t\t\tsync_needed = true;\n262: \t\t\t\t}\n263: \t\t\t\tcontinue;\n264: \t\t\t}\n265: \n266: \t\t\tif (!sync_needed)\n267: \t\t\t\tcontinue;\n268: \n269: \t\t\tret = regcache_maple_sync_block(map, entry, &mas,\n270: \t\t\t\t\t\t\tsync_start, r);\n271: \t\t\tif (ret != 0)\n272: \t\t\t\tgoto out;\n273: \t\t\tsync_needed = false;\n274: \t\t}\n275: \n276: \t\tif (sync_needed) {\n277: \t\t\tret = regcache_maple_sync_block(map, entry, &mas,\n278: \t\t\t\t\t\t\tsync_start, r);\n279: \t\t\tif (ret != 0)",
+        "summary_line": 247,
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/semweaver_treatment_evidence_cohort_v3/39_eaa03486d932_Uninit_Data/csa/patchweaver_runtime/csa_raw/drivers-base-regmap-regcache-maple.c-regcache_maple_sync.txt",
+        "raw_output_sha256": "ab4b95dbd29d7d92f7b5ff5341c65b4bf1a1ebcdfb5532fe042acd30eb8e5ef1",
+        "command_sha256": "e3f11c4b6be5ebd97d5b0a2185f1499ba8250260bd4dd7331560f318120f8e2f"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:debug-cfg",
+        "confidence": 0.92,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/base/regmap/regcache-maple.c",
+          "hunk_index": 1,
+          "source_line": 247
+        },
+        "summary": "Analyzer CFG for regcache_maple_sync in drivers/base/regmap/regcache-maple.c: bindings: unsigned long lmin = min;; unsigned long lmax = max; | branches: if regcache_reg_needs_sync (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(struct regmap *, unsigned int, unsigned int))(map (ImplicitCastExpr, LValueToRValue, struct regmap *), r (ImplicitCastExpr, LValueToRValue, unsigned int), v (ImplicitCastExpr, LValueToRValue, unsigned int)); for (...; r (ImplicitCastExpr, LValueToRValue, unsigned int) (ImplicitCastExpr, IntegralCast, unsigned long) <= __builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)((mas.last) - (lmax)) * 0L)) : (int *)8))), ((mas.last) < (lmax) ? (mas.last) : (lmax)), ({ ... ;  })); ...) | calls: regcache_maple_sync -> rcu_read_lock; regcache_maple_sync -> mas_find",
+        "statements": [
+          "215: \t\t\tregcache_set_val(map, buf, r - min,",
+          "216: \t\t\t\t\t entry[r - mas->index]);",
+          "217: \t\t}",
+          "218:",
+          "219: \t\tret = _regmap_raw_write(map, min, buf, (max - min) * val_bytes,",
+          "220: \t\t\t\t\tfalse);"
+        ],
+        "guards": [
+          "if regcache_reg_needs_sync (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(struct regmap *, unsigned int, unsigned int))(map (ImplicitCastExpr, LValueToRValue, struct regmap *), r (ImplicitCastExpr, LValueToRValue, unsigned int), v (ImplicitCastExpr, LValueToRValue, unsigned int))",
+          "for (...; r (ImplicitCastExpr, LValueToRValue, unsigned int) (ImplicitCastExpr, IntegralCast, unsigned long) <= __builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)((mas.last) - (lmax)) * 0L)) : (int *)8))), ((mas.last) < (lmax) ? (mas.last) : (lmax)), ({ ... ;  })); ...)",
+          "while ((entry) = mas_find (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(struct ma_state *, unsigned long))((&mas), (max) (ImplicitCastExpr, LValueToRValue, unsigned int) (ImplicitCastExpr, IntegralCast, unsigned long)) (ImplicitCastExpr, BitCast, unsigned long *)) != ((void *)0 (CStyleCastExpr, NullToPointer, void *)) (ImplicitCastExpr, BitCast, unsigned long *)",
+          "goto out;"
+        ],
+        "call_boundary": [
+          "regcache_set_val",
+          "_regmap_raw_write",
+          "kfree",
+          "_regmap_write",
+          "rcu_read_lock",
+          "regcache_maple_sync"
+        ],
+        "call_edges": [
+          "regcache_maple_sync -> rcu_read_lock",
+          "regcache_maple_sync -> mas_find",
+          "regcache_maple_sync -> regcache_reg_needs_sync",
+          "regcache_maple_sync -> regcache_maple_sync_block",
+          "regcache_maple_sync -> rcu_read_unlock"
+        ],
+        "state_transitions": [
+          "cfg_binding(unsigned long lmin = min;)",
+          "cfg_binding(unsigned long lmax = max;)",
+          "cfg_branch(if regcache_reg_needs_sync (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(struct regmap *, unsigned int, unsigned int))(map (ImplicitCastExpr, LValueToRValue, struct regmap *), r (ImplicitCastExpr, LValueToRValue, unsigned int), v (ImplicitCastExpr, LValueToRValue, unsigned int)))",
+          "cfg_branch(for (...; r (ImplicitCastExpr, LValueToRValue, unsigned int) (ImplicitCastExpr, IntegralCast, unsigned long) <= __builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)((mas.last) - (lmax)) * 0L)) : (int *)8))), ((mas.last) < (lmax) ? (mas.last) : (lmax)), ({ ... ;  })); ...))",
+          "[B1.7]->cache_bypass",
+          "[B1.8] = [B1.5]"
+        ],
+        "api_terms": [
+          "rcu_read_lock",
+          "mas_find",
+          "regcache_reg_needs_sync",
+          "regcache_maple_sync_block",
+          "rcu_read_unlock"
+        ],
+        "related_symbols": [
+          "map->cache",
+          "mas->index",
+          "map->cache_bypass"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/base/regmap/regcache-maple.c",
+        "function": "regcache_maple_drop"
+      },
+      "location": {
+        "line": 196,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "regcache_maple_drop in drivers/base/regmap/regcache-maple.c: locks=mas_unlock, regcache_maple_sync_block | state_ops=for (r = min; r < max; r++) { | cfg_calls=regcache_maple_drop -> spin_lock; regcache_maple_drop -> mas_find",
+        "state_before": [
+          "buffer(map->cache)",
+          "buffer(map->alloc_flags)",
+          "sinks(mas_set_range, mas_store_gfp)"
+        ],
+        "state_after": [
+          "transition(for (r = min; r < max; r++) {)",
+          "transition(kfree)",
+          "transition(return [B1.14];)",
+          "locked(mas_unlock, regcache_maple_sync_block)"
+        ],
+        "functions": [
+          "regcache_maple_drop"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "map->cache",
+          "map->alloc_flags",
+          "map->format",
+          "mas->index"
+        ],
+        "buffer_fields": [
+          "map->cache",
+          "map->alloc_flags",
+          "map->format",
+          "mas->index"
+        ],
+        "call_targets": [
+          "mas_set_range",
+          "mas_store_gfp",
+          "mas_unlock",
+          "kfree",
+          "regcache_maple_sync_block",
+          "mas_pause",
+          "rcu_read_unlock",
+          "kmalloc"
+        ],
+        "call_edges": [
+          "regcache_maple_drop -> spin_lock",
+          "regcache_maple_drop -> mas_find",
+          "regcache_maple_drop -> spin_unlock",
+          "regcache_maple_drop -> kmemdup",
+          "regcache_maple_drop -> kfree",
+          "regcache_maple_drop -> mas_erase"
+        ],
+        "cfg_branch_kinds": [
+          "if",
+          "while"
+        ],
+        "branch_conditions": [
+          "goto out;",
+          "if [B6.27]",
+          "if [B7.2]",
+          "if [B10.27]"
+        ],
+        "state_statements": [
+          "kfree",
+          "return [B1.14];",
+          "([B2.4])->tree",
+          "[B2.6]->",
+          "[B4.4] = [B4.3]",
+          "[B6.18]->alloc_flags",
+          "[B6.22] = [B6.21]",
+          "[B6.25] != [B6.26]"
+        ],
+        "return_statements": [
+          "return [B1.14];"
+        ],
+        "source_file": "drivers/base/regmap/regcache-maple.c",
+        "source_excerpt": "164: \t\t\tmas_set_range(&mas, lower_index, lower_last);\n165: \t\t\tret = mas_store_gfp(&mas, lower, map->alloc_flags);\n166: \t\t\tif (ret != 0)\n167: \t\t\t\tgoto out;\n168: \t\t\tlower = NULL;\n169: \t\t}\n170: \n171: \t\tif (upper) {\n172: \t\t\tmas_set_range(&mas, upper_index, upper_last);\n173: \t\t\tret = mas_store_gfp(&mas, upper, map->alloc_flags);\n174: \t\t\tif (ret != 0)\n175: \t\t\t\tgoto out;\n176: \t\t\tupper = NULL;\n177: \t\t}\n178: \t}\n179: \n180: out:\n181: \tmas_unlock(&mas);\n182: out_unlocked:\n183: \tkfree(lower);\n184: \tkfree(upper);\n185: \n186: \treturn ret;\n187: }\n188: \n189: static int regcache_maple_sync_block(struct regmap *map, unsigned long *entry,\n190: \t\t\t\t     struct ma_state *mas,\n191: \t\t\t\t     unsigned int min, unsigned int max)\n192: {\n193: \tvoid *buf;\n194: \tunsigned long r;\n195: \tsize_t val_bytes = map->format.val_bytes;\n196: \tint ret = 0;\n197: \n198: \tmas_pause(mas);\n199: \trcu_read_unlock();\n200: \n201: \t/*\n202: \t * Use a raw write if writing more than one register to a\n203: \t * device that supports raw writes to reduce transaction\n204: \t * overheads.\n205: \t */\n206: \tif (max - min > 1 && regmap_can_raw_write(map)) {\n207: \t\tbuf = kmalloc(val_bytes * (max - min), map->alloc_flags);\n208: \t\tif (!buf) {\n209: \t\t\tret = -ENOMEM;\n210: \t\t\tgoto out;\n211: \t\t}\n212: \n213: \t\t/* Render the data for a raw write */\n214: \t\tfor (r = min; r < max; r++) {\n215: \t\t\tregcache_set_val(map, buf, r - min,\n216: \t\t\t\t\t entry[r - mas->index]);\n217: \t\t}\n218: \n219: \t\tret = _regmap_raw_write(map, min, buf, (max - min) * val_bytes,\n220: \t\t\t\t\tfalse);\n221: \n222: \t\tkfree(buf);\n223: \t} else {\n224: \t\tfor (r = min; r < max; r++) {\n225: \t\t\tret = _regmap_write(map, r,\n226: \t\t\t\t\t    entry[r - mas->index]);\n227: \t\t\tif (ret != 0)\n228: \t\t\t\tgoto out;",
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/semweaver_treatment_evidence_cohort_v3/39_eaa03486d932_Uninit_Data/csa/patchweaver_runtime/csa_raw/drivers-base-regmap-regcache-maple.c-regcache_maple_drop.txt",
+        "raw_output_sha256": "ab4b95dbd29d7d92f7b5ff5341c65b4bf1a1ebcdfb5532fe042acd30eb8e5ef1",
+        "command_sha256": "e3f11c4b6be5ebd97d5b0a2185f1499ba8250260bd4dd7331560f318120f8e2f"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:symbolic-state",
+        "confidence": 0.88,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "drivers/base/regmap/regcache-maple.c",
+          "hunk_index": 0,
+          "source_line": 196
+        },
+        "summary": "regcache_maple_drop in drivers/base/regmap/regcache-maple.c: locks=mas_unlock, regcache_maple_sync_block | state_ops=for (r = min; r < max; r++) { | cfg_calls=regcache_maple_drop -> spin_lock; regcache_maple_drop -> mas_find",
+        "statements": [
+          "164: \t\t\tmas_set_range(&mas, lower_index, lower_last);",
+          "165: \t\t\tret = mas_store_gfp(&mas, lower, map->alloc_flags);",
+          "166: \t\t\tif (ret != 0)",
+          "167: \t\t\t\tgoto out;",
+          "168: \t\t\tlower = NULL;",
+          "169: \t\t}"
+        ],
+        "guards": [
+          "goto out;",
+          "if [B6.27]",
+          "if [B7.2]"
+        ],
+        "call_boundary": [
+          "mas_set_range",
+          "mas_store_gfp",
+          "mas_unlock",
+          "kfree",
+          "regcache_maple_sync_block",
+          "mas_pause"
+        ],
+        "call_edges": [
+          "regcache_maple_drop -> spin_lock",
+          "regcache_maple_drop -> mas_find",
+          "regcache_maple_drop -> spin_unlock",
+          "regcache_maple_drop -> kmemdup",
+          "regcache_maple_drop -> kfree",
+          "regcache_maple_drop -> mas_erase",
+          "regcache_maple_drop -> mas_set_range",
+          "regcache_maple_drop -> mas_store_gfp"
+        ],
+        "state_transitions": [
+          "transition(for (r = min; r < max; r++) {)",
+          "transition(kfree)",
+          "transition(return [B1.14];)",
+          "locked(mas_unlock, regcache_maple_sync_block)",
+          "kfree",
+          "return [B1.14];"
+        ],
+        "api_terms": [
+          "mas_unlock",
+          "regcache_maple_sync_block",
+          "rcu_read_unlock",
+          "spin_lock",
+          "mas_find",
+          "spin_unlock"
+        ],
+        "related_symbols": [
+          "map->cache",
+          "map->alloc_flags",
+          "map->format",
+          "mas->index"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_state_1",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/base/regmap/regcache-maple.c",
+        "function": "regcache_maple_sync"
+      },
+      "location": {
+        "line": 247,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "regcache_maple_sync in drivers/base/regmap/regcache-maple.c: locks=rcu_read_lock, regcache_maple_sync_block | state_ops=for (r = min; r < max; r++) {; for (r = max(mas.index, lmin); r <= min(mas.last, lmax); r++) { | cfg_calls=regcache_maple_sync -> rcu_read_lock; regcache_maple_sync -> mas_find",
+        "state_before": [
+          "buffer(map->cache)",
+          "buffer(mas->index)",
+          "sinks(regcache_set_val, _regmap_raw_write)"
+        ],
+        "state_after": [
+          "transition(for (r = min; r < max; r++) {)",
+          "transition(for (r = max(mas.index, lmin); r <= min(mas.last, lmax); r++) {)",
+          "transition([B1.7]->cache_bypass)",
+          "locked(rcu_read_lock, regcache_maple_sync_block)"
+        ],
+        "functions": [
+          "regcache_maple_sync"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "map->cache",
+          "mas->index",
+          "map->cache_bypass"
+        ],
+        "buffer_fields": [
+          "map->cache",
+          "mas->index",
+          "map->cache_bypass"
+        ],
+        "call_targets": [
+          "regcache_set_val",
+          "_regmap_raw_write",
+          "kfree",
+          "_regmap_write",
+          "rcu_read_lock",
+          "regcache_maple_sync",
+          "max",
+          "min"
+        ],
+        "call_edges": [
+          "regcache_maple_sync -> rcu_read_lock",
+          "regcache_maple_sync -> mas_find",
+          "regcache_maple_sync -> regcache_reg_needs_sync",
+          "regcache_maple_sync -> regcache_maple_sync_block",
+          "regcache_maple_sync -> rcu_read_unlock"
+        ],
+        "cfg_branch_kinds": [
+          "if",
+          "for",
+          "while"
+        ],
+        "branch_conditions": [
+          "goto out;",
+          "if [B5.19]",
+          "if [B6.2]",
+          "if [B10.19]"
+        ],
+        "state_statements": [
+          "[B1.7]->cache_bypass",
+          "[B1.8] = [B1.5]",
+          "return [B1.11];",
+          "[B3.3] = [B3.2]",
+          "[B5.14] = [B5.13]",
+          "[B5.17] != [B5.18]",
+          "[B7.1]++",
+          "[B8.3] = [B8.2]"
+        ],
+        "return_statements": [
+          "return [B1.11];"
+        ],
+        "source_file": "drivers/base/regmap/regcache-maple.c",
+        "source_excerpt": "215: \t\t\tregcache_set_val(map, buf, r - min,\n216: \t\t\t\t\t entry[r - mas->index]);\n217: \t\t}\n218: \n219: \t\tret = _regmap_raw_write(map, min, buf, (max - min) * val_bytes,\n220: \t\t\t\t\tfalse);\n221: \n222: \t\tkfree(buf);\n223: \t} else {\n224: \t\tfor (r = min; r < max; r++) {\n225: \t\t\tret = _regmap_write(map, r,\n226: \t\t\t\t\t    entry[r - mas->index]);\n227: \t\t\tif (ret != 0)\n228: \t\t\t\tgoto out;\n229: \t\t}\n230: \t}\n231: \n232: out:\n233: \trcu_read_lock();\n234: \n235: \treturn ret;\n236: }\n237: \n238: static int regcache_maple_sync(struct regmap *map, unsigned int min,\n239: \t\t\t       unsigned int max)\n240: {\n241: \tstruct maple_tree *mt = map->cache;\n242: \tunsigned long *entry;\n243: \tMA_STATE(mas, mt, min, max);\n244: \tunsigned long lmin = min;\n245: \tunsigned long lmax = max;\n246: \tunsigned int r, v, sync_start;\n247: \tint ret;\n248: \tbool sync_needed = false;\n249: \n250: \tmap->cache_bypass = true;\n251: \n252: \trcu_read_lock();\n253: \n254: \tmas_for_each(&mas, entry, max) {\n255: \t\tfor (r = max(mas.index, lmin); r <= min(mas.last, lmax); r++) {\n256: \t\t\tv = entry[r - mas.index];\n257: \n258: \t\t\tif (regcache_reg_needs_sync(map, r, v)) {\n259: \t\t\t\tif (!sync_needed) {\n260: \t\t\t\t\tsync_start = r;\n261: \t\t\t\t\tsync_needed = true;\n262: \t\t\t\t}\n263: \t\t\t\tcontinue;\n264: \t\t\t}\n265: \n266: \t\t\tif (!sync_needed)\n267: \t\t\t\tcontinue;\n268: \n269: \t\t\tret = regcache_maple_sync_block(map, entry, &mas,\n270: \t\t\t\t\t\t\tsync_start, r);\n271: \t\t\tif (ret != 0)\n272: \t\t\t\tgoto out;\n273: \t\t\tsync_needed = false;\n274: \t\t}\n275: \n276: \t\tif (sync_needed) {\n277: \t\t\tret = regcache_maple_sync_block(map, entry, &mas,\n278: \t\t\t\t\t\t\tsync_start, r);\n279: \t\t\tif (ret != 0)",
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/semweaver_treatment_evidence_cohort_v3/39_eaa03486d932_Uninit_Data/csa/patchweaver_runtime/csa_raw/drivers-base-regmap-regcache-maple.c-regcache_maple_sync.txt",
+        "raw_output_sha256": "ab4b95dbd29d7d92f7b5ff5341c65b4bf1a1ebcdfb5532fe042acd30eb8e5ef1",
+        "command_sha256": "e3f11c4b6be5ebd97d5b0a2185f1499ba8250260bd4dd7331560f318120f8e2f"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:symbolic-state",
+        "confidence": 0.88,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "drivers/base/regmap/regcache-maple.c",
+          "hunk_index": 1,
+          "source_line": 247
+        },
+        "summary": "regcache_maple_sync in drivers/base/regmap/regcache-maple.c: locks=rcu_read_lock, regcache_maple_sync_block | state_ops=for (r = min; r < max; r++) {; for (r = max(mas.index, lmin); r <= min(mas.last, lmax); r++) { | cfg_calls=regcache_maple_sync -> rcu_read_lock; regcache_maple_sync -> mas_find",
+        "statements": [
+          "215: \t\t\tregcache_set_val(map, buf, r - min,",
+          "216: \t\t\t\t\t entry[r - mas->index]);",
+          "217: \t\t}",
+          "218:",
+          "219: \t\tret = _regmap_raw_write(map, min, buf, (max - min) * val_bytes,",
+          "220: \t\t\t\t\tfalse);"
+        ],
+        "guards": [
+          "goto out;",
+          "if [B5.19]",
+          "if [B6.2]"
+        ],
+        "call_boundary": [
+          "regcache_set_val",
+          "_regmap_raw_write",
+          "kfree",
+          "_regmap_write",
+          "rcu_read_lock",
+          "regcache_maple_sync"
+        ],
+        "call_edges": [
+          "regcache_maple_sync -> rcu_read_lock",
+          "regcache_maple_sync -> mas_find",
+          "regcache_maple_sync -> regcache_reg_needs_sync",
+          "regcache_maple_sync -> regcache_maple_sync_block",
+          "regcache_maple_sync -> rcu_read_unlock"
+        ],
+        "state_transitions": [
+          "transition(for (r = min; r < max; r++) {)",
+          "transition(for (r = max(mas.index, lmin); r <= min(mas.last, lmax); r++) {)",
+          "transition([B1.7]->cache_bypass)",
+          "locked(rcu_read_lock, regcache_maple_sync_block)",
+          "[B1.7]->cache_bypass",
+          "[B1.8] = [B1.5]"
+        ],
+        "api_terms": [
+          "rcu_read_lock",
+          "regcache_maple_sync_block",
+          "mas_find",
+          "regcache_reg_needs_sync",
+          "rcu_read_unlock"
+        ],
+        "related_symbols": [
+          "map->cache",
+          "mas->index",
+          "map->cache_bypass"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_validation_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/base/regmap/regcache-maple.c",
+        "function": "regcache_maple_drop"
+      },
+      "location": {
+        "line": 196,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at drivers/base/regmap/regcache-maple.c:196",
+        "diagnostic_message": "",
+        "diagnostic_checker": "",
+        "state_before": [
+          "buffer(map->cache)",
+          "buffer(map->alloc_flags)",
+          "sinks(mas_set_range, mas_store_gfp)"
+        ],
+        "state_after": [
+          "diagnostic(csa)"
+        ],
+        "functions": [
+          "regcache_maple_drop"
+        ],
+        "globals": [],
+        "tracked_symbols": [],
+        "buffer_fields": [
+          "map->cache",
+          "map->alloc_flags",
+          "map->format",
+          "mas->index"
+        ],
+        "call_targets": [
+          "mas_set_range",
+          "mas_store_gfp",
+          "mas_unlock",
+          "kfree",
+          "regcache_maple_sync_block",
+          "mas_pause"
+        ],
+        "call_edges": [
+          "regcache_maple_drop -> spin_lock",
+          "regcache_maple_drop -> mas_find",
+          "regcache_maple_drop -> spin_unlock",
+          "regcache_maple_drop -> kmemdup",
+          "regcache_maple_drop -> kfree",
+          "regcache_maple_drop -> mas_erase"
+        ],
+        "state_statements": [
+          "for (r = min; r < max; r++) {",
+          "kfree",
+          "return [B1.14];",
+          "([B2.4])->tree",
+          "[B2.6]->",
+          "[B4.4] = [B4.3]"
+        ],
+        "source_file": "drivers/base/regmap/regcache-maple.c",
+        "source_excerpt": "164: \t\t\tmas_set_range(&mas, lower_index, lower_last);\n165: \t\t\tret = mas_store_gfp(&mas, lower, map->alloc_flags);\n166: \t\t\tif (ret != 0)\n167: \t\t\t\tgoto out;\n168: \t\t\tlower = NULL;\n169: \t\t}\n170: \n171: \t\tif (upper) {\n172: \t\t\tmas_set_range(&mas, upper_index, upper_last);\n173: \t\t\tret = mas_store_gfp(&mas, upper, map->alloc_flags);\n174: \t\t\tif (ret != 0)\n175: \t\t\t\tgoto out;\n176: \t\t\tupper = NULL;\n177: \t\t}\n178: \t}\n179: \n180: out:\n181: \tmas_unlock(&mas);\n182: out_unlocked:\n183: \tkfree(lower);\n184: \tkfree(upper);\n185: \n186: \treturn ret;\n187: }\n188: \n189: static int regcache_maple_sync_block(struct regmap *map, unsigned long *entry,\n190: \t\t\t\t     struct ma_state *mas,\n191: \t\t\t\t     unsigned int min, unsigned int max)\n192: {\n193: \tvoid *buf;\n194: \tunsigned long r;\n195: \tsize_t val_bytes = map->format.val_bytes;\n196: \tint ret = 0;\n197: \n198: \tmas_pause(mas);\n199: \trcu_read_unlock();\n200: \n201: \t/*\n202: \t * Use a raw write if writing more than one register to a\n203: \t * device that supports raw writes to reduce transaction\n204: \t * overheads.\n205: \t */\n206: \tif (max - min > 1 && regmap_can_raw_write(map)) {\n207: \t\tbuf = kmalloc(val_bytes * (max - min), map->alloc_flags);\n208: \t\tif (!buf) {\n209: \t\t\tret = -ENOMEM;\n210: \t\t\tgoto out;\n211: \t\t}\n212: \n213: \t\t/* Render the data for a raw write */\n214: \t\tfor (r = min; r < max; r++) {\n215: \t\t\tregcache_set_val(map, buf, r - min,\n216: \t\t\t\t\t entry[r - mas->index]);\n217: \t\t}\n218: \n219: \t\tret = _regmap_raw_write(map, min, buf, (max - min) * val_bytes,\n220: \t\t\t\t\tfalse);\n221: \n222: \t\tkfree(buf);\n223: \t} else {\n224: \t\tfor (r = min; r < max; r++) {\n225: \t\t\tret = _regmap_write(map, r,\n226: \t\t\t\t\t    entry[r - mas->index]);\n227: \t\t\tif (ret != 0)\n228: \t\t\t\tgoto out;",
+        "coverage_status": "partial",
+        "contract_type": "",
+        "guard_exprs": [
+          "ret != 0",
+          "upper",
+          "max - min > 1 && regmap_can_raw_write(map)",
+          "!buf"
+        ],
+        "sink_calls": [
+          "mas_set_range",
+          "mas_store_gfp",
+          "mas_unlock",
+          "kfree"
+        ]
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.72,
+        "origin": "analyzer_output"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "drivers/base/regmap/regcache-maple.c",
+          "hunk_index": 0,
+          "source_line": 196
+        },
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at drivers/base/regmap/regcache-maple.c:196",
+        "statements": [
+          "164: \t\t\tmas_set_range(&mas, lower_index, lower_last);",
+          "165: \t\t\tret = mas_store_gfp(&mas, lower, map->alloc_flags);",
+          "166: \t\t\tif (ret != 0)",
+          "167: \t\t\t\tgoto out;",
+          "168: \t\t\tlower = NULL;",
+          "169: \t\t}"
+        ],
+        "guards": [
+          "ret != 0",
+          "upper",
+          "max - min > 1 && regmap_can_raw_write(map)",
+          "!buf"
+        ],
+        "call_boundary": [
+          "mas_set_range",
+          "mas_store_gfp",
+          "mas_unlock",
+          "kfree",
+          "regcache_maple_sync_block",
+          "mas_pause"
+        ],
+        "call_edges": [
+          "regcache_maple_drop -> spin_lock",
+          "regcache_maple_drop -> mas_find",
+          "regcache_maple_drop -> spin_unlock",
+          "regcache_maple_drop -> kmemdup",
+          "regcache_maple_drop -> kfree",
+          "regcache_maple_drop -> mas_erase"
+        ],
+        "state_transitions": [
+          "diagnostic(csa)"
+        ],
+        "api_terms": [
+          "for (r = min; r < max; r++) {",
+          "kfree",
+          "return [B1.14];",
+          "([B2.4])->tree",
+          "[B2.6]->",
+          "[B4.4] = [B4.3]"
+        ],
+        "related_symbols": [],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      }
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_1",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/base/regmap/regcache-maple.c",
+        "function": "regcache_maple_drop"
+      },
+      "location": {
+        "line": 196,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "regcache_maple_drop in drivers/base/regmap/regcache-maple.c provides CSA-backed pointer/resource lifecycle context near line 196",
+        "diagnostic_message": "",
+        "diagnostic_checker": "",
+        "state_before": [
+          "buffer(map->cache)",
+          "buffer(map->alloc_flags)",
+          "sinks(mas_set_range, mas_store_gfp)"
+        ],
+        "state_after": [
+          "operation(for (r = min; r < max; r++) {)",
+          "operation(kfree)",
+          "operation(return [B1.14];)",
+          "operation(([B2.4])->tree)"
+        ],
+        "functions": [
+          "regcache_maple_drop"
+        ],
+        "globals": [],
+        "tracked_symbols": [],
+        "buffer_fields": [
+          "map->cache",
+          "map->alloc_flags",
+          "map->format",
+          "mas->index"
+        ],
+        "call_targets": [
+          "mas_set_range",
+          "mas_store_gfp",
+          "mas_unlock",
+          "kfree",
+          "regcache_maple_sync_block",
+          "mas_pause"
+        ],
+        "call_edges": [
+          "regcache_maple_drop -> spin_lock",
+          "regcache_maple_drop -> mas_find",
+          "regcache_maple_drop -> spin_unlock",
+          "regcache_maple_drop -> kmemdup",
+          "regcache_maple_drop -> kfree",
+          "regcache_maple_drop -> mas_erase"
+        ],
+        "state_statements": [
+          "for (r = min; r < max; r++) {",
+          "kfree",
+          "return [B1.14];",
+          "([B2.4])->tree",
+          "[B2.6]->",
+          "[B4.4] = [B4.3]"
+        ],
+        "source_file": "drivers/base/regmap/regcache-maple.c",
+        "source_excerpt": "164: \t\t\tmas_set_range(&mas, lower_index, lower_last);\n165: \t\t\tret = mas_store_gfp(&mas, lower, map->alloc_flags);\n166: \t\t\tif (ret != 0)\n167: \t\t\t\tgoto out;\n168: \t\t\tlower = NULL;\n169: \t\t}\n170: \n171: \t\tif (upper) {\n172: \t\t\tmas_set_range(&mas, upper_index, upper_last);\n173: \t\t\tret = mas_store_gfp(&mas, upper, map->alloc_flags);\n174: \t\t\tif (ret != 0)\n175: \t\t\t\tgoto out;\n176: \t\t\tupper = NULL;\n177: \t\t}\n178: \t}\n179: \n180: out:\n181: \tmas_unlock(&mas);\n182: out_unlocked:\n183: \tkfree(lower);\n184: \tkfree(upper);\n185: \n186: \treturn ret;\n187: }\n188: \n189: static int regcache_maple_sync_block(struct regmap *map, unsigned long *entry,\n190: \t\t\t\t     struct ma_state *mas,\n191: \t\t\t\t     unsigned int min, unsigned int max)\n192: {\n193: \tvoid *buf;\n194: \tunsigned long r;\n195: \tsize_t val_bytes = map->format.val_bytes;\n196: \tint ret = 0;\n197: \n198: \tmas_pause(mas);\n199: \trcu_read_unlock();\n200: \n201: \t/*\n202: \t * Use a raw write if writing more than one register to a\n203: \t * device that supports raw writes to reduce transaction\n204: \t * overheads.\n205: \t */\n206: \tif (max - min > 1 && regmap_can_raw_write(map)) {\n207: \t\tbuf = kmalloc(val_bytes * (max - min), map->alloc_flags);\n208: \t\tif (!buf) {\n209: \t\t\tret = -ENOMEM;\n210: \t\t\tgoto out;\n211: \t\t}\n212: \n213: \t\t/* Render the data for a raw write */\n214: \t\tfor (r = min; r < max; r++) {\n215: \t\t\tregcache_set_val(map, buf, r - min,\n216: \t\t\t\t\t entry[r - mas->index]);\n217: \t\t}\n218: \n219: \t\tret = _regmap_raw_write(map, min, buf, (max - min) * val_bytes,\n220: \t\t\t\t\tfalse);\n221: \n222: \t\tkfree(buf);\n223: \t} else {\n224: \t\tfor (r = min; r < max; r++) {\n225: \t\t\tret = _regmap_write(map, r,\n226: \t\t\t\t\t    entry[r - mas->index]);\n227: \t\t\tif (ret != 0)\n228: \t\t\t\tgoto out;",
+        "coverage_status": "partial",
+        "operations": [
+          "for (r = min; r < max; r++) {",
+          "kfree",
+          "return [B1.14];",
+          "([B2.4])->tree",
+          "[B2.6]->",
+          "[B4.4] = [B4.3]"
+        ],
+        "acquisition_ops": [],
+        "release_ops": []
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.72,
+        "origin": "analyzer_output"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "drivers/base/regmap/regcache-maple.c",
+          "hunk_index": 0,
+          "source_line": 196
+        },
+        "summary": "regcache_maple_drop in drivers/base/regmap/regcache-maple.c provides CSA-backed pointer/resource lifecycle context near line 196",
+        "statements": [
+          "164: \t\t\tmas_set_range(&mas, lower_index, lower_last);",
+          "165: \t\t\tret = mas_store_gfp(&mas, lower, map->alloc_flags);",
+          "166: \t\t\tif (ret != 0)",
+          "167: \t\t\t\tgoto out;",
+          "168: \t\t\tlower = NULL;",
+          "169: \t\t}"
+        ],
+        "guards": [
+          "ret != 0",
+          "upper",
+          "max - min > 1 && regmap_can_raw_write(map)",
+          "!buf"
+        ],
+        "call_boundary": [
+          "mas_set_range",
+          "mas_store_gfp",
+          "mas_unlock",
+          "kfree",
+          "regcache_maple_sync_block",
+          "mas_pause"
+        ],
+        "call_edges": [
+          "regcache_maple_drop -> spin_lock",
+          "regcache_maple_drop -> mas_find",
+          "regcache_maple_drop -> spin_unlock",
+          "regcache_maple_drop -> kmemdup",
+          "regcache_maple_drop -> kfree",
+          "regcache_maple_drop -> mas_erase"
+        ],
+        "state_transitions": [
+          "operation(for (r = min; r < max; r++) {)",
+          "operation(kfree)",
+          "operation(return [B1.14];)",
+          "operation(([B2.4])->tree)"
+        ],
+        "api_terms": [
+          "for (r = min; r < max; r++) {",
+          "kfree",
+          "return [B1.14];",
+          "([B2.4])->tree",
+          "[B2.6]->",
+          "[B4.4] = [B4.3]"
+        ],
+        "related_symbols": [],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "collected_analyzers": [
+    "csa"
+  ],
+  "provenance_summary": {
+    "total_records": 6,
+    "origin_counts": {
+      "analyzer_internal": 4,
+      "analyzer_output": 2
+    },
+    "analyzer_internal_records": 4,
+    "analyzer_internal_fraction": 0.6666666666666666,
+    "analyzer_backed_records": 6,
+    "analyzer_backed_fraction": 1.0,
+    "source_derived_records": 0,
+    "source_derived_fraction": 0.0
+  }
+}

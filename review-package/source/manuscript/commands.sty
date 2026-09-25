@@ -1,0 +1,46 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{commands}[2026/06/13 Custom commands for ICSE 2027]
+
+% ============================================================
+% Text shorthands
+% ============================================================
+\newcommand{\ie}{\textit{i.e.}}
+\newcommand{\eg}{\textit{e.g.}}
+\newcommand{\etal}{\textit{et al.}}
+
+% ============================================================
+% Paper-specific names
+% ============================================================
+\newcommand{\toolname}{\textsc{SemWeaver}\xspace}
+
+% Lightweight algorithm caption that avoids depending on algorithm.sty.
+\newcounter{paperalgorithm}
+\renewcommand{\thepaperalgorithm}{\arabic{paperalgorithm}}
+\newcommand{\paperalgcaption}[1]{%
+  \refstepcounter{paperalgorithm}%
+  \noindent\textbf{Algorithm~\thepaperalgorithm: #1}\par\smallskip%
+}
+
+% ============================================================
+% Make underscores breakable inside identifiers.
+% In a narrow IEEE column a \texttt{} token cannot break, so long names
+% (e.g. allocation\_lifecycle, collected\_analyzers) overflow the column.
+% Allowing a break after each underscore removes those overfull lines.
+% ============================================================
+\renewcommand{\_}{\textunderscore\allowbreak}
+
+\newtoggle{showcomments}
+\toggletrue{showcomments} % comment out this line to disable comments
+
+\iftoggle{showcomments}{%
+  \newcommand{\inlinecomment}[3]{{\color{#1}\textsf{\textbf{[#2: }\textit{#3}\textbf{]}}}}
+}{%
+  \newcommand{\inlinecomment}[3]{}
+}
+
+\newcommand{\xiao}[1]{{\inlinecomment{orange}{Xiao}{#1}}}
+
+% ============================================================
+% Circled numbers (white digit on black disc) for figure labels
+% ============================================================
+\newcommand{\cmark}[1]{{\large\ding{\numexpr201+#1\relax}}}

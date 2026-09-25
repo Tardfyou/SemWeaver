@@ -1,0 +1,52 @@
+% Fig -- E2 cross-backend results as grouped before->after bars.
+% Replaces the old Table IV (arrow notation was hard to read visually).
+% Counts are out of 10 per backend; source: refine_results.csv.
+% baseline = muted gray, refined = backend colour (CSA blue / CodeQL orange).
+\begin{tikzpicture}[sw, x=1pt, y=1pt]
+  % --- geometry -------------------------------------------------------
+  % y: 6pt per count unit, max 10 -> 60pt tall.
+  \def\u{6}        % pt per count
+  \def\bw{7}       % bar width
+
+  % gridlines + y ticks (0,5,10)
+  \foreach \v in {0,5,10}{
+    \draw[swrow] (-4,\v*\u) -- (152,\v*\u);
+    \node[swnote, left=1pt] at (-4,\v*\u) {\v};
+  }
+
+  % --- bar macro: #1 x  #2 count  #3 fill  #4 draw -------------------
+  \newcommand{\swbar}[4]{%
+    \fill[#3] (#1,0) rectangle (#1+\bw,{#2*\u});
+    \draw[#4, line width=0.6pt] (#1,0) rectangle (#1+\bw,{#2*\u});
+    \node[swnote, anchor=south, inner sep=1pt] at (#1+0.5*\bw,{#2*\u}) {#2};
+  }
+
+  % ===================== CSA (blue) =================================
+  % BugHit 9->10, FixSilent 6->7, PDS 5->7
+  \swbar{0}{9}{swmist}{swgray}     \swbar{8}{10}{swbluemid}{swblue}
+  \swbar{24}{6}{swmist}{swgray}    \swbar{32}{7}{swbluemid}{swblue}
+  \swbar{48}{5}{swmist}{swgray}    \swbar{56}{7}{swbluemid}{swblue}
+
+  % ===================== CodeQL (orange) ============================
+  % BugHit 6->5, FixSilent 6->9, PDS 3->5
+  \swbar{84}{6}{swmist}{swgray}    \swbar{92}{5}{sworange!35}{sworange}
+  \swbar{108}{6}{swmist}{swgray}   \swbar{116}{9}{sworange!35}{sworange}
+  \swbar{132}{3}{swmist}{swgray}   \swbar{140}{5}{sworange!35}{sworange}
+
+  % --- per-pair metric labels ---------------------------------------
+  \foreach \x/\m in {4/Bug hit, 28/Fix silent, 52/PDS,
+                     88/Bug hit, 112/Fix silent, 136/PDS}{
+    \node[swnote, anchor=north] at (\x+0.5*\bw-4,-2) {\m};
+  }
+
+  % --- backend group labels + separator -----------------------------
+  \draw[swrule] (74,-13) -- (74,64);
+  \node[swptitle, text=swblue]   at (32,72) {CSA};
+  \node[swptitle, text=sworange] at (116,72) {CodeQL};
+
+  % --- legend -------------------------------------------------------
+  \fill[swmist] (-4,90) rectangle (4,97); \draw[swgray] (-4,90) rectangle (4,97);
+  \node[swnote, anchor=west] at (6,93.5) {baseline};
+  \fill[swbluemid] (54,90) rectangle (62,97); \draw[swblue] (54,90) rectangle (62,97);
+  \node[swnote, anchor=west] at (64,93.5) {refined (\toolname)};
+\end{tikzpicture}

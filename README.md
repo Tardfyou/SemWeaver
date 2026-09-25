@@ -1,53 +1,23 @@
-# SemWeaver
+# SemWeaver: FSE 2027 anonymous review artifact
 
-SemWeaver is a patch-guided framework for generating and refining static-analysis detectors. It takes a security patch, extracts patch-relevant evidence from the target source tree, and helps synthesize or refine detectors for Clang Static Analyzer (CSA) and CodeQL.
-
-This repository contains the project source code, prompts, configuration, knowledge seeds, setup scripts, a small smoke-test lab, source-only experiment drivers, and experiment sample manifests. It intentionally does not include full sample worktrees, cached databases, model caches, scan outputs, result tables, API keys, or author-identifying metadata.
-
-## Repository Contents
-
-- `src/`: SemWeaver implementation.
-- `prompts/`: prompt templates used by generation, evidence, and refinement stages.
-- `data/knowledge/`: small static knowledge seeds used by optional RAG import.
-- `config/config.yaml`: default environment-variable based configuration.
-- `scripts/`: setup, ChromaDB/RAG, CodeQL, and CSA helper scripts.
-- `experiments/`: source-only artifact experiment drivers, baseline-integration code, and sample manifest CSVs.
-- `artifacts/`: placeholder for future artifact data packages and generated experiment outputs.
-- `tests/tiny_buffer_lab/`: minimal C buffer-bound smoke fixture.
-- `docs/`: installation, usage, configuration, and structure documentation.
-
-## Quick Start
+The current replication package is in [review-package/](review-package/README.md).
+It contains the pinned SemWeaver source, the FSE-format manuscript and PDF,
+frozen checker/patch inputs, raw and derived evidence, three matched repeats
+against KNighter's actual refinement loop, a ten-candidate extension screen,
+and English instructions for offline verification.
 
 ```bash
-cd SemWeaver
-python3 -m venv .venv
-source .venv/bin/activate
-python3 -m pip install -r requirements.txt
-
-export SEMWEEVER_LLM_PROVIDER=openai
-export SEMWEEVER_MODEL=gpt-4.1
-export OPENAI_API_KEY="<your key>"
-
-python3 -m src.main --help
+cd review-package
+python3 scripts/verify_v7_review_package.py .
 ```
 
-For optional local knowledge retrieval:
+The verifier requires no model API, Linux build, or network connection. The
+package manifest binds every file by SHA-256, and `REDACTIONS.json` records
+path-only anonymization without changing outcome labels. The full method,
+denominators, and limitations are described in the package README and paper.
 
-```bash
-docker compose up -d
-python3 scripts/import_knowledge.py
-```
-
-## Documentation
-
-- [Installation](docs/INSTALL.md)
-- [Usage](docs/USAGE.md)
-- [Configuration](docs/CONFIGURATION.md)
-- [Artifact Structure](docs/ARTIFACT_STRUCTURE.md)
-- [Experiment Source](experiments/README.md)
-- [Experiment Samples](experiments/samples/README.md)
-- [Security Notes](SECURITY.md)
-
-## Scope
-
-The included tiny C smoke fixture checks that the toolchain, prompts, and CLI are wired correctly. Experiment sample manifests live under `experiments/samples/`; full sample environments, generated reports, scan outputs, result tables, caches, and runtime workspaces remain under `artifacts/`.
+This repository's former source-only snapshot was removed from the current
+tree to avoid confusing it with the reviewed version; it remains recoverable
+from earlier Git commits. The included KNighter baseline retains its upstream
+Apache-2.0 license and attribution. No project-level SemWeaver reuse license
+is granted by this review snapshot.

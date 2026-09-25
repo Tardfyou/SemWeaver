@@ -1,0 +1,94 @@
+BuildSource:| fs/bcachefs/io_misc.c
+### Report Summary
+
+File:| io_misc.c  
+---|---  
+Warning:| line 150, column 2  
+Variable 'max_sectors' has insufficient width (use u64 instead of unsigned
+int)  
+  
+### Annotated Source Code
+
+
+100   | 				opts.data_replicas,
+101   | 				opts.data_replicas,
+102   | 				BCH_WATERMARK_normal, 0, &cl, &wp);
+103   |  if (bch2_err_matches(ret, BCH_ERR_operation_blocked))
+104   | 			ret = -BCH_ERR_transaction_restart_nested;
+105   |  if (ret)
+106   |  goto err;
+107   |  
+108   | 		sectors = min_t(u64, sectors, wp->sectors_free);
+109   | 		sectors_allocated = sectors;
+110   |  
+111   | 		bch2_key_resize(&e->k, sectors);
+112   |  
+113   | 		bch2_open_bucket_get(c, wp, &open_buckets);
+114   | 		bch2_alloc_sectors_append_ptrs(c, wp, &e->k_i, sectors, false);
+115   | 		bch2_alloc_sectors_done(c, wp);
+116   |  
+117   |  extent_for_each_ptr(extent_i_to_s(e), ptr)
+118   | 			ptr->unwritten = true;
+119   | 	}
+120   |  
+121   | 	have_reservation = true;
+122   |  
+123   | 	ret = bch2_extent_update(trans, inum, iter, new.k, &disk_res,
+124   | 				 0, i_sectors_delta, true);
+125   | err:
+126   |  if (!ret && sectors_allocated)
+127   | 		bch2_increment_clock(c, sectors_allocated, WRITE);
+128   |  
+129   | 	bch2_open_buckets_put(c, &open_buckets);
+130   | 	bch2_disk_reservation_put(c, &disk_res);
+131   | 	bch2_bkey_buf_exit(&new, c);
+132   | 	bch2_bkey_buf_exit(&old, c);
+133   |  
+134   |  if (closure_nr_remaining(&cl) != 1) {
+135   | 		bch2_trans_unlock(trans);
+136   | 		closure_sync(&cl);
+137   | 	}
+138   |  
+139   |  return ret;
+140   | }
+141   |  
+142   | /*
+143   |  * Returns -BCH_ERR_transacton_restart if we had to drop locks:
+144   |  */
+145   | int bch2_fpunch_at(struct btree_trans *trans, struct btree_iter *iter,
+146   | 		   subvol_inum inum, u64 end,
+147   | 		   s64 *i_sectors_delta)
+148   | {
+149   |  struct bch_fs *c	= trans->c;
+150   |  unsigned max_sectors	= KEY_SIZE_MAX & (~0 << c->block_bits);
+    Variable 'max_sectors' has insufficient width (use u64 instead of unsigned int)
+151   |  struct bpos end_pos = POS(inum.inum, end);
+152   |  struct bkey_s_c k;
+153   |  int ret = 0, ret2 = 0;
+154   | 	u32 snapshot;
+155   |  
+156   |  while (!ret ||
+157   |  bch2_err_matches(ret, BCH_ERR_transaction_restart)) {
+158   |  struct disk_reservation disk_res =
+159   | 			bch2_disk_reservation_init(c, 0);
+160   |  struct bkey_i delete;
+161   |  
+162   |  if (ret)
+163   | 			ret2 = ret;
+164   |  
+165   | 		bch2_trans_begin(trans);
+166   |  
+167   | 		ret = bch2_subvolume_get_snapshot(trans, inum.subvol, &snapshot);
+168   |  if (ret)
+169   |  continue;
+170   |  
+171   | 		bch2_btree_iter_set_snapshot(iter, snapshot);
+172   |  
+173   |  /*
+174   |  * peek_upto() doesn't have ideal semantics for extents:
+175   |  */
+176   | 		k = bch2_btree_iter_peek_upto(iter, end_pos);
+177   |  if (!k.k)
+178   |  break;
+179   |  
+180   | 		ret = bkey_err(k);

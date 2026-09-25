@@ -1,0 +1,968 @@
+{
+  "records": [
+    {
+      "evidence_id": "pf_000",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+        "function": "amdgpu_dm_crtc_configure_crc_source"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "patch_overview",
+        "label": "Patch overview",
+        "attributes": {
+          "patch_path": "/anonymous/home/LLM-Native/research/knighter/e2/cases/14_c3d749609472_Out_of_Bound/patches/commit.patch",
+          "changed_files": [
+            "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+            "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c"
+          ],
+          "changed_file_count": 2,
+          "added_line_count": 6,
+          "deleted_line_count": 4
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "patch_overview",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_001",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+        "function": "amdgpu_dm_crtc_configure_crc_source"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "vulnerability_patterns",
+        "label": "Vulnerability patterns inferred from patch",
+        "attributes": {
+          "patterns": [
+            "out_of_bounds_access"
+          ],
+          "descriptions": [
+            "补丁前 secure_display_ctxs 的实际分配规模与后续循环索引上界不一致：数组按 AMDGPU_MAX_CRTCS 分配，但循环按 adev->dm.dc->caps.max_links 遍历并消费 secure_display_ctxs[i]。当 max_links 大于已分配元素数时，flush_work、字段比较、INIT_WORK、crtc 赋值等对 secure_display_ctxs[i] 的访问会越界。补丁后 kcalloc 和所有相关 for 循环都改为 adev->mode_info.num_crtc，使分配数量和索引上界一致。"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "vulnerability_patterns",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_002",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+        "function": "amdgpu_dm_crtc_configure_crc_source"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "affected_functions",
+        "label": "Functions implicated by removed or fixed code",
+        "attributes": {
+          "functions": [
+            "amdgpu_dm_crtc_configure_crc_source",
+            "amdgpu_dm_crtc_secure_display_create_contexts",
+            "amdgpu_dm_fini"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "affected_functions",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_003",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+        "function": "amdgpu_dm_crtc_configure_crc_source"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "detection_strategy",
+        "label": "Existing patch analysis detection strategy",
+        "attributes": {
+          "primary_pattern": "out_of_bounds_access",
+          "check_types": [
+            "array_index_loop_bound_mismatch",
+            "allocation_size_vs_iteration_bound_consistency",
+            "field_based_loop_bound_on_array_access",
+            "patch_local_secure_display_ctxs_index_access"
+          ],
+          "entry_points": [
+            "amdgpu_dm_crtc_secure_display_create_contexts",
+            "amdgpu_dm_fini",
+            "amdgpu_dm_crtc_configure_crc_source"
+          ],
+          "data_flow_tracking": true,
+          "cross_file_analysis": true,
+          "suggestions": [
+            "首稿优先命中最小 patch-local 锚点：for (i = 0; i < adev->dm.dc->caps.max_links; i++) 循环体内访问 secure_display_ctxs[i] 或 adev->dm.secure_display_ctxs[i]",
+            "另一个强锚点是 kcalloc(AMDGPU_MAX_CRTCS, sizeof(struct secure_display_context), ...) 后同函数内用 max_links 初始化 secure_display_ctxs[i]",
+            "不要把新增的 num_crtc 边界作为首稿硬过滤；它更适合作为已修复代码的 barrier，用于排除 patched 版本",
+            "辅助收敛条件可以要求索引变量来自同一 for 循环、数组名为 secure_display_ctxs、循环上界为 adev->dm.dc->caps.max_links、或分配数量为 AMDGPU_MAX_CRTCS",
+            "若只追求首批命中，局部 AST/CFG 匹配循环上界和数组索引已足够；若要证明真实越界风险，再追踪 secure_display_ctxs 的 kcalloc 元素数量与跨函数字段保存关系",
+            "跨文件分析有助于关联 amdgpu_dm_crc.c 中的创建函数与 amdgpu_dm.c 中的 fini 消费，但 detector 首稿可以先限制在补丁涉及的三个函数内"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "detection_strategy",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_004",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+        "function": "amdgpu_dm_crtc_configure_crc_source"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "removed_risky_operations",
+        "label": "Patch removes risky operations",
+        "attributes": {
+          "operations": [
+            "secure_display_ctxs = kcalloc(AMDGPU_MAX_CRTCS, sizeof(struct secure_display_context), GFP_KERNEL);"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "removed_risky_operations",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_005",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+        "function": "amdgpu_dm_crtc_configure_crc_source"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "fix_patterns",
+        "label": "Patch introduces reusable fix patterns",
+        "attributes": {
+          "patterns": [
+            "将 secure_display_ctxs 的 kcalloc 元素数量从 AMDGPU_MAX_CRTCS 改为 adev->mode_info.num_crtc",
+            "将访问 secure_display_ctxs[i] 的循环上界从 adev->dm.dc->caps.max_links 改为 adev->mode_info.num_crtc",
+            "用同一个 authoritative CRTC 数量字段同时约束分配规模和数组索引消费"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "fix_patterns",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_006",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+        "function": "amdgpu_dm_crtc_configure_crc_source"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "added_api_calls",
+        "label": "Patch introduces or highlights API usage",
+        "attributes": {
+          "apis": [
+            "kcalloc"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "added_api_calls",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_007",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+        "function": "amdgpu_dm_crtc_configure_crc_source"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "patch_intent",
+        "label": "Patch intent and commit-style summary",
+        "attributes": {
+          "summary": "commit c3d749609472ba0b217b42ab66f80459847e2bcb | Author: Hamza Mahfooz <hamza.mahfooz@amd.com>",
+          "keywords": [
+            "commit",
+            "c3d749609472ba0b217b42ab66f80459847e2bcb",
+            "author",
+            "hamza",
+            "mahfooz"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "patch_intent",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_008",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+        "function": "amdgpu_dm_crtc_configure_crc_source"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "external_references",
+        "label": "External references recovered from patch text",
+        "attributes": {
+          "cves": [],
+          "cwes": [],
+          "issues": [
+            "1b11ff764aef",
+            "b8ff7e08bab9"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "external_references",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c",
+        "function": "amdgpu_dm_fini"
+      },
+      "location": {
+        "line": 223,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "lock discipline around mutex_lock",
+        "summary": "scope in drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c guards shared state near line 223",
+        "state_before": [
+          "buffer(crtc->index)",
+          "buffer(crtc->dev)",
+          "sinks(dm_parse_crc_source, amdgpu_dm_crtc_configure_crc_source)"
+        ],
+        "state_after": [
+          "guard(lock discipline around mutex_lock)",
+          "transition(for (i = 0; i < adev->mode_info.num_crtc; i++) {)",
+          "locked(mutex_lock)"
+        ],
+        "functions": [],
+        "globals": [],
+        "tracked_symbols": [
+          "crtc->index",
+          "crtc->dev",
+          "dm_crtc_state->stream",
+          "adev->dm",
+          "adev->mode_info",
+          "stream_state->ctx"
+        ],
+        "buffer_fields": [
+          "crtc->index",
+          "crtc->dev",
+          "dm_crtc_state->stream",
+          "adev->dm",
+          "adev->mode_info",
+          "stream_state->ctx"
+        ],
+        "call_targets": [
+          "dm_parse_crc_source",
+          "amdgpu_dm_crtc_configure_crc_source",
+          "defined",
+          "drm_to_adev",
+          "amdgpu_dm_is_valid_crc_source",
+          "mutex_lock",
+          "flush_work",
+          "dc_stream_forward_crc_window"
+        ],
+        "call_edges": [],
+        "cfg_branch_kinds": [],
+        "branch_conditions": [],
+        "state_statements": [],
+        "compile_command_preview": "",
+        "source_file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c",
+        "source_excerpt": "191: \tenum amdgpu_dm_pipe_crc_source source = dm_parse_crc_source(src_name);\n192: \n193: \tif (source < 0) {\n194: \t\tDRM_DEBUG_DRIVER(\"Unknown CRC source %s for CRTC%d\\n\",\n195: \t\t\t\t src_name, crtc->index);\n196: \t\treturn -EINVAL;\n197: \t}\n198: \n199: \t*values_cnt = 3;\n200: \treturn 0;\n201: }\n202: \n203: int amdgpu_dm_crtc_configure_crc_source(struct drm_crtc *crtc,\n204: \t\t\t\t\tstruct dm_crtc_state *dm_crtc_state,\n205: \t\t\t\t\tenum amdgpu_dm_pipe_crc_source source)\n206: {\n207: #if defined(CONFIG_DRM_AMD_SECURE_DISPLAY)\n208: \tint i;\n209: #endif\n210: \tstruct amdgpu_device *adev = drm_to_adev(crtc->dev);\n211: \tstruct dc_stream_state *stream_state = dm_crtc_state->stream;\n212: \tbool enable = amdgpu_dm_is_valid_crc_source(source);\n213: \tint ret = 0;\n214: \n215: \t/* Configuration will be deferred to stream enable. */\n216: \tif (!stream_state)\n217: \t\treturn -EINVAL;\n218: \n219: \tmutex_lock(&adev->dm.dc_lock);\n220: \n221: \t/* Enable or disable CRTC CRC generation */\n222: \tif (dm_is_crc_source_crtc(source) || source == AMDGPU_DM_PIPE_CRC_SOURCE_NONE) {\n223: #if defined(CONFIG_DRM_AMD_SECURE_DISPLAY)\n224: \t\t/* Disable secure_display if it was enabled */\n225: \t\tif (!enable) {\n226: \t\t\tfor (i = 0; i < adev->mode_info.num_crtc; i++) {\n227: \t\t\t\tif (adev->dm.secure_display_ctxs[i].crtc == crtc) {\n228: \t\t\t\t\t/* stop ROI update on this crtc */\n229: \t\t\t\t\tflush_work(&adev->dm.secure_display_ctxs[i].notify_ta_work);\n230: \t\t\t\t\tflush_work(&adev->dm.secure_display_ctxs[i].forward_roi_work);\n231: \t\t\t\t\tdc_stream_forward_crc_window(stream_state, NULL, true);\n232: \t\t\t\t}\n233: \t\t\t}\n234: \t\t}\n235: #endif\n236: \t\tif (!dc_stream_configure_crc(stream_state->ctx->dc,\n237: \t\t\t\t\t     stream_state, NULL, enable, enable)) {\n238: \t\t\tret = -EINVAL;\n239: \t\t\tgoto unlock;\n240: \t\t}\n241: \t}\n242: \n243: \t/* Configure dithering */\n244: \tif (!dm_need_crc_dither(source)) {\n245: \t\tdc_stream_set_dither_option(stream_state, DITHER_OPTION_TRUN8);\n246: \t\tdc_stream_set_dyn_expansion(stream_state->ctx->dc, stream_state,\n247: \t\t\t\t\t    DYN_EXPANSION_DISABLE);\n248: \t} else {\n249: \t\tdc_stream_set_dither_option(stream_state,\n250: \t\t\t\t\t    DITHER_OPTION_DEFAULT);\n251: \t\tdc_stream_set_dyn_expansion(stream_state->ctx->dc, stream_state,\n252: \t\t\t\t\t    DYN_EXPANSION_AUTO);\n253: \t}\n254: \n255: unlock:",
+        "summary_line": 223,
+        "coverage_status": "partial"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "compile-db/source-window:path-guard",
+        "confidence": 0.77
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c",
+          "hunk_index": 0,
+          "source_line": 223
+        },
+        "summary": "scope in drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c guards shared state near line 223",
+        "statements": [
+          "191: \tenum amdgpu_dm_pipe_crc_source source = dm_parse_crc_source(src_name);",
+          "192:",
+          "193: \tif (source < 0) {",
+          "194: \t\tDRM_DEBUG_DRIVER(\"Unknown CRC source %s for CRTC%d\\n\",",
+          "195: \t\t\t\t src_name, crtc->index);",
+          "196: \t\treturn -EINVAL;"
+        ],
+        "guards": [
+          "lock discipline around mutex_lock"
+        ],
+        "call_boundary": [
+          "dm_parse_crc_source",
+          "amdgpu_dm_crtc_configure_crc_source",
+          "defined",
+          "drm_to_adev",
+          "amdgpu_dm_is_valid_crc_source",
+          "mutex_lock"
+        ],
+        "call_edges": [],
+        "state_transitions": [
+          "guard(lock discipline around mutex_lock)",
+          "transition(for (i = 0; i < adev->mode_info.num_crtc; i++) {)",
+          "locked(mutex_lock)"
+        ],
+        "api_terms": [
+          "mutex_lock"
+        ],
+        "related_symbols": [
+          "crtc->index",
+          "crtc->dev",
+          "dm_crtc_state->stream",
+          "adev->dm",
+          "adev->mode_info",
+          "stream_state->ctx"
+        ],
+        "verifier": "source-window",
+        "extraction_method": "source_window",
+        "coverage_status": "partial"
+      }
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+        "function": "amdgpu_dm_fini"
+      },
+      "location": {
+        "line": 1779,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "amdgpu_dm_fini in drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c: state_ops=for (i = 0; i < adev->dm.dc->caps.max_links; i++) {",
+        "state_before": [
+          "input(adev)",
+          "buffer(adev->dm)",
+          "buffer(adev->dev)",
+          "sinks(flush_work, kfree)"
+        ],
+        "state_after": [
+          "transition(for (i = 0; i < adev->dm.dc->caps.max_links; i++) {)"
+        ],
+        "functions": [
+          "amdgpu_dm_fini"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "adev",
+          "adev->dm",
+          "adev->dev",
+          "dc->ctx",
+          "dc->caps"
+        ],
+        "buffer_fields": [
+          "adev->dm",
+          "adev->dev",
+          "dc->ctx",
+          "dc->caps"
+        ],
+        "call_targets": [
+          "flush_work",
+          "kfree",
+          "hdcp_destroy",
+          "dc_deinit_callbacks",
+          "dc_dmub_srv_destroy",
+          "destroy_workqueue",
+          "amdgpu_bo_free_kernel",
+          "dc_destroy"
+        ],
+        "call_edges": [],
+        "cfg_branch_kinds": [],
+        "branch_conditions": [],
+        "state_statements": [],
+        "return_statements": [],
+        "source_file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+        "source_excerpt": "1747: \t\t\t\tflush_work(&adev->dm.secure_display_ctxs[i].forward_roi_work);\n1748: \t\t\t}\n1749: \t\t}\n1750: \t\tkfree(adev->dm.secure_display_ctxs);\n1751: \t\tadev->dm.secure_display_ctxs = NULL;\n1752: \t}\n1753: #endif\n1754: #ifdef CONFIG_DRM_AMD_DC_HDCP\n1755: \tif (adev->dm.hdcp_workqueue) {\n1756: \t\thdcp_destroy(&adev->dev->kobj, adev->dm.hdcp_workqueue);\n1757: \t\tadev->dm.hdcp_workqueue = NULL;\n1758: \t}\n1759: \n1760: \tif (adev->dm.dc)\n1761: \t\tdc_deinit_callbacks(adev->dm.dc);\n1762: #endif\n1763: \n1764: \tdc_dmub_srv_destroy(&adev->dm.dc->ctx->dmub_srv);\n1765: \n1766: \tif (dc_enable_dmub_notifications(adev->dm.dc)) {\n1767: \t\tkfree(adev->dm.dmub_notify);\n1768: \t\tadev->dm.dmub_notify = NULL;\n1769: \t\tdestroy_workqueue(adev->dm.delayed_hpd_wq);\n1770: \t\tadev->dm.delayed_hpd_wq = NULL;\n1771: \t}\n1772: \n1773: \tif (adev->dm.dmub_bo)\n1774: \t\tamdgpu_bo_free_kernel(&adev->dm.dmub_bo,\n1775: \t\t\t\t      &adev->dm.dmub_bo_gpu_addr,\n1776: \t\t\t\t      &adev->dm.dmub_bo_cpu_addr);\n1777: \n1778: \tif (adev->dm.hpd_rx_offload_wq) {\n1779: \t\tfor (i = 0; i < adev->dm.dc->caps.max_links; i++) {\n1780: \t\t\tif (adev->dm.hpd_rx_offload_wq[i].wq) {\n1781: \t\t\t\tdestroy_workqueue(adev->dm.hpd_rx_offload_wq[i].wq);\n1782: \t\t\t\tadev->dm.hpd_rx_offload_wq[i].wq = NULL;\n1783: \t\t\t}\n1784: \t\t}\n1785: \n1786: \t\tkfree(adev->dm.hpd_rx_offload_wq);\n1787: \t\tadev->dm.hpd_rx_offload_wq = NULL;\n1788: \t}\n1789: \n1790: \t/* DC Destroy TODO: Replace destroy DAL */\n1791: \tif (adev->dm.dc)\n1792: \t\tdc_destroy(&adev->dm.dc);\n1793: \t/*\n1794: \t * TODO: pageflip, vlank interrupt\n1795: \t *\n1796: \t * amdgpu_dm_irq_fini(adev);\n1797: \t */\n1798: \n1799: \tif (adev->dm.cgs_device) {\n1800: \t\tamdgpu_cgs_destroy_device(adev->dm.cgs_device);\n1801: \t\tadev->dm.cgs_device = NULL;\n1802: \t}\n1803: \tif (adev->dm.freesync_module) {\n1804: \t\tmod_freesync_destroy(adev->dm.freesync_module);\n1805: \t\tadev->dm.freesync_module = NULL;\n1806: \t}\n1807: \n1808: \tmutex_destroy(&adev->dm.audio_lock);\n1809: \tmutex_destroy(&adev->dm.dc_lock);\n1810: \tmutex_destroy(&adev->dm.dpia_aux_lock);\n1811: ",
+        "coverage_status": "partial"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "compile-db/source-window:symbolic-state",
+        "confidence": 0.81
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+          "hunk_index": 0,
+          "source_line": 1779
+        },
+        "summary": "amdgpu_dm_fini in drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c: state_ops=for (i = 0; i < adev->dm.dc->caps.max_links; i++) {",
+        "statements": [
+          "1747: \t\t\t\tflush_work(&adev->dm.secure_display_ctxs[i].forward_roi_work);",
+          "1748: \t\t\t}",
+          "1749: \t\t}",
+          "1750: \t\tkfree(adev->dm.secure_display_ctxs);",
+          "1751: \t\tadev->dm.secure_display_ctxs = NULL;",
+          "1752: \t}"
+        ],
+        "guards": [],
+        "call_boundary": [
+          "flush_work",
+          "kfree",
+          "hdcp_destroy",
+          "dc_deinit_callbacks",
+          "dc_dmub_srv_destroy",
+          "destroy_workqueue"
+        ],
+        "call_edges": [],
+        "state_transitions": [
+          "transition(for (i = 0; i < adev->dm.dc->caps.max_links; i++) {)"
+        ],
+        "api_terms": [],
+        "related_symbols": [
+          "adev",
+          "adev->dm",
+          "adev->dev",
+          "dc->ctx",
+          "dc->caps"
+        ],
+        "verifier": "source-window",
+        "extraction_method": "source_window",
+        "coverage_status": "partial"
+      }
+    },
+    {
+      "evidence_id": "csa_state_1",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c",
+        "function": "amdgpu_dm_fini"
+      },
+      "location": {
+        "line": 223,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "scope in drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c: locks=mutex_lock | state_ops=for (i = 0; i < adev->mode_info.num_crtc; i++) {",
+        "state_before": [
+          "buffer(crtc->index)",
+          "buffer(crtc->dev)",
+          "sinks(dm_parse_crc_source, amdgpu_dm_crtc_configure_crc_source)"
+        ],
+        "state_after": [
+          "transition(for (i = 0; i < adev->mode_info.num_crtc; i++) {)",
+          "locked(mutex_lock)"
+        ],
+        "functions": [],
+        "globals": [],
+        "tracked_symbols": [
+          "crtc->index",
+          "crtc->dev",
+          "dm_crtc_state->stream",
+          "adev->dm",
+          "adev->mode_info",
+          "stream_state->ctx"
+        ],
+        "buffer_fields": [
+          "crtc->index",
+          "crtc->dev",
+          "dm_crtc_state->stream",
+          "adev->dm",
+          "adev->mode_info",
+          "stream_state->ctx"
+        ],
+        "call_targets": [
+          "dm_parse_crc_source",
+          "amdgpu_dm_crtc_configure_crc_source",
+          "defined",
+          "drm_to_adev",
+          "amdgpu_dm_is_valid_crc_source",
+          "mutex_lock",
+          "flush_work",
+          "dc_stream_forward_crc_window"
+        ],
+        "call_edges": [],
+        "cfg_branch_kinds": [],
+        "branch_conditions": [],
+        "state_statements": [],
+        "return_statements": [],
+        "source_file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c",
+        "source_excerpt": "191: \tenum amdgpu_dm_pipe_crc_source source = dm_parse_crc_source(src_name);\n192: \n193: \tif (source < 0) {\n194: \t\tDRM_DEBUG_DRIVER(\"Unknown CRC source %s for CRTC%d\\n\",\n195: \t\t\t\t src_name, crtc->index);\n196: \t\treturn -EINVAL;\n197: \t}\n198: \n199: \t*values_cnt = 3;\n200: \treturn 0;\n201: }\n202: \n203: int amdgpu_dm_crtc_configure_crc_source(struct drm_crtc *crtc,\n204: \t\t\t\t\tstruct dm_crtc_state *dm_crtc_state,\n205: \t\t\t\t\tenum amdgpu_dm_pipe_crc_source source)\n206: {\n207: #if defined(CONFIG_DRM_AMD_SECURE_DISPLAY)\n208: \tint i;\n209: #endif\n210: \tstruct amdgpu_device *adev = drm_to_adev(crtc->dev);\n211: \tstruct dc_stream_state *stream_state = dm_crtc_state->stream;\n212: \tbool enable = amdgpu_dm_is_valid_crc_source(source);\n213: \tint ret = 0;\n214: \n215: \t/* Configuration will be deferred to stream enable. */\n216: \tif (!stream_state)\n217: \t\treturn -EINVAL;\n218: \n219: \tmutex_lock(&adev->dm.dc_lock);\n220: \n221: \t/* Enable or disable CRTC CRC generation */\n222: \tif (dm_is_crc_source_crtc(source) || source == AMDGPU_DM_PIPE_CRC_SOURCE_NONE) {\n223: #if defined(CONFIG_DRM_AMD_SECURE_DISPLAY)\n224: \t\t/* Disable secure_display if it was enabled */\n225: \t\tif (!enable) {\n226: \t\t\tfor (i = 0; i < adev->mode_info.num_crtc; i++) {\n227: \t\t\t\tif (adev->dm.secure_display_ctxs[i].crtc == crtc) {\n228: \t\t\t\t\t/* stop ROI update on this crtc */\n229: \t\t\t\t\tflush_work(&adev->dm.secure_display_ctxs[i].notify_ta_work);\n230: \t\t\t\t\tflush_work(&adev->dm.secure_display_ctxs[i].forward_roi_work);\n231: \t\t\t\t\tdc_stream_forward_crc_window(stream_state, NULL, true);\n232: \t\t\t\t}\n233: \t\t\t}\n234: \t\t}\n235: #endif\n236: \t\tif (!dc_stream_configure_crc(stream_state->ctx->dc,\n237: \t\t\t\t\t     stream_state, NULL, enable, enable)) {\n238: \t\t\tret = -EINVAL;\n239: \t\t\tgoto unlock;\n240: \t\t}\n241: \t}\n242: \n243: \t/* Configure dithering */\n244: \tif (!dm_need_crc_dither(source)) {\n245: \t\tdc_stream_set_dither_option(stream_state, DITHER_OPTION_TRUN8);\n246: \t\tdc_stream_set_dyn_expansion(stream_state->ctx->dc, stream_state,\n247: \t\t\t\t\t    DYN_EXPANSION_DISABLE);\n248: \t} else {\n249: \t\tdc_stream_set_dither_option(stream_state,\n250: \t\t\t\t\t    DITHER_OPTION_DEFAULT);\n251: \t\tdc_stream_set_dyn_expansion(stream_state->ctx->dc, stream_state,\n252: \t\t\t\t\t    DYN_EXPANSION_AUTO);\n253: \t}\n254: \n255: unlock:",
+        "coverage_status": "partial"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "compile-db/source-window:symbolic-state",
+        "confidence": 0.81
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c",
+          "hunk_index": 0,
+          "source_line": 223
+        },
+        "summary": "scope in drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c: locks=mutex_lock | state_ops=for (i = 0; i < adev->mode_info.num_crtc; i++) {",
+        "statements": [
+          "191: \tenum amdgpu_dm_pipe_crc_source source = dm_parse_crc_source(src_name);",
+          "192:",
+          "193: \tif (source < 0) {",
+          "194: \t\tDRM_DEBUG_DRIVER(\"Unknown CRC source %s for CRTC%d\\n\",",
+          "195: \t\t\t\t src_name, crtc->index);",
+          "196: \t\treturn -EINVAL;"
+        ],
+        "guards": [],
+        "call_boundary": [
+          "dm_parse_crc_source",
+          "amdgpu_dm_crtc_configure_crc_source",
+          "defined",
+          "drm_to_adev",
+          "amdgpu_dm_is_valid_crc_source",
+          "mutex_lock"
+        ],
+        "call_edges": [],
+        "state_transitions": [
+          "transition(for (i = 0; i < adev->mode_info.num_crtc; i++) {)",
+          "locked(mutex_lock)"
+        ],
+        "api_terms": [
+          "mutex_lock"
+        ],
+        "related_symbols": [
+          "crtc->index",
+          "crtc->dev",
+          "dm_crtc_state->stream",
+          "adev->dm",
+          "adev->mode_info",
+          "stream_state->ctx"
+        ],
+        "verifier": "source-window",
+        "extraction_method": "source_window",
+        "coverage_status": "partial"
+      }
+    },
+    {
+      "evidence_id": "csa_state_2",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c",
+        "function": "amdgpu_dm_crtc_secure_display_create_contexts"
+      },
+      "location": {
+        "line": 547,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "amdgpu_dm_crtc_secure_display_create_contexts in drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c: state_ops=for (i = 0; i < adev->mode_info.num_crtc; i++) {",
+        "state_before": [
+          "input(adev)",
+          "buffer(adev->mode_info)",
+          "sinks(kcalloc)"
+        ],
+        "state_after": [
+          "transition(for (i = 0; i < adev->mode_info.num_crtc; i++) {)"
+        ],
+        "functions": [
+          "amdgpu_dm_crtc_secure_display_create_contexts"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "adev",
+          "adev->mode_info"
+        ],
+        "buffer_fields": [
+          "adev->mode_info"
+        ],
+        "call_targets": [
+          "kcalloc"
+        ],
+        "call_edges": [],
+        "cfg_branch_kinds": [],
+        "branch_conditions": [],
+        "state_statements": [],
+        "return_statements": [],
+        "source_file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c",
+        "source_excerpt": "542: amdgpu_dm_crtc_secure_display_create_contexts(struct amdgpu_device *adev)\n543: {\n544: \tstruct secure_display_context *secure_display_ctxs = NULL;\n545: \tint i;\n546: \n547: \tsecure_display_ctxs = kcalloc(adev->mode_info.num_crtc,\n548: \t\t\t\t      sizeof(struct secure_display_context),\n549: \t\t\t\t      GFP_KERNEL);\n550: \n551: \tif (!secure_display_ctxs)\n552: \t\treturn NULL;\n553: \n554: \tfor (i = 0; i < adev->mode_info.num_crtc; i++) {\n555: \t\tINIT_WORK(&secure_display_ctxs[i].forward_roi_work, amdgpu_dm_forward_crc_window);\n556: \t\tINIT_WORK(&secure_display_ctxs[i].notify_ta_work, amdgpu_dm_crtc_notify_ta_to_read);\n557: \t\tsecure_display_ctxs[i].crtc = &adev->mode_info.crtcs[i]->base;\n558: \t}\n559: \n560: \treturn secure_display_ctxs;\n561: }",
+        "coverage_status": "partial"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "compile-db/source-window:symbolic-state",
+        "confidence": 0.81
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c",
+          "hunk_index": 1,
+          "source_line": 547
+        },
+        "summary": "amdgpu_dm_crtc_secure_display_create_contexts in drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c: state_ops=for (i = 0; i < adev->mode_info.num_crtc; i++) {",
+        "statements": [
+          "542: amdgpu_dm_crtc_secure_display_create_contexts(struct amdgpu_device *adev)",
+          "543: {",
+          "544: \tstruct secure_display_context *secure_display_ctxs = NULL;",
+          "545: \tint i;",
+          "546:",
+          "547: \tsecure_display_ctxs = kcalloc(adev->mode_info.num_crtc,"
+        ],
+        "guards": [],
+        "call_boundary": [
+          "kcalloc"
+        ],
+        "call_edges": [],
+        "state_transitions": [
+          "transition(for (i = 0; i < adev->mode_info.num_crtc; i++) {)"
+        ],
+        "api_terms": [],
+        "related_symbols": [
+          "adev",
+          "adev->mode_info"
+        ],
+        "verifier": "source-window",
+        "extraction_method": "source_window",
+        "coverage_status": "partial"
+      }
+    },
+    {
+      "evidence_id": "csa_lifecycle_0",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+        "function": "amdgpu_dm_fini"
+      },
+      "location": {
+        "line": 1779,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "amdgpu_dm_fini in drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c reaches flush_work, destroy_workqueue",
+        "operations": [
+          "flush_work",
+          "destroy_workqueue"
+        ],
+        "acquisition_ops": [],
+        "release_ops": [
+          "flush_work",
+          "destroy_workqueue"
+        ],
+        "transition_ops": [],
+        "state_before": [
+          "input(adev)",
+          "buffer(adev->dm)",
+          "buffer(adev->dev)",
+          "sinks(flush_work, kfree)"
+        ],
+        "state_after": [
+          "transition(flush_work)",
+          "transition(destroy_workqueue)"
+        ],
+        "functions": [
+          "amdgpu_dm_fini"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "adev",
+          "adev->dm",
+          "adev->dev",
+          "dc->ctx",
+          "dc->caps"
+        ],
+        "buffer_fields": [
+          "adev->dm",
+          "adev->dev",
+          "dc->ctx",
+          "dc->caps"
+        ],
+        "call_edges": [],
+        "source_file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+        "source_excerpt": "1747: \t\t\t\tflush_work(&adev->dm.secure_display_ctxs[i].forward_roi_work);\n1748: \t\t\t}\n1749: \t\t}\n1750: \t\tkfree(adev->dm.secure_display_ctxs);\n1751: \t\tadev->dm.secure_display_ctxs = NULL;\n1752: \t}\n1753: #endif\n1754: #ifdef CONFIG_DRM_AMD_DC_HDCP\n1755: \tif (adev->dm.hdcp_workqueue) {\n1756: \t\thdcp_destroy(&adev->dev->kobj, adev->dm.hdcp_workqueue);\n1757: \t\tadev->dm.hdcp_workqueue = NULL;\n1758: \t}\n1759: \n1760: \tif (adev->dm.dc)\n1761: \t\tdc_deinit_callbacks(adev->dm.dc);\n1762: #endif\n1763: \n1764: \tdc_dmub_srv_destroy(&adev->dm.dc->ctx->dmub_srv);\n1765: \n1766: \tif (dc_enable_dmub_notifications(adev->dm.dc)) {\n1767: \t\tkfree(adev->dm.dmub_notify);\n1768: \t\tadev->dm.dmub_notify = NULL;\n1769: \t\tdestroy_workqueue(adev->dm.delayed_hpd_wq);\n1770: \t\tadev->dm.delayed_hpd_wq = NULL;\n1771: \t}\n1772: \n1773: \tif (adev->dm.dmub_bo)\n1774: \t\tamdgpu_bo_free_kernel(&adev->dm.dmub_bo,\n1775: \t\t\t\t      &adev->dm.dmub_bo_gpu_addr,\n1776: \t\t\t\t      &adev->dm.dmub_bo_cpu_addr);\n1777: \n1778: \tif (adev->dm.hpd_rx_offload_wq) {\n1779: \t\tfor (i = 0; i < adev->dm.dc->caps.max_links; i++) {\n1780: \t\t\tif (adev->dm.hpd_rx_offload_wq[i].wq) {\n1781: \t\t\t\tdestroy_workqueue(adev->dm.hpd_rx_offload_wq[i].wq);\n1782: \t\t\t\tadev->dm.hpd_rx_offload_wq[i].wq = NULL;\n1783: \t\t\t}\n1784: \t\t}\n1785: \n1786: \t\tkfree(adev->dm.hpd_rx_offload_wq);\n1787: \t\tadev->dm.hpd_rx_offload_wq = NULL;\n1788: \t}\n1789: \n1790: \t/* DC Destroy TODO: Replace destroy DAL */\n1791: \tif (adev->dm.dc)\n1792: \t\tdc_destroy(&adev->dm.dc);\n1793: \t/*\n1794: \t * TODO: pageflip, vlank interrupt\n1795: \t *\n1796: \t * amdgpu_dm_irq_fini(adev);\n1797: \t */\n1798: \n1799: \tif (adev->dm.cgs_device) {\n1800: \t\tamdgpu_cgs_destroy_device(adev->dm.cgs_device);\n1801: \t\tadev->dm.cgs_device = NULL;\n1802: \t}\n1803: \tif (adev->dm.freesync_module) {\n1804: \t\tmod_freesync_destroy(adev->dm.freesync_module);\n1805: \t\tadev->dm.freesync_module = NULL;\n1806: \t}\n1807: \n1808: \tmutex_destroy(&adev->dm.audio_lock);\n1809: \tmutex_destroy(&adev->dm.dc_lock);\n1810: \tmutex_destroy(&adev->dm.dpia_aux_lock);\n1811: ",
+        "coverage_status": "partial"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "source-window:lifecycle-summary",
+        "confidence": 0.86
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+          "hunk_index": 0,
+          "source_line": 1779
+        },
+        "summary": "amdgpu_dm_fini in drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c reaches flush_work, destroy_workqueue",
+        "statements": [
+          "1747: \t\t\t\tflush_work(&adev->dm.secure_display_ctxs[i].forward_roi_work);",
+          "1748: \t\t\t}",
+          "1749: \t\t}",
+          "1750: \t\tkfree(adev->dm.secure_display_ctxs);",
+          "1751: \t\tadev->dm.secure_display_ctxs = NULL;",
+          "1752: \t}"
+        ],
+        "guards": [],
+        "call_boundary": [
+          "flush_work",
+          "kfree",
+          "hdcp_destroy",
+          "dc_deinit_callbacks",
+          "dc_dmub_srv_destroy",
+          "destroy_workqueue"
+        ],
+        "call_edges": [],
+        "state_transitions": [
+          "transition(flush_work)",
+          "transition(destroy_workqueue)"
+        ],
+        "api_terms": [
+          "flush_work",
+          "destroy_workqueue"
+        ],
+        "related_symbols": [
+          "adev",
+          "adev->dm",
+          "adev->dev",
+          "dc->ctx",
+          "dc->caps"
+        ],
+        "verifier": "source-window",
+        "extraction_method": "source_window",
+        "coverage_status": "partial"
+      }
+    },
+    {
+      "evidence_id": "csa_validation_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+        "function": "amdgpu_dm_fini"
+      },
+      "location": {
+        "line": 1779,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c:1779",
+        "diagnostic_message": "",
+        "diagnostic_checker": "",
+        "state_before": [
+          "input(adev)",
+          "buffer(adev->dm)",
+          "buffer(adev->dev)",
+          "sinks(flush_work, kfree)"
+        ],
+        "state_after": [
+          "diagnostic(csa)"
+        ],
+        "functions": [
+          "amdgpu_dm_fini"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "adev"
+        ],
+        "buffer_fields": [
+          "adev->dm",
+          "adev->dev",
+          "dc->ctx",
+          "dc->caps"
+        ],
+        "call_targets": [
+          "flush_work",
+          "kfree",
+          "hdcp_destroy",
+          "dc_deinit_callbacks",
+          "dc_dmub_srv_destroy",
+          "destroy_workqueue"
+        ],
+        "call_edges": [],
+        "state_statements": [
+          "for (i = 0; i < adev->dm.dc->caps.max_links; i++) {"
+        ],
+        "source_file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+        "source_excerpt": "1747: \t\t\t\tflush_work(&adev->dm.secure_display_ctxs[i].forward_roi_work);\n1748: \t\t\t}\n1749: \t\t}\n1750: \t\tkfree(adev->dm.secure_display_ctxs);\n1751: \t\tadev->dm.secure_display_ctxs = NULL;\n1752: \t}\n1753: #endif\n1754: #ifdef CONFIG_DRM_AMD_DC_HDCP\n1755: \tif (adev->dm.hdcp_workqueue) {\n1756: \t\thdcp_destroy(&adev->dev->kobj, adev->dm.hdcp_workqueue);\n1757: \t\tadev->dm.hdcp_workqueue = NULL;\n1758: \t}\n1759: \n1760: \tif (adev->dm.dc)\n1761: \t\tdc_deinit_callbacks(adev->dm.dc);\n1762: #endif\n1763: \n1764: \tdc_dmub_srv_destroy(&adev->dm.dc->ctx->dmub_srv);\n1765: \n1766: \tif (dc_enable_dmub_notifications(adev->dm.dc)) {\n1767: \t\tkfree(adev->dm.dmub_notify);\n1768: \t\tadev->dm.dmub_notify = NULL;\n1769: \t\tdestroy_workqueue(adev->dm.delayed_hpd_wq);\n1770: \t\tadev->dm.delayed_hpd_wq = NULL;\n1771: \t}\n1772: \n1773: \tif (adev->dm.dmub_bo)\n1774: \t\tamdgpu_bo_free_kernel(&adev->dm.dmub_bo,\n1775: \t\t\t\t      &adev->dm.dmub_bo_gpu_addr,\n1776: \t\t\t\t      &adev->dm.dmub_bo_cpu_addr);\n1777: \n1778: \tif (adev->dm.hpd_rx_offload_wq) {\n1779: \t\tfor (i = 0; i < adev->dm.dc->caps.max_links; i++) {\n1780: \t\t\tif (adev->dm.hpd_rx_offload_wq[i].wq) {\n1781: \t\t\t\tdestroy_workqueue(adev->dm.hpd_rx_offload_wq[i].wq);\n1782: \t\t\t\tadev->dm.hpd_rx_offload_wq[i].wq = NULL;\n1783: \t\t\t}\n1784: \t\t}\n1785: \n1786: \t\tkfree(adev->dm.hpd_rx_offload_wq);\n1787: \t\tadev->dm.hpd_rx_offload_wq = NULL;\n1788: \t}\n1789: \n1790: \t/* DC Destroy TODO: Replace destroy DAL */\n1791: \tif (adev->dm.dc)\n1792: \t\tdc_destroy(&adev->dm.dc);\n1793: \t/*\n1794: \t * TODO: pageflip, vlank interrupt\n1795: \t *\n1796: \t * amdgpu_dm_irq_fini(adev);\n1797: \t */\n1798: \n1799: \tif (adev->dm.cgs_device) {\n1800: \t\tamdgpu_cgs_destroy_device(adev->dm.cgs_device);\n1801: \t\tadev->dm.cgs_device = NULL;\n1802: \t}\n1803: \tif (adev->dm.freesync_module) {\n1804: \t\tmod_freesync_destroy(adev->dm.freesync_module);\n1805: \t\tadev->dm.freesync_module = NULL;\n1806: \t}\n1807: \n1808: \tmutex_destroy(&adev->dm.audio_lock);\n1809: \tmutex_destroy(&adev->dm.dc_lock);\n1810: \tmutex_destroy(&adev->dm.dpia_aux_lock);\n1811: ",
+        "coverage_status": "partial",
+        "contract_type": "",
+        "guard_exprs": [
+          "adev->dm.hdcp_workqueue",
+          "adev->dm.dc",
+          "dc_enable_dmub_notifications(adev->dm.dc)",
+          "adev->dm.dmub_bo"
+        ],
+        "sink_calls": [
+          "flush_work",
+          "kfree",
+          "hdcp_destroy",
+          "dc_deinit_callbacks"
+        ]
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.72
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+          "hunk_index": 0,
+          "source_line": 1779
+        },
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c:1779",
+        "statements": [
+          "1747: \t\t\t\tflush_work(&adev->dm.secure_display_ctxs[i].forward_roi_work);",
+          "1748: \t\t\t}",
+          "1749: \t\t}",
+          "1750: \t\tkfree(adev->dm.secure_display_ctxs);",
+          "1751: \t\tadev->dm.secure_display_ctxs = NULL;",
+          "1752: \t}"
+        ],
+        "guards": [
+          "adev->dm.hdcp_workqueue",
+          "adev->dm.dc",
+          "dc_enable_dmub_notifications(adev->dm.dc)",
+          "adev->dm.dmub_bo"
+        ],
+        "call_boundary": [
+          "flush_work",
+          "kfree",
+          "hdcp_destroy",
+          "dc_deinit_callbacks",
+          "dc_dmub_srv_destroy",
+          "destroy_workqueue"
+        ],
+        "call_edges": [],
+        "state_transitions": [
+          "diagnostic(csa)"
+        ],
+        "api_terms": [
+          "flush_work",
+          "destroy_workqueue",
+          "for (i = 0; i < adev->dm.dc->caps.max_links; i++) {",
+          "kfree",
+          "hdcp_destroy",
+          "dc_deinit_callbacks"
+        ],
+        "related_symbols": [
+          "adev"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "collected_analyzers": [
+    "csa",
+    "patch"
+  ]
+}

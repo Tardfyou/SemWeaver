@@ -1,0 +1,1198 @@
+{
+  "files_changed": [
+    "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+    "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c"
+  ],
+  "file_details": [
+    {
+      "path": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+      "additions": 1,
+      "deletions": 1,
+      "hunks": 1
+    },
+    {
+      "path": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c",
+      "additions": 5,
+      "deletions": 3,
+      "hunks": 2
+    }
+  ],
+  "vulnerability_patterns": [
+    {
+      "type": "out_of_bounds_access",
+      "description": "补丁前 secure_display_ctxs 的实际分配规模与后续循环索引上界不一致：数组按 AMDGPU_MAX_CRTCS 分配，但循环按 adev->dm.dc->caps.max_links 遍历并消费 secure_display_ctxs[i]。当 max_links 大于已分配元素数时，flush_work、字段比较、INIT_WORK、crtc 赋值等对 secure_display_ctxs[i] 的访问会越界。补丁后 kcalloc 和所有相关 for 循环都改为 adev->mode_info.num_crtc，使分配数量和索引上界一致。",
+      "trigger_conditions": [
+        "secure_display_ctxs 由固定上限 AMDGPU_MAX_CRTCS 或与循环上界不同的数量分配",
+        "for 循环条件使用 i < adev->dm.dc->caps.max_links",
+        "循环体内使用 secure_display_ctxs[i] 进行字段访问、work 初始化、flush_work 或 crtc 比较",
+        "adev->dm.dc->caps.max_links 可能大于 secure_display_ctxs 的实际元素数"
+      ],
+      "fix_patterns": [
+        "将 secure_display_ctxs 的 kcalloc 元素数量从 AMDGPU_MAX_CRTCS 改为 adev->mode_info.num_crtc",
+        "将访问 secure_display_ctxs[i] 的循环上界从 adev->dm.dc->caps.max_links 改为 adev->mode_info.num_crtc",
+        "用同一个 authoritative CRTC 数量字段同时约束分配规模和数组索引消费"
+      ],
+      "affected_functions": [
+        "amdgpu_dm_fini",
+        "amdgpu_dm_crtc_configure_crc_source",
+        "amdgpu_dm_crtc_secure_display_create_contexts"
+      ],
+      "cross_file": true,
+      "source": "llm",
+      "confidence": 0.93,
+      "evidence_lines": [
+        "- secure_display_ctxs = kcalloc(AMDGPU_MAX_CRTCS, sizeof(struct secure_display_context), GFP_KERNEL);",
+        "+ secure_display_ctxs = kcalloc(adev->mode_info.num_crtc,",
+        "- for (i = 0; i < adev->dm.dc->caps.max_links; i++) {",
+        "+ for (i = 0; i < adev->mode_info.num_crtc; i++) {",
+        "if (adev->dm.secure_display_ctxs[i].crtc) {",
+        "flush_work(&adev->dm.secure_display_ctxs[i].notify_ta_work);"
+      ]
+    }
+  ],
+  "cross_file_dependencies": [],
+  "detection_strategy": {
+    "primary_pattern": "out_of_bounds_access",
+    "check_types": [
+      "array_index_loop_bound_mismatch",
+      "allocation_size_vs_iteration_bound_consistency",
+      "field_based_loop_bound_on_array_access",
+      "patch_local_secure_display_ctxs_index_access"
+    ],
+    "entry_points": [
+      "amdgpu_dm_crtc_secure_display_create_contexts",
+      "amdgpu_dm_fini",
+      "amdgpu_dm_crtc_configure_crc_source"
+    ],
+    "data_flow_tracking": true,
+    "cross_file_analysis": true,
+    "suggestions": [
+      "首稿优先命中最小 patch-local 锚点：for (i = 0; i < adev->dm.dc->caps.max_links; i++) 循环体内访问 secure_display_ctxs[i] 或 adev->dm.secure_display_ctxs[i]",
+      "另一个强锚点是 kcalloc(AMDGPU_MAX_CRTCS, sizeof(struct secure_display_context), ...) 后同函数内用 max_links 初始化 secure_display_ctxs[i]",
+      "不要把新增的 num_crtc 边界作为首稿硬过滤；它更适合作为已修复代码的 barrier，用于排除 patched 版本",
+      "辅助收敛条件可以要求索引变量来自同一 for 循环、数组名为 secure_display_ctxs、循环上界为 adev->dm.dc->caps.max_links、或分配数量为 AMDGPU_MAX_CRTCS",
+      "若只追求首批命中，局部 AST/CFG 匹配循环上界和数组索引已足够；若要证明真实越界风险，再追踪 secure_display_ctxs 的 kcalloc 元素数量与跨函数字段保存关系",
+      "跨文件分析有助于关联 amdgpu_dm_crc.c 中的创建函数与 amdgpu_dm.c 中的 fini 消费，但 detector 首稿可以先限制在补丁涉及的三个函数内"
+    ]
+  },
+  "checker_name_suggestion": "SecureDisplayCtxsOutOfBoundsChecker",
+  "affected_functions": [
+    "amdgpu_dm_fini",
+    "amdgpu_dm_crtc_configure_crc_source",
+    "amdgpu_dm_crtc_secure_display_create_contexts"
+  ],
+  "key_functions": [
+    "amdgpu_dm_fini",
+    "amdgpu_dm_crtc_configure_crc_source",
+    "amdgpu_dm_crtc_secure_display_create_contexts"
+  ],
+  "patch_semantics": {
+    "added_guards": [],
+    "added_api_calls": [
+      "kcalloc"
+    ],
+    "removed_api_calls": [
+      "kcalloc"
+    ],
+    "state_resets": [
+      "for (i = 0; i < adev->mode_info.num_crtc; i++) {",
+      "for (i = 0; i < adev->mode_info.num_crtc; i++) {",
+      "for (i = 0; i < adev->mode_info.num_crtc; i++) {"
+    ],
+    "lifecycle_changes": []
+  },
+  "analysis_backend": "llm",
+  "analysis_confidence": 0.93,
+  "analysis_rationale": "补丁把 secure_display_ctxs 的分配数量和所有按 i 访问 secure_display_ctxs[i] 的循环上界统一为 adev->mode_info.num_crtc。旧代码中数组由 kcalloc(AMDGPU_MAX_CRTCS, sizeof(struct secure_display_context), GFP_KERNEL) 分配，但多个循环使用 adev->dm.dc->caps.max_links 作为上界并访问 secure_display_ctxs[i]；提交说明也指出 max_links 可能大于 AMDGPU_MAX_CRTCS，因此危险机制是用不匹配且可能更大的硬件能力字段驱动数组索引，导致越界访问。补丁后通过改用 num_crtc 作为分配规模和循环边界阻断该索引越界。",
+  "llm_usage": {
+    "prompt_tokens": 4887,
+    "completion_tokens": 1730,
+    "total_tokens": 6617,
+    "call_count": 1,
+    "available": true,
+    "model": "gpt-5.5"
+  },
+  "patchweaver": {
+    "summary": "Patch suggests out_of_bounds_access semantics across 2 file(s); added guards=0, removed risky operations=1, fix patterns=3, metadata refs=2.",
+    "patch_facts": [
+      {
+        "fact_type": "patch_overview",
+        "label": "Patch overview",
+        "attributes": {
+          "patch_path": "/anonymous/home/LLM-Native/research/knighter/e2/cases/14_c3d749609472_Out_of_Bound/patches/commit.patch",
+          "changed_files": [
+            "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+            "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c"
+          ],
+          "changed_file_count": 2,
+          "added_line_count": 6,
+          "deleted_line_count": 4
+        }
+      },
+      {
+        "fact_type": "vulnerability_patterns",
+        "label": "Vulnerability patterns inferred from patch",
+        "attributes": {
+          "patterns": [
+            "out_of_bounds_access"
+          ],
+          "descriptions": [
+            "补丁前 secure_display_ctxs 的实际分配规模与后续循环索引上界不一致：数组按 AMDGPU_MAX_CRTCS 分配，但循环按 adev->dm.dc->caps.max_links 遍历并消费 secure_display_ctxs[i]。当 max_links 大于已分配元素数时，flush_work、字段比较、INIT_WORK、crtc 赋值等对 secure_display_ctxs[i] 的访问会越界。补丁后 kcalloc 和所有相关 for 循环都改为 adev->mode_info.num_crtc，使分配数量和索引上界一致。"
+          ]
+        }
+      },
+      {
+        "fact_type": "affected_functions",
+        "label": "Functions implicated by removed or fixed code",
+        "attributes": {
+          "functions": [
+            "amdgpu_dm_crtc_configure_crc_source",
+            "amdgpu_dm_crtc_secure_display_create_contexts",
+            "amdgpu_dm_fini"
+          ]
+        }
+      },
+      {
+        "fact_type": "detection_strategy",
+        "label": "Existing patch analysis detection strategy",
+        "attributes": {
+          "primary_pattern": "out_of_bounds_access",
+          "check_types": [
+            "array_index_loop_bound_mismatch",
+            "allocation_size_vs_iteration_bound_consistency",
+            "field_based_loop_bound_on_array_access",
+            "patch_local_secure_display_ctxs_index_access"
+          ],
+          "entry_points": [
+            "amdgpu_dm_crtc_secure_display_create_contexts",
+            "amdgpu_dm_fini",
+            "amdgpu_dm_crtc_configure_crc_source"
+          ],
+          "data_flow_tracking": true,
+          "cross_file_analysis": true,
+          "suggestions": [
+            "首稿优先命中最小 patch-local 锚点：for (i = 0; i < adev->dm.dc->caps.max_links; i++) 循环体内访问 secure_display_ctxs[i] 或 adev->dm.secure_display_ctxs[i]",
+            "另一个强锚点是 kcalloc(AMDGPU_MAX_CRTCS, sizeof(struct secure_display_context), ...) 后同函数内用 max_links 初始化 secure_display_ctxs[i]",
+            "不要把新增的 num_crtc 边界作为首稿硬过滤；它更适合作为已修复代码的 barrier，用于排除 patched 版本",
+            "辅助收敛条件可以要求索引变量来自同一 for 循环、数组名为 secure_display_ctxs、循环上界为 adev->dm.dc->caps.max_links、或分配数量为 AMDGPU_MAX_CRTCS",
+            "若只追求首批命中，局部 AST/CFG 匹配循环上界和数组索引已足够；若要证明真实越界风险，再追踪 secure_display_ctxs 的 kcalloc 元素数量与跨函数字段保存关系",
+            "跨文件分析有助于关联 amdgpu_dm_crc.c 中的创建函数与 amdgpu_dm.c 中的 fini 消费，但 detector 首稿可以先限制在补丁涉及的三个函数内"
+          ]
+        }
+      },
+      {
+        "fact_type": "removed_risky_operations",
+        "label": "Patch removes risky operations",
+        "attributes": {
+          "operations": [
+            "secure_display_ctxs = kcalloc(AMDGPU_MAX_CRTCS, sizeof(struct secure_display_context), GFP_KERNEL);"
+          ]
+        }
+      },
+      {
+        "fact_type": "fix_patterns",
+        "label": "Patch introduces reusable fix patterns",
+        "attributes": {
+          "patterns": [
+            "将 secure_display_ctxs 的 kcalloc 元素数量从 AMDGPU_MAX_CRTCS 改为 adev->mode_info.num_crtc",
+            "将访问 secure_display_ctxs[i] 的循环上界从 adev->dm.dc->caps.max_links 改为 adev->mode_info.num_crtc",
+            "用同一个 authoritative CRTC 数量字段同时约束分配规模和数组索引消费"
+          ]
+        }
+      },
+      {
+        "fact_type": "added_api_calls",
+        "label": "Patch introduces or highlights API usage",
+        "attributes": {
+          "apis": [
+            "kcalloc"
+          ]
+        }
+      },
+      {
+        "fact_type": "patch_intent",
+        "label": "Patch intent and commit-style summary",
+        "attributes": {
+          "summary": "commit c3d749609472ba0b217b42ab66f80459847e2bcb | Author: Hamza Mahfooz <hamza.mahfooz@amd.com>",
+          "keywords": [
+            "commit",
+            "c3d749609472ba0b217b42ab66f80459847e2bcb",
+            "author",
+            "hamza",
+            "mahfooz"
+          ]
+        }
+      },
+      {
+        "fact_type": "external_references",
+        "label": "External references recovered from patch text",
+        "attributes": {
+          "cves": [],
+          "cwes": [],
+          "issues": [
+            "1b11ff764aef",
+            "b8ff7e08bab9"
+          ]
+        }
+      }
+    ],
+    "mechanism_graph": {
+      "summary": "Patch suggests out_of_bounds_access semantics across 2 file(s); added guards=0, removed risky operations=1, fix patterns=3, metadata refs=2.",
+      "primary_patterns": [
+        "out_of_bounds_access"
+      ],
+      "nodes": [
+        {
+          "node_id": "patch",
+          "kind": "patch",
+          "label": "Security patch",
+          "attributes": {
+            "changed_files": [
+              "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+              "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c"
+            ]
+          }
+        },
+        {
+          "node_id": "file_0",
+          "kind": "file",
+          "label": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+          "attributes": {
+            "path": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+            "additions": 1,
+            "deletions": 1,
+            "hunks": 1
+          }
+        },
+        {
+          "node_id": "file_1",
+          "kind": "file",
+          "label": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c",
+          "attributes": {
+            "path": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c",
+            "additions": 5,
+            "deletions": 3,
+            "hunks": 2
+          }
+        },
+        {
+          "node_id": "pattern_0",
+          "kind": "pattern",
+          "label": "out_of_bounds_access",
+          "attributes": {
+            "type": "out_of_bounds_access",
+            "description": "补丁前 secure_display_ctxs 的实际分配规模与后续循环索引上界不一致：数组按 AMDGPU_MAX_CRTCS 分配，但循环按 adev->dm.dc->caps.max_links 遍历并消费 secure_display_ctxs[i]。当 max_links 大于已分配元素数时，flush_work、字段比较、INIT_WORK、crtc 赋值等对 secure_display_ctxs[i] 的访问会越界。补丁后 kcalloc 和所有相关 for 循环都改为 adev->mode_info.num_crtc，使分配数量和索引上界一致。",
+            "trigger_conditions": [
+              "secure_display_ctxs 由固定上限 AMDGPU_MAX_CRTCS 或与循环上界不同的数量分配",
+              "for 循环条件使用 i < adev->dm.dc->caps.max_links",
+              "循环体内使用 secure_display_ctxs[i] 进行字段访问、work 初始化、flush_work 或 crtc 比较",
+              "adev->dm.dc->caps.max_links 可能大于 secure_display_ctxs 的实际元素数"
+            ],
+            "fix_patterns": [
+              "将 secure_display_ctxs 的 kcalloc 元素数量从 AMDGPU_MAX_CRTCS 改为 adev->mode_info.num_crtc",
+              "将访问 secure_display_ctxs[i] 的循环上界从 adev->dm.dc->caps.max_links 改为 adev->mode_info.num_crtc",
+              "用同一个 authoritative CRTC 数量字段同时约束分配规模和数组索引消费"
+            ],
+            "affected_functions": [
+              "amdgpu_dm_fini",
+              "amdgpu_dm_crtc_configure_crc_source",
+              "amdgpu_dm_crtc_secure_display_create_contexts"
+            ],
+            "cross_file": true,
+            "source": "llm",
+            "confidence": 0.93,
+            "evidence_lines": [
+              "- secure_display_ctxs = kcalloc(AMDGPU_MAX_CRTCS, sizeof(struct secure_display_context), GFP_KERNEL);",
+              "+ secure_display_ctxs = kcalloc(adev->mode_info.num_crtc,",
+              "- for (i = 0; i < adev->dm.dc->caps.max_links; i++) {",
+              "+ for (i = 0; i < adev->mode_info.num_crtc; i++) {",
+              "if (adev->dm.secure_display_ctxs[i].crtc) {",
+              "flush_work(&adev->dm.secure_display_ctxs[i].notify_ta_work);"
+            ]
+          }
+        },
+        {
+          "node_id": "func_1",
+          "kind": "function",
+          "label": "amdgpu_dm_fini",
+          "attributes": {
+            "function": "amdgpu_dm_fini"
+          }
+        },
+        {
+          "node_id": "func_2",
+          "kind": "function",
+          "label": "amdgpu_dm_crtc_configure_crc_source",
+          "attributes": {
+            "function": "amdgpu_dm_crtc_configure_crc_source"
+          }
+        },
+        {
+          "node_id": "func_3",
+          "kind": "function",
+          "label": "amdgpu_dm_crtc_secure_display_create_contexts",
+          "attributes": {
+            "function": "amdgpu_dm_crtc_secure_display_create_contexts"
+          }
+        },
+        {
+          "node_id": "guard_1",
+          "kind": "guard",
+          "label": "secure_display_ctxs 由固定上限 AMDGPU_MAX_CRTCS 或与循环上界不同的数量分配",
+          "attributes": {
+            "condition": "secure_display_ctxs 由固定上限 AMDGPU_MAX_CRTCS 或与循环上界不同的数量分配"
+          }
+        },
+        {
+          "node_id": "guard_2",
+          "kind": "guard",
+          "label": "for 循环条件使用 i < adev->dm.dc->caps.max_links",
+          "attributes": {
+            "condition": "for 循环条件使用 i < adev->dm.dc->caps.max_links"
+          }
+        },
+        {
+          "node_id": "guard_3",
+          "kind": "guard",
+          "label": "循环体内使用 secure_display_ctxs[i] 进行字段访问、work 初始化、flush_work 或 crtc 比较",
+          "attributes": {
+            "condition": "循环体内使用 secure_display_ctxs[i] 进行字段访问、work 初始化、flush_work 或 crtc 比较"
+          }
+        },
+        {
+          "node_id": "guard_4",
+          "kind": "guard",
+          "label": "adev->dm.dc->caps.max_links 可能大于 secure_display_ctxs 的实际元素数",
+          "attributes": {
+            "condition": "adev->dm.dc->caps.max_links 可能大于 secure_display_ctxs 的实际元素数"
+          }
+        },
+        {
+          "node_id": "strategy",
+          "kind": "strategy",
+          "label": "out_of_bounds_access",
+          "attributes": {
+            "primary_pattern": "out_of_bounds_access",
+            "check_types": [
+              "array_index_loop_bound_mismatch",
+              "allocation_size_vs_iteration_bound_consistency",
+              "field_based_loop_bound_on_array_access",
+              "patch_local_secure_display_ctxs_index_access"
+            ],
+            "entry_points": [
+              "amdgpu_dm_crtc_secure_display_create_contexts",
+              "amdgpu_dm_fini",
+              "amdgpu_dm_crtc_configure_crc_source"
+            ],
+            "data_flow_tracking": true,
+            "cross_file_analysis": true,
+            "suggestions": [
+              "首稿优先命中最小 patch-local 锚点：for (i = 0; i < adev->dm.dc->caps.max_links; i++) 循环体内访问 secure_display_ctxs[i] 或 adev->dm.secure_display_ctxs[i]",
+              "另一个强锚点是 kcalloc(AMDGPU_MAX_CRTCS, sizeof(struct secure_display_context), ...) 后同函数内用 max_links 初始化 secure_display_ctxs[i]",
+              "不要把新增的 num_crtc 边界作为首稿硬过滤；它更适合作为已修复代码的 barrier，用于排除 patched 版本",
+              "辅助收敛条件可以要求索引变量来自同一 for 循环、数组名为 secure_display_ctxs、循环上界为 adev->dm.dc->caps.max_links、或分配数量为 AMDGPU_MAX_CRTCS",
+              "若只追求首批命中，局部 AST/CFG 匹配循环上界和数组索引已足够；若要证明真实越界风险，再追踪 secure_display_ctxs 的 kcalloc 元素数量与跨函数字段保存关系",
+              "跨文件分析有助于关联 amdgpu_dm_crc.c 中的创建函数与 amdgpu_dm.c 中的 fini 消费，但 detector 首稿可以先限制在补丁涉及的三个函数内"
+            ]
+          }
+        },
+        {
+          "node_id": "fix_1",
+          "kind": "fix",
+          "label": "将 secure_display_ctxs 的 kcalloc 元素数量从 AMDGPU_MAX_CRTCS 改为 adev->mode_info.num_crtc",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "将 secure_display_ctxs 的 kcalloc 元素数量从 AMDGPU_MAX_CRTCS 改为 adev->mode_info.num_crtc"
+          }
+        },
+        {
+          "node_id": "fix_2",
+          "kind": "fix",
+          "label": "将访问 secure_display_ctxs[i] 的循环上界从 adev->dm.dc->caps.max_links 改为 adev->mode_info.num_crtc",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "将访问 secure_display_ctxs[i] 的循环上界从 adev->dm.dc->caps.max_links 改为 adev->mode_info.num_crtc"
+          }
+        },
+        {
+          "node_id": "fix_3",
+          "kind": "fix",
+          "label": "用同一个 authoritative CRTC 数量字段同时约束分配规模和数组索引消费",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "用同一个 authoritative CRTC 数量字段同时约束分配规模和数组索引消费"
+          }
+        },
+        {
+          "node_id": "fix_4",
+          "kind": "fix",
+          "label": "kcalloc",
+          "attributes": {
+            "kind": "added_api_calls",
+            "value": "kcalloc"
+          }
+        },
+        {
+          "node_id": "intent_0",
+          "kind": "intent",
+          "label": "commit c3d749609472ba0b217b42ab66f80459847e2bcb | Author: Hamza Mahfooz <hamza.mahfooz@amd.com>",
+          "attributes": {
+            "summary": "commit c3d749609472ba0b217b42ab66f80459847e2bcb | Author: Hamza Mahfooz <hamza.mahfooz@amd.com>",
+            "keywords": [
+              "commit",
+              "c3d749609472ba0b217b42ab66f80459847e2bcb",
+              "author",
+              "hamza",
+              "mahfooz"
+            ]
+          }
+        },
+        {
+          "node_id": "commit_0",
+          "kind": "commit",
+          "label": "1b11ff764aef, b8ff7e08bab9",
+          "attributes": {
+            "issues": [
+              "1b11ff764aef",
+              "b8ff7e08bab9"
+            ]
+          }
+        }
+      ],
+      "edges": [
+        {
+          "source": "patch",
+          "target": "file_0",
+          "relation": "touches",
+          "confidence": 0.95
+        },
+        {
+          "source": "patch",
+          "target": "file_1",
+          "relation": "touches",
+          "confidence": 0.95
+        },
+        {
+          "source": "patch",
+          "target": "pattern_0",
+          "relation": "indicates",
+          "confidence": 0.9
+        },
+        {
+          "source": "pattern_0",
+          "target": "func_1",
+          "relation": "affects",
+          "confidence": 0.75
+        },
+        {
+          "source": "pattern_0",
+          "target": "func_2",
+          "relation": "affects",
+          "confidence": 0.75
+        },
+        {
+          "source": "pattern_0",
+          "target": "func_3",
+          "relation": "affects",
+          "confidence": 0.75
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_1",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_2",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_3",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_4",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "patch",
+          "target": "strategy",
+          "relation": "guides",
+          "confidence": 0.85
+        },
+        {
+          "source": "patch",
+          "target": "fix_1",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_2",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_3",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_4",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "intent_0",
+          "relation": "describes",
+          "confidence": 0.78
+        },
+        {
+          "source": "patch",
+          "target": "commit_0",
+          "relation": "tracked_by",
+          "confidence": 0.72
+        }
+      ]
+    },
+    "evidence_plan": {
+      "primary_pattern": "out_of_bounds_access",
+      "hypotheses": [
+        "The patch changes a data propagation condition that should generalize beyond the edited lines.",
+        "The vulnerability mechanism crosses file boundaries and should not be captured with local-only reasoning."
+      ],
+      "requirements": [
+        {
+          "evidence_type": "patch_fact",
+          "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+          "priority": 100,
+          "preferred_analyzers": [],
+          "confidence": 1.0,
+          "mechanism_refs": [
+            "patch"
+          ]
+        },
+        {
+          "evidence_type": "dataflow_candidate",
+          "reason": "Patch analysis requests data-flow tracking.",
+          "priority": 95,
+          "preferred_analyzers": [
+            "codeql"
+          ],
+          "confidence": 0.9,
+          "mechanism_refs": [
+            "strategy"
+          ]
+        },
+        {
+          "evidence_type": "semantic_slice",
+          "reason": "Cross-file patch suggests a verifier-backed semantic slice is needed, not just a project summary.",
+          "priority": 86,
+          "preferred_analyzers": [
+            "csa",
+            "codeql"
+          ],
+          "confidence": 0.83,
+          "mechanism_refs": [
+            "strategy"
+          ]
+        },
+        {
+          "evidence_type": "call_chain",
+          "reason": "Cross-file patch needs interprocedural call edges, not only local edited-line context.",
+          "priority": 82,
+          "preferred_analyzers": [
+            "codeql"
+          ],
+          "confidence": 0.78,
+          "mechanism_refs": [
+            "strategy"
+          ]
+        }
+      ],
+      "recommended_analyzers": [
+        "codeql",
+        "csa"
+      ],
+      "planner_notes": [
+        "Selected analyzers do not cover every planned evidence primitive."
+      ],
+      "coverage_gaps": [
+        "dataflow_candidate is not covered by selected analyzers ['csa']",
+        "call_chain is not covered by selected analyzers ['csa']"
+      ],
+      "uncertainty_budget": "high",
+      "escalation_triggers": [
+        "cross_file_mechanism",
+        "metadata_available",
+        "selected_coverage_gap"
+      ]
+    },
+    "validation_feedback_history": [
+      {
+        "analyzer": "csa",
+        "phase": "knighter_e2_patch_local_baseline",
+        "summary": "Baseline validation (csa): Knighter基线扫描报告数=6, 人工确认bug=1, 人工非bug=0, 候选组=positive_scan_report_count。漏洞版命中=true, 漏洞版patch-scoped告警数=5, 修复版误报数=4, fixed_silent=false, PDS=false. 这些数只表示patch-local语义验证门，不等同于Knighter full-kernel report_count/FPR统计。"
+      }
+    ],
+    "refinement_targets": {
+      "csa": {
+        "checker_name": "SAGenTestChecker",
+        "artifact_path": "/anonymous/home/LLM-Native/research/knighter/e2/cases/14_c3d749609472_Out_of_Bound/csa/SAGenTestChecker.cpp",
+        "artifact_kind": "checker_source",
+        "validation_summary": "Baseline validation (csa): Knighter基线扫描报告数=6, 人工确认bug=1, 人工非bug=0, 候选组=positive_scan_report_count。漏洞版命中=true, 漏洞版patch-scoped告警数=5, 修复版误报数=4, fixed_silent=false, PDS=false. 这些数只表示patch-local语义验证门，不等同于Knighter full-kernel report_count/FPR统计。",
+        "refinement_summary": "Baseline validation (csa): Knighter基线扫描报告数=6, 人工确认bug=1, 人工非bug=0, 候选组=positive_scan_report_count。漏洞版命中=true, 漏洞版patch-scoped告警数=5, 修复版误报数=4, fixed_silent=false, PDS=false. 这些数只表示patch-local语义验证门，不等同于Knighter full-kernel report_count/FPR统计。"
+      }
+    }
+  },
+  "knighter": {
+    "patch_local_screen1": {
+      "buggy_alerts": 5,
+      "fixed_alerts": 4,
+      "buggy_miss": false,
+      "fixed_noisy": true,
+      "poor_distinguishing": true,
+      "screen1_priority": "P0",
+      "screen1_reason": "fixed-side noisy",
+      "patch_related_targets": [
+        "drivers/gpu/drm/amd/amdgpu/../display/amdgpu_dm/amdgpu_dm.o",
+        "drivers/gpu/drm/amd/amdgpu/../display/amdgpu_dm/amdgpu_dm_crc.o"
+      ]
+    },
+    "baseline_validation_summary": "Baseline validation (csa): Knighter基线扫描报告数=6, 人工确认bug=1, 人工非bug=0, 候选组=positive_scan_report_count。漏洞版命中=true, 漏洞版patch-scoped告警数=5, 修复版误报数=4, fixed_silent=false, PDS=false. 这些数只表示patch-local语义验证门，不等同于Knighter full-kernel report_count/FPR统计。"
+  },
+  "patch_path": "/anonymous/home/LLM-Native/research/knighter/e2/cases/14_c3d749609472_Out_of_Bound/patches/commit.patch",
+  "summary": "Patch suggests out_of_bounds_access semantics across 2 file(s); added guards=0, removed risky operations=1, fix patterns=3, metadata refs=2.",
+  "patch_facts": [
+    {
+      "fact_type": "patch_overview",
+      "label": "Patch overview",
+      "attributes": {
+        "patch_path": "/anonymous/home/LLM-Native/research/knighter/e2/cases/14_c3d749609472_Out_of_Bound/patches/commit.patch",
+        "changed_files": [
+          "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+          "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c"
+        ],
+        "changed_file_count": 2,
+        "added_line_count": 6,
+        "deleted_line_count": 4
+      }
+    },
+    {
+      "fact_type": "vulnerability_patterns",
+      "label": "Vulnerability patterns inferred from patch",
+      "attributes": {
+        "patterns": [
+          "out_of_bounds_access"
+        ],
+        "descriptions": [
+          "补丁前 secure_display_ctxs 的实际分配规模与后续循环索引上界不一致：数组按 AMDGPU_MAX_CRTCS 分配，但循环按 adev->dm.dc->caps.max_links 遍历并消费 secure_display_ctxs[i]。当 max_links 大于已分配元素数时，flush_work、字段比较、INIT_WORK、crtc 赋值等对 secure_display_ctxs[i] 的访问会越界。补丁后 kcalloc 和所有相关 for 循环都改为 adev->mode_info.num_crtc，使分配数量和索引上界一致。"
+        ]
+      }
+    },
+    {
+      "fact_type": "affected_functions",
+      "label": "Functions implicated by removed or fixed code",
+      "attributes": {
+        "functions": [
+          "amdgpu_dm_crtc_configure_crc_source",
+          "amdgpu_dm_crtc_secure_display_create_contexts",
+          "amdgpu_dm_fini"
+        ]
+      }
+    },
+    {
+      "fact_type": "detection_strategy",
+      "label": "Existing patch analysis detection strategy",
+      "attributes": {
+        "primary_pattern": "out_of_bounds_access",
+        "check_types": [
+          "array_index_loop_bound_mismatch",
+          "allocation_size_vs_iteration_bound_consistency",
+          "field_based_loop_bound_on_array_access",
+          "patch_local_secure_display_ctxs_index_access"
+        ],
+        "entry_points": [
+          "amdgpu_dm_crtc_secure_display_create_contexts",
+          "amdgpu_dm_fini",
+          "amdgpu_dm_crtc_configure_crc_source"
+        ],
+        "data_flow_tracking": true,
+        "cross_file_analysis": true,
+        "suggestions": [
+          "首稿优先命中最小 patch-local 锚点：for (i = 0; i < adev->dm.dc->caps.max_links; i++) 循环体内访问 secure_display_ctxs[i] 或 adev->dm.secure_display_ctxs[i]",
+          "另一个强锚点是 kcalloc(AMDGPU_MAX_CRTCS, sizeof(struct secure_display_context), ...) 后同函数内用 max_links 初始化 secure_display_ctxs[i]",
+          "不要把新增的 num_crtc 边界作为首稿硬过滤；它更适合作为已修复代码的 barrier，用于排除 patched 版本",
+          "辅助收敛条件可以要求索引变量来自同一 for 循环、数组名为 secure_display_ctxs、循环上界为 adev->dm.dc->caps.max_links、或分配数量为 AMDGPU_MAX_CRTCS",
+          "若只追求首批命中，局部 AST/CFG 匹配循环上界和数组索引已足够；若要证明真实越界风险，再追踪 secure_display_ctxs 的 kcalloc 元素数量与跨函数字段保存关系",
+          "跨文件分析有助于关联 amdgpu_dm_crc.c 中的创建函数与 amdgpu_dm.c 中的 fini 消费，但 detector 首稿可以先限制在补丁涉及的三个函数内"
+        ]
+      }
+    },
+    {
+      "fact_type": "removed_risky_operations",
+      "label": "Patch removes risky operations",
+      "attributes": {
+        "operations": [
+          "secure_display_ctxs = kcalloc(AMDGPU_MAX_CRTCS, sizeof(struct secure_display_context), GFP_KERNEL);"
+        ]
+      }
+    },
+    {
+      "fact_type": "fix_patterns",
+      "label": "Patch introduces reusable fix patterns",
+      "attributes": {
+        "patterns": [
+          "将 secure_display_ctxs 的 kcalloc 元素数量从 AMDGPU_MAX_CRTCS 改为 adev->mode_info.num_crtc",
+          "将访问 secure_display_ctxs[i] 的循环上界从 adev->dm.dc->caps.max_links 改为 adev->mode_info.num_crtc",
+          "用同一个 authoritative CRTC 数量字段同时约束分配规模和数组索引消费"
+        ]
+      }
+    },
+    {
+      "fact_type": "added_api_calls",
+      "label": "Patch introduces or highlights API usage",
+      "attributes": {
+        "apis": [
+          "kcalloc"
+        ]
+      }
+    },
+    {
+      "fact_type": "patch_intent",
+      "label": "Patch intent and commit-style summary",
+      "attributes": {
+        "summary": "commit c3d749609472ba0b217b42ab66f80459847e2bcb | Author: Hamza Mahfooz <hamza.mahfooz@amd.com>",
+        "keywords": [
+          "commit",
+          "c3d749609472ba0b217b42ab66f80459847e2bcb",
+          "author",
+          "hamza",
+          "mahfooz"
+        ]
+      }
+    },
+    {
+      "fact_type": "external_references",
+      "label": "External references recovered from patch text",
+      "attributes": {
+        "cves": [],
+        "cwes": [],
+        "issues": [
+          "1b11ff764aef",
+          "b8ff7e08bab9"
+        ]
+      }
+    }
+  ],
+  "mechanism_graph": {
+    "summary": "Patch suggests out_of_bounds_access semantics across 2 file(s); added guards=0, removed risky operations=1, fix patterns=3, metadata refs=2.",
+    "primary_patterns": [
+      "out_of_bounds_access"
+    ],
+    "nodes": [
+      {
+        "node_id": "patch",
+        "kind": "patch",
+        "label": "Security patch",
+        "attributes": {
+          "changed_files": [
+            "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+            "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c"
+          ]
+        }
+      },
+      {
+        "node_id": "file_0",
+        "kind": "file",
+        "label": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+        "attributes": {
+          "path": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+          "additions": 1,
+          "deletions": 1,
+          "hunks": 1
+        }
+      },
+      {
+        "node_id": "file_1",
+        "kind": "file",
+        "label": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c",
+        "attributes": {
+          "path": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c",
+          "additions": 5,
+          "deletions": 3,
+          "hunks": 2
+        }
+      },
+      {
+        "node_id": "pattern_0",
+        "kind": "pattern",
+        "label": "out_of_bounds_access",
+        "attributes": {
+          "type": "out_of_bounds_access",
+          "description": "补丁前 secure_display_ctxs 的实际分配规模与后续循环索引上界不一致：数组按 AMDGPU_MAX_CRTCS 分配，但循环按 adev->dm.dc->caps.max_links 遍历并消费 secure_display_ctxs[i]。当 max_links 大于已分配元素数时，flush_work、字段比较、INIT_WORK、crtc 赋值等对 secure_display_ctxs[i] 的访问会越界。补丁后 kcalloc 和所有相关 for 循环都改为 adev->mode_info.num_crtc，使分配数量和索引上界一致。",
+          "trigger_conditions": [
+            "secure_display_ctxs 由固定上限 AMDGPU_MAX_CRTCS 或与循环上界不同的数量分配",
+            "for 循环条件使用 i < adev->dm.dc->caps.max_links",
+            "循环体内使用 secure_display_ctxs[i] 进行字段访问、work 初始化、flush_work 或 crtc 比较",
+            "adev->dm.dc->caps.max_links 可能大于 secure_display_ctxs 的实际元素数"
+          ],
+          "fix_patterns": [
+            "将 secure_display_ctxs 的 kcalloc 元素数量从 AMDGPU_MAX_CRTCS 改为 adev->mode_info.num_crtc",
+            "将访问 secure_display_ctxs[i] 的循环上界从 adev->dm.dc->caps.max_links 改为 adev->mode_info.num_crtc",
+            "用同一个 authoritative CRTC 数量字段同时约束分配规模和数组索引消费"
+          ],
+          "affected_functions": [
+            "amdgpu_dm_fini",
+            "amdgpu_dm_crtc_configure_crc_source",
+            "amdgpu_dm_crtc_secure_display_create_contexts"
+          ],
+          "cross_file": true,
+          "source": "llm",
+          "confidence": 0.93,
+          "evidence_lines": [
+            "- secure_display_ctxs = kcalloc(AMDGPU_MAX_CRTCS, sizeof(struct secure_display_context), GFP_KERNEL);",
+            "+ secure_display_ctxs = kcalloc(adev->mode_info.num_crtc,",
+            "- for (i = 0; i < adev->dm.dc->caps.max_links; i++) {",
+            "+ for (i = 0; i < adev->mode_info.num_crtc; i++) {",
+            "if (adev->dm.secure_display_ctxs[i].crtc) {",
+            "flush_work(&adev->dm.secure_display_ctxs[i].notify_ta_work);"
+          ]
+        }
+      },
+      {
+        "node_id": "func_1",
+        "kind": "function",
+        "label": "amdgpu_dm_fini",
+        "attributes": {
+          "function": "amdgpu_dm_fini"
+        }
+      },
+      {
+        "node_id": "func_2",
+        "kind": "function",
+        "label": "amdgpu_dm_crtc_configure_crc_source",
+        "attributes": {
+          "function": "amdgpu_dm_crtc_configure_crc_source"
+        }
+      },
+      {
+        "node_id": "func_3",
+        "kind": "function",
+        "label": "amdgpu_dm_crtc_secure_display_create_contexts",
+        "attributes": {
+          "function": "amdgpu_dm_crtc_secure_display_create_contexts"
+        }
+      },
+      {
+        "node_id": "guard_1",
+        "kind": "guard",
+        "label": "secure_display_ctxs 由固定上限 AMDGPU_MAX_CRTCS 或与循环上界不同的数量分配",
+        "attributes": {
+          "condition": "secure_display_ctxs 由固定上限 AMDGPU_MAX_CRTCS 或与循环上界不同的数量分配"
+        }
+      },
+      {
+        "node_id": "guard_2",
+        "kind": "guard",
+        "label": "for 循环条件使用 i < adev->dm.dc->caps.max_links",
+        "attributes": {
+          "condition": "for 循环条件使用 i < adev->dm.dc->caps.max_links"
+        }
+      },
+      {
+        "node_id": "guard_3",
+        "kind": "guard",
+        "label": "循环体内使用 secure_display_ctxs[i] 进行字段访问、work 初始化、flush_work 或 crtc 比较",
+        "attributes": {
+          "condition": "循环体内使用 secure_display_ctxs[i] 进行字段访问、work 初始化、flush_work 或 crtc 比较"
+        }
+      },
+      {
+        "node_id": "guard_4",
+        "kind": "guard",
+        "label": "adev->dm.dc->caps.max_links 可能大于 secure_display_ctxs 的实际元素数",
+        "attributes": {
+          "condition": "adev->dm.dc->caps.max_links 可能大于 secure_display_ctxs 的实际元素数"
+        }
+      },
+      {
+        "node_id": "strategy",
+        "kind": "strategy",
+        "label": "out_of_bounds_access",
+        "attributes": {
+          "primary_pattern": "out_of_bounds_access",
+          "check_types": [
+            "array_index_loop_bound_mismatch",
+            "allocation_size_vs_iteration_bound_consistency",
+            "field_based_loop_bound_on_array_access",
+            "patch_local_secure_display_ctxs_index_access"
+          ],
+          "entry_points": [
+            "amdgpu_dm_crtc_secure_display_create_contexts",
+            "amdgpu_dm_fini",
+            "amdgpu_dm_crtc_configure_crc_source"
+          ],
+          "data_flow_tracking": true,
+          "cross_file_analysis": true,
+          "suggestions": [
+            "首稿优先命中最小 patch-local 锚点：for (i = 0; i < adev->dm.dc->caps.max_links; i++) 循环体内访问 secure_display_ctxs[i] 或 adev->dm.secure_display_ctxs[i]",
+            "另一个强锚点是 kcalloc(AMDGPU_MAX_CRTCS, sizeof(struct secure_display_context), ...) 后同函数内用 max_links 初始化 secure_display_ctxs[i]",
+            "不要把新增的 num_crtc 边界作为首稿硬过滤；它更适合作为已修复代码的 barrier，用于排除 patched 版本",
+            "辅助收敛条件可以要求索引变量来自同一 for 循环、数组名为 secure_display_ctxs、循环上界为 adev->dm.dc->caps.max_links、或分配数量为 AMDGPU_MAX_CRTCS",
+            "若只追求首批命中，局部 AST/CFG 匹配循环上界和数组索引已足够；若要证明真实越界风险，再追踪 secure_display_ctxs 的 kcalloc 元素数量与跨函数字段保存关系",
+            "跨文件分析有助于关联 amdgpu_dm_crc.c 中的创建函数与 amdgpu_dm.c 中的 fini 消费，但 detector 首稿可以先限制在补丁涉及的三个函数内"
+          ]
+        }
+      },
+      {
+        "node_id": "fix_1",
+        "kind": "fix",
+        "label": "将 secure_display_ctxs 的 kcalloc 元素数量从 AMDGPU_MAX_CRTCS 改为 adev->mode_info.num_crtc",
+        "attributes": {
+          "kind": "fix_patterns",
+          "value": "将 secure_display_ctxs 的 kcalloc 元素数量从 AMDGPU_MAX_CRTCS 改为 adev->mode_info.num_crtc"
+        }
+      },
+      {
+        "node_id": "fix_2",
+        "kind": "fix",
+        "label": "将访问 secure_display_ctxs[i] 的循环上界从 adev->dm.dc->caps.max_links 改为 adev->mode_info.num_crtc",
+        "attributes": {
+          "kind": "fix_patterns",
+          "value": "将访问 secure_display_ctxs[i] 的循环上界从 adev->dm.dc->caps.max_links 改为 adev->mode_info.num_crtc"
+        }
+      },
+      {
+        "node_id": "fix_3",
+        "kind": "fix",
+        "label": "用同一个 authoritative CRTC 数量字段同时约束分配规模和数组索引消费",
+        "attributes": {
+          "kind": "fix_patterns",
+          "value": "用同一个 authoritative CRTC 数量字段同时约束分配规模和数组索引消费"
+        }
+      },
+      {
+        "node_id": "fix_4",
+        "kind": "fix",
+        "label": "kcalloc",
+        "attributes": {
+          "kind": "added_api_calls",
+          "value": "kcalloc"
+        }
+      },
+      {
+        "node_id": "intent_0",
+        "kind": "intent",
+        "label": "commit c3d749609472ba0b217b42ab66f80459847e2bcb | Author: Hamza Mahfooz <hamza.mahfooz@amd.com>",
+        "attributes": {
+          "summary": "commit c3d749609472ba0b217b42ab66f80459847e2bcb | Author: Hamza Mahfooz <hamza.mahfooz@amd.com>",
+          "keywords": [
+            "commit",
+            "c3d749609472ba0b217b42ab66f80459847e2bcb",
+            "author",
+            "hamza",
+            "mahfooz"
+          ]
+        }
+      },
+      {
+        "node_id": "commit_0",
+        "kind": "commit",
+        "label": "1b11ff764aef, b8ff7e08bab9",
+        "attributes": {
+          "issues": [
+            "1b11ff764aef",
+            "b8ff7e08bab9"
+          ]
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "patch",
+        "target": "file_0",
+        "relation": "touches",
+        "confidence": 0.95
+      },
+      {
+        "source": "patch",
+        "target": "file_1",
+        "relation": "touches",
+        "confidence": 0.95
+      },
+      {
+        "source": "patch",
+        "target": "pattern_0",
+        "relation": "indicates",
+        "confidence": 0.9
+      },
+      {
+        "source": "pattern_0",
+        "target": "func_1",
+        "relation": "affects",
+        "confidence": 0.75
+      },
+      {
+        "source": "pattern_0",
+        "target": "func_2",
+        "relation": "affects",
+        "confidence": 0.75
+      },
+      {
+        "source": "pattern_0",
+        "target": "func_3",
+        "relation": "affects",
+        "confidence": 0.75
+      },
+      {
+        "source": "pattern_0",
+        "target": "guard_1",
+        "relation": "requires",
+        "confidence": 0.7
+      },
+      {
+        "source": "pattern_0",
+        "target": "guard_2",
+        "relation": "requires",
+        "confidence": 0.7
+      },
+      {
+        "source": "pattern_0",
+        "target": "guard_3",
+        "relation": "requires",
+        "confidence": 0.7
+      },
+      {
+        "source": "pattern_0",
+        "target": "guard_4",
+        "relation": "requires",
+        "confidence": 0.7
+      },
+      {
+        "source": "patch",
+        "target": "strategy",
+        "relation": "guides",
+        "confidence": 0.85
+      },
+      {
+        "source": "patch",
+        "target": "fix_1",
+        "relation": "introduces",
+        "confidence": 0.8
+      },
+      {
+        "source": "patch",
+        "target": "fix_2",
+        "relation": "introduces",
+        "confidence": 0.8
+      },
+      {
+        "source": "patch",
+        "target": "fix_3",
+        "relation": "introduces",
+        "confidence": 0.8
+      },
+      {
+        "source": "patch",
+        "target": "fix_4",
+        "relation": "introduces",
+        "confidence": 0.8
+      },
+      {
+        "source": "patch",
+        "target": "intent_0",
+        "relation": "describes",
+        "confidence": 0.78
+      },
+      {
+        "source": "patch",
+        "target": "commit_0",
+        "relation": "tracked_by",
+        "confidence": 0.72
+      }
+    ]
+  },
+  "evidence_plan": {
+    "primary_pattern": "out_of_bounds_access",
+    "hypotheses": [
+      "The patch changes a data propagation condition that should generalize beyond the edited lines.",
+      "The vulnerability mechanism crosses file boundaries and should not be captured with local-only reasoning."
+    ],
+    "requirements": [
+      {
+        "evidence_type": "patch_fact",
+        "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+        "priority": 100,
+        "preferred_analyzers": [],
+        "confidence": 1.0,
+        "mechanism_refs": [
+          "patch"
+        ]
+      },
+      {
+        "evidence_type": "dataflow_candidate",
+        "reason": "Patch analysis requests data-flow tracking.",
+        "priority": 95,
+        "preferred_analyzers": [
+          "codeql"
+        ],
+        "confidence": 0.9,
+        "mechanism_refs": [
+          "strategy"
+        ]
+      },
+      {
+        "evidence_type": "semantic_slice",
+        "reason": "Cross-file patch suggests a verifier-backed semantic slice is needed, not just a project summary.",
+        "priority": 86,
+        "preferred_analyzers": [
+          "csa",
+          "codeql"
+        ],
+        "confidence": 0.83,
+        "mechanism_refs": [
+          "strategy"
+        ]
+      },
+      {
+        "evidence_type": "call_chain",
+        "reason": "Cross-file patch needs interprocedural call edges, not only local edited-line context.",
+        "priority": 82,
+        "preferred_analyzers": [
+          "codeql"
+        ],
+        "confidence": 0.78,
+        "mechanism_refs": [
+          "strategy"
+        ]
+      }
+    ],
+    "recommended_analyzers": [
+      "codeql",
+      "csa"
+    ],
+    "planner_notes": [
+      "Selected analyzers do not cover every planned evidence primitive."
+    ],
+    "coverage_gaps": [
+      "dataflow_candidate is not covered by selected analyzers ['csa']",
+      "call_chain is not covered by selected analyzers ['csa']"
+    ],
+    "uncertainty_budget": "high",
+    "escalation_triggers": [
+      "cross_file_mechanism",
+      "metadata_available",
+      "selected_coverage_gap"
+    ]
+  }
+}

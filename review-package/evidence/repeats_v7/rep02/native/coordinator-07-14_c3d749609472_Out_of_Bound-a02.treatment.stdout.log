@@ -1,0 +1,88 @@
+{
+  "schema_version": 1,
+  "method": "semweaver_provenance_gated_csa_treatment",
+  "evidence_mode": "native",
+  "origin_gate_enabled": true,
+  "case_id": "14_c3d749609472_Out_of_Bound",
+  "model": "gpt-5.6-terra",
+  "provider": "openai_compatible",
+  "wire_api": "responses",
+  "reasoning_effort": "high",
+  "max_iterations": 1,
+  "max_tokens_per_call": 16000,
+  "request_timeout_seconds": 600,
+  "wrapper_max_retries": 0,
+  "inline_semantic_validation": false,
+  "external_paired_validation_required": true,
+  "internal_evidence_preloaded": true,
+  "evidence_requests_disabled": true,
+  "compile_after_each_edit": true,
+  "llm_exchange_log": "/work/artifacts/fse_revision/repeats_v7/rep02/native/14_c3d749609472_Out_of_Bound/attempt-02/llm_exchanges.jsonl",
+  "llm_exchange_log_sha256": "6900b28c467b9a66a5e700a3e50788dd8232a1eac4528c2f784cb33cf77ba136",
+  "preloaded_internal_evidence_ids": [
+    "csa_guard_0",
+    "csa_guard_1",
+    "csa_guard_2",
+    "csa_state_0",
+    "csa_state_1",
+    "csa_state_2",
+    "csa_lifecycle_0"
+  ],
+  "patch_sha256": "855a0761f25d6a243fb541532d004318c9462072db5a5bcd3904c587f24ed1ac",
+  "original_checker_sha256": "c5bcf68c65baeace60fee6d60832be412619b1dc6b8af7d742937dc63e53bff7",
+  "starting_checker_sha256": "1171644718403b1d122c4c4cb3ace799e46880454103eb842ddffffe9cd91e31",
+  "evidence_bundle_sha256": "42c180f0f589a54e6b0e4b68ad6fa13001fc863d4fe375a235524f6408055e9b",
+  "visible_evidence_sha256": "e15271038089c8599184d5b0e25a59ac3d86bfa39eb67987ea9d91040726a4b7",
+  "visible_evidence_record_count": 8,
+  "frozen_source_revision": "c3d749609472ba0b217b42ab66f80459847e2bcb^",
+  "frozen_source_hashes": {
+    "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c": "e552855e31553356eb812760b20d8a937a5bd352ec4283f3ea7b08ab36ee652b",
+    "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c": "ccb8f2c80e8860ec5b4e244059956435d91c9bfc5350b55a6b8cd12cc41ffb41"
+  },
+  "feedback_result_sha256": "2a009ab2c074673d0eec435a1c958895d7d770dfd1ee00d9b95a87c87bd2e9d3",
+  "feedback_run_manifest_sha256": null,
+  "feedback_candidate_sha256": "1171644718403b1d122c4c4cb3ace799e46880454103eb842ddffffe9cd91e31",
+  "feedback_kind": "paired_validation",
+  "candidate_sha256": "4006370b34f3a27b8f5472e88e28645db7698ad459c56a3094ecbc005821222e",
+  "candidate_changed": true,
+  "success": false,
+  "agent_success": false,
+  "iterations": 1,
+  "compile_attempts": 1,
+  "error_message": "达到最大精炼轮次 (1)",
+  "final_message": "达到最大精炼轮次，仍未通过本地验证。",
+  "output_path": "",
+  "elapsed_seconds": 73.64117455482483,
+  "llm_usage": {
+    "prompt_tokens": 14672,
+    "completion_tokens": 3168,
+    "total_tokens": 17840,
+    "call_count": 1,
+    "available": true,
+    "model": "gpt-5.6-terra",
+    "phases": 1
+  },
+  "llm_usage_by_phase": {
+    "decide": {
+      "prompt_tokens": 14672,
+      "completion_tokens": 3168,
+      "total_tokens": 17840,
+      "call_count": 1,
+      "available": true,
+      "model": "gpt-5.6-terra"
+    }
+  },
+  "artifact_review": {
+    "artifact_path": "/work/artifacts/fse_revision/repeats_v7/rep02/native/14_c3d749609472_Out_of_Bound/attempt-02/SAGenTestChecker.cpp",
+    "analyzer": "csa",
+    "review_mode": "refine",
+    "findings": [],
+    "warnings": [
+      "CSA 代码引入了 `ProgramState` / 路径敏感相关符号或说明，但实现里没有对应的状态读写、约束传播或 guard 绑定。 如果当前路线本来就是 AST/实参/guard 建模，应删掉这类 stateful 话术；只有显式声明了状态建模却完全未落地时才应继续升级处理。"
+    ]
+  },
+  "failure_type": "compile_failure",
+  "latest_failure_title": "apply_patch.compile_candidate",
+  "latest_failure_text": "ERROR: 编译失败: 2 个错误, 0 个警告\n/work/artifacts/fse_revision/repeats_v7/rep02/native/14_c3d749609472_Out_of_Bound/attempt-02/SAGenTestChecker.cpp:102:8: error: use of undeclared identifier 'isLinkCapacity'\n  102 |       !isLinkCapacity(Condition->getRHS()))\n      |        ^\n/work/artifacts/fse_revision/repeats_v7/rep02/native/14_c3d749609472_Out_of_Bound/attempt-02/SAGenTestChecker.cpp:109:25: error: no matching constructor for initialization of 'IndexedContextVisitor'\n  109 |   IndexedContextVisitor Visitor(Index);\n      |                         ^       ~~~~~\n/work/artifacts/fse_revision/repeats_v7/rep02/native/14_c3d749609472_Out_of_Bound/attempt-02/SAGenTestChecker.cpp:72:9: note: candidate constructor (the implicit copy constructor) not viable: no known conversion from 'const VarDecl *' to 'const IndexedContextVisitor' for 1st argument\n   72 |   class IndexedContextVisitor\n      |         ^~~~~~~~~~~~~~~~~~~~~\n/work/artifacts/fse_revision/repeats_v7/rep02/native/14_c3d749609472_Out_of_Bound/attempt-02/SAGenTestChecker.cpp:72:9: note: candidate constructor (the implicit move constructor) not viable: no known conversion from 'const VarDecl *' to 'IndexedContextVisitor' for 1st argument\n   72 |   class IndexedContextVisitor\n      |         ^~~~~~~~~~~~~~~~~~~~~\n/work/artifacts/fse_revision/repeats_v7/rep02/native/14_c3d749609472_Out_of_Bound/attempt-02/SAGenTestChecker.cpp:80:5: note: candidate constructor not viable: requires 2 arguments, but 1 was provided\n   80 |     IndexedContextVisitor(const VarDecl *Device, const VarDecl *Index)\n      |     ^                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n2 errors generated.",
+  "event_count": 28
+}

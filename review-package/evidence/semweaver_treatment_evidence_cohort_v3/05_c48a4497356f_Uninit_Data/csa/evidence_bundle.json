@@ -1,0 +1,759 @@
+{
+  "records": [
+    {
+      "evidence_id": "csa_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "sound/soc/codecs/sma1307.c",
+        "function": "sma1307_setting_loaded"
+      },
+      "location": {
+        "line": 1711,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "sma1307_setting_loaded adds patch barrier `ret` around sma1307_setting_loaded, request_firmware.",
+        "contract_type": "patch_barrier",
+        "same_call_binding": "tie the guard to the current downstream sink or protected state transition instead of any unrelated if-statement",
+        "trigger_contract": "report when a risky write proceeds without the patch-style barrier",
+        "silence_contract": "stay silent when the nearby guard proves the current write is blocked or bounded",
+        "guard_exprs": [
+          "ret"
+        ],
+        "removed_calls": [
+          "request_firmware",
+          "dev_err",
+          "release_firmware"
+        ],
+        "added_calls": [
+          "request_firmware",
+          "dev_err",
+          "ERR_PTR"
+        ],
+        "tracked_symbols": [
+          "ret",
+          "request_firmware",
+          "fw",
+          "file",
+          "sma1307",
+          "dev",
+          "dev_err",
+          "s"
+        ],
+        "widened_variables": [],
+        "state_resets": [],
+        "old_numeric_type": "",
+        "new_numeric_type": "",
+        "numeric_domain_change": "",
+        "arithmetic_operations": [],
+        "sink_calls": [
+          "sma1307_setting_loaded",
+          "request_firmware",
+          "release_firmware",
+          "dev_err"
+        ],
+        "buffer_fields": [
+          "sma1307->dev"
+        ],
+        "source_file": "sound/soc/codecs/sma1307.c",
+        "function": "sma1307_setting_loaded",
+        "source_excerpt": "1710: static void sma1307_setting_loaded(struct sma1307_priv *sma1307, const char *file)\n1711: {\n1712: \tconst struct firmware *fw;\n1713: \tint *data, size, offset, num_mode;\n1714: \n1715: \trequest_firmware(&fw, file, sma1307->dev);\n1716: \n1717: \tif (!fw) {\n1718: \t\tdev_err(sma1307->dev, \"%s: failed to read \\\"%s\\\"\\n\",\n1719: \t\t\t__func__, setting_file);\n1720: \t\trelease_firmware(fw);\n1721: \t\tsma1307->set.status = false;\n1722: \t\treturn;\n1723: \t} else if ((fw->size) < SMA1307_SETTING_HEADER_SIZE) {\n1724: \t\tdev_err(sma1307->dev, \"%s: Invalid file\\n\", __func__);\n1725: \t\trelease_firmware(fw);\n1726: \t\tsma1307->set.status = false;\n1727: \t\treturn;\n1728: \t}\n1729: \n1730: \tdata = kzalloc(fw->size, GFP_KERNEL);\n1731: \tsize = fw->size >> 2;\n1732: \tmemcpy(data, fw->data, fw->size);\n1733: \n1734: \trelease_firmware(fw);\n1735: \n1736: \t/* HEADER */\n1737: \tsma1307->set.header_size = SMA1307_SETTING_HEADER_SIZE;\n1738: \tsma1307->set.checksum = data[sma1307->set.header_size - 2];\n1739: \tsma1307->set.num_mode = data[sma1307->set.header_size - 1];\n1740: \tnum_mode = sma1307->set.num_mode;\n1741: \tsma1307->set.header = devm_kzalloc(sma1307->dev,\n1742: \t\t\t\t\t   sma1307->set.header_size,\n1743: \t\t\t\t\t   GFP_KERNEL);\n1744: \tmemcpy(sma1307->set.header, data,\n1745: \t       sma1307->set.header_size * sizeof(int));",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:semantic-contract",
+        "confidence": 0.92,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "sound/soc/codecs/sma1307.c",
+          "hunk_index": 0,
+          "source_line": 1711
+        },
+        "summary": "sma1307_setting_loaded adds patch barrier `ret` around sma1307_setting_loaded, request_firmware.",
+        "statements": [
+          "int ret;",
+          "ret = request_firmware(&fw, file, sma1307->dev);",
+          "if (ret) {",
+          "dev_err(sma1307->dev, \"%s: failed to read \\\"%s\\\": %pe\\n\",",
+          "__func__, setting_file, ERR_PTR(ret));"
+        ],
+        "guards": [
+          "ret"
+        ],
+        "call_boundary": [
+          "sma1307_setting_loaded",
+          "request_firmware",
+          "release_firmware",
+          "dev_err"
+        ],
+        "call_edges": [
+          "sma1307_setting_loaded -> sma1307_setting_loaded",
+          "sma1307_setting_loaded -> request_firmware",
+          "sma1307_setting_loaded -> release_firmware"
+        ],
+        "state_transitions": [
+          "",
+          "report when a risky write proceeds without the patch-style barrier",
+          "stay silent when the nearby guard proves the current write is blocked or bounded"
+        ],
+        "api_terms": [
+          "sma1307_setting_loaded",
+          "request_firmware",
+          "release_firmware",
+          "request_firmware",
+          "dev_err",
+          "ERR_PTR",
+          "request_firmware",
+          "dev_err"
+        ],
+        "related_symbols": [
+          "ret",
+          "request_firmware",
+          "fw",
+          "file",
+          "sma1307",
+          "dev"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "sound/soc/codecs/sma1307.c",
+        "function": "sma1307_setting_loaded"
+      },
+      "location": {
+        "line": 1711,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "ret",
+        "summary": "sma1307_setting_loaded introduces patch guard `ret` before sma1307_setting_loaded, request_firmware.",
+        "state_before": [
+          "input(ret)",
+          "input(request_firmware)",
+          "buffer(sma1307->dev)",
+          "risky(request_firmware)",
+          "risky(dev_err)"
+        ],
+        "state_after": [
+          "guard(ret)",
+          "current_call(sma1307_setting_loaded)",
+          "current_call(request_firmware)"
+        ],
+        "functions": [
+          "sma1307_setting_loaded"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "ret",
+          "request_firmware",
+          "fw",
+          "file",
+          "sma1307",
+          "dev"
+        ],
+        "buffer_fields": [
+          "sma1307->dev"
+        ],
+        "call_targets": [
+          "sma1307_setting_loaded",
+          "request_firmware",
+          "release_firmware",
+          "dev_err"
+        ],
+        "call_edges": [
+          "sma1307_setting_loaded -> sma1307_setting_loaded",
+          "sma1307_setting_loaded -> request_firmware",
+          "sma1307_setting_loaded -> release_firmware"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "ret"
+        ],
+        "state_statements": [
+          "int ret;",
+          "ret = request_firmware(&fw, file, sma1307->dev);",
+          "if (ret) {",
+          "dev_err(sma1307->dev, \"%s: failed to read \\\"%s\\\": %pe\\n\",",
+          "__func__, setting_file, ERR_PTR(ret));"
+        ],
+        "compile_command_preview": "",
+        "source_file": "sound/soc/codecs/sma1307.c",
+        "source_excerpt": "1710: static void sma1307_setting_loaded(struct sma1307_priv *sma1307, const char *file)\n1711: {\n1712: \tconst struct firmware *fw;\n1713: \tint *data, size, offset, num_mode;\n1714: \n1715: \trequest_firmware(&fw, file, sma1307->dev);\n1716: \n1717: \tif (!fw) {\n1718: \t\tdev_err(sma1307->dev, \"%s: failed to read \\\"%s\\\"\\n\",\n1719: \t\t\t__func__, setting_file);\n1720: \t\trelease_firmware(fw);\n1721: \t\tsma1307->set.status = false;\n1722: \t\treturn;\n1723: \t} else if ((fw->size) < SMA1307_SETTING_HEADER_SIZE) {\n1724: \t\tdev_err(sma1307->dev, \"%s: Invalid file\\n\", __func__);\n1725: \t\trelease_firmware(fw);\n1726: \t\tsma1307->set.status = false;\n1727: \t\treturn;\n1728: \t}\n1729: \n1730: \tdata = kzalloc(fw->size, GFP_KERNEL);\n1731: \tsize = fw->size >> 2;\n1732: \tmemcpy(data, fw->data, fw->size);\n1733: \n1734: \trelease_firmware(fw);\n1735: \n1736: \t/* HEADER */\n1737: \tsma1307->set.header_size = SMA1307_SETTING_HEADER_SIZE;\n1738: \tsma1307->set.checksum = data[sma1307->set.header_size - 2];\n1739: \tsma1307->set.num_mode = data[sma1307->set.header_size - 1];\n1740: \tnum_mode = sma1307->set.num_mode;\n1741: \tsma1307->set.header = devm_kzalloc(sma1307->dev,\n1742: \t\t\t\t\t   sma1307->set.header_size,\n1743: \t\t\t\t\t   GFP_KERNEL);\n1744: \tmemcpy(sma1307->set.header, data,\n1745: \t       sma1307->set.header_size * sizeof(int));",
+        "summary_line": 1711,
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:path-guard",
+        "confidence": 0.92,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "sound/soc/codecs/sma1307.c",
+          "hunk_index": 0,
+          "source_line": 1711
+        },
+        "summary": "sma1307_setting_loaded introduces patch guard `ret` before sma1307_setting_loaded, request_firmware.",
+        "statements": [
+          "int ret;",
+          "ret = request_firmware(&fw, file, sma1307->dev);",
+          "if (ret) {",
+          "dev_err(sma1307->dev, \"%s: failed to read \\\"%s\\\": %pe\\n\",",
+          "__func__, setting_file, ERR_PTR(ret));"
+        ],
+        "guards": [
+          "ret"
+        ],
+        "call_boundary": [
+          "sma1307_setting_loaded",
+          "request_firmware",
+          "release_firmware",
+          "dev_err"
+        ],
+        "call_edges": [
+          "sma1307_setting_loaded -> sma1307_setting_loaded",
+          "sma1307_setting_loaded -> request_firmware",
+          "sma1307_setting_loaded -> release_firmware"
+        ],
+        "state_transitions": [
+          "guard(ret)",
+          "current_call(sma1307_setting_loaded)",
+          "current_call(request_firmware)"
+        ],
+        "api_terms": [
+          "sma1307_setting_loaded",
+          "request_firmware",
+          "release_firmware"
+        ],
+        "related_symbols": [
+          "ret",
+          "request_firmware",
+          "fw",
+          "file",
+          "sma1307",
+          "dev"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_guard_1",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "sound/soc/codecs/sma1307.c",
+        "function": "sma1307_setting_loaded"
+      },
+      "location": {
+        "line": 1713,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "if (fw (ImplicitCastExpr, LValueToRValue, const struct firmware *)->size) (ImplicitCastExpr, LValueToRValue, size_t) < 8 (ImplicitCastExpr, IntegralCast, size_t)",
+        "summary": "Analyzer CFG for sma1307_setting_loaded in sound/soc/codecs/sma1307.c: bindings: data = ({ ... ; ({ ... ; _res (ImplicitCastExpr, LValueToRValue, typeof (kzalloc_noprof(fw->size, (((gfp_t)(((((1UL))) << (___GFP_DIRECT_RECLAIM_BIT)) | ((((1UL))) << (___GFP_KSWAPD_RECLAIM_BIT)))) | ((gfp_t)((((1UL))) << (___GFP_IO_BIT))) | ((gfp_t)((((1UL))) << (___GFP_FS_BIT))))))) }) }) (ImplicitCastExpr, BitCast, int *); typeof (kzalloc_noprof(fw->size, (((gfp_t)(((((1UL))) << (___GFP_DIRECT_RECLAIM_BIT)) | ((((1UL))) << (___GFP_KSWAPD_RECLAIM_BIT)))) | ((gfp_t)((((1UL))) << (___GFP_IO_BIT))) | ((gfp_t)((((1UL))) << (___GFP_FS_BIT)))))) _res = kzalloc_noprof(fw->size, (((gfp_t)(((((1UL))) << (___GFP_DIRECT_RECLAIM_BIT)) | ((((1UL))) << (___GFP_KSWAPD_RECLAIM_BIT)))) | ((gfp_t)((((1UL))) << (___GFP_IO_BIT))) | ((gfp_t)((((1UL))) << (___GFP_FS_BIT))))); | branches: if (fw (ImplicitCastExpr, LValueToRValue, const struct firmware *)->size) (ImplicitCastExpr, LValueToRValue, size_t) < 8 (ImplicitCastExpr, IntegralCast, size_t); if !fw (ImplicitCastExpr, LValueToRValue, const struct firmware *) | calls: sma1307_setting_loaded -> request_firmware; sma1307_setting_loaded -> __builtin_constant_p",
+        "state_before": [
+          "input(sma1307)",
+          "input(file)",
+          "buffer(sma1307->set)",
+          "buffer(fw->size)",
+          "sinks(request_firmware, dev_err)"
+        ],
+        "state_after": [
+          "cfg_binding(data = ({ ... ; ({ ... ; _res (ImplicitCastExpr, LValueToRValue, typeof (kzalloc_noprof(fw->size, (((gfp_t)(((((1UL))) << (___GFP_DIRECT_RECLAIM_BIT)) | ((((1UL))) << (___GFP_KSWAPD_RECLAIM_BIT)))) | ((gfp_t)((((1UL))) << (___GFP_IO_BIT))) | ((gfp_t)((((1UL))) << (___GFP_FS_BIT))))))) }) }) (ImplicitCastExpr, BitCast, int *))",
+          "cfg_binding(typeof (kzalloc_noprof(fw->size, (((gfp_t)(((((1UL))) << (___GFP_DIRECT_RECLAIM_BIT)) | ((((1UL))) << (___GFP_KSWAPD_RECLAIM_BIT)))) | ((gfp_t)((((1UL))) << (___GFP_IO_BIT))) | ((gfp_t)((((1UL))) << (___GFP_FS_BIT)))))) _res = kzalloc_noprof(fw->size, (((gfp_t)(((((1UL))) << (___GFP_DIRECT_RECLAIM_BIT)) | ((((1UL))) << (___GFP_KSWAPD_RECLAIM_BIT)))) | ((gfp_t)((((1UL))) << (___GFP_IO_BIT))) | ((gfp_t)((((1UL))) << (___GFP_FS_BIT)))));)",
+          "cfg_branch(if (fw (ImplicitCastExpr, LValueToRValue, const struct firmware *)->size) (ImplicitCastExpr, LValueToRValue, size_t) < 8 (ImplicitCastExpr, IntegralCast, size_t))",
+          "cfg_branch(if !fw (ImplicitCastExpr, LValueToRValue, const struct firmware *))"
+        ],
+        "functions": [
+          "sma1307_setting_loaded"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "sma1307",
+          "file",
+          "sma1307->set",
+          "fw->size",
+          "fw->data",
+          "sma1307->dev"
+        ],
+        "buffer_fields": [
+          "sma1307->set",
+          "fw->size",
+          "fw->data",
+          "sma1307->dev"
+        ],
+        "call_targets": [
+          "request_firmware",
+          "dev_err",
+          "release_firmware",
+          "kzalloc",
+          "memcpy",
+          "devm_kzalloc",
+          "__builtin_constant_p",
+          "_dev_err"
+        ],
+        "call_edges": [
+          "sma1307_setting_loaded -> request_firmware",
+          "sma1307_setting_loaded -> __builtin_constant_p",
+          "sma1307_setting_loaded -> _dev_err",
+          "sma1307_setting_loaded -> release_firmware",
+          "sma1307_setting_loaded -> kzalloc_noprof",
+          "sma1307_setting_loaded -> __builtin_dynamic_object_size"
+        ],
+        "cfg_branch_kinds": [
+          "for",
+          "if"
+        ],
+        "branch_conditions": [
+          "for (...; [B5.9]; ...)",
+          "for (...; [B7.5]; ...)",
+          "([B13.63] || [B12.5] || ([B11.9])) ? ... : ...",
+          "[B13.63] || [B12.5] || ...",
+          "[B13.63] || ...",
+          "do ... while [B15.1]"
+        ],
+        "resolved_branch_conditions": [
+          "if (fw (ImplicitCastExpr, LValueToRValue, const struct firmware *)->size) (ImplicitCastExpr, LValueToRValue, size_t) < 8 (ImplicitCastExpr, IntegralCast, size_t)",
+          "if !fw (ImplicitCastExpr, LValueToRValue, const struct firmware *)",
+          "for (...; j (ImplicitCastExpr, LValueToRValue, int) (ImplicitCastExpr, IntegralCast, size_t) < sma1307 (ImplicitCastExpr, LValueToRValue, struct sma1307_priv *)->set.mode_size (ImplicitCastExpr, LValueToRValue, size_t); ...)",
+          "for (...; i (ImplicitCastExpr, LValueToRValue, int) < num_mode (ImplicitCastExpr, LValueToRValue, int); ...)",
+          "(((typeof (size - offset))-1 (CStyleCastExpr, NoOp, typeof (size - offset))) > 0 || ((typeof (num_mode + 1))-1 (CStyleCastExpr, NoOp, typeof (num_mode + 1))) > 0 || (((__x) (ImplicitCastExpr, LValueToRValue, typeof (size - offset)) > 0) == ((__d) (ImplicitCastExpr, LValueToRValue, typeof (num_mode + 1)) > 0))) ? ... : ...",
+          "((typeof (size - offset))-1 (CStyleCastExpr, NoOp, typeof (size - offset))) > 0 || ((typeof (num_mode + 1))-1 (CStyleCastExpr, NoOp, typeof (num_mode + 1))) > 0 || ..."
+        ],
+        "cfg_value_bindings": [
+          "data = ({ ... ; ({ ... ; _res (ImplicitCastExpr, LValueToRValue, typeof (kzalloc_noprof(fw->size, (((gfp_t)(((((1UL))) << (___GFP_DIRECT_RECLAIM_BIT)) | ((((1UL))) << (___GFP_KSWAPD_RECLAIM_BIT)))) | ((gfp_t)((((1UL))) << (___GFP_IO_BIT))) | ((gfp_t)((((1UL))) << (___GFP_FS_BIT))))))) }) }) (ImplicitCastExpr, BitCast, int *)",
+          "typeof (kzalloc_noprof(fw->size, (((gfp_t)(((((1UL))) << (___GFP_DIRECT_RECLAIM_BIT)) | ((((1UL))) << (___GFP_KSWAPD_RECLAIM_BIT)))) | ((gfp_t)((((1UL))) << (___GFP_IO_BIT))) | ((gfp_t)((((1UL))) << (___GFP_FS_BIT)))))) _res = kzalloc_noprof(fw->size, (((gfp_t)(((((1UL))) << (___GFP_DIRECT_RECLAIM_BIT)) | ((((1UL))) << (___GFP_KSWAPD_RECLAIM_BIT)))) | ((gfp_t)((((1UL))) << (___GFP_IO_BIT))) | ((gfp_t)((((1UL))) << (___GFP_FS_BIT)))));",
+          "const size_t __fortify_size = (size_t)(fw->size);",
+          "const size_t __q_size = (__builtin_dynamic_object_size(fw->data, 0));",
+          "const size_t __q_size_field = (__builtin_dynamic_object_size(fw->data, 1));",
+          "size = fw (ImplicitCastExpr, LValueToRValue, const struct firmware *)->size (ImplicitCastExpr, LValueToRValue, size_t) >> 2 (ImplicitCastExpr, IntegralCast, int)"
+        ],
+        "state_statements": [
+          "kfree",
+          "[B1.10]->set",
+          "[B1.12] = [B1.8]",
+          "[B2.1]++",
+          "[B3.1]++",
+          "[B4.16]->set"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,sound/soc/codecs/.sma1307.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/uapi -I./arch/x8...",
+        "source_file": "sound/soc/codecs/sma1307.c",
+        "source_excerpt": "1710: static void sma1307_setting_loaded(struct sma1307_priv *sma1307, const char *file)\n1711: {\n1712: \tconst struct firmware *fw;\n1713: \tint *data, size, offset, num_mode;\n1714: \n1715: \trequest_firmware(&fw, file, sma1307->dev);\n1716: \n1717: \tif (!fw) {\n1718: \t\tdev_err(sma1307->dev, \"%s: failed to read \\\"%s\\\"\\n\",\n1719: \t\t\t__func__, setting_file);\n1720: \t\trelease_firmware(fw);\n1721: \t\tsma1307->set.status = false;\n1722: \t\treturn;\n1723: \t} else if ((fw->size) < SMA1307_SETTING_HEADER_SIZE) {\n1724: \t\tdev_err(sma1307->dev, \"%s: Invalid file\\n\", __func__);\n1725: \t\trelease_firmware(fw);\n1726: \t\tsma1307->set.status = false;\n1727: \t\treturn;\n1728: \t}\n1729: \n1730: \tdata = kzalloc(fw->size, GFP_KERNEL);\n1731: \tsize = fw->size >> 2;\n1732: \tmemcpy(data, fw->data, fw->size);\n1733: \n1734: \trelease_firmware(fw);\n1735: \n1736: \t/* HEADER */\n1737: \tsma1307->set.header_size = SMA1307_SETTING_HEADER_SIZE;\n1738: \tsma1307->set.checksum = data[sma1307->set.header_size - 2];\n1739: \tsma1307->set.num_mode = data[sma1307->set.header_size - 1];\n1740: \tnum_mode = sma1307->set.num_mode;\n1741: \tsma1307->set.header = devm_kzalloc(sma1307->dev,\n1742: \t\t\t\t\t   sma1307->set.header_size,\n1743: \t\t\t\t\t   GFP_KERNEL);\n1744: \tmemcpy(sma1307->set.header, data,\n1745: \t       sma1307->set.header_size * sizeof(int));",
+        "summary_line": 1713,
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/semweaver_treatment_evidence_cohort_v3/05_c48a4497356f_Uninit_Data/csa/patchweaver_runtime/csa_raw/sound-soc-codecs-sma1307.c-sma1307_setting_loaded.txt",
+        "raw_output_sha256": "8f0ec823294358ddd38b277e41aab8137ef7e89f729b48c98a455a08f14683ae",
+        "command_sha256": "78fa8e09b7d5bad0324675fad42da4881fc15e1597d9611f1ff4a39846ce7664"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:debug-cfg",
+        "confidence": 0.92,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "sound/soc/codecs/sma1307.c",
+          "hunk_index": 0,
+          "source_line": 1713
+        },
+        "summary": "Analyzer CFG for sma1307_setting_loaded in sound/soc/codecs/sma1307.c: bindings: data = ({ ... ; ({ ... ; _res (ImplicitCastExpr, LValueToRValue, typeof (kzalloc_noprof(fw->size, (((gfp_t)(((((1UL))) << (___GFP_DIRECT_RECLAIM_BIT)) | ((((1UL))) << (___GFP_KSWAPD_RECLAIM_BIT)))) | ((gfp_t)((((1UL))) << (___GFP_IO_BIT))) | ((gfp_t)((((1UL))) << (___GFP_FS_BIT))))))) }) }) (ImplicitCastExpr, BitCast, int *); typeof (kzalloc_noprof(fw->size, (((gfp_t)(((((1UL))) << (___GFP_DIRECT_RECLAIM_BIT)) | ((((1UL))) << (___GFP_KSWAPD_RECLAIM_BIT)))) | ((gfp_t)((((1UL))) << (___GFP_IO_BIT))) | ((gfp_t)((((1UL))) << (___GFP_FS_BIT)))))) _res = kzalloc_noprof(fw->size, (((gfp_t)(((((1UL))) << (___GFP_DIRECT_RECLAIM_BIT)) | ((((1UL))) << (___GFP_KSWAPD_RECLAIM_BIT)))) | ((gfp_t)((((1UL))) << (___GFP_IO_BIT))) | ((gfp_t)((((1UL))) << (___GFP_FS_BIT))))); | branches: if (fw (ImplicitCastExpr, LValueToRValue, const struct firmware *)->size) (ImplicitCastExpr, LValueToRValue, size_t) < 8 (ImplicitCastExpr, IntegralCast, size_t); if !fw (ImplicitCastExpr, LValueToRValue, const struct firmware *) | calls: sma1307_setting_loaded -> request_firmware; sma1307_setting_loaded -> __builtin_constant_p",
+        "statements": [
+          "1710: static void sma1307_setting_loaded(struct sma1307_priv *sma1307, const char *file)",
+          "1711: {",
+          "1712: \tconst struct firmware *fw;",
+          "1713: \tint *data, size, offset, num_mode;",
+          "1714:",
+          "1715: \trequest_firmware(&fw, file, sma1307->dev);"
+        ],
+        "guards": [
+          "if (fw (ImplicitCastExpr, LValueToRValue, const struct firmware *)->size) (ImplicitCastExpr, LValueToRValue, size_t) < 8 (ImplicitCastExpr, IntegralCast, size_t)",
+          "if !fw (ImplicitCastExpr, LValueToRValue, const struct firmware *)",
+          "for (...; j (ImplicitCastExpr, LValueToRValue, int) (ImplicitCastExpr, IntegralCast, size_t) < sma1307 (ImplicitCastExpr, LValueToRValue, struct sma1307_priv *)->set.mode_size (ImplicitCastExpr, LValueToRValue, size_t); ...)",
+          "for (...; i (ImplicitCastExpr, LValueToRValue, int) < num_mode (ImplicitCastExpr, LValueToRValue, int); ...)"
+        ],
+        "call_boundary": [
+          "request_firmware",
+          "dev_err",
+          "release_firmware",
+          "kzalloc",
+          "memcpy",
+          "devm_kzalloc"
+        ],
+        "call_edges": [
+          "sma1307_setting_loaded -> request_firmware",
+          "sma1307_setting_loaded -> __builtin_constant_p",
+          "sma1307_setting_loaded -> _dev_err",
+          "sma1307_setting_loaded -> release_firmware",
+          "sma1307_setting_loaded -> kzalloc_noprof",
+          "sma1307_setting_loaded -> __builtin_dynamic_object_size",
+          "sma1307_setting_loaded -> fortify_memcpy_chk",
+          "sma1307_setting_loaded -> __builtin_expect"
+        ],
+        "state_transitions": [
+          "cfg_binding(data = ({ ... ; ({ ... ; _res (ImplicitCastExpr, LValueToRValue, typeof (kzalloc_noprof(fw->size, (((gfp_t)(((((1UL))) << (___GFP_DIRECT_RECLAIM_BIT)) | ((((1UL))) << (___GFP_KSWAPD_RECLAIM_BIT)))) | ((gfp_t)((((1UL))) << (___GFP_IO_BIT))) | ((gfp_t)((((1UL))) << (___GFP_FS_BIT))))))) }) }) (ImplicitCastExpr, BitCast, int *))",
+          "cfg_binding(typeof (kzalloc_noprof(fw->size, (((gfp_t)(((((1UL))) << (___GFP_DIRECT_RECLAIM_BIT)) | ((((1UL))) << (___GFP_KSWAPD_RECLAIM_BIT)))) | ((gfp_t)((((1UL))) << (___GFP_IO_BIT))) | ((gfp_t)((((1UL))) << (___GFP_FS_BIT)))))) _res = kzalloc_noprof(fw->size, (((gfp_t)(((((1UL))) << (___GFP_DIRECT_RECLAIM_BIT)) | ((((1UL))) << (___GFP_KSWAPD_RECLAIM_BIT)))) | ((gfp_t)((((1UL))) << (___GFP_IO_BIT))) | ((gfp_t)((((1UL))) << (___GFP_FS_BIT)))));)",
+          "cfg_branch(if (fw (ImplicitCastExpr, LValueToRValue, const struct firmware *)->size) (ImplicitCastExpr, LValueToRValue, size_t) < 8 (ImplicitCastExpr, IntegralCast, size_t))",
+          "cfg_branch(if !fw (ImplicitCastExpr, LValueToRValue, const struct firmware *))",
+          "kfree",
+          "[B1.10]->set"
+        ],
+        "api_terms": [
+          "request_firmware",
+          "__builtin_constant_p",
+          "_dev_err",
+          "release_firmware",
+          "kzalloc_noprof",
+          "__builtin_dynamic_object_size"
+        ],
+        "related_symbols": [
+          "sma1307",
+          "file",
+          "sma1307->set",
+          "fw->size",
+          "fw->data",
+          "sma1307->dev"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "sound/soc/codecs/sma1307.c",
+        "function": "sma1307_setting_loaded"
+      },
+      "location": {
+        "line": 1711,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "sma1307_setting_loaded adds patch barrier `ret` around sma1307_setting_loaded, request_firmware.",
+        "state_before": [
+          "input(ret)",
+          "input(request_firmware)",
+          "buffer(sma1307->dev)",
+          "risky(request_firmware)",
+          "risky(dev_err)"
+        ],
+        "state_after": [
+          "guard(ret)",
+          "sink(sma1307_setting_loaded)",
+          "sink(request_firmware)",
+          "replaces(request_firmware)",
+          "replaces(dev_err)"
+        ],
+        "functions": [
+          "sma1307_setting_loaded"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "ret",
+          "request_firmware",
+          "fw",
+          "file",
+          "sma1307",
+          "dev"
+        ],
+        "buffer_fields": [
+          "sma1307->dev"
+        ],
+        "call_targets": [
+          "sma1307_setting_loaded",
+          "request_firmware",
+          "release_firmware",
+          "dev_err"
+        ],
+        "call_edges": [
+          "sma1307_setting_loaded -> sma1307_setting_loaded",
+          "sma1307_setting_loaded -> request_firmware",
+          "sma1307_setting_loaded -> release_firmware"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "ret"
+        ],
+        "state_statements": [
+          "int ret;",
+          "ret = request_firmware(&fw, file, sma1307->dev);",
+          "if (ret) {",
+          "dev_err(sma1307->dev, \"%s: failed to read \\\"%s\\\": %pe\\n\",",
+          "__func__, setting_file, ERR_PTR(ret));"
+        ],
+        "return_statements": [],
+        "source_file": "sound/soc/codecs/sma1307.c",
+        "source_excerpt": "1710: static void sma1307_setting_loaded(struct sma1307_priv *sma1307, const char *file)\n1711: {\n1712: \tconst struct firmware *fw;\n1713: \tint *data, size, offset, num_mode;\n1714: \n1715: \trequest_firmware(&fw, file, sma1307->dev);\n1716: \n1717: \tif (!fw) {\n1718: \t\tdev_err(sma1307->dev, \"%s: failed to read \\\"%s\\\"\\n\",\n1719: \t\t\t__func__, setting_file);\n1720: \t\trelease_firmware(fw);\n1721: \t\tsma1307->set.status = false;\n1722: \t\treturn;\n1723: \t} else if ((fw->size) < SMA1307_SETTING_HEADER_SIZE) {\n1724: \t\tdev_err(sma1307->dev, \"%s: Invalid file\\n\", __func__);\n1725: \t\trelease_firmware(fw);\n1726: \t\tsma1307->set.status = false;\n1727: \t\treturn;\n1728: \t}\n1729: \n1730: \tdata = kzalloc(fw->size, GFP_KERNEL);\n1731: \tsize = fw->size >> 2;\n1732: \tmemcpy(data, fw->data, fw->size);\n1733: \n1734: \trelease_firmware(fw);\n1735: \n1736: \t/* HEADER */\n1737: \tsma1307->set.header_size = SMA1307_SETTING_HEADER_SIZE;\n1738: \tsma1307->set.checksum = data[sma1307->set.header_size - 2];\n1739: \tsma1307->set.num_mode = data[sma1307->set.header_size - 1];\n1740: \tnum_mode = sma1307->set.num_mode;\n1741: \tsma1307->set.header = devm_kzalloc(sma1307->dev,\n1742: \t\t\t\t\t   sma1307->set.header_size,\n1743: \t\t\t\t\t   GFP_KERNEL);\n1744: \tmemcpy(sma1307->set.header, data,\n1745: \t       sma1307->set.header_size * sizeof(int));",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:guarded-state",
+        "confidence": 0.9,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "sound/soc/codecs/sma1307.c",
+          "hunk_index": 0,
+          "source_line": 1711
+        },
+        "summary": "sma1307_setting_loaded adds patch barrier `ret` around sma1307_setting_loaded, request_firmware.",
+        "statements": [
+          "int ret;",
+          "ret = request_firmware(&fw, file, sma1307->dev);",
+          "if (ret) {",
+          "dev_err(sma1307->dev, \"%s: failed to read \\\"%s\\\": %pe\\n\",",
+          "__func__, setting_file, ERR_PTR(ret));"
+        ],
+        "guards": [
+          "ret"
+        ],
+        "call_boundary": [
+          "sma1307_setting_loaded",
+          "request_firmware",
+          "release_firmware",
+          "dev_err"
+        ],
+        "call_edges": [
+          "sma1307_setting_loaded -> sma1307_setting_loaded",
+          "sma1307_setting_loaded -> request_firmware",
+          "sma1307_setting_loaded -> release_firmware"
+        ],
+        "state_transitions": [
+          "guard(ret)",
+          "sink(sma1307_setting_loaded)",
+          "sink(request_firmware)",
+          "replaces(request_firmware)",
+          "replaces(dev_err)"
+        ],
+        "api_terms": [
+          "sma1307_setting_loaded",
+          "request_firmware",
+          "release_firmware"
+        ],
+        "related_symbols": [
+          "ret",
+          "request_firmware",
+          "fw",
+          "file",
+          "sma1307",
+          "dev"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_lifecycle_0",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "sound/soc/codecs/sma1307.c",
+        "function": "sma1307_setting_loaded"
+      },
+      "location": {
+        "line": 1713,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "sma1307_setting_loaded in sound/soc/codecs/sma1307.c reaches release_firmware",
+        "operations": [
+          "release_firmware"
+        ],
+        "acquisition_ops": [],
+        "release_ops": [
+          "release_firmware"
+        ],
+        "transition_ops": [],
+        "state_before": [
+          "input(sma1307)",
+          "input(file)",
+          "buffer(sma1307->set)",
+          "buffer(fw->size)",
+          "sinks(request_firmware, dev_err)"
+        ],
+        "state_after": [
+          "transition(release_firmware)"
+        ],
+        "functions": [
+          "sma1307_setting_loaded"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "sma1307",
+          "file",
+          "sma1307->set",
+          "fw->size",
+          "fw->data",
+          "sma1307->dev"
+        ],
+        "buffer_fields": [
+          "sma1307->set",
+          "fw->size",
+          "fw->data",
+          "sma1307->dev"
+        ],
+        "call_edges": [
+          "sma1307_setting_loaded -> request_firmware",
+          "sma1307_setting_loaded -> __builtin_constant_p",
+          "sma1307_setting_loaded -> _dev_err",
+          "sma1307_setting_loaded -> release_firmware",
+          "sma1307_setting_loaded -> kzalloc_noprof",
+          "sma1307_setting_loaded -> __builtin_dynamic_object_size"
+        ],
+        "cfg_value_bindings": [
+          "data = ({ ... ; ({ ... ; _res (ImplicitCastExpr, LValueToRValue, typeof (kzalloc_noprof(fw->size, (((gfp_t)(((((1UL))) << (___GFP_DIRECT_RECLAIM_BIT)) | ((((1UL))) << (___GFP_KSWAPD_RECLAIM_BIT)))) | ((gfp_t)((((1UL))) << (___GFP_IO_BIT))) | ((gfp_t)((((1UL))) << (___GFP_FS_BIT))))))) }) }) (ImplicitCastExpr, BitCast, int *)",
+          "typeof (kzalloc_noprof(fw->size, (((gfp_t)(((((1UL))) << (___GFP_DIRECT_RECLAIM_BIT)) | ((((1UL))) << (___GFP_KSWAPD_RECLAIM_BIT)))) | ((gfp_t)((((1UL))) << (___GFP_IO_BIT))) | ((gfp_t)((((1UL))) << (___GFP_FS_BIT)))))) _res = kzalloc_noprof(fw->size, (((gfp_t)(((((1UL))) << (___GFP_DIRECT_RECLAIM_BIT)) | ((((1UL))) << (___GFP_KSWAPD_RECLAIM_BIT)))) | ((gfp_t)((((1UL))) << (___GFP_IO_BIT))) | ((gfp_t)((((1UL))) << (___GFP_FS_BIT)))));",
+          "const size_t __fortify_size = (size_t)(fw->size);",
+          "const size_t __q_size = (__builtin_dynamic_object_size(fw->data, 0));",
+          "const size_t __q_size_field = (__builtin_dynamic_object_size(fw->data, 1));",
+          "size = fw (ImplicitCastExpr, LValueToRValue, const struct firmware *)->size (ImplicitCastExpr, LValueToRValue, size_t) >> 2 (ImplicitCastExpr, IntegralCast, int)"
+        ],
+        "resolved_branch_conditions": [
+          "if (fw (ImplicitCastExpr, LValueToRValue, const struct firmware *)->size) (ImplicitCastExpr, LValueToRValue, size_t) < 8 (ImplicitCastExpr, IntegralCast, size_t)",
+          "if !fw (ImplicitCastExpr, LValueToRValue, const struct firmware *)",
+          "for (...; j (ImplicitCastExpr, LValueToRValue, int) (ImplicitCastExpr, IntegralCast, size_t) < sma1307 (ImplicitCastExpr, LValueToRValue, struct sma1307_priv *)->set.mode_size (ImplicitCastExpr, LValueToRValue, size_t); ...)",
+          "for (...; i (ImplicitCastExpr, LValueToRValue, int) < num_mode (ImplicitCastExpr, LValueToRValue, int); ...)",
+          "(((typeof (size - offset))-1 (CStyleCastExpr, NoOp, typeof (size - offset))) > 0 || ((typeof (num_mode + 1))-1 (CStyleCastExpr, NoOp, typeof (num_mode + 1))) > 0 || (((__x) (ImplicitCastExpr, LValueToRValue, typeof (size - offset)) > 0) == ((__d) (ImplicitCastExpr, LValueToRValue, typeof (num_mode + 1)) > 0))) ? ... : ...",
+          "((typeof (size - offset))-1 (CStyleCastExpr, NoOp, typeof (size - offset))) > 0 || ((typeof (num_mode + 1))-1 (CStyleCastExpr, NoOp, typeof (num_mode + 1))) > 0 || ..."
+        ],
+        "source_file": "sound/soc/codecs/sma1307.c",
+        "source_excerpt": "1710: static void sma1307_setting_loaded(struct sma1307_priv *sma1307, const char *file)\n1711: {\n1712: \tconst struct firmware *fw;\n1713: \tint *data, size, offset, num_mode;\n1714: \n1715: \trequest_firmware(&fw, file, sma1307->dev);\n1716: \n1717: \tif (!fw) {\n1718: \t\tdev_err(sma1307->dev, \"%s: failed to read \\\"%s\\\"\\n\",\n1719: \t\t\t__func__, setting_file);\n1720: \t\trelease_firmware(fw);\n1721: \t\tsma1307->set.status = false;\n1722: \t\treturn;\n1723: \t} else if ((fw->size) < SMA1307_SETTING_HEADER_SIZE) {\n1724: \t\tdev_err(sma1307->dev, \"%s: Invalid file\\n\", __func__);\n1725: \t\trelease_firmware(fw);\n1726: \t\tsma1307->set.status = false;\n1727: \t\treturn;\n1728: \t}\n1729: \n1730: \tdata = kzalloc(fw->size, GFP_KERNEL);\n1731: \tsize = fw->size >> 2;\n1732: \tmemcpy(data, fw->data, fw->size);\n1733: \n1734: \trelease_firmware(fw);\n1735: \n1736: \t/* HEADER */\n1737: \tsma1307->set.header_size = SMA1307_SETTING_HEADER_SIZE;\n1738: \tsma1307->set.checksum = data[sma1307->set.header_size - 2];\n1739: \tsma1307->set.num_mode = data[sma1307->set.header_size - 1];\n1740: \tnum_mode = sma1307->set.num_mode;\n1741: \tsma1307->set.header = devm_kzalloc(sma1307->dev,\n1742: \t\t\t\t\t   sma1307->set.header_size,\n1743: \t\t\t\t\t   GFP_KERNEL);\n1744: \tmemcpy(sma1307->set.header, data,\n1745: \t       sma1307->set.header_size * sizeof(int));",
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/semweaver_treatment_evidence_cohort_v3/05_c48a4497356f_Uninit_Data/csa/patchweaver_runtime/csa_raw/sound-soc-codecs-sma1307.c-sma1307_setting_loaded.txt",
+        "raw_output_sha256": "8f0ec823294358ddd38b277e41aab8137ef7e89f729b48c98a455a08f14683ae",
+        "command_sha256": "78fa8e09b7d5bad0324675fad42da4881fc15e1597d9611f1ff4a39846ce7664"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:lifecycle",
+        "confidence": 0.9,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "sound/soc/codecs/sma1307.c",
+          "hunk_index": 0,
+          "source_line": 1713
+        },
+        "summary": "sma1307_setting_loaded in sound/soc/codecs/sma1307.c reaches release_firmware",
+        "statements": [
+          "1710: static void sma1307_setting_loaded(struct sma1307_priv *sma1307, const char *file)",
+          "1711: {",
+          "1712: \tconst struct firmware *fw;",
+          "1713: \tint *data, size, offset, num_mode;",
+          "1714:",
+          "1715: \trequest_firmware(&fw, file, sma1307->dev);"
+        ],
+        "guards": [
+          "for (...; [B5.9]; ...)",
+          "for (...; [B7.5]; ...)",
+          "([B13.63] || [B12.5] || ([B11.9])) ? ... : ..."
+        ],
+        "call_boundary": [
+          "request_firmware",
+          "dev_err",
+          "release_firmware",
+          "kzalloc",
+          "memcpy",
+          "devm_kzalloc"
+        ],
+        "call_edges": [
+          "sma1307_setting_loaded -> request_firmware",
+          "sma1307_setting_loaded -> __builtin_constant_p",
+          "sma1307_setting_loaded -> _dev_err",
+          "sma1307_setting_loaded -> release_firmware",
+          "sma1307_setting_loaded -> kzalloc_noprof",
+          "sma1307_setting_loaded -> __builtin_dynamic_object_size",
+          "sma1307_setting_loaded -> fortify_memcpy_chk",
+          "sma1307_setting_loaded -> __builtin_expect"
+        ],
+        "state_transitions": [
+          "transition(release_firmware)",
+          "kfree",
+          "[B1.10]->set",
+          "[B1.12] = [B1.8]",
+          "[B2.1]++"
+        ],
+        "api_terms": [
+          "release_firmware",
+          "request_firmware",
+          "__builtin_constant_p",
+          "_dev_err",
+          "kzalloc_noprof",
+          "__builtin_dynamic_object_size"
+        ],
+        "related_symbols": [
+          "sma1307",
+          "file",
+          "sma1307->set",
+          "fw->size",
+          "fw->data",
+          "sma1307->dev"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "collected_analyzers": [
+    "csa"
+  ],
+  "provenance_summary": {
+    "total_records": 5,
+    "origin_counts": {
+      "analyzer_internal": 2,
+      "source_derived": 3
+    },
+    "analyzer_internal_records": 2,
+    "analyzer_internal_fraction": 0.4,
+    "analyzer_backed_records": 2,
+    "analyzer_backed_fraction": 0.4,
+    "source_derived_records": 3,
+    "source_derived_fraction": 0.6
+  }
+}

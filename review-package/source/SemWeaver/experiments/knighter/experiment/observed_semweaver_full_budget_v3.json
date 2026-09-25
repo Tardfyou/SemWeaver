@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "status": "completed_full_budget_development_condition",
+  "method": "semweaver_provenance_gated_csa_full_budget_treatment",
+  "subjects": 12,
+  "call_cap_per_subject": 8,
+  "attempt_cap": 4,
+  "batch_manifest_sha256": "7628ed3a9c541d642be5a281dac9ce2e08e65985e9eab7d628ef2f1f50fd8a9d",
+  "batch_result_sha256": "83667da4c2724ca319d29676f172da6b58dcd34c0c91b13c0f2f8f8bdb5bbd3d",
+  "pds": {
+    "accepted": 4,
+    "subjects": 12,
+    "fraction": 0.3333333333333333,
+    "exact_95_ci": [
+      0.09924609114958333,
+      0.651124493581186
+    ],
+    "case_ids": [
+      "05_c48a4497356f_Uninit_Data",
+      "08_768f17fd25e4_Integer_Overflow",
+      "19_39b13dce1a91_Double_Free",
+      "23_13e788deb734_Out_of_Bound"
+    ]
+  },
+  "rrs": {
+    "accepted": 0,
+    "subjects": 12,
+    "fraction": 0.0,
+    "exact_95_ci": [
+      0.0,
+      0.26464846939705133
+    ]
+  },
+  "non_pds_outcomes": {
+    "candidate_compile_failure": 3,
+    "residual_fixed_noise": 2,
+    "validity_loss": 3
+  },
+  "llm_usage": {
+    "calls": 86,
+    "prompt_tokens": 1097497,
+    "completion_tokens": 154737,
+    "total_tokens": 1252234
+  },
+  "evidence": {
+    "batch_manifest_sha256": "73c67dec6b7021e248865ba25fcd74ab64f32bfe916685d058537a22c130f0ce",
+    "batch_result_sha256": "b7dd44c875798710969be0507afd3366ea91316bb91a0da1e9889c355c68e7a5",
+    "binding_audit_sha256": "eb1598db75f0fa1dd42234491d990dd04a89c22f24e0220080f4a6b08558eca4",
+    "provenance_audit_sha256": "306b362ce8f30ef7ccb85b7fceec64153da69e7a7cd0addcb16c77cea1e25bf2",
+    "total_records": 70,
+    "analyzer_internal": 37,
+    "analyzer_output": 18,
+    "source_derived": 15,
+    "manual_or_backfilled": 0,
+    "unknown": 0,
+    "bound_internal_records": 37
+  },
+  "metamorphic_results": [
+    {
+      "case_id": "05_c48a4497356f_Uninit_Data",
+      "positive_passed": 5,
+      "positive_total": 6,
+      "negative_passed": 3,
+      "negative_total": 3,
+      "robust": false,
+      "failed_variants": [
+        "positive_wrapper"
+      ],
+      "result_sha256": "1ebae269ecedb63c9c9f0935b5b2f26a456563b72cdac669ba12e2afecff37b1"
+    },
+    {
+      "case_id": "08_768f17fd25e4_Integer_Overflow",
+      "positive_passed": 2,
+      "positive_total": 6,
+      "negative_passed": 3,
+      "negative_total": 3,
+      "robust": false,
+      "failed_variants": [
+        "original_vulnerable",
+        "positive_rename",
+        "positive_insert_statement",
+        "positive_wrapper"
+      ],
+      "result_sha256": "e80d3ca9aedb646248f9c9c827b2be43f8c5665224a780eed979de95e6d09811"
+    },
+    {
+      "case_id": "19_39b13dce1a91_Double_Free",
+      "positive_passed": 5,
+      "positive_total": 6,
+      "negative_passed": 3,
+      "negative_total": 3,
+      "robust": false,
+      "failed_variants": [
+        "positive_inverted_condition"
+      ],
+      "result_sha256": "b981b5a2b4f600a20223e446079e2d4d5303d413e7a4aa5d86a6a510f705009f"
+    },
+    {
+      "case_id": "23_13e788deb734_Out_of_Bound",
+      "positive_passed": 5,
+      "positive_total": 6,
+      "negative_passed": 2,
+      "negative_total": 3,
+      "robust": false,
+      "failed_variants": [
+        "positive_commuted_guard",
+        "negative_larger_destination"
+      ],
+      "result_sha256": "6f4d087ea0e265d752160d412bbb905b0df25c33a48556038b65589950666691"
+    }
+  ],
+  "candidate_code_edited_by_human": false,
+  "primary_confirmatory_eligible": false,
+  "exclusion_reason": "The cohort informed extractor and quality-gate development, case 05 was an explicit development subject, and all four PDS candidates failed their post-freeze metamorphic suites. The result is a completed development condition, not a confirmatory RRS claim."
+}

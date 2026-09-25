@@ -1,0 +1,385 @@
+--- original_code.cpp+++ syntax_correct_refine_code.cpp@@ -25,196 +25,208 @@ 
+ //------------------------------------------------------------------------------
+ // Program state maps:
+-//   PossibleNullPtrMap: Record devm_kasprintf return regions and whether they
+-//                       have been checked for NULL. (false means unchecked,
+-//                       true means checked)
+-//   PtrAliasMap: Tracks aliasing between pointer regions.
++//
++// DevmKasprintfReturnMap records the base region representing a return value
++// originating from devm_kasprintf(). The bool is currently always true and
++// exists because ProgramState maps are convenient for region provenance.
++//
++// ReportedDevmKasprintfReturnMap prevents repeated reports for the same
++// allocation result along one analyzed path.
+ //------------------------------------------------------------------------------
+-REGISTER_MAP_WITH_PROGRAMSTATE(PossibleNullPtrMap, const MemRegion*, bool)
+-REGISTER_MAP_WITH_PROGRAMSTATE(PtrAliasMap, const MemRegion*, const MemRegion*)
+-
+-//------------------------------------------------------------------------------
+-// Helper function: setChecked
+-//
+-// Mark a given memory region as "checked" (i.e. its value has been tested against NULL).
+-// Also propagate the check to any aliased region recorded in PtrAliasMap.
+-//------------------------------------------------------------------------------
+-static ProgramStateRef setChecked(ProgramStateRef State, const MemRegion *MR) {
++REGISTER_MAP_WITH_PROGRAMSTATE(DevmKasprintfReturnMap, const MemRegion *, bool)
++REGISTER_MAP_WITH_PROGRAMSTATE(ReportedDevmKasprintfReturnMap,
++                               const MemRegion *, bool)
++
++namespace {
++
++static const MemRegion *getBaseRegion(SVal V) {
++  const MemRegion *MR = V.getAsRegion();
++  return MR ? MR->getBaseRegion() : nullptr;
++}
++
++static bool isDevmKasprintfCall(const CallEvent &Call) {
++  const IdentifierInfo *II = Call.getCalleeIdentifier();
++  return II && II->getName() == "devm_kasprintf";
++}
++
++static const MemRegion *getTrackedReturnRegion(ProgramStateRef State, SVal V) {
++  const MemRegion *MR = getBaseRegion(V);
+   if (!MR)
+-    return State;
+-  State = State->set<PossibleNullPtrMap>(MR, true);
+-  if (const auto *Alias = State->get<PtrAliasMap>(MR))
+-    State = State->set<PossibleNullPtrMap>(*Alias, true);
+-  return State;
+-}
+-
+-namespace {
++    return nullptr;
++
++  const bool *Tracked = State->get<DevmKasprintfReturnMap>(MR);
++  return Tracked && *Tracked ? MR : nullptr;
++}
++
++// A checked path must be constrained non-NULL. This relies on the analyzer's
++// normal branch splitting, so `if (!ptr) return;` constrains ptr to non-NULL
++// on the only path reaching subsequent uses.
++static bool isTrackedAndMayBeNull(ProgramStateRef State, SVal V,
++                                  const MemRegion *&TrackedMR) {
++  TrackedMR = getTrackedReturnRegion(State, V);
++  if (!TrackedMR)
++    return false;
++
++  return !State->isNull(V).isConstrainedFalse();
++}
++
++static bool isLocalPointerCarrier(const MemRegion *MR) {
++  const auto *VR = dyn_cast_or_null<VarRegion>(MR);
++  if (!VR)
++    return false;
++
++  const VarDecl *VD = VR->getDecl();
++  if (!VD)
++    return false;
++
++  // An automatic local or parameter is only an alias carrier. A static local
++  // persists beyond the scope and is treated as an escape.
++  return VD->hasLocalStorage() && !VD->isStaticLocal();
++}
++
++// Return the pointer expression whose pointee is accessed by S. In
++// particular, a plain DeclRefExpr such as `name` in `if (!name)` is not a
++// dereference and deliberately returns nullptr.
++static const Expr *getDereferencedPointerExpr(const Stmt *S) {
++  const auto *E = dyn_cast_or_null<Expr>(S);
++  if (!E)
++    return nullptr;
++
++  E = E->IgnoreParenImpCasts();
++
++  if (const auto *UO = dyn_cast<UnaryOperator>(E)) {
++    if (UO->getOpcode() == UO_Deref)
++      return UO->getSubExpr()->IgnoreParenImpCasts();
++  }
++
++  if (const auto *ASE = dyn_cast<ArraySubscriptExpr>(E))
++    return ASE->getBase()->IgnoreParenImpCasts();
++
++  if (const auto *ME = dyn_cast<MemberExpr>(E)) {
++    if (ME->isArrow())
++      return ME->getBase()->IgnoreParenImpCasts();
++  }
++
++  return nullptr;
++}
+ 
+ class SAGenTestChecker : public Checker<
+-    check::PostCall,        // For intercepting devm_kasprintf return values.
+-    check::BranchCondition, // For detecting null-checks.
+-    check::Bind,            // For propagating the pointer's null-check state.
+-    check::Location         // For catching pointer dereferences.
+-    > {
++    check::PostCall,
++    check::PreCall,
++    check::Bind,
++    check::Location> {
+   mutable std::unique_ptr<BugType> BT;
+-  
++
+ public:
+-  SAGenTestChecker() : BT(new BugType(this, "Unchecked devm_kasprintf return", "Null Dereference")) {}
+-
+-  // Callback: After a function call is evaluated.
++  SAGenTestChecker()
++      : BT(new BugType(this, "Unchecked devm_kasprintf return",
++                       "Null Dereference")) {}
++
+   void checkPostCall(const CallEvent &Call, CheckerContext &C) const;
+-
+-  // Callback: When an assignment (binding) occurs.
+-  void checkBind(SVal Loc, SVal Val, const Stmt *StoreE, CheckerContext &C) const;
+-
+-  // Callback: When a branch condition is evaluated.
+-  void checkBranchCondition(const Stmt *Condition, CheckerContext &C) const;
+-
+-  // Callback: When a memory location is accessed (load or store).
+-  void checkLocation(SVal Loc, bool IsLoad, const Stmt *S, CheckerContext &C) const;
++  void checkPreCall(const CallEvent &Call, CheckerContext &C) const;
++  void checkBind(SVal Loc, SVal Val, const Stmt *StoreE,
++                 CheckerContext &C) const;
++  void checkLocation(SVal Loc, bool IsLoad, const Stmt *S,
++                     CheckerContext &C) const;
+ 
+ private:
+-  // Helper for reporting the bug.
+-  void reportUncheckedUse(const Stmt *S, CheckerContext &C) const;
++  void reportUncheckedUse(const MemRegion *TrackedMR, const Stmt *S,
++                          CheckerContext &C) const;
+ };
+ 
+-/// checkPostCall - Intercept calls to devm_kasprintf. If the function is called,
+-/// mark its returned memory region as "unchecked" (false) in PossibleNullPtrMap.
+-void SAGenTestChecker::checkPostCall(const CallEvent &Call, CheckerContext &C) const {
+-  const Expr *OriginExpr = Call.getOriginExpr();
+-  if (!OriginExpr)
+-    return;
+-  
+-  // Use the utility function to check if this call is to devm_kasprintf.
+-  if (!ExprHasName(OriginExpr, "devm_kasprintf", C))
+-    return;
+-  
+-  // Retrieve the memory region for the returned pointer.
+-  const MemRegion *MR = getMemRegionFromExpr(OriginExpr, C);
++void SAGenTestChecker::checkPostCall(const CallEvent &Call,
++                                     CheckerContext &C) const {
++  if (!isDevmKasprintfCall(Call))
++    return;
++
++  const MemRegion *MR = getBaseRegion(Call.getReturnValue());
+   if (!MR)
+     return;
+-  MR = MR->getBaseRegion();
+-  if (!MR)
+-    return;
+-  
+-  ProgramStateRef State = C.getState();
+-  State = State->set<PossibleNullPtrMap>(MR, false);
++
++  ProgramStateRef State = C.getState();
++  State = State->set<DevmKasprintfReturnMap>(MR, true);
+   C.addTransition(State);
+ }
+ 
+-/// checkBind - Propagate the null-check state of devm_kasprintf pointers.
+-/// When a value is bound to a new memory region (as in pointer assignment),
+-/// copy the unchecked status from the RHS to the LHS.
+-void SAGenTestChecker::checkBind(SVal Loc, SVal Val, const Stmt *StoreE, CheckerContext &C) const {
+-  ProgramStateRef State = C.getState();
+-  const MemRegion *LHSReg = Loc.getAsRegion();
+-  if (!LHSReg)
+-    return;
+-  LHSReg = LHSReg->getBaseRegion();
+-  if (!LHSReg)
+-    return;
+-  
+-  if (const MemRegion *RHSReg = Val.getAsRegion()) {
+-    RHSReg = RHSReg->getBaseRegion();
+-    if (!RHSReg)
+-      return;
+-    
+-    // If the RHS pointer is tracked in PossibleNullPtrMap, propagate its check status.
+-    if (State->get<PossibleNullPtrMap>(RHSReg)) {
+-      bool Checked = *State->get<PossibleNullPtrMap>(RHSReg);
+-      State = State->set<PossibleNullPtrMap>(LHSReg, Checked);
+-    }
+-    // Update pointer alias map.
+-    State = State->set<PtrAliasMap>(LHSReg, RHSReg);
+-    State = State->set<PtrAliasMap>(RHSReg, LHSReg);
+-    C.addTransition(State);
++void SAGenTestChecker::checkPreCall(const CallEvent &Call,
++                                    CheckerContext &C) const {
++  llvm::SmallVector<unsigned, 4> DerefParams;
++  if (!functionKnownToDeref(Call, DerefParams))
++    return;
++
++  ProgramStateRef State = C.getState();
++
++  for (unsigned ParamIndex : DerefParams) {
++    if (ParamIndex >= Call.getNumArgs())
++      continue;
++
++    SVal Arg = Call.getArgSVal(ParamIndex);
++    const MemRegion *TrackedMR = nullptr;
++    if (!isTrackedAndMayBeNull(State, Arg, TrackedMR))
++      continue;
++
++    reportUncheckedUse(TrackedMR, Call.getOriginExpr(), C);
++    return;
+   }
+ }
+ 
+-/// checkBranchCondition - Inspect branch conditions for NULL-checks.
+-/// If a condition is detected that compares a pointer (from devm_kasprintf)
+-/// against NULL, mark that pointer as checked.
+-void SAGenTestChecker::checkBranchCondition(const Stmt *Condition, CheckerContext &C) const {
+-  ProgramStateRef State = C.getState();
+-  const Expr *CondE = dyn_cast<Expr>(Condition);
+-  if (!CondE) {
+-    C.addTransition(State);
+-    return;
+-  }
+-  
+-  // Remove parentheses and casts.
+-  CondE = CondE->IgnoreParenCasts();
+-  
+-  // Case 1: if (!ptr)
+-  if (const auto *UO = dyn_cast<UnaryOperator>(CondE)) {
+-    if (UO->getOpcode() == UO_LNot) {
+-      const Expr *SubE = UO->getSubExpr();
+-      SVal SubVal = C.getState()->getSVal(SubE, C.getLocationContext());
+-      if (const MemRegion *MR = SubVal.getAsRegion()) {
+-        MR = MR->getBaseRegion();
+-        State = setChecked(State, MR);
+-      }
+-    }
+-  }
+-  // Case 2: if (ptr == NULL) or if (ptr != NULL)
+-  else if (const auto *BO = dyn_cast<BinaryOperator>(CondE)) {
+-    BinaryOperator::Opcode Opcode = BO->getOpcode();
+-    if (Opcode == BO_EQ || Opcode == BO_NE) {
+-      const Expr *LHS = BO->getLHS()->IgnoreParenCasts();
+-      const Expr *RHS = BO->getRHS()->IgnoreParenCasts();
+-      bool LHSIsNull = LHS->isNullPointerConstant(C.getASTContext(), Expr::NPC_ValueDependentIsNull);
+-      bool RHSIsNull = RHS->isNullPointerConstant(C.getASTContext(), Expr::NPC_ValueDependentIsNull);
+-      
+-      const Expr *PtrExpr = nullptr;
+-      if (LHSIsNull && !RHSIsNull)
+-        PtrExpr = RHS;
+-      else if (RHSIsNull && !LHSIsNull)
+-        PtrExpr = LHS;
+-      
+-      if (PtrExpr) {
+-        SVal PtrVal = C.getState()->getSVal(PtrExpr, C.getLocationContext());
+-        if (const MemRegion *MR = PtrVal.getAsRegion()) {
+-          MR = MR->getBaseRegion();
+-          State = setChecked(State, MR);
+-        }
+-      }
+-    }
+-  }
+-  // Case 3: if (ptr) : treat as non-zero check.
+-  else {
+-    SVal CondVal = C.getState()->getSVal(CondE, C.getLocationContext());
+-    if (const MemRegion *MR = CondVal.getAsRegion()) {
+-      MR = MR->getBaseRegion();
+-      State = setChecked(State, MR);
+-    }
+-  }
+-  
+-  C.addTransition(State);
+-}
+-
+-/// checkLocation - When a memory location is accessed (load or store), check if
+-/// it involves a pointer from devm_kasprintf that has not been NULL-checked.
+-void SAGenTestChecker::checkLocation(SVal Loc, bool IsLoad, const Stmt *S, CheckerContext &C) const {
+-  ProgramStateRef State = C.getState();
+-  if (const MemRegion *MR = Loc.getAsRegion()) {
+-    MR = MR->getBaseRegion();
+-    if (!MR)
+-      return;
+-    
+-    const bool *Checked = State->get<PossibleNullPtrMap>(MR);
+-    // If the pointer originated from devm_kasprintf and remains unchecked, report it.
+-    if (Checked && !(*Checked)) {
+-      reportUncheckedUse(S, C);
+-    }
+-  }
+-}
+-
+-/// reportUncheckedUse - Generate a bug report when an unchecked devm_kasprintf
+-/// pointer is dereferenced.
+-void SAGenTestChecker::reportUncheckedUse(const Stmt *S, CheckerContext &C) const {
+-  ExplodedNode *N = C.generateNonFatalErrorNode();
++void SAGenTestChecker::checkBind(SVal Loc, SVal Val, const Stmt *StoreE,
++                                 CheckerContext &C) const {
++  ProgramStateRef State = C.getState();
++
++  const MemRegion *TrackedMR = nullptr;
++  if (!isTrackedAndMayBeNull(State, Val, TrackedMR))
++    return;
++
++  const MemRegion *LHSRegion = Loc.getAsRegion();
++  if (!LHSRegion)
++    return;
++
++  // `name = devm_kasprintf(...)` and `alias = name` only create local aliases.
++  // Do not associate the unchecked state with the local VarRegion, because a
++  // later read of that variable for `if (!name)` is not a pointer dereference.
++  if (isLocalPointerCarrier(LHSRegion))
++    return;
++
++  // Storing into a field, global, static local, or indirect destination is an
++  // escape. This catches the target code's `aux_driver->name = name` and
++  // `aux_dev->name = name` before any later consumer can dereference it.
++  reportUncheckedUse(TrackedMR, StoreE, C);
++}
++
++void SAGenTestChecker::checkLocation(SVal Loc, bool IsLoad, const Stmt *S,
++                                     CheckerContext &C) const {
++  const Expr *PointerExpr = getDereferencedPointerExpr(S);
++  if (!PointerExpr)
++    return;
++
++  ProgramStateRef State = C.getState();
++  SVal PointerVal =
++      State->getSVal(PointerExpr, C.getLocationContext());
++
++  const MemRegion *TrackedMR = nullptr;
++  if (!isTrackedAndMayBeNull(State, PointerVal, TrackedMR))
++    return;
++
++  reportUncheckedUse(TrackedMR, S, C);
++}
++
++void SAGenTestChecker::reportUncheckedUse(const MemRegion *TrackedMR,
++                                          const Stmt *S,
++                                          CheckerContext &C) const {
++  if (!TrackedMR || !S)
++    return;
++
++  ProgramStateRef State = C.getState();
++  if (State->get<ReportedDevmKasprintfReturnMap>(TrackedMR))
++    return;
++
++  State = State->set<ReportedDevmKasprintfReturnMap>(TrackedMR, true);
++
++  ExplodedNode *N = C.generateNonFatalErrorNode(State);
+   if (!N)
+     return;
++
+   auto Report = std::make_unique<PathSensitiveBugReport>(
+       *BT, "Unchecked devm_kasprintf return value used", N);
+   Report->addRange(S->getSourceRange());
+@@ -225,7 +237,7 @@ 
+ extern "C" void clang_registerCheckers(CheckerRegistry &registry) {
+   registry.addChecker<SAGenTestChecker>(
+-      "custom.SAGenTestChecker", 
++      "custom.SAGenTestChecker",
+       "Detects use of devm_kasprintf return value without NULL checking",
+       "");
+ }

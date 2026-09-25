@@ -1,0 +1,249 @@
+# Instruction
+
+Determine whether the static analyzer report is a real bug in the Linux kernel and matches the target bug pattern
+
+Your analysis should:
+- **Compare the report against the provided target bug pattern specification,** using the **buggy function (pre-patch)** and the **fix patch** as the reference.
+- Explain your reasoning for classifying this as either:
+  - **A true positive** (matches the target bug pattern **and** is a real bug), or
+  - **A false positive** (does **not** match the target bug pattern **or** is **not** a real bug).
+
+Please evaluate thoroughly using the following process:
+
+- **First, understand** the reported code pattern and its control/data flow.
+- **Then, compare** it against the target bug pattern characteristics.
+- **Finally, validate** against the **pre-/post-patch** behavior:
+  - The reported case demonstrates the same root cause pattern as the target bug pattern/function and would be addressed by a similar fix.
+
+- **Numeric / bounds feasibility** (if applicable):
+  - Infer tight **min/max** ranges for all involved variables from types, prior checks, and loop bounds.
+  - Show whether overflow/underflow or OOB is actually triggerable (compute the smallest/largest values that violate constraints).
+
+- **Null-pointer dereference feasibility** (if applicable):
+  1. **Identify the pointer source** and return convention of the producing function(s) in this path (e.g., returns **NULL**, **ERR_PTR**, negative error code via cast, or never-null).
+  2. **Check real-world feasibility in this specific driver/socket/filesystem/etc.**:
+     - Enumerate concrete conditions under which the producer can return **NULL/ERR_PTR** here (e.g., missing DT/ACPI property, absent PCI device/function, probe ordering, hotplug/race, Kconfig options, chip revision/quirks).
+     - Verify whether those conditions can occur given the driver’s init/probe sequence and the kernel helpers used.
+  3. **Lifetime & concurrency**: consider teardown paths, RCU usage, refcounting (`get/put`), and whether the pointer can become invalid/NULL across yields or callbacks.
+  4. If the producer is provably non-NULL in this context (by spec or preceding checks), classify as **false positive**.
+
+If there is any uncertainty in the classification, **err on the side of caution and classify it as a false positive**. Your analysis will be used to improve the static analyzer's accuracy.
+
+## Bug Pattern
+
+Performing arithmetic shifts on values computed as 32-bit integers without first upcasting them to a 64-bit type. This can lead to integer overflow when the shift amount is large, so the left shift is performed in a narrower type than intended. Explicitly casting the operand to u64 before shifting (as done in the fix) prevents overflow and yields the correct 64-bit result.
+
+## Bug Pattern
+
+Performing arithmetic shifts on values computed as 32-bit integers without first upcasting them to a 64-bit type. This can lead to integer overflow when the shift amount is large, so the left shift is performed in a narrower type than intended. Explicitly casting the operand to u64 before shifting (as done in the fix) prevents overflow and yields the correct 64-bit result.
+
+# Report
+
+BuildSource:| drivers/gpu/drm/i915/i915_hwmon.c
+### Report Summary
+
+File:| drivers/gpu/drm/i915/i915_hwmon.c  
+---|---  
+Warning:| line 233, column 50  
+Potential integer overflow: left shift performed on a 32-bit value without
+upcasting to 64-bit  
+  
+### Annotated Source Code
+
+
+135   | 		rgaddr = hwmon->rg.energy_status_tile;
+136   |  else
+137   | 		rgaddr = hwmon->rg.energy_status_all;
+138   |  
+139   |  mutex_lock(&hwmon->hwmon_lock);
+140   |  
+141   |  with_intel_runtime_pm(uncore->rpm, wakeref)
+142   | 		reg_val = intel_uncore_read(uncore, rgaddr);
+143   |  
+144   |  if (reg_val >= ei->reg_val_prev)
+145   | 		ei->accum_energy += reg_val - ei->reg_val_prev;
+146   |  else
+147   | 		ei->accum_energy += UINT_MAX - ei->reg_val_prev + reg_val;
+148   | 	ei->reg_val_prev = reg_val;
+149   |  
+150   | 	*energy = mul_u64_u32_shr(ei->accum_energy, SF_ENERGY,
+151   | 				  hwmon->scl_shift_energy);
+152   | 	mutex_unlock(&hwmon->hwmon_lock);
+153   | }
+154   |  
+155   | static ssize_t
+156   | hwm_power1_max_interval_show(struct device *dev, struct device_attribute *attr,
+157   |  char *buf)
+158   | {
+159   |  struct hwm_drvdata *ddat = dev_get_drvdata(dev);
+160   |  struct i915_hwmon *hwmon = ddat->hwmon;
+161   | 	intel_wakeref_t wakeref;
+162   | 	u32 r, x, y, x_w = 2; /* 2 bits */
+163   | 	u64 tau4, out;
+164   |  
+165   |  with_intel_runtime_pm(ddat->uncore->rpm, wakeref)
+166   | 		r = intel_uncore_read(ddat->uncore, hwmon->rg.pkg_rapl_limit);
+167   |  
+168   | 	x = REG_FIELD_GET(PKG_PWR_LIM_1_TIME_X, r);
+169   | 	y = REG_FIELD_GET(PKG_PWR_LIM_1_TIME_Y, r);
+170   |  /*
+171   |  * tau = 1.x * power(2,y), x = bits(23:22), y = bits(21:17)
+172   |  *     = (4 | x) << (y - 2)
+173   |  * where (y - 2) ensures a 1.x fixed point representation of 1.x
+174   |  * However because y can be < 2, we compute
+175   |  *     tau4 = (4 | x) << y
+176   |  * but add 2 when doing the final right shift to account for units
+177   |  */
+178   | 	tau4 = (u64)((1 << x_w) | x) << y;
+179   |  /* val in hwmon interface units (millisec) */
+180   | 	out = mul_u64_u32_shr(tau4, SF_TIME, hwmon->scl_shift_time + x_w);
+181   |  
+182   |  return sysfs_emit(buf, "%llu\n", out);
+183   | }
+184   |  
+185   | static ssize_t
+186   | hwm_power1_max_interval_store(struct device *dev,
+187   |  struct device_attribute *attr,
+188   |  const char *buf, size_t count)
+189   | {
+190   |  struct hwm_drvdata *ddat = dev_get_drvdata(dev);
+191   |  struct i915_hwmon *hwmon = ddat->hwmon;
+192   | 	u32 x, y, rxy, x_w = 2; /* 2 bits */
+193   | 	u64 tau4, r, max_win;
+194   |  unsigned long val;
+195   |  int ret;
+196   |  
+197   | 	ret = kstrtoul(buf, 0, &val);
+198   |  if (ret)
+    1Assuming 'ret' is 0→
+    2←Taking false branch→
+199   |  return ret;
+200   |  
+201   |  /*
+202   |  * Max HW supported tau in '1.x * power(2,y)' format, x = 0, y = 0x12
+203   |  * The hwmon->scl_shift_time default of 0xa results in a max tau of 256 seconds
+204   |  */
+205   | #define PKG_MAX_WIN_DEFAULT 0x12ull
+206   |  
+207   |  /*
+208   |  * val must be < max in hwmon interface units. The steps below are
+209   |  * explained in i915_power1_max_interval_show()
+210   |  */
+211   |  r = FIELD_PREP(PKG_MAX_WIN, PKG_MAX_WIN_DEFAULT);
+    3←Taking false branch→
+    4←Loop condition is false.  Exiting loop→
+    5←Taking false branch→
+    6←Loop condition is false.  Exiting loop→
+    7←'?' condition is true→
+    8←Assuming right operand of bit shift is non-negative but less than 64→
+    9←Assuming the condition is true→
+    10←Taking false branch→
+    11←Loop condition is false.  Exiting loop→
+    12←Taking false branch→
+    13←Loop condition is false.  Exiting loop→
+    14←Assuming right operand of bit shift is non-negative but less than 64→
+    15←Assuming right operand of bit shift is non-negative but less than 64→
+    16←Assuming the condition is false→
+    17←Taking false branch→
+    18←Loop condition is false.  Exiting loop→
+    19←Assuming right operand of bit shift is non-negative but less than 64→
+212   |  x = REG_FIELD_GET(PKG_MAX_WIN_X, r);
+    20←Taking false branch→
+    21←Loop condition is false.  Exiting loop→
+    22←Taking false branch→
+    23←Loop condition is false.  Exiting loop→
+    24←'?' condition is true→
+    25←Assuming right operand of bit shift is non-negative but less than 64→
+    26←Taking false branch→
+    27←Loop condition is false.  Exiting loop→
+    28←Taking false branch→
+    29←Loop condition is false.  Exiting loop→
+    30←Assuming right operand of bit shift is non-negative but less than 64→
+    31←Assuming right operand of bit shift is non-negative but less than 64→
+    32←Assuming the condition is false→
+    33←Taking false branch→
+    34←Loop condition is false.  Exiting loop→
+    35←Assuming right operand of bit shift is non-negative but less than 64→
+213   |  y = REG_FIELD_GET(PKG_MAX_WIN_Y, r);
+    36←Taking false branch→
+    37←Loop condition is false.  Exiting loop→
+    38←Taking false branch→
+    39←Loop condition is false.  Exiting loop→
+    40←'?' condition is true→
+    41←Assuming right operand of bit shift is non-negative but less than 64→
+    42←Taking false branch→
+    43←Loop condition is false.  Exiting loop→
+    44←Taking false branch→
+    45←Loop condition is false.  Exiting loop→
+    46←Assuming right operand of bit shift is non-negative but less than 64→
+    47←Assuming right operand of bit shift is non-negative but less than 64→
+    48←Assuming the condition is false→
+    49←Taking false branch→
+    50←Loop condition is false.  Exiting loop→
+    51←Assuming right operand of bit shift is non-negative but less than 64→
+214   |  tau4 = (u64)((1 << x_w) | x) << y;
+    52←Assuming right operand of bit shift is less than 64→
+215   | 	max_win = mul_u64_u32_shr(tau4, SF_TIME, hwmon->scl_shift_time + x_w);
+216   |  
+217   |  if (val > max_win)
+    53←Assuming 'val' is <= 'max_win'→
+    54←Taking false branch→
+218   |  return -EINVAL;
+219   |  
+220   |  /* val in hw units */
+221   |  val = DIV_ROUND_CLOSEST_ULL((u64)val << hwmon->scl_shift_time, SF_TIME);
+    55←Assuming right operand of bit shift is non-negative but less than 64→
+222   |  /* Convert to 1.x * power(2,y) */
+223   |  if (!val) {
+    56←Assuming 'val' is 0→
+    57←Taking true branch→
+224   |  /* Avoid ilog2(0) */
+225   |  y = 0;
+226   |  x = 0;
+227   | 	} else {
+228   | 		y = ilog2(val);
+229   |  /* x = (val - (1 << y)) >> (y - 2); */
+230   | 		x = (val - (1ul << y)) << x_w >> y;
+231   | 	}
+232   |  
+233   |  rxy = REG_FIELD_PREP(PKG_PWR_LIM_1_TIME_X, x) | REG_FIELD_PREP(PKG_PWR_LIM_1_TIME_Y, y);
+    58←Assuming right operand of bit shift is non-negative but less than 32→
+    59←Assuming right operand of bit shift is non-negative but less than 32→
+    60←Potential integer overflow: left shift performed on a 32-bit value without upcasting to 64-bit
+234   |  
+235   | 	hwm_locked_with_pm_intel_uncore_rmw(ddat, hwmon->rg.pkg_rapl_limit,
+236   |  PKG_PWR_LIM_1_TIME, rxy);
+237   |  return count;
+238   | }
+239   |  
+240   | static SENSOR_DEVICE_ATTR(power1_max_interval, 0664,
+241   |  hwm_power1_max_interval_show,
+242   |  hwm_power1_max_interval_store, 0);
+243   |  
+244   | static struct attribute *hwm_attributes[] = {
+245   | 	&sensor_dev_attr_power1_max_interval.dev_attr.attr,
+246   |  NULL
+247   | };
+248   |  
+249   | static umode_t hwm_attributes_visible(struct kobject *kobj,
+250   |  struct attribute *attr, int index)
+251   | {
+252   |  struct device *dev = kobj_to_dev(kobj);
+253   |  struct hwm_drvdata *ddat = dev_get_drvdata(dev);
+254   |  struct i915_hwmon *hwmon = ddat->hwmon;
+255   |  
+256   |  if (attr == &sensor_dev_attr_power1_max_interval.dev_attr.attr)
+257   |  return i915_mmio_reg_valid(hwmon->rg.pkg_rapl_limit) ? attr->mode : 0;
+258   |  
+259   |  return 0;
+260   | }
+261   |  
+262   | static const struct attribute_group hwm_attrgroup = {
+263   | 	.attrs = hwm_attributes,
+
+# Formatting
+
+Please provide your answer in the following format:
+
+- Decision: {Bug/NotABug}
+- Reason: {Your reason here}

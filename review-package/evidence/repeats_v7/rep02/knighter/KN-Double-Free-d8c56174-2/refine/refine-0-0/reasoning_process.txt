@@ -1,0 +1,25 @@
+Refinment Plan:
+
+The false positive occurs because the current checker reports every call whose source text contains `hws_send_ring_close_sq`. It does not establish that the call is in an error branch, that the branch is reached after `hws_send_ring_set_sq_rdy()` fails, or that the call is the direct cleanup action for that failure. Consequently, it reports the normal shutdown call in `hws_send_ring_close()`.
+
+The refined checker:
+
+1. Identifies the cleanup by `CallEvent::getCalleeIdentifier()`, not source-text matching.
+2. Tracks symbolic return values from `hws_send_ring_set_sq_rdy()` in `ProgramState`.
+3. Marks the nonzero-assumption path of such a return value as an active SQ-ready failure path.
+4. Reports only when `hws_send_ring_close_sq()` is called from the `then` arm of a direct `if (err)`-style condition using that tracked return value.
+5. Does not report normal close paths, unrelated error paths, `else` arms, or calls with no proven association with `hws_send_ring_set_sq_rdy()`.
+
+This retains detection of the buggy code:
+
+```c
+err = hws_send_ring_set_sq_rdy(mdev, sq->sqn);
+if (err)
+    hws_send_ring_close_sq(sq);
+```
+
+The fixed code invokes `hws_send_ring_destroy_sq()` instead, so it no longer matches the report condition.
+
+Refined Code:
+```cpp
+```

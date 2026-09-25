@@ -1,0 +1,168 @@
+{
+  "meta": {
+    "generated_at": "20260617_172351",
+    "analyzer_type": "csa",
+    "workflow_mode": "refine",
+    "patch_path": "/anonymous/home/LLM-Native/research/knighter/e2/cases/20_d8c561741ef8_Double_Free/patches/commit.patch",
+    "validate_path": "/anonymous/home/LLM-Native/research/knighter/linux",
+    "success": true,
+    "generation_success": false,
+    "semantic_success": true,
+    "error_message": null,
+    "preferred_analyzer": "csa",
+    "run_metrics_summary": "csa=549.78s(agent) | tokens=114896"
+  },
+  "csa": {
+    "success": true,
+    "validation_requested": true,
+    "functional_validation_passed": true,
+    "semantic_target_hit": true,
+    "validation_state": "target_hit",
+    "semantic_acceptance": true,
+    "semantic_acceptance_summary": "命中验证目标并通过功能验证",
+    "checker_name": "SAGenTestChecker",
+    "artifact_display_name": "SAGenTestChecker",
+    "output_path": "/anonymous/home/LLM-Native/research/knighter/llvm/build/lib/SAGenTestPlugin.so",
+    "source_path": "/anonymous/home/LLM-Native/research/knighter/e2/cases/20_d8c561741ef8_Double_Free/csa/refinements/20260617_170139/csa/SAGenTestChecker.cpp",
+    "iterations": 7,
+    "compile_attempts": 3,
+    "error": "",
+    "validation": {
+      "stage": "semantic",
+      "analyzer": "csa",
+      "success": true,
+      "execution_time": 0.0,
+      "error_message": "",
+      "diagnostics": [
+        {
+          "file_path": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.o",
+          "line": 0,
+          "column": 0,
+          "severity": "warning",
+          "message": "Knighter E2 buggy patch-local scan reported custom checker alert 1/1 on drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.o",
+          "source": "csa",
+          "code": "custom.SAGenTestChecker",
+          "suggestion": ""
+        }
+      ],
+      "diagnostics_count": 1,
+      "all_diagnostics_count": 1,
+      "generated_diagnostics_count": 1,
+      "warnings_count": 1,
+      "errors_count": 0,
+      "environment_blocked": false,
+      "environment_block_reason": "",
+      "validation_target": "/anonymous/home/LLM-Native/research/knighter/linux",
+      "diagnostics_filtered": false,
+      "knighter_e2_strict": {
+        "metric": "strict_patch_local_object_counts",
+        "objects": [
+          "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.o"
+        ],
+        "buggy_counts": {
+          "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.o": 1
+        },
+        "fixed_counts": {
+          "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.o": 0
+        },
+        "buggy_alerts": 1,
+        "fixed_alerts": 0,
+        "buggy_hit": true,
+        "fixed_silent": true,
+        "pds_strict": true,
+        "validation_dir": "/anonymous/home/LLM-Native/research/knighter/runs/knighter-v613/validation_20260617_172351",
+        "log_path": "/anonymous/home/LLM-Native/research/knighter/runs/knighter-v613/validation_20260617_172351/knighter_validation.log"
+      }
+    },
+    "llm_usage": {
+      "prompt_tokens": 98891,
+      "completion_tokens": 16005,
+      "total_tokens": 114896,
+      "call_count": 10,
+      "model": "gpt-5.5",
+      "available": true
+    },
+    "artifact_metrics": {
+      "path": "/anonymous/home/LLM-Native/research/knighter/e2/cases/20_d8c561741ef8_Double_Free/csa/refinements/20260617_170139/csa/SAGenTestChecker.cpp",
+      "total_lines": 77,
+      "nonempty_lines": 61,
+      "char_count": 2588,
+      "byte_count": 2588
+    },
+    "artifact_delta": {
+      "baseline_path": "/anonymous/home/LLM-Native/research/knighter/e2/cases/20_d8c561741ef8_Double_Free/csa/SAGenTestChecker.cpp",
+      "current_path": "/anonymous/home/LLM-Native/research/knighter/e2/cases/20_d8c561741ef8_Double_Free/csa/refinements/20260617_170139/csa/SAGenTestChecker.cpp",
+      "baseline_total_lines": 74,
+      "current_total_lines": 77,
+      "baseline_nonempty_lines": 61,
+      "current_nonempty_lines": 61,
+      "delta_total_lines": 3,
+      "delta_nonempty_lines": 0,
+      "growth_ratio": 0.0
+    },
+    "artifact_review": {
+      "success": true,
+      "error": "",
+      "findings": []
+    },
+    "evidence_records": 12,
+    "missing_evidence": [],
+    "evidence_degraded": false,
+    "semantic_slice_records": 1,
+    "context_summary_records": 0,
+    "slice_coverage": "partial",
+    "verifier_backed_slices": 2,
+    "slice_kinds": {},
+    "evidence_escalation": {},
+    "validation_feedback_records": 1,
+    "validation_feedback_summary": "Manual E2 refinement validation (csa): strict patch object buggy_alerts=1, fixed_alerts=0, buggy_hit=true, fixed_silent=true, PDS=true. Baseline was buggy_alerts=2, fixed_alerts=1. Manual repair applied to the latest automatic refine output after the automatic checker caused long-running Knighter validation and failed to produce a successful strict result; final checker models the failed SQ ready transition cleanup edge hws_send_ring_close_sq(sq) versus the fixed hws_send_ring_destroy_sq(mdev, sq).",
+    "validation_feedback_history": [
+      {
+        "analyzer": "csa",
+        "phase": "knighter_e2_patch_local_baseline",
+        "summary": "Baseline validation (csa): Knighter基线扫描报告数=1, 人工确认bug=1, 人工非bug=0, 候选组=positive_scan_report_count。漏洞版命中=true, 漏洞版patch-scoped告警数=2, 修复版误报数=1, fixed_silent=false, PDS=false. 这些数只表示patch-local语义验证门，不等同于Knighter full-kernel report_count/FPR统计。"
+      },
+      {
+        "analyzer": "csa",
+        "phase": "strict_object_count_audit",
+        "summary": "Manual E2 refinement validation (csa): strict patch object buggy_alerts=1, fixed_alerts=0, buggy_hit=true, fixed_silent=true, PDS=true. Baseline was buggy_alerts=2, fixed_alerts=1. Manual repair applied to the latest automatic refine output after the automatic checker caused long-running Knighter validation and failed to produce a successful strict result; final checker models the failed SQ ready transition cleanup edge hws_send_ring_close_sq(sq) versus the fixed hws_send_ring_destroy_sq(mdev, sq)."
+      }
+    ],
+    "refinement_attempted": true,
+    "refinement_adopted": true,
+    "refinement_iterations_attempted": 2,
+    "refinement_skipped_reason": "",
+    "last_refinement_candidate_success": false,
+    "last_refinement_candidate_error": "Automatic refine validation did not finish cleanly; manual checker repair applied to latest refine output.",
+    "last_refinement_candidate_artifact_review": {
+      "success": true,
+      "error": "",
+      "findings": []
+    },
+    "last_refinement_candidate_output_path": "/anonymous/home/LLM-Native/research/knighter/llvm/build/lib/SAGenTestPlugin.so",
+    "post_validation_evidence_records": 19,
+    "post_validation_missing_evidence": [],
+    "post_validation_semantic_slice_records": 2,
+    "post_validation_context_summary_records": 1,
+    "post_validation_slice_coverage": "partial",
+    "synthesis_input": {},
+    "evidence_effectiveness": {
+      "baseline_records": 12,
+      "post_validation_records": 19,
+      "new_records": 7,
+      "baseline_missing": [],
+      "post_validation_missing": [],
+      "resolved_missing": [],
+      "improved": true,
+      "summary": "新增 7 条反馈后证据"
+    },
+    "baseline_source": "KNighter old-version canonical valid checker",
+    "knighter_candidate_group": "positive_scan_report_count",
+    "knighter_report_count": 1,
+    "knighter_manual_bugs": 1,
+    "knighter_manual_not_bugs": 0,
+    "metric_scope_note": "E2 strict patch-local double-version validation on patch-related object targets; not Knighter full-kernel report_count/FPR."
+  },
+  "codeql": {},
+  "patchweaver": {}
+}

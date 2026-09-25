@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "status": "declared_after_rep01_native_and_before_rep01_no_internal_result_or_any_rep02_model_call",
+  "purpose": "Estimate decode variability on the same 12 development-informed subjects, not new-subject generalization or a preregistered treatment effect.",
+  "required_replicates": ["rep02", "rep03"],
+  "arms_per_replicate": ["actual_knighter_loop", "strict_knighter_postvalidation", "semweaver_native_feedback", "semweaver_no_internal_feedback"],
+  "stable_semweaver_revision": "3114fc916796429c40ec46371ca5181792a0f2b3",
+  "stable_baseline_adapter_revision": "ab0fa21f70484f43854e0cc8eb03f501e5da0a84",
+  "model": "gpt-5.6-terra",
+  "wire_api": "responses",
+  "reasoning_effort": "high",
+  "cohort_size": 12,
+  "call_cap_rule": "Each SemWeaver arm inherits the actual successful model-call count of its own paired KNighter replicate for each subject. Freeze both treatment manifests after the baseline strict result and before either treatment model call.",
+  "order": "Run each replicate sequentially across arms and cases because all Linux scans share one checkout; complete both arms of rep02 before starting rep03.",
+  "provider_rule": "Any 429/retry or response-format binding fallback invalidates the affected arm and stops it before method scoring. Preserve raw interruption record and restart in a fresh directory. Do not pool interrupted cells.",
+  "reporting": "Report all clean per-case outcomes and per-replicate PDS, fixed-alert burden, calls, tokens, paired discordance and interruptions. Repeated decodes of the same patch are correlated and are not twelve new independent subjects per replicate.",
+  "deviation_rule": "If rep02 or rep03 is not completed, write an explicit deviation record and do not describe the study as three repetitions. Do not change prompts, code, starting checkers, evidence, model, or validator between repetitions."
+}

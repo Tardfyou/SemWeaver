@@ -1,0 +1,1272 @@
+{
+  "records": [
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+        "function": "amdgpu_dm_fini"
+      },
+      "location": {
+        "line": 3377,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "if adev (ImplicitCastExpr, LValueToRValue, struct amdgpu_device *)->dm.freesync_module (ImplicitCastExpr, LValueToRValue, struct mod_freesync *)",
+        "summary": "Analyzer CFG for amdgpu_dm_fini in drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c: bindings: i = 0; adev (ImplicitCastExpr, LValueToRValue, struct amdgpu_device *)->dm.cgs_device = ((void *)0 (CStyleCastExpr, NullToPointer, void *)) (ImplicitCastExpr, NullToPointer, struct cgs_device *) | branches: if adev (ImplicitCastExpr, LValueToRValue, struct amdgpu_device *)->dm.freesync_module (ImplicitCastExpr, LValueToRValue, struct mod_freesync *); if adev (ImplicitCastExpr, LValueToRValue, struct amdgpu_device *)->dm.cgs_device (ImplicitCastExpr, LValueToRValue, struct cgs_device *) | calls: amdgpu_dm_fini -> destroy_workqueue; amdgpu_dm_fini -> drm_encoder_cleanup",
+        "state_before": [
+          "input(adev)",
+          "sinks(destroy_workqueue, drm_encoder_cleanup)"
+        ],
+        "state_after": [
+          "cfg_binding(i = 0)",
+          "cfg_binding(adev (ImplicitCastExpr, LValueToRValue, struct amdgpu_device *)->dm.cgs_device = ((void *)0 (CStyleCastExpr, NullToPointer, void *)) (ImplicitCastExpr, NullToPointer, struct cgs_device *))",
+          "cfg_branch(if adev (ImplicitCastExpr, LValueToRValue, struct amdgpu_device *)->dm.freesync_module (ImplicitCastExpr, LValueToRValue, struct mod_freesync *))",
+          "cfg_branch(if adev (ImplicitCastExpr, LValueToRValue, struct amdgpu_device *)->dm.cgs_device (ImplicitCastExpr, LValueToRValue, struct cgs_device *))"
+        ],
+        "functions": [
+          "amdgpu_dm_fini"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "adev"
+        ],
+        "buffer_fields": [],
+        "call_targets": [
+          "destroy_workqueue",
+          "drm_encoder_cleanup",
+          "amdgpu_dm_destroy_drm_device",
+          "flush_work",
+          "kfree",
+          "hdcp_destroy",
+          "dc_deinit_callbacks",
+          "dc_dmub_srv_destroy"
+        ],
+        "call_edges": [
+          "amdgpu_dm_fini -> destroy_workqueue",
+          "amdgpu_dm_fini -> drm_encoder_cleanup",
+          "amdgpu_dm_fini -> amdgpu_dm_destroy_drm_device",
+          "amdgpu_dm_fini -> flush_work",
+          "amdgpu_dm_fini -> kfree",
+          "amdgpu_dm_fini -> hdcp_destroy"
+        ],
+        "cfg_branch_kinds": [
+          "if",
+          "for"
+        ],
+        "branch_conditions": [
+          "if [B3.5]",
+          "if [B5.5]",
+          "if [B7.5]",
+          "if [B11.10]",
+          "for (...; [B12.12]; ...)",
+          "if [B14.5]"
+        ],
+        "resolved_branch_conditions": [
+          "if adev (ImplicitCastExpr, LValueToRValue, struct amdgpu_device *)->dm.freesync_module (ImplicitCastExpr, LValueToRValue, struct mod_freesync *)",
+          "if adev (ImplicitCastExpr, LValueToRValue, struct amdgpu_device *)->dm.cgs_device (ImplicitCastExpr, LValueToRValue, struct cgs_device *)",
+          "if adev (ImplicitCastExpr, LValueToRValue, struct amdgpu_device *)->dm.dc (ImplicitCastExpr, LValueToRValue, struct dc *)",
+          "if adev (ImplicitCastExpr, LValueToRValue, struct amdgpu_device *)->dm.hpd_rx_offload_wq (ImplicitCastExpr, LValueToRValue, struct hpd_rx_irq_offload_work_queue *)[i (ImplicitCastExpr, LValueToRValue, int)].wq (ImplicitCastExpr, LValueToRValue, struct workqueue_struct *)",
+          "for (...; i (ImplicitCastExpr, LValueToRValue, int) (ImplicitCastExpr, IntegralCast, uint32_t) < [B12.4] (ImplicitCastExpr, LValueToRValue, struct amdgpu_device *)->dm.dc (ImplicitCastExpr, LValueToRValue, struct dc *)->caps.max_links (ImplicitCastExpr, LValueToRValue, uint32_t); ...)",
+          "if adev (ImplicitCastExpr, LValueToRValue, struct amdgpu_device *)->dm.hpd_rx_offload_wq (ImplicitCastExpr, LValueToRValue, struct hpd_rx_irq_offload_work_queue *)"
+        ],
+        "cfg_value_bindings": [
+          "i = 0",
+          "adev (ImplicitCastExpr, LValueToRValue, struct amdgpu_device *)->dm.cgs_device = ((void *)0 (CStyleCastExpr, NullToPointer, void *)) (ImplicitCastExpr, NullToPointer, struct cgs_device *)",
+          "adev (ImplicitCastExpr, LValueToRValue, struct amdgpu_device *)->dm.freesync_module = ((void *)0 (CStyleCastExpr, NullToPointer, void *)) (ImplicitCastExpr, NullToPointer, struct mod_freesync *)",
+          "adev (ImplicitCastExpr, LValueToRValue, struct amdgpu_device *)->dm.dmub_notify = ((void *)0 (CStyleCastExpr, NullToPointer, void *)) (ImplicitCastExpr, NullToPointer, struct dmub_notification *)",
+          "adev (ImplicitCastExpr, LValueToRValue, struct amdgpu_device *)->dm.hdcp_workqueue = ((void *)0 (CStyleCastExpr, NullToPointer, void *)) (ImplicitCastExpr, NullToPointer, struct hdcp_workqueue *)",
+          "adev (ImplicitCastExpr, LValueToRValue, struct amdgpu_device *)->dm.delayed_hpd_wq = ((void *)0 (CStyleCastExpr, NullToPointer, void *)) (ImplicitCastExpr, NullToPointer, struct workqueue_struct *)"
+        ],
+        "state_statements": [
+          "[B1.4]->dm",
+          "[B1.12]->dm",
+          "[B1.20]->dm",
+          "return;",
+          "mod_freesync_destroy",
+          "[B2.1] (ImplicitCastExpr, FunctionToPointerDecay, void (*)(struct mod_freesync *))"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,drivers/gpu/drm/amd/amdgpu/../display/amdgpu_dm/.amdgpu_dm.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./...",
+        "source_file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+        "source_excerpt": "",
+        "summary_line": 3377,
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/semweaver_treatment_evidence_cohort_v3/14_c3d749609472_Out_of_Bound/csa/patchweaver_runtime/csa_raw/drivers-gpu-drm-amd-display-amdgpu_dm-amdgpu_dm.c-amdgpu_dm_fini.txt",
+        "raw_output_sha256": "6c41df34782c2c2d5a05f6a809b718423b08e5f14eee15ad2ed1410ce2b9e60d",
+        "command_sha256": "c4da5026fbd8f1749ec4746bd6dcd5ca7d5658b2eb01a7bebec226296e558f17"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:debug-cfg",
+        "confidence": 0.92,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+          "hunk_index": 0,
+          "source_line": 3377
+        },
+        "summary": "Analyzer CFG for amdgpu_dm_fini in drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c: bindings: i = 0; adev (ImplicitCastExpr, LValueToRValue, struct amdgpu_device *)->dm.cgs_device = ((void *)0 (CStyleCastExpr, NullToPointer, void *)) (ImplicitCastExpr, NullToPointer, struct cgs_device *) | branches: if adev (ImplicitCastExpr, LValueToRValue, struct amdgpu_device *)->dm.freesync_module (ImplicitCastExpr, LValueToRValue, struct mod_freesync *); if adev (ImplicitCastExpr, LValueToRValue, struct amdgpu_device *)->dm.cgs_device (ImplicitCastExpr, LValueToRValue, struct cgs_device *) | calls: amdgpu_dm_fini -> destroy_workqueue; amdgpu_dm_fini -> drm_encoder_cleanup",
+        "statements": [],
+        "guards": [
+          "if adev (ImplicitCastExpr, LValueToRValue, struct amdgpu_device *)->dm.freesync_module (ImplicitCastExpr, LValueToRValue, struct mod_freesync *)",
+          "if adev (ImplicitCastExpr, LValueToRValue, struct amdgpu_device *)->dm.cgs_device (ImplicitCastExpr, LValueToRValue, struct cgs_device *)",
+          "if adev (ImplicitCastExpr, LValueToRValue, struct amdgpu_device *)->dm.dc (ImplicitCastExpr, LValueToRValue, struct dc *)",
+          "if adev (ImplicitCastExpr, LValueToRValue, struct amdgpu_device *)->dm.hpd_rx_offload_wq (ImplicitCastExpr, LValueToRValue, struct hpd_rx_irq_offload_work_queue *)[i (ImplicitCastExpr, LValueToRValue, int)].wq (ImplicitCastExpr, LValueToRValue, struct workqueue_struct *)"
+        ],
+        "call_boundary": [
+          "destroy_workqueue",
+          "drm_encoder_cleanup",
+          "amdgpu_dm_destroy_drm_device",
+          "flush_work",
+          "kfree",
+          "hdcp_destroy"
+        ],
+        "call_edges": [
+          "amdgpu_dm_fini -> destroy_workqueue",
+          "amdgpu_dm_fini -> drm_encoder_cleanup",
+          "amdgpu_dm_fini -> amdgpu_dm_destroy_drm_device",
+          "amdgpu_dm_fini -> flush_work",
+          "amdgpu_dm_fini -> kfree",
+          "amdgpu_dm_fini -> hdcp_destroy",
+          "amdgpu_dm_fini -> dc_deinit_callbacks",
+          "amdgpu_dm_fini -> dc_dmub_srv_destroy"
+        ],
+        "state_transitions": [
+          "cfg_binding(i = 0)",
+          "cfg_binding(adev (ImplicitCastExpr, LValueToRValue, struct amdgpu_device *)->dm.cgs_device = ((void *)0 (CStyleCastExpr, NullToPointer, void *)) (ImplicitCastExpr, NullToPointer, struct cgs_device *))",
+          "cfg_branch(if adev (ImplicitCastExpr, LValueToRValue, struct amdgpu_device *)->dm.freesync_module (ImplicitCastExpr, LValueToRValue, struct mod_freesync *))",
+          "cfg_branch(if adev (ImplicitCastExpr, LValueToRValue, struct amdgpu_device *)->dm.cgs_device (ImplicitCastExpr, LValueToRValue, struct cgs_device *))",
+          "[B1.4]->dm",
+          "[B1.12]->dm"
+        ],
+        "api_terms": [
+          "destroy_workqueue",
+          "drm_encoder_cleanup",
+          "amdgpu_dm_destroy_drm_device",
+          "flush_work",
+          "kfree",
+          "hdcp_destroy"
+        ],
+        "related_symbols": [
+          "adev"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_guard_1",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c",
+        "function": "amdgpu_dm_crtc_configure_crc_source"
+      },
+      "location": {
+        "line": 223,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "if !dm_need_crc_dither (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(enum amdgpu_dm_pipe_crc_source))(source (ImplicitCastExpr, LValueToRValue, enum amdgpu_dm_pipe_crc_source))",
+        "summary": "Analyzer CFG for amdgpu_dm_crtc_configure_crc_source in drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c: bindings: bool enable = amdgpu_dm_is_valid_crc_source(source);; source (ImplicitCastExpr, LValueToRValue, enum amdgpu_dm_pipe_crc_source) (ImplicitCastExpr, IntegralCast, int) == AMDGPU_DM_PIPE_CRC_SOURCE_NONE | branches: if !dm_need_crc_dither (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(enum amdgpu_dm_pipe_crc_source))(source (ImplicitCastExpr, LValueToRValue, enum amdgpu_dm_pipe_crc_source)); if dm_is_crc_source_crtc (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(enum amdgpu_dm_pipe_crc_source))(source (ImplicitCastExpr, LValueToRValue, enum amdgpu_dm_pipe_crc_source)) (ImplicitCastExpr, IntegralCast, int) || source (ImplicitCastExpr, LValueToRValue, enum amdgpu_dm_pipe_crc_source) (ImplicitCastExpr, IntegralCast, int) == AMDGPU_DM_PIPE_CRC_SOURCE_NONE | calls: amdgpu_dm_crtc_configure_crc_source -> drm_to_adev; amdgpu_dm_crtc_configure_crc_source -> amdgpu_dm_is_valid_crc_source",
+        "state_before": [
+          "buffer(crtc->dev)",
+          "buffer(dm_crtc_state->stream)",
+          "sinks(dm_parse_crc_source, amdgpu_dm_crtc_configure_crc_source)"
+        ],
+        "state_after": [
+          "cfg_binding(bool enable = amdgpu_dm_is_valid_crc_source(source);)",
+          "cfg_binding(source (ImplicitCastExpr, LValueToRValue, enum amdgpu_dm_pipe_crc_source) (ImplicitCastExpr, IntegralCast, int) == AMDGPU_DM_PIPE_CRC_SOURCE_NONE)",
+          "cfg_branch(if !dm_need_crc_dither (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(enum amdgpu_dm_pipe_crc_source))(source (ImplicitCastExpr, LValueToRValue, enum amdgpu_dm_pipe_crc_source)))",
+          "cfg_branch(if dm_is_crc_source_crtc (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(enum amdgpu_dm_pipe_crc_source))(source (ImplicitCastExpr, LValueToRValue, enum amdgpu_dm_pipe_crc_source)) (ImplicitCastExpr, IntegralCast, int) || source (ImplicitCastExpr, LValueToRValue, enum amdgpu_dm_pipe_crc_source) (ImplicitCastExpr, IntegralCast, int) == AMDGPU_DM_PIPE_CRC_SOURCE_NONE)"
+        ],
+        "functions": [
+          "amdgpu_dm_crtc_configure_crc_source"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "crtc->dev",
+          "dm_crtc_state->stream",
+          "crtc->index",
+          "adev->dm",
+          "dc->caps",
+          "stream_state->ctx"
+        ],
+        "buffer_fields": [
+          "crtc->dev",
+          "dm_crtc_state->stream",
+          "crtc->index",
+          "adev->dm",
+          "dc->caps",
+          "stream_state->ctx"
+        ],
+        "call_targets": [
+          "dm_parse_crc_source",
+          "amdgpu_dm_crtc_configure_crc_source",
+          "defined",
+          "drm_to_adev",
+          "amdgpu_dm_is_valid_crc_source",
+          "mutex_lock",
+          "flush_work",
+          "dc_stream_forward_crc_window"
+        ],
+        "call_edges": [
+          "amdgpu_dm_crtc_configure_crc_source -> drm_to_adev",
+          "amdgpu_dm_crtc_configure_crc_source -> amdgpu_dm_is_valid_crc_source",
+          "amdgpu_dm_crtc_configure_crc_source -> mutex_lock_nested",
+          "amdgpu_dm_crtc_configure_crc_source -> dm_is_crc_source_crtc",
+          "amdgpu_dm_crtc_configure_crc_source -> flush_work",
+          "amdgpu_dm_crtc_configure_crc_source -> dc_stream_forward_crc_window"
+        ],
+        "cfg_branch_kinds": [
+          "if",
+          "for"
+        ],
+        "branch_conditions": [
+          "if [B4.6]",
+          "goto unlock;",
+          "if [B6.19]",
+          "if [B9.13]",
+          "for (...; [B10.12]; ...)",
+          "if [B12.3]"
+        ],
+        "resolved_branch_conditions": [
+          "if !dm_need_crc_dither (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(enum amdgpu_dm_pipe_crc_source))(source (ImplicitCastExpr, LValueToRValue, enum amdgpu_dm_pipe_crc_source))",
+          "if dm_is_crc_source_crtc (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(enum amdgpu_dm_pipe_crc_source))(source (ImplicitCastExpr, LValueToRValue, enum amdgpu_dm_pipe_crc_source)) (ImplicitCastExpr, IntegralCast, int) || source (ImplicitCastExpr, LValueToRValue, enum amdgpu_dm_pipe_crc_source) (ImplicitCastExpr, IntegralCast, int) == AMDGPU_DM_PIPE_CRC_SOURCE_NONE",
+          "dm_is_crc_source_crtc (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(enum amdgpu_dm_pipe_crc_source))(source (ImplicitCastExpr, LValueToRValue, enum amdgpu_dm_pipe_crc_source)) (ImplicitCastExpr, IntegralCast, int) || ...",
+          "goto unlock;",
+          "if !dc_stream_configure_crc (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(struct dc *, struct dc_stream_state *, struct crc_params *, bool, bool))(stream_state (ImplicitCastExpr, LValueToRValue, struct dc_stream_state *)->ctx (ImplicitCastExpr, LValueToRValue, struct dc_context *)->dc (ImplicitCastExpr, LValueToRValue, struct dc *), stream_state (ImplicitCastExpr, LValueToRValue, struct dc_stream_state *), ((void *)0 (CStyleCastExpr, NullToPointer, void *)) (ImplicitCastExpr, NullToPointer, struct crc_params *), enable (ImplicitCastExpr, LValueToRValue, bool), enable (ImplicitCastExpr, LValueToRValue, bool))",
+          "if [B9.1] (ImplicitCastExpr, LValueToRValue, struct amdgpu_device *)->dm.secure_display_ctxs (ImplicitCastExpr, LValueToRValue, struct secure_display_context *)[i (ImplicitCastExpr, LValueToRValue, int)].crtc (ImplicitCastExpr, LValueToRValue, struct drm_crtc *) == crtc (ImplicitCastExpr, LValueToRValue, struct drm_crtc *)"
+        ],
+        "cfg_value_bindings": [
+          "bool enable = amdgpu_dm_is_valid_crc_source(source);",
+          "source (ImplicitCastExpr, LValueToRValue, enum amdgpu_dm_pipe_crc_source) (ImplicitCastExpr, IntegralCast, int) == AMDGPU_DM_PIPE_CRC_SOURCE_NONE",
+          "struct amdgpu_device *adev = drm_to_adev(crtc->dev);",
+          "i = 0",
+          "ret = -22",
+          "int ret = 0;"
+        ],
+        "state_statements": [
+          "[B1.4]->dm",
+          "return [B1.10];",
+          "[B2.11]->ctx",
+          "[B2.13]->dc",
+          "[B3.11]->ctx",
+          "[B3.13]->dc"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,drivers/gpu/drm/amd/amdgpu/../display/amdgpu_dm/.amdgpu_dm_crc.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include ...",
+        "source_file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c",
+        "source_excerpt": "191: \tenum amdgpu_dm_pipe_crc_source source = dm_parse_crc_source(src_name);\n192: \n193: \tif (source < 0) {\n194: \t\tDRM_DEBUG_DRIVER(\"Unknown CRC source %s for CRTC%d\\n\",\n195: \t\t\t\t src_name, crtc->index);\n196: \t\treturn -EINVAL;\n197: \t}\n198: \n199: \t*values_cnt = 3;\n200: \treturn 0;\n201: }\n202: \n203: int amdgpu_dm_crtc_configure_crc_source(struct drm_crtc *crtc,\n204: \t\t\t\t\tstruct dm_crtc_state *dm_crtc_state,\n205: \t\t\t\t\tenum amdgpu_dm_pipe_crc_source source)\n206: {\n207: #if defined(CONFIG_DRM_AMD_SECURE_DISPLAY)\n208: \tint i;\n209: #endif\n210: \tstruct amdgpu_device *adev = drm_to_adev(crtc->dev);\n211: \tstruct dc_stream_state *stream_state = dm_crtc_state->stream;\n212: \tbool enable = amdgpu_dm_is_valid_crc_source(source);\n213: \tint ret = 0;\n214: \n215: \t/* Configuration will be deferred to stream enable. */\n216: \tif (!stream_state)\n217: \t\treturn -EINVAL;\n218: \n219: \tmutex_lock(&adev->dm.dc_lock);\n220: \n221: \t/* Enable or disable CRTC CRC generation */\n222: \tif (dm_is_crc_source_crtc(source) || source == AMDGPU_DM_PIPE_CRC_SOURCE_NONE) {\n223: #if defined(CONFIG_DRM_AMD_SECURE_DISPLAY)\n224: \t\t/* Disable secure_display if it was enabled */\n225: \t\tif (!enable) {\n226: \t\t\tfor (i = 0; i < adev->dm.dc->caps.max_links; i++) {\n227: \t\t\t\tif (adev->dm.secure_display_ctxs[i].crtc == crtc) {\n228: \t\t\t\t\t/* stop ROI update on this crtc */\n229: \t\t\t\t\tflush_work(&adev->dm.secure_display_ctxs[i].notify_ta_work);\n230: \t\t\t\t\tflush_work(&adev->dm.secure_display_ctxs[i].forward_roi_work);\n231: \t\t\t\t\tdc_stream_forward_crc_window(stream_state, NULL, true);\n232: \t\t\t\t}\n233: \t\t\t}\n234: \t\t}\n235: #endif\n236: \t\tif (!dc_stream_configure_crc(stream_state->ctx->dc,\n237: \t\t\t\t\t     stream_state, NULL, enable, enable)) {\n238: \t\t\tret = -EINVAL;\n239: \t\t\tgoto unlock;\n240: \t\t}\n241: \t}\n242: \n243: \t/* Configure dithering */\n244: \tif (!dm_need_crc_dither(source)) {\n245: \t\tdc_stream_set_dither_option(stream_state, DITHER_OPTION_TRUN8);\n246: \t\tdc_stream_set_dyn_expansion(stream_state->ctx->dc, stream_state,\n247: \t\t\t\t\t    DYN_EXPANSION_DISABLE);\n248: \t} else {\n249: \t\tdc_stream_set_dither_option(stream_state,\n250: \t\t\t\t\t    DITHER_OPTION_DEFAULT);\n251: \t\tdc_stream_set_dyn_expansion(stream_state->ctx->dc, stream_state,\n252: \t\t\t\t\t    DYN_EXPANSION_AUTO);\n253: \t}\n254: \n255: unlock:",
+        "summary_line": 223,
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/semweaver_treatment_evidence_cohort_v3/14_c3d749609472_Out_of_Bound/csa/patchweaver_runtime/csa_raw/drivers-gpu-drm-amd-display-amdgpu_dm-amdgpu_dm_crc.c-amdgpu_dm_crtc_configure_crc_source.txt",
+        "raw_output_sha256": "4499671743380e32f5c767a09d90857c3756e0ebc987db5079fc38d5c6355a12",
+        "command_sha256": "30fd31c7b2bce43ed8058c2bc92c20232d40176b728ed2bb74c76a25720d8660"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:debug-cfg",
+        "confidence": 0.92,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c",
+          "hunk_index": 0,
+          "source_line": 223
+        },
+        "summary": "Analyzer CFG for amdgpu_dm_crtc_configure_crc_source in drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c: bindings: bool enable = amdgpu_dm_is_valid_crc_source(source);; source (ImplicitCastExpr, LValueToRValue, enum amdgpu_dm_pipe_crc_source) (ImplicitCastExpr, IntegralCast, int) == AMDGPU_DM_PIPE_CRC_SOURCE_NONE | branches: if !dm_need_crc_dither (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(enum amdgpu_dm_pipe_crc_source))(source (ImplicitCastExpr, LValueToRValue, enum amdgpu_dm_pipe_crc_source)); if dm_is_crc_source_crtc (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(enum amdgpu_dm_pipe_crc_source))(source (ImplicitCastExpr, LValueToRValue, enum amdgpu_dm_pipe_crc_source)) (ImplicitCastExpr, IntegralCast, int) || source (ImplicitCastExpr, LValueToRValue, enum amdgpu_dm_pipe_crc_source) (ImplicitCastExpr, IntegralCast, int) == AMDGPU_DM_PIPE_CRC_SOURCE_NONE | calls: amdgpu_dm_crtc_configure_crc_source -> drm_to_adev; amdgpu_dm_crtc_configure_crc_source -> amdgpu_dm_is_valid_crc_source",
+        "statements": [
+          "191: \tenum amdgpu_dm_pipe_crc_source source = dm_parse_crc_source(src_name);",
+          "192:",
+          "193: \tif (source < 0) {",
+          "194: \t\tDRM_DEBUG_DRIVER(\"Unknown CRC source %s for CRTC%d\\n\",",
+          "195: \t\t\t\t src_name, crtc->index);",
+          "196: \t\treturn -EINVAL;"
+        ],
+        "guards": [
+          "if !dm_need_crc_dither (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(enum amdgpu_dm_pipe_crc_source))(source (ImplicitCastExpr, LValueToRValue, enum amdgpu_dm_pipe_crc_source))",
+          "if dm_is_crc_source_crtc (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(enum amdgpu_dm_pipe_crc_source))(source (ImplicitCastExpr, LValueToRValue, enum amdgpu_dm_pipe_crc_source)) (ImplicitCastExpr, IntegralCast, int) || source (ImplicitCastExpr, LValueToRValue, enum amdgpu_dm_pipe_crc_source) (ImplicitCastExpr, IntegralCast, int) == AMDGPU_DM_PIPE_CRC_SOURCE_NONE",
+          "dm_is_crc_source_crtc (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(enum amdgpu_dm_pipe_crc_source))(source (ImplicitCastExpr, LValueToRValue, enum amdgpu_dm_pipe_crc_source)) (ImplicitCastExpr, IntegralCast, int) || ...",
+          "goto unlock;"
+        ],
+        "call_boundary": [
+          "dm_parse_crc_source",
+          "amdgpu_dm_crtc_configure_crc_source",
+          "defined",
+          "drm_to_adev",
+          "amdgpu_dm_is_valid_crc_source",
+          "mutex_lock"
+        ],
+        "call_edges": [
+          "amdgpu_dm_crtc_configure_crc_source -> drm_to_adev",
+          "amdgpu_dm_crtc_configure_crc_source -> amdgpu_dm_is_valid_crc_source",
+          "amdgpu_dm_crtc_configure_crc_source -> mutex_lock_nested",
+          "amdgpu_dm_crtc_configure_crc_source -> dm_is_crc_source_crtc",
+          "amdgpu_dm_crtc_configure_crc_source -> flush_work",
+          "amdgpu_dm_crtc_configure_crc_source -> dc_stream_forward_crc_window",
+          "amdgpu_dm_crtc_configure_crc_source -> dc_stream_configure_crc",
+          "amdgpu_dm_crtc_configure_crc_source -> dm_need_crc_dither"
+        ],
+        "state_transitions": [
+          "cfg_binding(bool enable = amdgpu_dm_is_valid_crc_source(source);)",
+          "cfg_binding(source (ImplicitCastExpr, LValueToRValue, enum amdgpu_dm_pipe_crc_source) (ImplicitCastExpr, IntegralCast, int) == AMDGPU_DM_PIPE_CRC_SOURCE_NONE)",
+          "cfg_branch(if !dm_need_crc_dither (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(enum amdgpu_dm_pipe_crc_source))(source (ImplicitCastExpr, LValueToRValue, enum amdgpu_dm_pipe_crc_source)))",
+          "cfg_branch(if dm_is_crc_source_crtc (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(enum amdgpu_dm_pipe_crc_source))(source (ImplicitCastExpr, LValueToRValue, enum amdgpu_dm_pipe_crc_source)) (ImplicitCastExpr, IntegralCast, int) || source (ImplicitCastExpr, LValueToRValue, enum amdgpu_dm_pipe_crc_source) (ImplicitCastExpr, IntegralCast, int) == AMDGPU_DM_PIPE_CRC_SOURCE_NONE)",
+          "[B1.4]->dm",
+          "return [B1.10];"
+        ],
+        "api_terms": [
+          "drm_to_adev",
+          "amdgpu_dm_is_valid_crc_source",
+          "mutex_lock_nested",
+          "dm_is_crc_source_crtc",
+          "flush_work",
+          "dc_stream_forward_crc_window"
+        ],
+        "related_symbols": [
+          "crtc->dev",
+          "dm_crtc_state->stream",
+          "crtc->index",
+          "adev->dm",
+          "dc->caps",
+          "stream_state->ctx"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_guard_2",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c",
+        "function": "amdgpu_dm_crtc_secure_display_create_contexts"
+      },
+      "location": {
+        "line": 547,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "if !secure_display_ctxs (ImplicitCastExpr, LValueToRValue, struct secure_display_context *)",
+        "summary": "Analyzer CFG for amdgpu_dm_crtc_secure_display_create_contexts in drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c: bindings: secure_display_ctxs = kcalloc (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(size_t, size_t, gfp_t))(6 (ImplicitCastExpr, IntegralCast, size_t), sizeof(struct secure_display_context), (((gfp_t)(1024U | 2048U) (CStyleCastExpr, NoOp, gfp_t)) | ((gfp_t)64U (CStyleCastExpr, NoOp, gfp_t)) | ((gfp_t)128U (CStyleCastExpr, NoOp, gfp_t)))) (ImplicitCastExpr, BitCast, struct secure_display_context *); struct secure_display_context *secure_display_ctxs = ((void *)0); | branches: if !secure_display_ctxs (ImplicitCastExpr, LValueToRValue, struct secure_display_context *); do ... while 0 | calls: amdgpu_dm_crtc_secure_display_create_contexts -> kcalloc; amdgpu_dm_crtc_secure_display_create_contexts -> __init_work",
+        "state_before": [
+          "input(adev)",
+          "buffer(adev->dm)",
+          "buffer(dc->caps)",
+          "sinks(kcalloc, __init_work)"
+        ],
+        "state_after": [
+          "cfg_binding(secure_display_ctxs = kcalloc (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(size_t, size_t, gfp_t))(6 (ImplicitCastExpr, IntegralCast, size_t), sizeof(struct secure_display_context), (((gfp_t)(1024U | 2048U) (CStyleCastExpr, NoOp, gfp_t)) | ((gfp_t)64U (CStyleCastExpr, NoOp, gfp_t)) | ((gfp_t)128U (CStyleCastExpr, NoOp, gfp_t)))) (ImplicitCastExpr, BitCast, struct secure_display_context *))",
+          "cfg_binding(struct secure_display_context *secure_display_ctxs = ((void *)0);)",
+          "cfg_branch(if !secure_display_ctxs (ImplicitCastExpr, LValueToRValue, struct secure_display_context *))",
+          "cfg_branch(do ... while 0)"
+        ],
+        "functions": [
+          "amdgpu_dm_crtc_secure_display_create_contexts"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "adev",
+          "adev->dm",
+          "dc->caps",
+          "adev->mode_info"
+        ],
+        "buffer_fields": [
+          "adev->dm",
+          "dc->caps",
+          "adev->mode_info"
+        ],
+        "call_targets": [
+          "kcalloc",
+          "__init_work",
+          "lockdep_init_map",
+          "INIT_LIST_HEAD"
+        ],
+        "call_edges": [
+          "amdgpu_dm_crtc_secure_display_create_contexts -> kcalloc",
+          "amdgpu_dm_crtc_secure_display_create_contexts -> __init_work",
+          "amdgpu_dm_crtc_secure_display_create_contexts -> lockdep_init_map",
+          "amdgpu_dm_crtc_secure_display_create_contexts -> INIT_LIST_HEAD"
+        ],
+        "cfg_branch_kinds": [
+          "for",
+          "if"
+        ],
+        "branch_conditions": [
+          "do ... while [B4.1]",
+          "static init __key",
+          "do ... while [B9.1]",
+          "for (...; [B14.12]; ...)",
+          "if [B17.27]"
+        ],
+        "resolved_branch_conditions": [
+          "if !secure_display_ctxs (ImplicitCastExpr, LValueToRValue, struct secure_display_context *)",
+          "do ... while 0",
+          "static init __key",
+          "for (...; i (ImplicitCastExpr, LValueToRValue, int) (ImplicitCastExpr, IntegralCast, uint32_t) < [B14.4] (ImplicitCastExpr, LValueToRValue, struct amdgpu_device *)->dm.dc (ImplicitCastExpr, LValueToRValue, struct dc *)->caps.max_links (ImplicitCastExpr, LValueToRValue, uint32_t); ...)"
+        ],
+        "cfg_value_bindings": [
+          "secure_display_ctxs = kcalloc (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(size_t, size_t, gfp_t))(6 (ImplicitCastExpr, IntegralCast, size_t), sizeof(struct secure_display_context), (((gfp_t)(1024U | 2048U) (CStyleCastExpr, NoOp, gfp_t)) | ((gfp_t)64U (CStyleCastExpr, NoOp, gfp_t)) | ((gfp_t)128U (CStyleCastExpr, NoOp, gfp_t)))) (ImplicitCastExpr, BitCast, struct secure_display_context *)",
+          "struct secure_display_context *secure_display_ctxs = ((void *)0);",
+          "((&secure_display_ctxs (ImplicitCastExpr, LValueToRValue, struct secure_display_context *)[i (ImplicitCastExpr, LValueToRValue, int)].forward_roi_work))->func = ((amdgpu_dm_forward_crc_window)) (ImplicitCastExpr, FunctionToPointerDecay, void (*)(struct work_struct *))",
+          "((&secure_display_ctxs (ImplicitCastExpr, LValueToRValue, struct secure_display_context *)[i (ImplicitCastExpr, LValueToRValue, int)].notify_ta_work))->func = ((amdgpu_dm_crtc_notify_ta_to_read)) (ImplicitCastExpr, FunctionToPointerDecay, void (*)(struct work_struct *))",
+          "((&secure_display_ctxs (ImplicitCastExpr, LValueToRValue, struct secure_display_context *)[i (ImplicitCastExpr, LValueToRValue, int)].notify_ta_work))->data = (atomic_long_t){((unsigned long)WORK_STRUCT_NO_POOL (CStyleCastExpr, IntegralCast, unsigned long)) (ImplicitCastExpr, IntegralCast, s64)} (ImplicitCastExpr, LValueToRValue, atomic_long_t)",
+          "((&secure_display_ctxs (ImplicitCastExpr, LValueToRValue, struct secure_display_context *)[i (ImplicitCastExpr, LValueToRValue, int)].forward_roi_work))->data = (atomic_long_t){((unsigned long)WORK_STRUCT_NO_POOL (CStyleCastExpr, IntegralCast, unsigned long)) (ImplicitCastExpr, IntegralCast, s64)} (ImplicitCastExpr, LValueToRValue, atomic_long_t)"
+        ],
+        "state_statements": [
+          "return [B1.2];",
+          "[B2.1]++",
+          "[B3.2]->mode_info",
+          "[B3.9]->base",
+          "[B3.17] = [B3.11]",
+          "(([B5.24]))->data"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,drivers/gpu/drm/amd/amdgpu/../display/amdgpu_dm/.amdgpu_dm_crc.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include ...",
+        "source_file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c",
+        "source_excerpt": "542: amdgpu_dm_crtc_secure_display_create_contexts(struct amdgpu_device *adev)\n543: {\n544: \tstruct secure_display_context *secure_display_ctxs = NULL;\n545: \tint i;\n546: \n547: \tsecure_display_ctxs = kcalloc(AMDGPU_MAX_CRTCS, sizeof(struct secure_display_context), GFP_KERNEL);\n548: \n549: \tif (!secure_display_ctxs)\n550: \t\treturn NULL;\n551: \n552: \tfor (i = 0; i < adev->dm.dc->caps.max_links; i++) {\n553: \t\tINIT_WORK(&secure_display_ctxs[i].forward_roi_work, amdgpu_dm_forward_crc_window);\n554: \t\tINIT_WORK(&secure_display_ctxs[i].notify_ta_work, amdgpu_dm_crtc_notify_ta_to_read);\n555: \t\tsecure_display_ctxs[i].crtc = &adev->mode_info.crtcs[i]->base;\n556: \t}\n557: \n558: \treturn secure_display_ctxs;\n559: }",
+        "summary_line": 547,
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/semweaver_treatment_evidence_cohort_v3/14_c3d749609472_Out_of_Bound/csa/patchweaver_runtime/csa_raw/drivers-gpu-drm-amd-display-amdgpu_dm-amdgpu_dm_crc.c-amdgpu_dm_crtc_secure_display_create_contexts.txt",
+        "raw_output_sha256": "4499671743380e32f5c767a09d90857c3756e0ebc987db5079fc38d5c6355a12",
+        "command_sha256": "30fd31c7b2bce43ed8058c2bc92c20232d40176b728ed2bb74c76a25720d8660"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:debug-cfg",
+        "confidence": 0.92,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c",
+          "hunk_index": 1,
+          "source_line": 547
+        },
+        "summary": "Analyzer CFG for amdgpu_dm_crtc_secure_display_create_contexts in drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c: bindings: secure_display_ctxs = kcalloc (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(size_t, size_t, gfp_t))(6 (ImplicitCastExpr, IntegralCast, size_t), sizeof(struct secure_display_context), (((gfp_t)(1024U | 2048U) (CStyleCastExpr, NoOp, gfp_t)) | ((gfp_t)64U (CStyleCastExpr, NoOp, gfp_t)) | ((gfp_t)128U (CStyleCastExpr, NoOp, gfp_t)))) (ImplicitCastExpr, BitCast, struct secure_display_context *); struct secure_display_context *secure_display_ctxs = ((void *)0); | branches: if !secure_display_ctxs (ImplicitCastExpr, LValueToRValue, struct secure_display_context *); do ... while 0 | calls: amdgpu_dm_crtc_secure_display_create_contexts -> kcalloc; amdgpu_dm_crtc_secure_display_create_contexts -> __init_work",
+        "statements": [
+          "542: amdgpu_dm_crtc_secure_display_create_contexts(struct amdgpu_device *adev)",
+          "543: {",
+          "544: \tstruct secure_display_context *secure_display_ctxs = NULL;",
+          "545: \tint i;",
+          "546:",
+          "547: \tsecure_display_ctxs = kcalloc(AMDGPU_MAX_CRTCS, sizeof(struct secure_display_context), GFP_KERNEL);"
+        ],
+        "guards": [
+          "if !secure_display_ctxs (ImplicitCastExpr, LValueToRValue, struct secure_display_context *)",
+          "do ... while 0",
+          "static init __key",
+          "for (...; i (ImplicitCastExpr, LValueToRValue, int) (ImplicitCastExpr, IntegralCast, uint32_t) < [B14.4] (ImplicitCastExpr, LValueToRValue, struct amdgpu_device *)->dm.dc (ImplicitCastExpr, LValueToRValue, struct dc *)->caps.max_links (ImplicitCastExpr, LValueToRValue, uint32_t); ...)"
+        ],
+        "call_boundary": [
+          "kcalloc",
+          "__init_work",
+          "lockdep_init_map",
+          "INIT_LIST_HEAD"
+        ],
+        "call_edges": [
+          "amdgpu_dm_crtc_secure_display_create_contexts -> kcalloc",
+          "amdgpu_dm_crtc_secure_display_create_contexts -> __init_work",
+          "amdgpu_dm_crtc_secure_display_create_contexts -> lockdep_init_map",
+          "amdgpu_dm_crtc_secure_display_create_contexts -> INIT_LIST_HEAD"
+        ],
+        "state_transitions": [
+          "cfg_binding(secure_display_ctxs = kcalloc (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(size_t, size_t, gfp_t))(6 (ImplicitCastExpr, IntegralCast, size_t), sizeof(struct secure_display_context), (((gfp_t)(1024U | 2048U) (CStyleCastExpr, NoOp, gfp_t)) | ((gfp_t)64U (CStyleCastExpr, NoOp, gfp_t)) | ((gfp_t)128U (CStyleCastExpr, NoOp, gfp_t)))) (ImplicitCastExpr, BitCast, struct secure_display_context *))",
+          "cfg_binding(struct secure_display_context *secure_display_ctxs = ((void *)0);)",
+          "cfg_branch(if !secure_display_ctxs (ImplicitCastExpr, LValueToRValue, struct secure_display_context *))",
+          "cfg_branch(do ... while 0)",
+          "return [B1.2];",
+          "[B2.1]++"
+        ],
+        "api_terms": [
+          "kcalloc",
+          "__init_work",
+          "lockdep_init_map",
+          "INIT_LIST_HEAD"
+        ],
+        "related_symbols": [
+          "adev",
+          "adev->dm",
+          "dc->caps",
+          "adev->mode_info"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+        "function": "amdgpu_dm_fini"
+      },
+      "location": {
+        "line": 3377,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "amdgpu_dm_fini in drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c: cfg_calls=amdgpu_dm_fini -> destroy_workqueue; amdgpu_dm_fini -> drm_encoder_cleanup",
+        "state_before": [
+          "input(adev)",
+          "sinks(destroy_workqueue, drm_encoder_cleanup)"
+        ],
+        "state_after": [
+          "transition([B1.4]->dm)",
+          "transition([B1.12]->dm)",
+          "transition([B1.20]->dm)"
+        ],
+        "functions": [
+          "amdgpu_dm_fini"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "adev"
+        ],
+        "buffer_fields": [],
+        "call_targets": [
+          "destroy_workqueue",
+          "drm_encoder_cleanup",
+          "amdgpu_dm_destroy_drm_device",
+          "flush_work",
+          "kfree",
+          "hdcp_destroy",
+          "dc_deinit_callbacks",
+          "dc_dmub_srv_destroy"
+        ],
+        "call_edges": [
+          "amdgpu_dm_fini -> destroy_workqueue",
+          "amdgpu_dm_fini -> drm_encoder_cleanup",
+          "amdgpu_dm_fini -> amdgpu_dm_destroy_drm_device",
+          "amdgpu_dm_fini -> flush_work",
+          "amdgpu_dm_fini -> kfree",
+          "amdgpu_dm_fini -> hdcp_destroy"
+        ],
+        "cfg_branch_kinds": [
+          "if",
+          "for"
+        ],
+        "branch_conditions": [
+          "if [B3.5]",
+          "if [B5.5]",
+          "if [B7.5]",
+          "if [B11.10]"
+        ],
+        "state_statements": [
+          "[B1.4]->dm",
+          "[B1.12]->dm",
+          "[B1.20]->dm",
+          "return;",
+          "mod_freesync_destroy",
+          "[B2.1] (ImplicitCastExpr, FunctionToPointerDecay, void (*)(struct mod_freesync *))",
+          "[B2.4]->dm",
+          "[B2.5].freesync_module"
+        ],
+        "return_statements": [
+          "return;"
+        ],
+        "source_file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+        "source_excerpt": "",
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/semweaver_treatment_evidence_cohort_v3/14_c3d749609472_Out_of_Bound/csa/patchweaver_runtime/csa_raw/drivers-gpu-drm-amd-display-amdgpu_dm-amdgpu_dm.c-amdgpu_dm_fini.txt",
+        "raw_output_sha256": "6c41df34782c2c2d5a05f6a809b718423b08e5f14eee15ad2ed1410ce2b9e60d",
+        "command_sha256": "c4da5026fbd8f1749ec4746bd6dcd5ca7d5658b2eb01a7bebec226296e558f17"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:symbolic-state",
+        "confidence": 0.88,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+          "hunk_index": 0,
+          "source_line": 3377
+        },
+        "summary": "amdgpu_dm_fini in drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c: cfg_calls=amdgpu_dm_fini -> destroy_workqueue; amdgpu_dm_fini -> drm_encoder_cleanup",
+        "statements": [],
+        "guards": [
+          "if [B3.5]",
+          "if [B5.5]",
+          "if [B7.5]"
+        ],
+        "call_boundary": [
+          "destroy_workqueue",
+          "drm_encoder_cleanup",
+          "amdgpu_dm_destroy_drm_device",
+          "flush_work",
+          "kfree",
+          "hdcp_destroy"
+        ],
+        "call_edges": [
+          "amdgpu_dm_fini -> destroy_workqueue",
+          "amdgpu_dm_fini -> drm_encoder_cleanup",
+          "amdgpu_dm_fini -> amdgpu_dm_destroy_drm_device",
+          "amdgpu_dm_fini -> flush_work",
+          "amdgpu_dm_fini -> kfree",
+          "amdgpu_dm_fini -> hdcp_destroy",
+          "amdgpu_dm_fini -> dc_deinit_callbacks",
+          "amdgpu_dm_fini -> dc_dmub_srv_destroy"
+        ],
+        "state_transitions": [
+          "transition([B1.4]->dm)",
+          "transition([B1.12]->dm)",
+          "transition([B1.20]->dm)",
+          "[B1.4]->dm",
+          "[B1.12]->dm",
+          "[B1.20]->dm"
+        ],
+        "api_terms": [
+          "destroy_workqueue",
+          "drm_encoder_cleanup",
+          "amdgpu_dm_destroy_drm_device",
+          "flush_work",
+          "kfree",
+          "hdcp_destroy"
+        ],
+        "related_symbols": [
+          "adev"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_state_1",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c",
+        "function": "amdgpu_dm_crtc_configure_crc_source"
+      },
+      "location": {
+        "line": 223,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "amdgpu_dm_crtc_configure_crc_source in drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c: locks=mutex_lock | state_ops=for (i = 0; i < adev->dm.dc->caps.max_links; i++) { | cfg_calls=amdgpu_dm_crtc_configure_crc_source -> drm_to_adev; amdgpu_dm_crtc_configure_crc_source -> amdgpu_dm_is_valid_crc_source",
+        "state_before": [
+          "buffer(crtc->dev)",
+          "buffer(dm_crtc_state->stream)",
+          "sinks(dm_parse_crc_source, amdgpu_dm_crtc_configure_crc_source)"
+        ],
+        "state_after": [
+          "transition(for (i = 0; i < adev->dm.dc->caps.max_links; i++) {)",
+          "transition([B1.4]->dm)",
+          "transition(return [B1.10];)",
+          "locked(mutex_lock)"
+        ],
+        "functions": [
+          "amdgpu_dm_crtc_configure_crc_source"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "crtc->dev",
+          "dm_crtc_state->stream",
+          "crtc->index",
+          "adev->dm",
+          "dc->caps",
+          "stream_state->ctx"
+        ],
+        "buffer_fields": [
+          "crtc->dev",
+          "dm_crtc_state->stream",
+          "crtc->index",
+          "adev->dm",
+          "dc->caps",
+          "stream_state->ctx"
+        ],
+        "call_targets": [
+          "dm_parse_crc_source",
+          "amdgpu_dm_crtc_configure_crc_source",
+          "defined",
+          "drm_to_adev",
+          "amdgpu_dm_is_valid_crc_source",
+          "mutex_lock",
+          "flush_work",
+          "dc_stream_forward_crc_window"
+        ],
+        "call_edges": [
+          "amdgpu_dm_crtc_configure_crc_source -> drm_to_adev",
+          "amdgpu_dm_crtc_configure_crc_source -> amdgpu_dm_is_valid_crc_source",
+          "amdgpu_dm_crtc_configure_crc_source -> mutex_lock_nested",
+          "amdgpu_dm_crtc_configure_crc_source -> dm_is_crc_source_crtc",
+          "amdgpu_dm_crtc_configure_crc_source -> flush_work",
+          "amdgpu_dm_crtc_configure_crc_source -> dc_stream_forward_crc_window"
+        ],
+        "cfg_branch_kinds": [
+          "if",
+          "for"
+        ],
+        "branch_conditions": [
+          "if [B4.6]",
+          "goto unlock;",
+          "if [B6.19]",
+          "if [B9.13]"
+        ],
+        "state_statements": [
+          "[B1.4]->dm",
+          "return [B1.10];",
+          "[B2.11]->ctx",
+          "[B2.13]->dc",
+          "[B3.11]->ctx",
+          "[B3.13]->dc",
+          "[B5.3] = [B5.2]",
+          "[B6.4]->ctx"
+        ],
+        "return_statements": [
+          "return [B1.10];",
+          "return [B15.2];"
+        ],
+        "source_file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c",
+        "source_excerpt": "191: \tenum amdgpu_dm_pipe_crc_source source = dm_parse_crc_source(src_name);\n192: \n193: \tif (source < 0) {\n194: \t\tDRM_DEBUG_DRIVER(\"Unknown CRC source %s for CRTC%d\\n\",\n195: \t\t\t\t src_name, crtc->index);\n196: \t\treturn -EINVAL;\n197: \t}\n198: \n199: \t*values_cnt = 3;\n200: \treturn 0;\n201: }\n202: \n203: int amdgpu_dm_crtc_configure_crc_source(struct drm_crtc *crtc,\n204: \t\t\t\t\tstruct dm_crtc_state *dm_crtc_state,\n205: \t\t\t\t\tenum amdgpu_dm_pipe_crc_source source)\n206: {\n207: #if defined(CONFIG_DRM_AMD_SECURE_DISPLAY)\n208: \tint i;\n209: #endif\n210: \tstruct amdgpu_device *adev = drm_to_adev(crtc->dev);\n211: \tstruct dc_stream_state *stream_state = dm_crtc_state->stream;\n212: \tbool enable = amdgpu_dm_is_valid_crc_source(source);\n213: \tint ret = 0;\n214: \n215: \t/* Configuration will be deferred to stream enable. */\n216: \tif (!stream_state)\n217: \t\treturn -EINVAL;\n218: \n219: \tmutex_lock(&adev->dm.dc_lock);\n220: \n221: \t/* Enable or disable CRTC CRC generation */\n222: \tif (dm_is_crc_source_crtc(source) || source == AMDGPU_DM_PIPE_CRC_SOURCE_NONE) {\n223: #if defined(CONFIG_DRM_AMD_SECURE_DISPLAY)\n224: \t\t/* Disable secure_display if it was enabled */\n225: \t\tif (!enable) {\n226: \t\t\tfor (i = 0; i < adev->dm.dc->caps.max_links; i++) {\n227: \t\t\t\tif (adev->dm.secure_display_ctxs[i].crtc == crtc) {\n228: \t\t\t\t\t/* stop ROI update on this crtc */\n229: \t\t\t\t\tflush_work(&adev->dm.secure_display_ctxs[i].notify_ta_work);\n230: \t\t\t\t\tflush_work(&adev->dm.secure_display_ctxs[i].forward_roi_work);\n231: \t\t\t\t\tdc_stream_forward_crc_window(stream_state, NULL, true);\n232: \t\t\t\t}\n233: \t\t\t}\n234: \t\t}\n235: #endif\n236: \t\tif (!dc_stream_configure_crc(stream_state->ctx->dc,\n237: \t\t\t\t\t     stream_state, NULL, enable, enable)) {\n238: \t\t\tret = -EINVAL;\n239: \t\t\tgoto unlock;\n240: \t\t}\n241: \t}\n242: \n243: \t/* Configure dithering */\n244: \tif (!dm_need_crc_dither(source)) {\n245: \t\tdc_stream_set_dither_option(stream_state, DITHER_OPTION_TRUN8);\n246: \t\tdc_stream_set_dyn_expansion(stream_state->ctx->dc, stream_state,\n247: \t\t\t\t\t    DYN_EXPANSION_DISABLE);\n248: \t} else {\n249: \t\tdc_stream_set_dither_option(stream_state,\n250: \t\t\t\t\t    DITHER_OPTION_DEFAULT);\n251: \t\tdc_stream_set_dyn_expansion(stream_state->ctx->dc, stream_state,\n252: \t\t\t\t\t    DYN_EXPANSION_AUTO);\n253: \t}\n254: \n255: unlock:",
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/semweaver_treatment_evidence_cohort_v3/14_c3d749609472_Out_of_Bound/csa/patchweaver_runtime/csa_raw/drivers-gpu-drm-amd-display-amdgpu_dm-amdgpu_dm_crc.c-amdgpu_dm_crtc_configure_crc_source.txt",
+        "raw_output_sha256": "4499671743380e32f5c767a09d90857c3756e0ebc987db5079fc38d5c6355a12",
+        "command_sha256": "30fd31c7b2bce43ed8058c2bc92c20232d40176b728ed2bb74c76a25720d8660"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:symbolic-state",
+        "confidence": 0.88,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c",
+          "hunk_index": 0,
+          "source_line": 223
+        },
+        "summary": "amdgpu_dm_crtc_configure_crc_source in drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c: locks=mutex_lock | state_ops=for (i = 0; i < adev->dm.dc->caps.max_links; i++) { | cfg_calls=amdgpu_dm_crtc_configure_crc_source -> drm_to_adev; amdgpu_dm_crtc_configure_crc_source -> amdgpu_dm_is_valid_crc_source",
+        "statements": [
+          "191: \tenum amdgpu_dm_pipe_crc_source source = dm_parse_crc_source(src_name);",
+          "192:",
+          "193: \tif (source < 0) {",
+          "194: \t\tDRM_DEBUG_DRIVER(\"Unknown CRC source %s for CRTC%d\\n\",",
+          "195: \t\t\t\t src_name, crtc->index);",
+          "196: \t\treturn -EINVAL;"
+        ],
+        "guards": [
+          "if [B4.6]",
+          "goto unlock;",
+          "if [B6.19]"
+        ],
+        "call_boundary": [
+          "dm_parse_crc_source",
+          "amdgpu_dm_crtc_configure_crc_source",
+          "defined",
+          "drm_to_adev",
+          "amdgpu_dm_is_valid_crc_source",
+          "mutex_lock"
+        ],
+        "call_edges": [
+          "amdgpu_dm_crtc_configure_crc_source -> drm_to_adev",
+          "amdgpu_dm_crtc_configure_crc_source -> amdgpu_dm_is_valid_crc_source",
+          "amdgpu_dm_crtc_configure_crc_source -> mutex_lock_nested",
+          "amdgpu_dm_crtc_configure_crc_source -> dm_is_crc_source_crtc",
+          "amdgpu_dm_crtc_configure_crc_source -> flush_work",
+          "amdgpu_dm_crtc_configure_crc_source -> dc_stream_forward_crc_window",
+          "amdgpu_dm_crtc_configure_crc_source -> dc_stream_configure_crc",
+          "amdgpu_dm_crtc_configure_crc_source -> dm_need_crc_dither"
+        ],
+        "state_transitions": [
+          "transition(for (i = 0; i < adev->dm.dc->caps.max_links; i++) {)",
+          "transition([B1.4]->dm)",
+          "transition(return [B1.10];)",
+          "locked(mutex_lock)",
+          "[B1.4]->dm",
+          "return [B1.10];"
+        ],
+        "api_terms": [
+          "mutex_lock",
+          "drm_to_adev",
+          "amdgpu_dm_is_valid_crc_source",
+          "mutex_lock_nested",
+          "dm_is_crc_source_crtc",
+          "flush_work"
+        ],
+        "related_symbols": [
+          "crtc->dev",
+          "dm_crtc_state->stream",
+          "crtc->index",
+          "adev->dm",
+          "dc->caps",
+          "stream_state->ctx"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_state_2",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c",
+        "function": "amdgpu_dm_crtc_secure_display_create_contexts"
+      },
+      "location": {
+        "line": 547,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "amdgpu_dm_crtc_secure_display_create_contexts in drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c: state_ops=for (i = 0; i < adev->dm.dc->caps.max_links; i++) { | cfg_calls=amdgpu_dm_crtc_secure_display_create_contexts -> kcalloc; amdgpu_dm_crtc_secure_display_create_contexts -> __init_work",
+        "state_before": [
+          "input(adev)",
+          "buffer(adev->dm)",
+          "buffer(dc->caps)",
+          "sinks(kcalloc, __init_work)"
+        ],
+        "state_after": [
+          "transition(for (i = 0; i < adev->dm.dc->caps.max_links; i++) {)",
+          "transition(return [B1.2];)",
+          "transition([B2.1]++)"
+        ],
+        "functions": [
+          "amdgpu_dm_crtc_secure_display_create_contexts"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "adev",
+          "adev->dm",
+          "dc->caps",
+          "adev->mode_info"
+        ],
+        "buffer_fields": [
+          "adev->dm",
+          "dc->caps",
+          "adev->mode_info"
+        ],
+        "call_targets": [
+          "kcalloc",
+          "__init_work",
+          "lockdep_init_map",
+          "INIT_LIST_HEAD"
+        ],
+        "call_edges": [
+          "amdgpu_dm_crtc_secure_display_create_contexts -> kcalloc",
+          "amdgpu_dm_crtc_secure_display_create_contexts -> __init_work",
+          "amdgpu_dm_crtc_secure_display_create_contexts -> lockdep_init_map",
+          "amdgpu_dm_crtc_secure_display_create_contexts -> INIT_LIST_HEAD"
+        ],
+        "cfg_branch_kinds": [
+          "for",
+          "if"
+        ],
+        "branch_conditions": [
+          "do ... while [B4.1]",
+          "static init __key",
+          "do ... while [B9.1]",
+          "for (...; [B14.12]; ...)"
+        ],
+        "state_statements": [
+          "return [B1.2];",
+          "[B2.1]++",
+          "[B3.2]->mode_info",
+          "[B3.9]->base",
+          "[B3.17] = [B3.11]",
+          "(([B5.24]))->data",
+          "[B5.25] = [B5.17]",
+          "(([B5.35]))->lockdep_map"
+        ],
+        "return_statements": [
+          "return [B1.2];",
+          "return [B16.3];"
+        ],
+        "source_file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c",
+        "source_excerpt": "542: amdgpu_dm_crtc_secure_display_create_contexts(struct amdgpu_device *adev)\n543: {\n544: \tstruct secure_display_context *secure_display_ctxs = NULL;\n545: \tint i;\n546: \n547: \tsecure_display_ctxs = kcalloc(AMDGPU_MAX_CRTCS, sizeof(struct secure_display_context), GFP_KERNEL);\n548: \n549: \tif (!secure_display_ctxs)\n550: \t\treturn NULL;\n551: \n552: \tfor (i = 0; i < adev->dm.dc->caps.max_links; i++) {\n553: \t\tINIT_WORK(&secure_display_ctxs[i].forward_roi_work, amdgpu_dm_forward_crc_window);\n554: \t\tINIT_WORK(&secure_display_ctxs[i].notify_ta_work, amdgpu_dm_crtc_notify_ta_to_read);\n555: \t\tsecure_display_ctxs[i].crtc = &adev->mode_info.crtcs[i]->base;\n556: \t}\n557: \n558: \treturn secure_display_ctxs;\n559: }",
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/semweaver_treatment_evidence_cohort_v3/14_c3d749609472_Out_of_Bound/csa/patchweaver_runtime/csa_raw/drivers-gpu-drm-amd-display-amdgpu_dm-amdgpu_dm_crc.c-amdgpu_dm_crtc_secure_display_create_contexts.txt",
+        "raw_output_sha256": "4499671743380e32f5c767a09d90857c3756e0ebc987db5079fc38d5c6355a12",
+        "command_sha256": "30fd31c7b2bce43ed8058c2bc92c20232d40176b728ed2bb74c76a25720d8660"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:symbolic-state",
+        "confidence": 0.88,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c",
+          "hunk_index": 1,
+          "source_line": 547
+        },
+        "summary": "amdgpu_dm_crtc_secure_display_create_contexts in drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c: state_ops=for (i = 0; i < adev->dm.dc->caps.max_links; i++) { | cfg_calls=amdgpu_dm_crtc_secure_display_create_contexts -> kcalloc; amdgpu_dm_crtc_secure_display_create_contexts -> __init_work",
+        "statements": [
+          "542: amdgpu_dm_crtc_secure_display_create_contexts(struct amdgpu_device *adev)",
+          "543: {",
+          "544: \tstruct secure_display_context *secure_display_ctxs = NULL;",
+          "545: \tint i;",
+          "546:",
+          "547: \tsecure_display_ctxs = kcalloc(AMDGPU_MAX_CRTCS, sizeof(struct secure_display_context), GFP_KERNEL);"
+        ],
+        "guards": [
+          "do ... while [B4.1]",
+          "static init __key",
+          "do ... while [B9.1]"
+        ],
+        "call_boundary": [
+          "kcalloc",
+          "__init_work",
+          "lockdep_init_map",
+          "INIT_LIST_HEAD"
+        ],
+        "call_edges": [
+          "amdgpu_dm_crtc_secure_display_create_contexts -> kcalloc",
+          "amdgpu_dm_crtc_secure_display_create_contexts -> __init_work",
+          "amdgpu_dm_crtc_secure_display_create_contexts -> lockdep_init_map",
+          "amdgpu_dm_crtc_secure_display_create_contexts -> INIT_LIST_HEAD"
+        ],
+        "state_transitions": [
+          "transition(for (i = 0; i < adev->dm.dc->caps.max_links; i++) {)",
+          "transition(return [B1.2];)",
+          "transition([B2.1]++)",
+          "return [B1.2];",
+          "[B2.1]++",
+          "[B3.2]->mode_info"
+        ],
+        "api_terms": [
+          "kcalloc",
+          "__init_work",
+          "lockdep_init_map",
+          "INIT_LIST_HEAD"
+        ],
+        "related_symbols": [
+          "adev",
+          "adev->dm",
+          "dc->caps",
+          "adev->mode_info"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_lifecycle_0",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+        "function": "amdgpu_dm_fini"
+      },
+      "location": {
+        "line": 3377,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "amdgpu_dm_fini in drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c reaches destroy_workqueue, flush_work",
+        "operations": [
+          "destroy_workqueue",
+          "flush_work"
+        ],
+        "acquisition_ops": [],
+        "release_ops": [
+          "destroy_workqueue",
+          "flush_work"
+        ],
+        "transition_ops": [],
+        "state_before": [
+          "input(adev)",
+          "sinks(destroy_workqueue, drm_encoder_cleanup)"
+        ],
+        "state_after": [
+          "transition(destroy_workqueue)",
+          "transition(flush_work)"
+        ],
+        "functions": [
+          "amdgpu_dm_fini"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "adev"
+        ],
+        "buffer_fields": [],
+        "call_edges": [
+          "amdgpu_dm_fini -> destroy_workqueue",
+          "amdgpu_dm_fini -> drm_encoder_cleanup",
+          "amdgpu_dm_fini -> amdgpu_dm_destroy_drm_device",
+          "amdgpu_dm_fini -> flush_work",
+          "amdgpu_dm_fini -> kfree",
+          "amdgpu_dm_fini -> hdcp_destroy"
+        ],
+        "cfg_value_bindings": [
+          "i = 0",
+          "adev (ImplicitCastExpr, LValueToRValue, struct amdgpu_device *)->dm.cgs_device = ((void *)0 (CStyleCastExpr, NullToPointer, void *)) (ImplicitCastExpr, NullToPointer, struct cgs_device *)",
+          "adev (ImplicitCastExpr, LValueToRValue, struct amdgpu_device *)->dm.freesync_module = ((void *)0 (CStyleCastExpr, NullToPointer, void *)) (ImplicitCastExpr, NullToPointer, struct mod_freesync *)",
+          "adev (ImplicitCastExpr, LValueToRValue, struct amdgpu_device *)->dm.dmub_notify = ((void *)0 (CStyleCastExpr, NullToPointer, void *)) (ImplicitCastExpr, NullToPointer, struct dmub_notification *)",
+          "adev (ImplicitCastExpr, LValueToRValue, struct amdgpu_device *)->dm.hdcp_workqueue = ((void *)0 (CStyleCastExpr, NullToPointer, void *)) (ImplicitCastExpr, NullToPointer, struct hdcp_workqueue *)",
+          "adev (ImplicitCastExpr, LValueToRValue, struct amdgpu_device *)->dm.delayed_hpd_wq = ((void *)0 (CStyleCastExpr, NullToPointer, void *)) (ImplicitCastExpr, NullToPointer, struct workqueue_struct *)"
+        ],
+        "resolved_branch_conditions": [
+          "if adev (ImplicitCastExpr, LValueToRValue, struct amdgpu_device *)->dm.freesync_module (ImplicitCastExpr, LValueToRValue, struct mod_freesync *)",
+          "if adev (ImplicitCastExpr, LValueToRValue, struct amdgpu_device *)->dm.cgs_device (ImplicitCastExpr, LValueToRValue, struct cgs_device *)",
+          "if adev (ImplicitCastExpr, LValueToRValue, struct amdgpu_device *)->dm.dc (ImplicitCastExpr, LValueToRValue, struct dc *)",
+          "if adev (ImplicitCastExpr, LValueToRValue, struct amdgpu_device *)->dm.hpd_rx_offload_wq (ImplicitCastExpr, LValueToRValue, struct hpd_rx_irq_offload_work_queue *)[i (ImplicitCastExpr, LValueToRValue, int)].wq (ImplicitCastExpr, LValueToRValue, struct workqueue_struct *)",
+          "for (...; i (ImplicitCastExpr, LValueToRValue, int) (ImplicitCastExpr, IntegralCast, uint32_t) < [B12.4] (ImplicitCastExpr, LValueToRValue, struct amdgpu_device *)->dm.dc (ImplicitCastExpr, LValueToRValue, struct dc *)->caps.max_links (ImplicitCastExpr, LValueToRValue, uint32_t); ...)",
+          "if adev (ImplicitCastExpr, LValueToRValue, struct amdgpu_device *)->dm.hpd_rx_offload_wq (ImplicitCastExpr, LValueToRValue, struct hpd_rx_irq_offload_work_queue *)"
+        ],
+        "source_file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+        "source_excerpt": "",
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/semweaver_treatment_evidence_cohort_v3/14_c3d749609472_Out_of_Bound/csa/patchweaver_runtime/csa_raw/drivers-gpu-drm-amd-display-amdgpu_dm-amdgpu_dm.c-amdgpu_dm_fini.txt",
+        "raw_output_sha256": "6c41df34782c2c2d5a05f6a809b718423b08e5f14eee15ad2ed1410ce2b9e60d",
+        "command_sha256": "c4da5026fbd8f1749ec4746bd6dcd5ca7d5658b2eb01a7bebec226296e558f17"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:lifecycle",
+        "confidence": 0.9,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+          "hunk_index": 0,
+          "source_line": 3377
+        },
+        "summary": "amdgpu_dm_fini in drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c reaches destroy_workqueue, flush_work",
+        "statements": [],
+        "guards": [
+          "if [B3.5]",
+          "if [B5.5]",
+          "if [B7.5]"
+        ],
+        "call_boundary": [
+          "destroy_workqueue",
+          "drm_encoder_cleanup",
+          "amdgpu_dm_destroy_drm_device",
+          "flush_work",
+          "kfree",
+          "hdcp_destroy"
+        ],
+        "call_edges": [
+          "amdgpu_dm_fini -> destroy_workqueue",
+          "amdgpu_dm_fini -> drm_encoder_cleanup",
+          "amdgpu_dm_fini -> amdgpu_dm_destroy_drm_device",
+          "amdgpu_dm_fini -> flush_work",
+          "amdgpu_dm_fini -> kfree",
+          "amdgpu_dm_fini -> hdcp_destroy",
+          "amdgpu_dm_fini -> dc_deinit_callbacks",
+          "amdgpu_dm_fini -> dc_dmub_srv_destroy"
+        ],
+        "state_transitions": [
+          "transition(destroy_workqueue)",
+          "transition(flush_work)",
+          "[B1.4]->dm",
+          "[B1.12]->dm",
+          "[B1.20]->dm",
+          "return;"
+        ],
+        "api_terms": [
+          "destroy_workqueue",
+          "flush_work",
+          "drm_encoder_cleanup",
+          "amdgpu_dm_destroy_drm_device",
+          "kfree",
+          "hdcp_destroy"
+        ],
+        "related_symbols": [
+          "adev"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_validation_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+        "function": "amdgpu_dm_fini"
+      },
+      "location": {
+        "line": 3377,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c:3377",
+        "diagnostic_message": "",
+        "diagnostic_checker": "",
+        "state_before": [
+          "input(adev)",
+          "sinks(destroy_workqueue, drm_encoder_cleanup)"
+        ],
+        "state_after": [
+          "diagnostic(csa)"
+        ],
+        "functions": [
+          "amdgpu_dm_fini"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "adev"
+        ],
+        "buffer_fields": [],
+        "call_targets": [
+          "destroy_workqueue",
+          "drm_encoder_cleanup",
+          "amdgpu_dm_destroy_drm_device",
+          "flush_work",
+          "kfree",
+          "hdcp_destroy"
+        ],
+        "call_edges": [
+          "amdgpu_dm_fini -> destroy_workqueue",
+          "amdgpu_dm_fini -> drm_encoder_cleanup",
+          "amdgpu_dm_fini -> amdgpu_dm_destroy_drm_device",
+          "amdgpu_dm_fini -> flush_work",
+          "amdgpu_dm_fini -> kfree",
+          "amdgpu_dm_fini -> hdcp_destroy"
+        ],
+        "state_statements": [
+          "[B1.4]->dm",
+          "[B1.12]->dm",
+          "[B1.20]->dm",
+          "return;",
+          "mod_freesync_destroy",
+          "[B2.1] (ImplicitCastExpr, FunctionToPointerDecay, void (*)(struct mod_freesync *))"
+        ],
+        "source_file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+        "source_excerpt": "",
+        "coverage_status": "partial",
+        "contract_type": "",
+        "guard_exprs": [
+          "if [B3.5]",
+          "if [B5.5]",
+          "if [B7.5]",
+          "if [B11.10]"
+        ],
+        "sink_calls": [
+          "destroy_workqueue",
+          "drm_encoder_cleanup",
+          "amdgpu_dm_destroy_drm_device",
+          "flush_work"
+        ]
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.72,
+        "origin": "analyzer_output"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+          "hunk_index": 0,
+          "source_line": 3377
+        },
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c:3377",
+        "statements": [],
+        "guards": [
+          "if [B3.5]",
+          "if [B5.5]",
+          "if [B7.5]",
+          "if [B11.10]"
+        ],
+        "call_boundary": [
+          "destroy_workqueue",
+          "drm_encoder_cleanup",
+          "amdgpu_dm_destroy_drm_device",
+          "flush_work",
+          "kfree",
+          "hdcp_destroy"
+        ],
+        "call_edges": [
+          "amdgpu_dm_fini -> destroy_workqueue",
+          "amdgpu_dm_fini -> drm_encoder_cleanup",
+          "amdgpu_dm_fini -> amdgpu_dm_destroy_drm_device",
+          "amdgpu_dm_fini -> flush_work",
+          "amdgpu_dm_fini -> kfree",
+          "amdgpu_dm_fini -> hdcp_destroy"
+        ],
+        "state_transitions": [
+          "diagnostic(csa)"
+        ],
+        "api_terms": [
+          "destroy_workqueue",
+          "flush_work",
+          "[B1.4]->dm",
+          "[B1.12]->dm",
+          "[B1.20]->dm",
+          "return;"
+        ],
+        "related_symbols": [
+          "adev"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "collected_analyzers": [
+    "csa"
+  ],
+  "provenance_summary": {
+    "total_records": 8,
+    "origin_counts": {
+      "analyzer_internal": 7,
+      "analyzer_output": 1
+    },
+    "analyzer_internal_records": 7,
+    "analyzer_internal_fraction": 0.875,
+    "analyzer_backed_records": 8,
+    "analyzer_backed_fraction": 1.0,
+    "source_derived_records": 0,
+    "source_derived_fraction": 0.0
+  }
+}

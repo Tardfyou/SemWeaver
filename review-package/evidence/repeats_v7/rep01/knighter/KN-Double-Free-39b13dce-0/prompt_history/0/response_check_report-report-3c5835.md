@@ -1,0 +1,6 @@
+- Decision: Bug
+- Reason: The report matches the specified double-free pattern. `scmi_debugfs_common_setup()` allocates `dbg->name` with `kstrdup()` and registers `scmi_debugfs_common_cleanup(dbg)` through `devm_add_action_or_reset()`. On registration failure, `devm_add_action_or_reset()` immediately invokes the supplied cleanup action itself. That cleanup frees `dbg->name` (and `dbg->type`) in `scmi_debugfs_common_cleanup()`.
+
+  Therefore, in the pre-patch error path, explicitly calling `scmi_debugfs_common_cleanup(dbg)` after `devm_add_action_or_reset()` fails frees the same `dbg->name` allocation a second time. The failure is feasible because `devm_add_action_or_reset()` can fail when device-managed action allocation fails, such as under memory pressure. `dbg`, `dbg->name`, and `dbg->type` have all been successfully initialized before the registration call, so this is not a null-pointer issue or an unreachable path.
+
+  Returning `NULL` directly after the failed `devm_add_action_or_reset()` call, as shown in the fixed code, correctly relies on the helper's reset behavior and removes the duplicate cleanup.

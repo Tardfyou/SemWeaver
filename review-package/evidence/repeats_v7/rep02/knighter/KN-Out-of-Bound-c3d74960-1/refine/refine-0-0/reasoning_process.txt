@@ -1,0 +1,18 @@
+Refinment Plan:
+
+1. Root cause: the current checker is a source-text matcher. It reports every branch condition containing `dc->caps.max_links`, without determining which array is indexed by the loop. This incorrectly treats `hpd_rx_offload_wq`, a per-link array legitimately bounded by `max_links`, as though it were `secure_display_ctxs`, a per-CRTC array.
+
+2. Replace textual matching with AST-based matching:
+   - Identify a `for` condition whose induction variable is bounded by the semantic member-access chain `dc->caps.max_links`.
+   - Inspect that specific loop body using `RecursiveASTVisitor`.
+   - Report only when the same induction variable indexes `secure_display_ctxs`.
+
+3. This preserves detection of the target buggy loops:
+   - `adev->dm.secure_display_ctxs[i]`
+   - local `secure_display_ctxs[i]` in `amdgpu_dm_crtc_secure_display_create_contexts()`
+
+4. The checker intentionally does not report loops indexing other arrays, such as `hpd_rx_offload_wq[i]`. Those arrays can correctly be allocated and managed per `max_links`, even when `max_links != num_crtc`.
+
+Refined Code:
+```cpp
+```

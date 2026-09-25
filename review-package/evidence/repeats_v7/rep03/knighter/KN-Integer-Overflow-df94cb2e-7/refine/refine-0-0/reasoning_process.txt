@@ -1,0 +1,21 @@
+Refinment Plan:
+
+The false positive is caused by the original checker treating every `unsigned int` declaration whose name contains `sector` as an overflow candidate. It does not inspect the initializer, range, or uses. `max_sectors` is a bounded chunk-size limit:
+
+```c
+KEY_SIZE_MAX & (~0 << c->block_bits)
+```
+
+The `KEY_SIZE_MAX` operand bounds the result, and the mask can only clear bits. It is not an unbounded on-disk sector count and cannot exceed the destination `unsigned int` width.
+
+The refined checker makes reports evidence-based:
+
+- A local `unsigned` sector variable is reported only when initialized from a wide (`>= 64-bit`) sector value, such as `trans->disk_res->sectors`.
+- An `unsigned` sector parameter is reported only when it is passed directly to a `>= 64-bit` formal parameter, demonstrating that the API contract expects a wider sector count.
+- Explicitly bitwise-AND-bounded chunk limits, including `KEY_SIZE_MAX & alignment_mask`, are suppressed.
+- Format checking is narrowed to a real varargs mismatch: `%u` used for a wide sector expression. The original buggy logging call is not itself a C varargs mismatch because `disk_res_sectors` is still `unsigned`; the real defect is the earlier truncation. Once that variable is corrected to `u64`, a stale `%u` is correctly detected.
+- The checker retains detection of both target defects: `disk_res_sectors` narrowing from `trans->disk_res->sectors`, and the `unsigned sectors` API parameter passed to a wide sector-count API.
+
+Refined Code:
+```cpp
+```

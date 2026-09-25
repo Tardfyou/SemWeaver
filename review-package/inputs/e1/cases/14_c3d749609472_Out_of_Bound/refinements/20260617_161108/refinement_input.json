@@ -1,0 +1,1801 @@
+{
+  "schema_version": 1,
+  "workflow_mode": "refine",
+  "patch_path": "/anonymous/home/LLM-Native/research/knighter/e2/cases/14_c3d749609472_Out_of_Bound/patches/commit.patch",
+  "validate_path": "/anonymous/home/LLM-Native/research/knighter/linux",
+  "analyzer_choice": "csa",
+  "shared_analysis_path": "patchweaver_plan.json",
+  "shared_analysis": {
+    "files_changed": [
+      "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+      "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c"
+    ],
+    "file_details": [
+      {
+        "path": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+        "additions": 1,
+        "deletions": 1,
+        "hunks": 1
+      },
+      {
+        "path": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c",
+        "additions": 5,
+        "deletions": 3,
+        "hunks": 2
+      }
+    ],
+    "vulnerability_patterns": [
+      {
+        "type": "out_of_bounds_access",
+        "description": "补丁前 secure_display_ctxs 的实际分配规模与后续循环索引上界不一致：数组按 AMDGPU_MAX_CRTCS 分配，但循环按 adev->dm.dc->caps.max_links 遍历并消费 secure_display_ctxs[i]。当 max_links 大于已分配元素数时，flush_work、字段比较、INIT_WORK、crtc 赋值等对 secure_display_ctxs[i] 的访问会越界。补丁后 kcalloc 和所有相关 for 循环都改为 adev->mode_info.num_crtc，使分配数量和索引上界一致。",
+        "trigger_conditions": [
+          "secure_display_ctxs 由固定上限 AMDGPU_MAX_CRTCS 或与循环上界不同的数量分配",
+          "for 循环条件使用 i < adev->dm.dc->caps.max_links",
+          "循环体内使用 secure_display_ctxs[i] 进行字段访问、work 初始化、flush_work 或 crtc 比较",
+          "adev->dm.dc->caps.max_links 可能大于 secure_display_ctxs 的实际元素数"
+        ],
+        "fix_patterns": [
+          "将 secure_display_ctxs 的 kcalloc 元素数量从 AMDGPU_MAX_CRTCS 改为 adev->mode_info.num_crtc",
+          "将访问 secure_display_ctxs[i] 的循环上界从 adev->dm.dc->caps.max_links 改为 adev->mode_info.num_crtc",
+          "用同一个 authoritative CRTC 数量字段同时约束分配规模和数组索引消费"
+        ],
+        "affected_functions": [
+          "amdgpu_dm_fini",
+          "amdgpu_dm_crtc_configure_crc_source",
+          "amdgpu_dm_crtc_secure_display_create_contexts"
+        ],
+        "cross_file": true,
+        "source": "llm",
+        "confidence": 0.93,
+        "evidence_lines": [
+          "- secure_display_ctxs = kcalloc(AMDGPU_MAX_CRTCS, sizeof(struct secure_display_context), GFP_KERNEL);",
+          "+ secure_display_ctxs = kcalloc(adev->mode_info.num_crtc,",
+          "- for (i = 0; i < adev->dm.dc->caps.max_links; i++) {",
+          "+ for (i = 0; i < adev->mode_info.num_crtc; i++) {",
+          "if (adev->dm.secure_display_ctxs[i].crtc) {",
+          "flush_work(&adev->dm.secure_display_ctxs[i].notify_ta_work);"
+        ]
+      }
+    ],
+    "cross_file_dependencies": [],
+    "detection_strategy": {
+      "primary_pattern": "out_of_bounds_access",
+      "check_types": [
+        "array_index_loop_bound_mismatch",
+        "allocation_size_vs_iteration_bound_consistency",
+        "field_based_loop_bound_on_array_access",
+        "patch_local_secure_display_ctxs_index_access"
+      ],
+      "entry_points": [
+        "amdgpu_dm_crtc_secure_display_create_contexts",
+        "amdgpu_dm_fini",
+        "amdgpu_dm_crtc_configure_crc_source"
+      ],
+      "data_flow_tracking": true,
+      "cross_file_analysis": true,
+      "suggestions": [
+        "首稿优先命中最小 patch-local 锚点：for (i = 0; i < adev->dm.dc->caps.max_links; i++) 循环体内访问 secure_display_ctxs[i] 或 adev->dm.secure_display_ctxs[i]",
+        "另一个强锚点是 kcalloc(AMDGPU_MAX_CRTCS, sizeof(struct secure_display_context), ...) 后同函数内用 max_links 初始化 secure_display_ctxs[i]",
+        "不要把新增的 num_crtc 边界作为首稿硬过滤；它更适合作为已修复代码的 barrier，用于排除 patched 版本",
+        "辅助收敛条件可以要求索引变量来自同一 for 循环、数组名为 secure_display_ctxs、循环上界为 adev->dm.dc->caps.max_links、或分配数量为 AMDGPU_MAX_CRTCS",
+        "若只追求首批命中，局部 AST/CFG 匹配循环上界和数组索引已足够；若要证明真实越界风险，再追踪 secure_display_ctxs 的 kcalloc 元素数量与跨函数字段保存关系",
+        "跨文件分析有助于关联 amdgpu_dm_crc.c 中的创建函数与 amdgpu_dm.c 中的 fini 消费，但 detector 首稿可以先限制在补丁涉及的三个函数内"
+      ]
+    },
+    "checker_name_suggestion": "SecureDisplayCtxsOutOfBoundsChecker",
+    "affected_functions": [
+      "amdgpu_dm_fini",
+      "amdgpu_dm_crtc_configure_crc_source",
+      "amdgpu_dm_crtc_secure_display_create_contexts"
+    ],
+    "key_functions": [
+      "amdgpu_dm_fini",
+      "amdgpu_dm_crtc_configure_crc_source",
+      "amdgpu_dm_crtc_secure_display_create_contexts"
+    ],
+    "patch_semantics": {
+      "added_guards": [],
+      "added_api_calls": [
+        "kcalloc"
+      ],
+      "removed_api_calls": [
+        "kcalloc"
+      ],
+      "state_resets": [
+        "for (i = 0; i < adev->mode_info.num_crtc; i++) {",
+        "for (i = 0; i < adev->mode_info.num_crtc; i++) {",
+        "for (i = 0; i < adev->mode_info.num_crtc; i++) {"
+      ],
+      "lifecycle_changes": []
+    },
+    "analysis_backend": "llm",
+    "analysis_confidence": 0.93,
+    "analysis_rationale": "补丁把 secure_display_ctxs 的分配数量和所有按 i 访问 secure_display_ctxs[i] 的循环上界统一为 adev->mode_info.num_crtc。旧代码中数组由 kcalloc(AMDGPU_MAX_CRTCS, sizeof(struct secure_display_context), GFP_KERNEL) 分配，但多个循环使用 adev->dm.dc->caps.max_links 作为上界并访问 secure_display_ctxs[i]；提交说明也指出 max_links 可能大于 AMDGPU_MAX_CRTCS，因此危险机制是用不匹配且可能更大的硬件能力字段驱动数组索引，导致越界访问。补丁后通过改用 num_crtc 作为分配规模和循环边界阻断该索引越界。",
+    "llm_usage": {
+      "prompt_tokens": 4887,
+      "completion_tokens": 1730,
+      "total_tokens": 6617,
+      "call_count": 1,
+      "available": true,
+      "model": "gpt-5.5"
+    },
+    "patchweaver": {
+      "summary": "Patch suggests out_of_bounds_access semantics across 2 file(s); added guards=0, removed risky operations=1, fix patterns=3, metadata refs=2.",
+      "patch_facts": [
+        {
+          "fact_type": "patch_overview",
+          "label": "Patch overview",
+          "attributes": {
+            "patch_path": "/anonymous/home/LLM-Native/research/knighter/e2/cases/14_c3d749609472_Out_of_Bound/patches/commit.patch",
+            "changed_files": [
+              "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+              "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c"
+            ],
+            "changed_file_count": 2,
+            "added_line_count": 6,
+            "deleted_line_count": 4
+          }
+        },
+        {
+          "fact_type": "vulnerability_patterns",
+          "label": "Vulnerability patterns inferred from patch",
+          "attributes": {
+            "patterns": [
+              "out_of_bounds_access"
+            ],
+            "descriptions": [
+              "补丁前 secure_display_ctxs 的实际分配规模与后续循环索引上界不一致：数组按 AMDGPU_MAX_CRTCS 分配，但循环按 adev->dm.dc->caps.max_links 遍历并消费 secure_display_ctxs[i]。当 max_links 大于已分配元素数时，flush_work、字段比较、INIT_WORK、crtc 赋值等对 secure_display_ctxs[i] 的访问会越界。补丁后 kcalloc 和所有相关 for 循环都改为 adev->mode_info.num_crtc，使分配数量和索引上界一致。"
+            ]
+          }
+        },
+        {
+          "fact_type": "affected_functions",
+          "label": "Functions implicated by removed or fixed code",
+          "attributes": {
+            "functions": [
+              "amdgpu_dm_crtc_configure_crc_source",
+              "amdgpu_dm_crtc_secure_display_create_contexts",
+              "amdgpu_dm_fini"
+            ]
+          }
+        },
+        {
+          "fact_type": "detection_strategy",
+          "label": "Existing patch analysis detection strategy",
+          "attributes": {
+            "primary_pattern": "out_of_bounds_access",
+            "check_types": [
+              "array_index_loop_bound_mismatch",
+              "allocation_size_vs_iteration_bound_consistency",
+              "field_based_loop_bound_on_array_access",
+              "patch_local_secure_display_ctxs_index_access"
+            ],
+            "entry_points": [
+              "amdgpu_dm_crtc_secure_display_create_contexts",
+              "amdgpu_dm_fini",
+              "amdgpu_dm_crtc_configure_crc_source"
+            ],
+            "data_flow_tracking": true,
+            "cross_file_analysis": true,
+            "suggestions": [
+              "首稿优先命中最小 patch-local 锚点：for (i = 0; i < adev->dm.dc->caps.max_links; i++) 循环体内访问 secure_display_ctxs[i] 或 adev->dm.secure_display_ctxs[i]",
+              "另一个强锚点是 kcalloc(AMDGPU_MAX_CRTCS, sizeof(struct secure_display_context), ...) 后同函数内用 max_links 初始化 secure_display_ctxs[i]",
+              "不要把新增的 num_crtc 边界作为首稿硬过滤；它更适合作为已修复代码的 barrier，用于排除 patched 版本",
+              "辅助收敛条件可以要求索引变量来自同一 for 循环、数组名为 secure_display_ctxs、循环上界为 adev->dm.dc->caps.max_links、或分配数量为 AMDGPU_MAX_CRTCS",
+              "若只追求首批命中，局部 AST/CFG 匹配循环上界和数组索引已足够；若要证明真实越界风险，再追踪 secure_display_ctxs 的 kcalloc 元素数量与跨函数字段保存关系",
+              "跨文件分析有助于关联 amdgpu_dm_crc.c 中的创建函数与 amdgpu_dm.c 中的 fini 消费，但 detector 首稿可以先限制在补丁涉及的三个函数内"
+            ]
+          }
+        },
+        {
+          "fact_type": "removed_risky_operations",
+          "label": "Patch removes risky operations",
+          "attributes": {
+            "operations": [
+              "secure_display_ctxs = kcalloc(AMDGPU_MAX_CRTCS, sizeof(struct secure_display_context), GFP_KERNEL);"
+            ]
+          }
+        },
+        {
+          "fact_type": "fix_patterns",
+          "label": "Patch introduces reusable fix patterns",
+          "attributes": {
+            "patterns": [
+              "将 secure_display_ctxs 的 kcalloc 元素数量从 AMDGPU_MAX_CRTCS 改为 adev->mode_info.num_crtc",
+              "将访问 secure_display_ctxs[i] 的循环上界从 adev->dm.dc->caps.max_links 改为 adev->mode_info.num_crtc",
+              "用同一个 authoritative CRTC 数量字段同时约束分配规模和数组索引消费"
+            ]
+          }
+        },
+        {
+          "fact_type": "added_api_calls",
+          "label": "Patch introduces or highlights API usage",
+          "attributes": {
+            "apis": [
+              "kcalloc"
+            ]
+          }
+        },
+        {
+          "fact_type": "patch_intent",
+          "label": "Patch intent and commit-style summary",
+          "attributes": {
+            "summary": "commit c3d749609472ba0b217b42ab66f80459847e2bcb | Author: Hamza Mahfooz <hamza.mahfooz@amd.com>",
+            "keywords": [
+              "commit",
+              "c3d749609472ba0b217b42ab66f80459847e2bcb",
+              "author",
+              "hamza",
+              "mahfooz"
+            ]
+          }
+        },
+        {
+          "fact_type": "external_references",
+          "label": "External references recovered from patch text",
+          "attributes": {
+            "cves": [],
+            "cwes": [],
+            "issues": [
+              "1b11ff764aef",
+              "b8ff7e08bab9"
+            ]
+          }
+        }
+      ],
+      "mechanism_graph": {
+        "summary": "Patch suggests out_of_bounds_access semantics across 2 file(s); added guards=0, removed risky operations=1, fix patterns=3, metadata refs=2.",
+        "primary_patterns": [
+          "out_of_bounds_access"
+        ],
+        "nodes": [
+          {
+            "node_id": "patch",
+            "kind": "patch",
+            "label": "Security patch",
+            "attributes": {
+              "changed_files": [
+                "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+                "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c"
+              ]
+            }
+          },
+          {
+            "node_id": "file_0",
+            "kind": "file",
+            "label": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+            "attributes": {
+              "path": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+              "additions": 1,
+              "deletions": 1,
+              "hunks": 1
+            }
+          },
+          {
+            "node_id": "file_1",
+            "kind": "file",
+            "label": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c",
+            "attributes": {
+              "path": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c",
+              "additions": 5,
+              "deletions": 3,
+              "hunks": 2
+            }
+          },
+          {
+            "node_id": "pattern_0",
+            "kind": "pattern",
+            "label": "out_of_bounds_access",
+            "attributes": {
+              "type": "out_of_bounds_access",
+              "description": "补丁前 secure_display_ctxs 的实际分配规模与后续循环索引上界不一致：数组按 AMDGPU_MAX_CRTCS 分配，但循环按 adev->dm.dc->caps.max_links 遍历并消费 secure_display_ctxs[i]。当 max_links 大于已分配元素数时，flush_work、字段比较、INIT_WORK、crtc 赋值等对 secure_display_ctxs[i] 的访问会越界。补丁后 kcalloc 和所有相关 for 循环都改为 adev->mode_info.num_crtc，使分配数量和索引上界一致。",
+              "trigger_conditions": [
+                "secure_display_ctxs 由固定上限 AMDGPU_MAX_CRTCS 或与循环上界不同的数量分配",
+                "for 循环条件使用 i < adev->dm.dc->caps.max_links",
+                "循环体内使用 secure_display_ctxs[i] 进行字段访问、work 初始化、flush_work 或 crtc 比较",
+                "adev->dm.dc->caps.max_links 可能大于 secure_display_ctxs 的实际元素数"
+              ],
+              "fix_patterns": [
+                "将 secure_display_ctxs 的 kcalloc 元素数量从 AMDGPU_MAX_CRTCS 改为 adev->mode_info.num_crtc",
+                "将访问 secure_display_ctxs[i] 的循环上界从 adev->dm.dc->caps.max_links 改为 adev->mode_info.num_crtc",
+                "用同一个 authoritative CRTC 数量字段同时约束分配规模和数组索引消费"
+              ],
+              "affected_functions": [
+                "amdgpu_dm_fini",
+                "amdgpu_dm_crtc_configure_crc_source",
+                "amdgpu_dm_crtc_secure_display_create_contexts"
+              ],
+              "cross_file": true,
+              "source": "llm",
+              "confidence": 0.93,
+              "evidence_lines": [
+                "- secure_display_ctxs = kcalloc(AMDGPU_MAX_CRTCS, sizeof(struct secure_display_context), GFP_KERNEL);",
+                "+ secure_display_ctxs = kcalloc(adev->mode_info.num_crtc,",
+                "- for (i = 0; i < adev->dm.dc->caps.max_links; i++) {",
+                "+ for (i = 0; i < adev->mode_info.num_crtc; i++) {",
+                "if (adev->dm.secure_display_ctxs[i].crtc) {",
+                "flush_work(&adev->dm.secure_display_ctxs[i].notify_ta_work);"
+              ]
+            }
+          },
+          {
+            "node_id": "func_1",
+            "kind": "function",
+            "label": "amdgpu_dm_fini",
+            "attributes": {
+              "function": "amdgpu_dm_fini"
+            }
+          },
+          {
+            "node_id": "func_2",
+            "kind": "function",
+            "label": "amdgpu_dm_crtc_configure_crc_source",
+            "attributes": {
+              "function": "amdgpu_dm_crtc_configure_crc_source"
+            }
+          },
+          {
+            "node_id": "func_3",
+            "kind": "function",
+            "label": "amdgpu_dm_crtc_secure_display_create_contexts",
+            "attributes": {
+              "function": "amdgpu_dm_crtc_secure_display_create_contexts"
+            }
+          },
+          {
+            "node_id": "guard_1",
+            "kind": "guard",
+            "label": "secure_display_ctxs 由固定上限 AMDGPU_MAX_CRTCS 或与循环上界不同的数量分配",
+            "attributes": {
+              "condition": "secure_display_ctxs 由固定上限 AMDGPU_MAX_CRTCS 或与循环上界不同的数量分配"
+            }
+          },
+          {
+            "node_id": "guard_2",
+            "kind": "guard",
+            "label": "for 循环条件使用 i < adev->dm.dc->caps.max_links",
+            "attributes": {
+              "condition": "for 循环条件使用 i < adev->dm.dc->caps.max_links"
+            }
+          },
+          {
+            "node_id": "guard_3",
+            "kind": "guard",
+            "label": "循环体内使用 secure_display_ctxs[i] 进行字段访问、work 初始化、flush_work 或 crtc 比较",
+            "attributes": {
+              "condition": "循环体内使用 secure_display_ctxs[i] 进行字段访问、work 初始化、flush_work 或 crtc 比较"
+            }
+          },
+          {
+            "node_id": "guard_4",
+            "kind": "guard",
+            "label": "adev->dm.dc->caps.max_links 可能大于 secure_display_ctxs 的实际元素数",
+            "attributes": {
+              "condition": "adev->dm.dc->caps.max_links 可能大于 secure_display_ctxs 的实际元素数"
+            }
+          },
+          {
+            "node_id": "strategy",
+            "kind": "strategy",
+            "label": "out_of_bounds_access",
+            "attributes": {
+              "primary_pattern": "out_of_bounds_access",
+              "check_types": [
+                "array_index_loop_bound_mismatch",
+                "allocation_size_vs_iteration_bound_consistency",
+                "field_based_loop_bound_on_array_access",
+                "patch_local_secure_display_ctxs_index_access"
+              ],
+              "entry_points": [
+                "amdgpu_dm_crtc_secure_display_create_contexts",
+                "amdgpu_dm_fini",
+                "amdgpu_dm_crtc_configure_crc_source"
+              ],
+              "data_flow_tracking": true,
+              "cross_file_analysis": true,
+              "suggestions": [
+                "首稿优先命中最小 patch-local 锚点：for (i = 0; i < adev->dm.dc->caps.max_links; i++) 循环体内访问 secure_display_ctxs[i] 或 adev->dm.secure_display_ctxs[i]",
+                "另一个强锚点是 kcalloc(AMDGPU_MAX_CRTCS, sizeof(struct secure_display_context), ...) 后同函数内用 max_links 初始化 secure_display_ctxs[i]",
+                "不要把新增的 num_crtc 边界作为首稿硬过滤；它更适合作为已修复代码的 barrier，用于排除 patched 版本",
+                "辅助收敛条件可以要求索引变量来自同一 for 循环、数组名为 secure_display_ctxs、循环上界为 adev->dm.dc->caps.max_links、或分配数量为 AMDGPU_MAX_CRTCS",
+                "若只追求首批命中，局部 AST/CFG 匹配循环上界和数组索引已足够；若要证明真实越界风险，再追踪 secure_display_ctxs 的 kcalloc 元素数量与跨函数字段保存关系",
+                "跨文件分析有助于关联 amdgpu_dm_crc.c 中的创建函数与 amdgpu_dm.c 中的 fini 消费，但 detector 首稿可以先限制在补丁涉及的三个函数内"
+              ]
+            }
+          },
+          {
+            "node_id": "fix_1",
+            "kind": "fix",
+            "label": "将 secure_display_ctxs 的 kcalloc 元素数量从 AMDGPU_MAX_CRTCS 改为 adev->mode_info.num_crtc",
+            "attributes": {
+              "kind": "fix_patterns",
+              "value": "将 secure_display_ctxs 的 kcalloc 元素数量从 AMDGPU_MAX_CRTCS 改为 adev->mode_info.num_crtc"
+            }
+          },
+          {
+            "node_id": "fix_2",
+            "kind": "fix",
+            "label": "将访问 secure_display_ctxs[i] 的循环上界从 adev->dm.dc->caps.max_links 改为 adev->mode_info.num_crtc",
+            "attributes": {
+              "kind": "fix_patterns",
+              "value": "将访问 secure_display_ctxs[i] 的循环上界从 adev->dm.dc->caps.max_links 改为 adev->mode_info.num_crtc"
+            }
+          },
+          {
+            "node_id": "fix_3",
+            "kind": "fix",
+            "label": "用同一个 authoritative CRTC 数量字段同时约束分配规模和数组索引消费",
+            "attributes": {
+              "kind": "fix_patterns",
+              "value": "用同一个 authoritative CRTC 数量字段同时约束分配规模和数组索引消费"
+            }
+          },
+          {
+            "node_id": "fix_4",
+            "kind": "fix",
+            "label": "kcalloc",
+            "attributes": {
+              "kind": "added_api_calls",
+              "value": "kcalloc"
+            }
+          },
+          {
+            "node_id": "intent_0",
+            "kind": "intent",
+            "label": "commit c3d749609472ba0b217b42ab66f80459847e2bcb | Author: Hamza Mahfooz <hamza.mahfooz@amd.com>",
+            "attributes": {
+              "summary": "commit c3d749609472ba0b217b42ab66f80459847e2bcb | Author: Hamza Mahfooz <hamza.mahfooz@amd.com>",
+              "keywords": [
+                "commit",
+                "c3d749609472ba0b217b42ab66f80459847e2bcb",
+                "author",
+                "hamza",
+                "mahfooz"
+              ]
+            }
+          },
+          {
+            "node_id": "commit_0",
+            "kind": "commit",
+            "label": "1b11ff764aef, b8ff7e08bab9",
+            "attributes": {
+              "issues": [
+                "1b11ff764aef",
+                "b8ff7e08bab9"
+              ]
+            }
+          }
+        ],
+        "edges": [
+          {
+            "source": "patch",
+            "target": "file_0",
+            "relation": "touches",
+            "confidence": 0.95
+          },
+          {
+            "source": "patch",
+            "target": "file_1",
+            "relation": "touches",
+            "confidence": 0.95
+          },
+          {
+            "source": "patch",
+            "target": "pattern_0",
+            "relation": "indicates",
+            "confidence": 0.9
+          },
+          {
+            "source": "pattern_0",
+            "target": "func_1",
+            "relation": "affects",
+            "confidence": 0.75
+          },
+          {
+            "source": "pattern_0",
+            "target": "func_2",
+            "relation": "affects",
+            "confidence": 0.75
+          },
+          {
+            "source": "pattern_0",
+            "target": "func_3",
+            "relation": "affects",
+            "confidence": 0.75
+          },
+          {
+            "source": "pattern_0",
+            "target": "guard_1",
+            "relation": "requires",
+            "confidence": 0.7
+          },
+          {
+            "source": "pattern_0",
+            "target": "guard_2",
+            "relation": "requires",
+            "confidence": 0.7
+          },
+          {
+            "source": "pattern_0",
+            "target": "guard_3",
+            "relation": "requires",
+            "confidence": 0.7
+          },
+          {
+            "source": "pattern_0",
+            "target": "guard_4",
+            "relation": "requires",
+            "confidence": 0.7
+          },
+          {
+            "source": "patch",
+            "target": "strategy",
+            "relation": "guides",
+            "confidence": 0.85
+          },
+          {
+            "source": "patch",
+            "target": "fix_1",
+            "relation": "introduces",
+            "confidence": 0.8
+          },
+          {
+            "source": "patch",
+            "target": "fix_2",
+            "relation": "introduces",
+            "confidence": 0.8
+          },
+          {
+            "source": "patch",
+            "target": "fix_3",
+            "relation": "introduces",
+            "confidence": 0.8
+          },
+          {
+            "source": "patch",
+            "target": "fix_4",
+            "relation": "introduces",
+            "confidence": 0.8
+          },
+          {
+            "source": "patch",
+            "target": "intent_0",
+            "relation": "describes",
+            "confidence": 0.78
+          },
+          {
+            "source": "patch",
+            "target": "commit_0",
+            "relation": "tracked_by",
+            "confidence": 0.72
+          }
+        ]
+      },
+      "evidence_plan": {
+        "primary_pattern": "out_of_bounds_access",
+        "hypotheses": [
+          "The patch changes a data propagation condition that should generalize beyond the edited lines.",
+          "The vulnerability mechanism crosses file boundaries and should not be captured with local-only reasoning."
+        ],
+        "requirements": [
+          {
+            "evidence_type": "patch_fact",
+            "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+            "priority": 100,
+            "preferred_analyzers": [],
+            "confidence": 1.0,
+            "mechanism_refs": [
+              "patch"
+            ]
+          },
+          {
+            "evidence_type": "dataflow_candidate",
+            "reason": "Patch analysis requests data-flow tracking.",
+            "priority": 95,
+            "preferred_analyzers": [
+              "codeql"
+            ],
+            "confidence": 0.9,
+            "mechanism_refs": [
+              "strategy"
+            ]
+          },
+          {
+            "evidence_type": "semantic_slice",
+            "reason": "Cross-file patch suggests a verifier-backed semantic slice is needed, not just a project summary.",
+            "priority": 86,
+            "preferred_analyzers": [
+              "csa",
+              "codeql"
+            ],
+            "confidence": 0.83,
+            "mechanism_refs": [
+              "strategy"
+            ]
+          },
+          {
+            "evidence_type": "call_chain",
+            "reason": "Cross-file patch needs interprocedural call edges, not only local edited-line context.",
+            "priority": 82,
+            "preferred_analyzers": [
+              "codeql"
+            ],
+            "confidence": 0.78,
+            "mechanism_refs": [
+              "strategy"
+            ]
+          }
+        ],
+        "recommended_analyzers": [
+          "codeql",
+          "csa"
+        ],
+        "planner_notes": [
+          "Selected analyzers do not cover every planned evidence primitive."
+        ],
+        "coverage_gaps": [
+          "dataflow_candidate is not covered by selected analyzers ['csa']",
+          "call_chain is not covered by selected analyzers ['csa']"
+        ],
+        "uncertainty_budget": "high",
+        "escalation_triggers": [
+          "cross_file_mechanism",
+          "metadata_available",
+          "selected_coverage_gap"
+        ]
+      },
+      "validation_feedback_history": [
+        {
+          "analyzer": "csa",
+          "phase": "knighter_e2_patch_local_baseline",
+          "summary": "Baseline validation (csa): Knighter基线扫描报告数=6, 人工确认bug=1, 人工非bug=0, 候选组=positive_scan_report_count。漏洞版命中=true, 漏洞版patch-scoped告警数=5, 修复版误报数=4, fixed_silent=false, PDS=false. 这些数只表示patch-local语义验证门，不等同于Knighter full-kernel report_count/FPR统计。"
+        }
+      ],
+      "refinement_targets": {
+        "csa": {
+          "checker_name": "SAGenTestChecker",
+          "artifact_path": "/anonymous/home/LLM-Native/research/knighter/e2/cases/14_c3d749609472_Out_of_Bound/csa/SAGenTestChecker.cpp",
+          "artifact_kind": "checker_source",
+          "validation_summary": "Baseline validation (csa): Knighter基线扫描报告数=6, 人工确认bug=1, 人工非bug=0, 候选组=positive_scan_report_count。漏洞版命中=true, 漏洞版patch-scoped告警数=5, 修复版误报数=4, fixed_silent=false, PDS=false. 这些数只表示patch-local语义验证门，不等同于Knighter full-kernel report_count/FPR统计。",
+          "refinement_summary": "Baseline validation (csa): Knighter基线扫描报告数=6, 人工确认bug=1, 人工非bug=0, 候选组=positive_scan_report_count。漏洞版命中=true, 漏洞版patch-scoped告警数=5, 修复版误报数=4, fixed_silent=false, PDS=false. 这些数只表示patch-local语义验证门，不等同于Knighter full-kernel report_count/FPR统计。"
+        }
+      }
+    },
+    "knighter": {
+      "patch_local_screen1": {
+        "buggy_alerts": 5,
+        "fixed_alerts": 4,
+        "buggy_miss": false,
+        "fixed_noisy": true,
+        "poor_distinguishing": true,
+        "screen1_priority": "P0",
+        "screen1_reason": "fixed-side noisy",
+        "patch_related_targets": [
+          "drivers/gpu/drm/amd/amdgpu/../display/amdgpu_dm/amdgpu_dm.o",
+          "drivers/gpu/drm/amd/amdgpu/../display/amdgpu_dm/amdgpu_dm_crc.o"
+        ]
+      },
+      "baseline_validation_summary": "Baseline validation (csa): Knighter基线扫描报告数=6, 人工确认bug=1, 人工非bug=0, 候选组=positive_scan_report_count。漏洞版命中=true, 漏洞版patch-scoped告警数=5, 修复版误报数=4, fixed_silent=false, PDS=false. 这些数只表示patch-local语义验证门，不等同于Knighter full-kernel report_count/FPR统计。"
+    },
+    "patch_path": "/anonymous/home/LLM-Native/research/knighter/e2/cases/14_c3d749609472_Out_of_Bound/patches/commit.patch"
+  },
+  "artifacts": {
+    "csa": {
+      "analyzer_id": "csa",
+      "checker_name": "SAGenTestChecker",
+      "source_path": "/anonymous/home/LLM-Native/research/knighter/e2/cases/14_c3d749609472_Out_of_Bound/csa/refinements/20260617_161108/csa/SAGenTestChecker.cpp",
+      "output_path": "/anonymous/home/LLM-Native/research/knighter/e2/cases/14_c3d749609472_Out_of_Bound/csa/refinements/20260617_161108/csa/SAGenTestPlugin.so",
+      "result_path": "/anonymous/home/LLM-Native/research/knighter/e2/cases/14_c3d749609472_Out_of_Bound/csa/refinements/20260617_161108/csa/result.json",
+      "report_entry": {
+        "success": true,
+        "validation_requested": true,
+        "functional_validation_passed": true,
+        "semantic_target_hit": true,
+        "validation_state": "target_hit",
+        "semantic_acceptance": true,
+        "semantic_acceptance_summary": "命中验证目标并通过功能验证",
+        "checker_name": "SAGenTestChecker",
+        "artifact_display_name": "SAGenTestChecker",
+        "output_path": "/anonymous/home/LLM-Native/research/knighter/e2/cases/14_c3d749609472_Out_of_Bound/csa/refinements/20260617_161108/csa/SAGenTestPlugin.so",
+        "source_path": "/anonymous/home/LLM-Native/research/knighter/e2/cases/14_c3d749609472_Out_of_Bound/csa/refinements/20260617_161108/csa/SAGenTestChecker.cpp",
+        "iterations": 6,
+        "compile_attempts": 1,
+        "error": "",
+        "validation": {
+          "stage": "semantic",
+          "analyzer": "csa",
+          "success": true,
+          "execution_time": 131.9718680381775,
+          "error_message": "",
+          "diagnostics": [],
+          "diagnostics_count": 0,
+          "all_diagnostics_count": 0,
+          "generated_diagnostics_count": 0,
+          "warnings_count": 0,
+          "errors_count": 0,
+          "environment_blocked": false,
+          "environment_block_reason": "",
+          "validation_target": "/anonymous/home/LLM-Native/research/knighter/linux",
+          "diagnostics_filtered": true,
+          "patch_targets": [
+            "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+            "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c"
+          ]
+        },
+        "llm_usage": {
+          "prompt_tokens": 62650,
+          "completion_tokens": 7537,
+          "total_tokens": 70187,
+          "call_count": 6,
+          "available": true,
+          "model": "gpt-5.5"
+        },
+        "artifact_metrics": {
+          "path": "/anonymous/home/LLM-Native/research/knighter/e2/cases/14_c3d749609472_Out_of_Bound/csa/refinements/20260617_161108/csa/SAGenTestChecker.cpp",
+          "total_lines": 171,
+          "nonempty_lines": 136,
+          "char_count": 5353,
+          "byte_count": 5353
+        },
+        "artifact_delta": {
+          "baseline_path": "/anonymous/home/LLM-Native/research/knighter/e2/cases/14_c3d749609472_Out_of_Bound/csa/SAGenTestChecker.cpp",
+          "current_path": "/anonymous/home/LLM-Native/research/knighter/e2/cases/14_c3d749609472_Out_of_Bound/csa/refinements/20260617_161108/csa/SAGenTestChecker.cpp",
+          "baseline_total_lines": 71,
+          "current_total_lines": 171,
+          "baseline_nonempty_lines": 59,
+          "current_nonempty_lines": 136,
+          "delta_total_lines": 100,
+          "delta_nonempty_lines": 77,
+          "growth_ratio": 1.305085
+        },
+        "artifact_review": {
+          "success": true,
+          "error": "",
+          "findings": []
+        },
+        "evidence_records": 21,
+        "missing_evidence": [],
+        "evidence_degraded": false,
+        "semantic_slice_records": 10,
+        "context_summary_records": 1,
+        "slice_coverage": "partial",
+        "verifier_backed_slices": 10,
+        "slice_kinds": {
+          "path_witness": 1,
+          "state_witness": 3,
+          "lifecycle_witness": 1,
+          "semantic_slice": 2,
+          "patch_fact": 1,
+          "path_guard": 1,
+          "allocation_lifecycle": 1
+        },
+        "evidence_escalation": {},
+        "validation_feedback_records": 1,
+        "validation_feedback_summary": "- validation_outcome @ semantic_validation: semantic validation passed with 2 diagnostics [coverage=full]",
+        "validation_feedback_history": [
+          {
+            "analyzer": "csa",
+            "phase": "baseline_reused_validation",
+            "summary": "Baseline validation (csa): Knighter基线扫描报告数=6, 人工确认bug=1, 人工非bug=0, 候选组=positive_scan_report_count。漏洞版命中=true, 漏洞版patch-scoped告警数=5, 修复版误报数=4, fixed_silent=false, PDS=false. 这些数只表示patch-local语义验证门，不等同于Knighter full-kernel report_count/FPR统计。"
+          },
+          {
+            "analyzer": "csa",
+            "phase": "refine_candidate",
+            "summary": "Baseline validation (csa): Knighter基线扫描报告数=6, 人工确认bug=1, 人工非bug=0, 候选组=positive_scan_report_count。漏洞版命中=true, 漏洞版patch-scoped告警数=5, 修复版误报数=4, fixed_silent=false, PDS=false. 这些数只表示patch-local语义验证门，不等同于Knighter full-kernel report_count/FPR统计。"
+          },
+          {
+            "analyzer": "csa",
+            "phase": "initial_validation",
+            "summary": "- validation_outcome @ semantic_validation: semantic validation passed with 2 diagnostics [coverage=full]"
+          }
+        ],
+        "refinement_attempted": true,
+        "refinement_adopted": true,
+        "refinement_iterations_attempted": 1,
+        "refinement_skipped_reason": "",
+        "last_refinement_candidate_success": true,
+        "last_refinement_candidate_error": "",
+        "last_refinement_candidate_artifact_review": {
+          "success": true,
+          "error": "",
+          "findings": []
+        },
+        "last_refinement_candidate_output_path": "/anonymous/home/LLM-Native/research/knighter/llvm/build/lib/SAGenTestPlugin.so",
+        "post_validation_evidence_records": 22,
+        "post_validation_missing_evidence": [],
+        "post_validation_semantic_slice_records": 10,
+        "post_validation_context_summary_records": 1,
+        "post_validation_slice_coverage": "partial",
+        "synthesis_input": {
+          "analyzer_id": "csa",
+          "detector_artifact": "checker_plugin",
+          "primary_pattern": "out_of_bounds_access",
+          "objective": "Synthesize a path-sensitive out_of_bounds_access detector that encodes the same local state, guards, and lifecycle mechanism evidenced by the patch, while still generalizing to semantically equivalent sites.",
+          "mechanism_contract": {
+            "mechanism_family": "generic_vulnerability_mechanism",
+            "semantic_dimensions": [
+              "vulnerability trigger",
+              "patch-introduced barrier",
+              "local state or flow relation"
+            ],
+            "trigger_invariants": [
+              "the vulnerable mechanism is reachable on a feasible path",
+              "the path lacks the barrier introduced by the patch",
+              "Patch-backed trigger clue: removed risky operation: secure_display_ctxs = kcalloc(AMDGPU_MAX_CRTCS, sizeof(struct secure_display_context), GFP_KERNEL);",
+              "Patch-backed trigger clue: added or highlighted APIs: kcalloc",
+              "Patch-backed trigger clue: detection hints: 首稿优先命中最小 patch-local 锚点：for (i = 0; i < adev->dm.dc->caps.max_links; i++) 循环体内访问 secure_display_ctxs[i] 或 adev->dm.secure_display_ctxs[i], 另一个强锚点是 kcalloc(AMDGPU_MAX_CRTCS, sizeof(struct secure_display_context), ...) 后同函数内用 max_links 初始化 secure_display_ctxs[i], 不要把新增的 num_crtc 边界作为首稿硬过滤；它更适合作为已修复代码的 barrier，用于排除 patched 版本"
+            ],
+            "silence_invariants": [
+              "patch-introduced guards, barriers, or safe APIs must suppress findings",
+              "patch-introduced barrier pattern: 将 secure_display_ctxs 的 kcalloc 元素数量从 AMDGPU_MAX_CRTCS 改为 adev->mode_info.num_crtc",
+              "patch-introduced barrier pattern: 将访问 secure_display_ctxs[i] 的循环上界从 adev->dm.dc->caps.max_links 改为 adev->mode_info.num_crtc",
+              "patch-introduced barrier pattern: 用同一个 authoritative CRTC 数量字段同时约束分配规模和数组索引消费"
+            ],
+            "transfer_axes": [
+              "only generalize along evidence-backed state, guard, flow, or API-role equivalence",
+              "equivalent local state transitions around the same sink or dereference",
+              "equivalent ownership or release/reinit lifecycle on the same symbolic resource"
+            ],
+            "forbidden_shortcuts": [
+              "bind the detector to fixed file paths, line numbers, or exact patch strings",
+              "broaden into unrelated bug families just to improve hit count",
+              "use the patch text itself as the matching rule",
+              "widen to unrelated bug families without evidence",
+              "placeholder helper logic or empty ProgramState modeling"
+            ],
+            "evidence_backed_axes": [
+              "resource lifecycle",
+              "state transitions"
+            ]
+          },
+          "detector_name_hint": "SecureDisplayCtxsOutOfBoundsChecker",
+          "focus_files": [
+            "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+            "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c"
+          ],
+          "focus_functions": [
+            "amdgpu_dm_fini",
+            "amdgpu_dm_crtc_configure_crc_source",
+            "amdgpu_dm_crtc_secure_display_create_contexts"
+          ],
+          "hypotheses": [
+            "The patch changes a data propagation condition that should generalize beyond the edited lines.",
+            "The vulnerability mechanism crosses file boundaries and should not be captured with local-only reasoning."
+          ],
+          "required_evidence_types": [
+            "patch_fact",
+            "dataflow_candidate",
+            "semantic_slice",
+            "call_chain"
+          ],
+          "missing_evidence_types": [],
+          "evidence_degraded": false,
+          "patch_mechanism_signals": [
+            "removed risky operation: secure_display_ctxs = kcalloc(AMDGPU_MAX_CRTCS, sizeof(struct secure_display_context), GFP_KERNEL);",
+            "added or highlighted APIs: kcalloc",
+            "detection hints: 首稿优先命中最小 patch-local 锚点：for (i = 0; i < adev->dm.dc->caps.max_links; i++) 循环体内访问 secure_display_ctxs[i] 或 adev->dm.secure_display_ctxs[i], 另一个强锚点是 kcalloc(AMDGPU_MAX_CRTCS, sizeof(struct secure_display_context), ...) 后同函数内用 max_links 初始化 secure_display_ctxs[i], 不要把新增的 num_crtc 边界作为首稿硬过滤；它更适合作为已修复代码的 barrier，用于排除 patched 版本"
+          ],
+          "silencing_conditions": [
+            "patch-introduced barrier pattern: 将 secure_display_ctxs 的 kcalloc 元素数量从 AMDGPU_MAX_CRTCS 改为 adev->mode_info.num_crtc",
+            "patch-introduced barrier pattern: 将访问 secure_display_ctxs[i] 的循环上界从 adev->dm.dc->caps.max_links 改为 adev->mode_info.num_crtc",
+            "patch-introduced barrier pattern: 用同一个 authoritative CRTC 数量字段同时约束分配规模和数组索引消费"
+          ],
+          "retry_guidance": [
+            "vulnerable_trigger_clause: Repair the failing clause using the most directly supporting evidence.",
+            "KNighter E2 strict patch-local baseline: buggy_alerts=5, fixed_alerts=4, buggy_miss=false, fixed_noisy=true, pds=false, targets=drivers/gpu/drm/amd/amdgpu/../display/amdgpu_dm/amdgpu_dm.o;drivers/gpu/drm/amd/amdgpu/../display/amdgpu_dm/amdgpu_dm_crc.o."
+          ],
+          "selected_evidence_ids": [
+            "csa_lifecycle_0",
+            "csa_state_0",
+            "csa_state_1",
+            "knighter_historical_report_reference",
+            "pf_004",
+            "pf_005",
+            "pf_006",
+            "pf_003",
+            "pf_002"
+          ],
+          "selected_evidence": [
+            {
+              "evidence_id": "csa_lifecycle_0",
+              "type": "allocation_lifecycle",
+              "analyzer": "csa",
+              "scope": {
+                "repo": "commit.patch",
+                "file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+                "function": "amdgpu_dm_fini"
+              },
+              "semantic_payload": {
+                "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+                "summary": "amdgpu_dm_fini in drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c reaches flush_work, destroy_workqueue",
+                "state_before": [
+                  "input(adev)",
+                  "buffer(adev->dm)",
+                  "buffer(adev->dev)",
+                  "sinks(flush_work, kfree)"
+                ],
+                "state_after": [
+                  "transition(flush_work)",
+                  "transition(destroy_workqueue)"
+                ],
+                "tracked_symbols": [
+                  "adev",
+                  "adev->dm",
+                  "adev->dev",
+                  "dc->ctx",
+                  "dc->caps"
+                ],
+                "buffer_fields": [
+                  "adev->dm",
+                  "adev->dev",
+                  "dc->ctx",
+                  "dc->caps"
+                ],
+                "coverage_status": "partial",
+                "operations": [
+                  "flush_work",
+                  "destroy_workqueue"
+                ],
+                "functions": [
+                  "amdgpu_dm_fini"
+                ],
+                "source_file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c"
+              },
+              "evidence_slice": {
+                "kind": "lifecycle_witness",
+                "anchor": {
+                  "patch_file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+                  "hunk_index": 0,
+                  "source_line": 1779
+                },
+                "summary": "amdgpu_dm_fini in drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c reaches flush_work, destroy_workqueue",
+                "statements": [
+                  "1747: \t\t\t\tflush_work(&adev->dm.secure_display_ctxs[i].forward_roi_work);",
+                  "1748: \t\t\t}",
+                  "1749: \t\t}",
+                  "1750: \t\tkfree(adev->dm.secure_display_ctxs);",
+                  "1751: \t\tadev->dm.secure_display_ctxs = NULL;",
+                  "1752: \t}"
+                ],
+                "guards": [],
+                "call_boundary": [
+                  "flush_work",
+                  "kfree",
+                  "hdcp_destroy",
+                  "dc_deinit_callbacks",
+                  "dc_dmub_srv_destroy",
+                  "destroy_workqueue"
+                ],
+                "call_edges": [],
+                "state_transitions": [
+                  "transition(flush_work)",
+                  "transition(destroy_workqueue)"
+                ],
+                "api_terms": [
+                  "flush_work",
+                  "destroy_workqueue"
+                ],
+                "related_symbols": [
+                  "adev",
+                  "adev->dm",
+                  "adev->dev",
+                  "dc->ctx",
+                  "dc->caps"
+                ],
+                "verifier": "source-window",
+                "extraction_method": "source_window",
+                "coverage_status": "partial"
+              },
+              "confidence": 0.86
+            },
+            {
+              "evidence_id": "csa_state_0",
+              "type": "state_transition",
+              "analyzer": "csa",
+              "scope": {
+                "repo": "commit.patch",
+                "file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+                "function": "amdgpu_dm_fini"
+              },
+              "semantic_payload": {
+                "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+                "summary": "amdgpu_dm_fini in drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c: state_ops=for (i = 0; i < adev->dm.dc->caps.max_links; i++) {",
+                "state_before": [
+                  "input(adev)",
+                  "buffer(adev->dm)",
+                  "buffer(adev->dev)",
+                  "sinks(flush_work, kfree)"
+                ],
+                "state_after": [
+                  "transition(for (i = 0; i < adev->dm.dc->caps.max_links; i++) {)"
+                ],
+                "tracked_symbols": [
+                  "adev",
+                  "adev->dm",
+                  "adev->dev",
+                  "dc->ctx",
+                  "dc->caps"
+                ],
+                "buffer_fields": [
+                  "adev->dm",
+                  "adev->dev",
+                  "dc->ctx",
+                  "dc->caps"
+                ],
+                "coverage_status": "partial",
+                "functions": [
+                  "amdgpu_dm_fini"
+                ],
+                "call_targets": [
+                  "flush_work",
+                  "kfree",
+                  "hdcp_destroy",
+                  "dc_deinit_callbacks",
+                  "dc_dmub_srv_destroy",
+                  "destroy_workqueue",
+                  "amdgpu_bo_free_kernel",
+                  "dc_destroy"
+                ],
+                "source_file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c"
+              },
+              "evidence_slice": {
+                "kind": "state_witness",
+                "anchor": {
+                  "patch_file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+                  "hunk_index": 0,
+                  "source_line": 1779
+                },
+                "summary": "amdgpu_dm_fini in drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c: state_ops=for (i = 0; i < adev->dm.dc->caps.max_links; i++) {",
+                "statements": [
+                  "1747: \t\t\t\tflush_work(&adev->dm.secure_display_ctxs[i].forward_roi_work);",
+                  "1748: \t\t\t}",
+                  "1749: \t\t}",
+                  "1750: \t\tkfree(adev->dm.secure_display_ctxs);",
+                  "1751: \t\tadev->dm.secure_display_ctxs = NULL;",
+                  "1752: \t}"
+                ],
+                "guards": [],
+                "call_boundary": [
+                  "flush_work",
+                  "kfree",
+                  "hdcp_destroy",
+                  "dc_deinit_callbacks",
+                  "dc_dmub_srv_destroy",
+                  "destroy_workqueue"
+                ],
+                "call_edges": [],
+                "state_transitions": [
+                  "transition(for (i = 0; i < adev->dm.dc->caps.max_links; i++) {)"
+                ],
+                "api_terms": [],
+                "related_symbols": [
+                  "adev",
+                  "adev->dm",
+                  "adev->dev",
+                  "dc->ctx",
+                  "dc->caps"
+                ],
+                "verifier": "source-window",
+                "extraction_method": "source_window",
+                "coverage_status": "partial"
+              },
+              "confidence": 0.81
+            },
+            {
+              "evidence_id": "csa_state_1",
+              "type": "state_transition",
+              "analyzer": "csa",
+              "scope": {
+                "repo": "commit.patch",
+                "file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c",
+                "function": "amdgpu_dm_fini"
+              },
+              "semantic_payload": {
+                "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+                "summary": "scope in drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c: locks=mutex_lock | state_ops=for (i = 0; i < adev->mode_info.num_crtc; i++) {",
+                "state_before": [
+                  "buffer(crtc->index)",
+                  "buffer(crtc->dev)",
+                  "sinks(dm_parse_crc_source, amdgpu_dm_crtc_configure_crc_source)"
+                ],
+                "state_after": [
+                  "transition(for (i = 0; i < adev->mode_info.num_crtc; i++) {)",
+                  "locked(mutex_lock)"
+                ],
+                "tracked_symbols": [
+                  "crtc->index",
+                  "crtc->dev",
+                  "dm_crtc_state->stream",
+                  "adev->dm",
+                  "adev->mode_info",
+                  "stream_state->ctx"
+                ],
+                "buffer_fields": [
+                  "crtc->index",
+                  "crtc->dev",
+                  "dm_crtc_state->stream",
+                  "adev->dm",
+                  "adev->mode_info",
+                  "stream_state->ctx"
+                ],
+                "coverage_status": "partial",
+                "call_targets": [
+                  "dm_parse_crc_source",
+                  "amdgpu_dm_crtc_configure_crc_source",
+                  "defined",
+                  "drm_to_adev",
+                  "amdgpu_dm_is_valid_crc_source",
+                  "mutex_lock",
+                  "flush_work",
+                  "dc_stream_forward_crc_window"
+                ],
+                "source_file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c"
+              },
+              "evidence_slice": {
+                "kind": "state_witness",
+                "anchor": {
+                  "patch_file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c",
+                  "hunk_index": 0,
+                  "source_line": 223
+                },
+                "summary": "scope in drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c: locks=mutex_lock | state_ops=for (i = 0; i < adev->mode_info.num_crtc; i++) {",
+                "statements": [
+                  "191: \tenum amdgpu_dm_pipe_crc_source source = dm_parse_crc_source(src_name);",
+                  "192:",
+                  "193: \tif (source < 0) {",
+                  "194: \t\tDRM_DEBUG_DRIVER(\"Unknown CRC source %s for CRTC%d\\n\",",
+                  "195: \t\t\t\t src_name, crtc->index);",
+                  "196: \t\treturn -EINVAL;"
+                ],
+                "guards": [],
+                "call_boundary": [
+                  "dm_parse_crc_source",
+                  "amdgpu_dm_crtc_configure_crc_source",
+                  "defined",
+                  "drm_to_adev",
+                  "amdgpu_dm_is_valid_crc_source",
+                  "mutex_lock"
+                ],
+                "call_edges": [],
+                "state_transitions": [
+                  "transition(for (i = 0; i < adev->mode_info.num_crtc; i++) {)",
+                  "locked(mutex_lock)"
+                ],
+                "api_terms": [
+                  "mutex_lock"
+                ],
+                "related_symbols": [
+                  "crtc->index",
+                  "crtc->dev",
+                  "dm_crtc_state->stream",
+                  "adev->dm",
+                  "adev->mode_info",
+                  "stream_state->ctx"
+                ],
+                "verifier": "source-window",
+                "extraction_method": "source_window",
+                "coverage_status": "partial"
+              },
+              "confidence": 0.81
+            },
+            {
+              "evidence_id": "knighter_historical_report_reference",
+              "type": "context_summary",
+              "analyzer": "csa",
+              "scope": {
+                "repo": "linux",
+                "file": "drivers/gpu/drm/amd/amdgpu/../display/amdgpu_dm/amdgpu_dm.o;drivers/gpu/drm/amd/amdgpu/../display/amdgpu_dm/amdgpu_dm_crc.o",
+                "function": "knighter_historical_reference"
+              },
+              "semantic_payload": {
+                "summary": "Historical KNighter report_count=6, manual_bugs=1, manual_not_bugs=0; this is not the same metric as patch-local E2 validation."
+              },
+              "evidence_slice": {
+                "kind": "context_summary",
+                "anchor": {
+                  "patch_file": "",
+                  "hunk_index": 0,
+                  "source_line": 0
+                },
+                "summary": "Historical KNighter report_count=6, manual_bugs=1, manual_not_bugs=0; this is not the same metric as patch-local E2 validation.",
+                "statements": [],
+                "guards": [],
+                "call_boundary": [],
+                "call_edges": [],
+                "state_transitions": [],
+                "api_terms": [],
+                "related_symbols": [],
+                "verifier": "KNighter old-version generated/checker-for-evaluation/refine",
+                "extraction_method": "commit_report_map.txt + triage_report.csv",
+                "coverage_status": "unknown"
+              },
+              "confidence": 0.72
+            },
+            {
+              "evidence_id": "pf_004",
+              "type": "patch_fact",
+              "analyzer": "patch",
+              "scope": {
+                "repo": "commit.patch",
+                "file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+                "function": "amdgpu_dm_crtc_configure_crc_source"
+              },
+              "semantic_payload": {
+                "label": "Patch removes risky operations"
+              },
+              "evidence_slice": {},
+              "confidence": 0.95
+            },
+            {
+              "evidence_id": "pf_005",
+              "type": "patch_fact",
+              "analyzer": "patch",
+              "scope": {
+                "repo": "commit.patch",
+                "file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+                "function": "amdgpu_dm_crtc_configure_crc_source"
+              },
+              "semantic_payload": {
+                "label": "Patch introduces reusable fix patterns"
+              },
+              "evidence_slice": {},
+              "confidence": 0.95
+            },
+            {
+              "evidence_id": "pf_006",
+              "type": "patch_fact",
+              "analyzer": "patch",
+              "scope": {
+                "repo": "commit.patch",
+                "file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+                "function": "amdgpu_dm_crtc_configure_crc_source"
+              },
+              "semantic_payload": {
+                "label": "Patch introduces or highlights API usage"
+              },
+              "evidence_slice": {},
+              "confidence": 0.95
+            },
+            {
+              "evidence_id": "pf_003",
+              "type": "patch_fact",
+              "analyzer": "patch",
+              "scope": {
+                "repo": "commit.patch",
+                "file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+                "function": "amdgpu_dm_crtc_configure_crc_source"
+              },
+              "semantic_payload": {
+                "label": "Existing patch analysis detection strategy"
+              },
+              "evidence_slice": {},
+              "confidence": 0.95
+            },
+            {
+              "evidence_id": "pf_002",
+              "type": "patch_fact",
+              "analyzer": "patch",
+              "scope": {
+                "repo": "commit.patch",
+                "file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+                "function": "amdgpu_dm_crtc_configure_crc_source"
+              },
+              "semantic_payload": {
+                "label": "Functions implicated by removed or fixed code"
+              },
+              "evidence_slice": {},
+              "confidence": 0.95
+            }
+          ],
+          "semantic_slice_count": 10,
+          "context_summary_count": 1,
+          "semantic_slice_coverage": "partial",
+          "selected_semantic_slice_ids": [
+            "csa_lifecycle_0",
+            "csa_state_0",
+            "csa_state_1"
+          ],
+          "selected_context_summary_ids": [
+            "knighter_historical_report_reference"
+          ],
+          "selected_semantic_slices": [
+            {
+              "evidence_id": "csa_lifecycle_0",
+              "type": "allocation_lifecycle",
+              "analyzer": "csa",
+              "scope": {
+                "repo": "commit.patch",
+                "file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+                "function": "amdgpu_dm_fini"
+              },
+              "semantic_payload": {
+                "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+                "summary": "amdgpu_dm_fini in drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c reaches flush_work, destroy_workqueue",
+                "state_before": [
+                  "input(adev)",
+                  "buffer(adev->dm)",
+                  "buffer(adev->dev)",
+                  "sinks(flush_work, kfree)"
+                ],
+                "state_after": [
+                  "transition(flush_work)",
+                  "transition(destroy_workqueue)"
+                ],
+                "tracked_symbols": [
+                  "adev",
+                  "adev->dm",
+                  "adev->dev",
+                  "dc->ctx",
+                  "dc->caps"
+                ],
+                "buffer_fields": [
+                  "adev->dm",
+                  "adev->dev",
+                  "dc->ctx",
+                  "dc->caps"
+                ],
+                "coverage_status": "partial",
+                "operations": [
+                  "flush_work",
+                  "destroy_workqueue"
+                ],
+                "functions": [
+                  "amdgpu_dm_fini"
+                ],
+                "source_file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c"
+              },
+              "evidence_slice": {
+                "kind": "lifecycle_witness",
+                "anchor": {
+                  "patch_file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+                  "hunk_index": 0,
+                  "source_line": 1779
+                },
+                "summary": "amdgpu_dm_fini in drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c reaches flush_work, destroy_workqueue",
+                "statements": [
+                  "1747: \t\t\t\tflush_work(&adev->dm.secure_display_ctxs[i].forward_roi_work);",
+                  "1748: \t\t\t}",
+                  "1749: \t\t}",
+                  "1750: \t\tkfree(adev->dm.secure_display_ctxs);",
+                  "1751: \t\tadev->dm.secure_display_ctxs = NULL;",
+                  "1752: \t}"
+                ],
+                "guards": [],
+                "call_boundary": [
+                  "flush_work",
+                  "kfree",
+                  "hdcp_destroy",
+                  "dc_deinit_callbacks",
+                  "dc_dmub_srv_destroy",
+                  "destroy_workqueue"
+                ],
+                "call_edges": [],
+                "state_transitions": [
+                  "transition(flush_work)",
+                  "transition(destroy_workqueue)"
+                ],
+                "api_terms": [
+                  "flush_work",
+                  "destroy_workqueue"
+                ],
+                "related_symbols": [
+                  "adev",
+                  "adev->dm",
+                  "adev->dev",
+                  "dc->ctx",
+                  "dc->caps"
+                ],
+                "verifier": "source-window",
+                "extraction_method": "source_window",
+                "coverage_status": "partial"
+              },
+              "confidence": 0.86
+            },
+            {
+              "evidence_id": "csa_state_0",
+              "type": "state_transition",
+              "analyzer": "csa",
+              "scope": {
+                "repo": "commit.patch",
+                "file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+                "function": "amdgpu_dm_fini"
+              },
+              "semantic_payload": {
+                "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+                "summary": "amdgpu_dm_fini in drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c: state_ops=for (i = 0; i < adev->dm.dc->caps.max_links; i++) {",
+                "state_before": [
+                  "input(adev)",
+                  "buffer(adev->dm)",
+                  "buffer(adev->dev)",
+                  "sinks(flush_work, kfree)"
+                ],
+                "state_after": [
+                  "transition(for (i = 0; i < adev->dm.dc->caps.max_links; i++) {)"
+                ],
+                "tracked_symbols": [
+                  "adev",
+                  "adev->dm",
+                  "adev->dev",
+                  "dc->ctx",
+                  "dc->caps"
+                ],
+                "buffer_fields": [
+                  "adev->dm",
+                  "adev->dev",
+                  "dc->ctx",
+                  "dc->caps"
+                ],
+                "coverage_status": "partial",
+                "functions": [
+                  "amdgpu_dm_fini"
+                ],
+                "call_targets": [
+                  "flush_work",
+                  "kfree",
+                  "hdcp_destroy",
+                  "dc_deinit_callbacks",
+                  "dc_dmub_srv_destroy",
+                  "destroy_workqueue",
+                  "amdgpu_bo_free_kernel",
+                  "dc_destroy"
+                ],
+                "source_file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c"
+              },
+              "evidence_slice": {
+                "kind": "state_witness",
+                "anchor": {
+                  "patch_file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c",
+                  "hunk_index": 0,
+                  "source_line": 1779
+                },
+                "summary": "amdgpu_dm_fini in drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c: state_ops=for (i = 0; i < adev->dm.dc->caps.max_links; i++) {",
+                "statements": [
+                  "1747: \t\t\t\tflush_work(&adev->dm.secure_display_ctxs[i].forward_roi_work);",
+                  "1748: \t\t\t}",
+                  "1749: \t\t}",
+                  "1750: \t\tkfree(adev->dm.secure_display_ctxs);",
+                  "1751: \t\tadev->dm.secure_display_ctxs = NULL;",
+                  "1752: \t}"
+                ],
+                "guards": [],
+                "call_boundary": [
+                  "flush_work",
+                  "kfree",
+                  "hdcp_destroy",
+                  "dc_deinit_callbacks",
+                  "dc_dmub_srv_destroy",
+                  "destroy_workqueue"
+                ],
+                "call_edges": [],
+                "state_transitions": [
+                  "transition(for (i = 0; i < adev->dm.dc->caps.max_links; i++) {)"
+                ],
+                "api_terms": [],
+                "related_symbols": [
+                  "adev",
+                  "adev->dm",
+                  "adev->dev",
+                  "dc->ctx",
+                  "dc->caps"
+                ],
+                "verifier": "source-window",
+                "extraction_method": "source_window",
+                "coverage_status": "partial"
+              },
+              "confidence": 0.81
+            },
+            {
+              "evidence_id": "csa_state_1",
+              "type": "state_transition",
+              "analyzer": "csa",
+              "scope": {
+                "repo": "commit.patch",
+                "file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c",
+                "function": "amdgpu_dm_fini"
+              },
+              "semantic_payload": {
+                "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+                "summary": "scope in drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c: locks=mutex_lock | state_ops=for (i = 0; i < adev->mode_info.num_crtc; i++) {",
+                "state_before": [
+                  "buffer(crtc->index)",
+                  "buffer(crtc->dev)",
+                  "sinks(dm_parse_crc_source, amdgpu_dm_crtc_configure_crc_source)"
+                ],
+                "state_after": [
+                  "transition(for (i = 0; i < adev->mode_info.num_crtc; i++) {)",
+                  "locked(mutex_lock)"
+                ],
+                "tracked_symbols": [
+                  "crtc->index",
+                  "crtc->dev",
+                  "dm_crtc_state->stream",
+                  "adev->dm",
+                  "adev->mode_info",
+                  "stream_state->ctx"
+                ],
+                "buffer_fields": [
+                  "crtc->index",
+                  "crtc->dev",
+                  "dm_crtc_state->stream",
+                  "adev->dm",
+                  "adev->mode_info",
+                  "stream_state->ctx"
+                ],
+                "coverage_status": "partial",
+                "call_targets": [
+                  "dm_parse_crc_source",
+                  "amdgpu_dm_crtc_configure_crc_source",
+                  "defined",
+                  "drm_to_adev",
+                  "amdgpu_dm_is_valid_crc_source",
+                  "mutex_lock",
+                  "flush_work",
+                  "dc_stream_forward_crc_window"
+                ],
+                "source_file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c"
+              },
+              "evidence_slice": {
+                "kind": "state_witness",
+                "anchor": {
+                  "patch_file": "drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c",
+                  "hunk_index": 0,
+                  "source_line": 223
+                },
+                "summary": "scope in drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c: locks=mutex_lock | state_ops=for (i = 0; i < adev->mode_info.num_crtc; i++) {",
+                "statements": [
+                  "191: \tenum amdgpu_dm_pipe_crc_source source = dm_parse_crc_source(src_name);",
+                  "192:",
+                  "193: \tif (source < 0) {",
+                  "194: \t\tDRM_DEBUG_DRIVER(\"Unknown CRC source %s for CRTC%d\\n\",",
+                  "195: \t\t\t\t src_name, crtc->index);",
+                  "196: \t\treturn -EINVAL;"
+                ],
+                "guards": [],
+                "call_boundary": [
+                  "dm_parse_crc_source",
+                  "amdgpu_dm_crtc_configure_crc_source",
+                  "defined",
+                  "drm_to_adev",
+                  "amdgpu_dm_is_valid_crc_source",
+                  "mutex_lock"
+                ],
+                "call_edges": [],
+                "state_transitions": [
+                  "transition(for (i = 0; i < adev->mode_info.num_crtc; i++) {)",
+                  "locked(mutex_lock)"
+                ],
+                "api_terms": [
+                  "mutex_lock"
+                ],
+                "related_symbols": [
+                  "crtc->index",
+                  "crtc->dev",
+                  "dm_crtc_state->stream",
+                  "adev->dm",
+                  "adev->mode_info",
+                  "stream_state->ctx"
+                ],
+                "verifier": "source-window",
+                "extraction_method": "source_window",
+                "coverage_status": "partial"
+              },
+              "confidence": 0.81
+            }
+          ],
+          "selected_context_summaries": [
+            {
+              "evidence_id": "knighter_historical_report_reference",
+              "type": "context_summary",
+              "analyzer": "csa",
+              "scope": {
+                "repo": "linux",
+                "file": "drivers/gpu/drm/amd/amdgpu/../display/amdgpu_dm/amdgpu_dm.o;drivers/gpu/drm/amd/amdgpu/../display/amdgpu_dm/amdgpu_dm_crc.o",
+                "function": "knighter_historical_reference"
+              },
+              "semantic_payload": {
+                "summary": "Historical KNighter report_count=6, manual_bugs=1, manual_not_bugs=0; this is not the same metric as patch-local E2 validation."
+              },
+              "evidence_slice": {
+                "kind": "context_summary",
+                "anchor": {
+                  "patch_file": "",
+                  "hunk_index": 0,
+                  "source_line": 0
+                },
+                "summary": "Historical KNighter report_count=6, manual_bugs=1, manual_not_bugs=0; this is not the same metric as patch-local E2 validation.",
+                "statements": [],
+                "guards": [],
+                "call_boundary": [],
+                "call_edges": [],
+                "state_transitions": [],
+                "api_terms": [],
+                "related_symbols": [],
+                "verifier": "KNighter old-version generated/checker-for-evaluation/refine",
+                "extraction_method": "commit_report_map.txt + triage_report.csv",
+                "coverage_status": "unknown"
+              },
+              "confidence": 0.72
+            }
+          ],
+          "semantic_clause_plan": [
+            {
+              "clause_id": "vulnerable_trigger_clause",
+              "intent": "Trigger on the vulnerable out_of_bounds_access mechanism using evidence-backed path/flow semantics.",
+              "supporting_evidence_ids": [
+                "csa_lifecycle_0",
+                "csa_state_0",
+                "csa_state_1"
+              ],
+              "repair_when": [
+                "semantic_no_hits"
+              ],
+              "focus_functions": [
+                "amdgpu_dm_fini",
+                "amdgpu_dm_crtc_configure_crc_source",
+                "amdgpu_dm_crtc_secure_display_create_contexts"
+              ]
+            },
+            {
+              "clause_id": "patched_silence_clause",
+              "intent": "Stay silent on patched code when patch-added guards, barriers, or safe APIs prove the mechanism is blocked.",
+              "supporting_evidence_ids": [
+                "csa_state_0",
+                "csa_state_1",
+                "pf_004",
+                "pf_005",
+                "pf_006",
+                "pf_003",
+                "pf_002"
+              ],
+              "repair_when": [],
+              "silencing_conditions": [
+                "patch-introduced barrier pattern: 将 secure_display_ctxs 的 kcalloc 元素数量从 AMDGPU_MAX_CRTCS 改为 adev->mode_info.num_crtc",
+                "patch-introduced barrier pattern: 将访问 secure_display_ctxs[i] 的循环上界从 adev->dm.dc->caps.max_links 改为 adev->mode_info.num_crtc",
+                "patch-introduced barrier pattern: 用同一个 authoritative CRTC 数量字段同时约束分配规模和数组索引消费"
+              ]
+            },
+            {
+              "clause_id": "semantic_transfer_clause",
+              "intent": "Generalize along semantic slices and call-chain evidence rather than patch-local syntax.",
+              "supporting_evidence_ids": [],
+              "repair_when": [],
+              "analyzer_id": "csa"
+            },
+            {
+              "clause_id": "analyzer_interface_clause",
+              "intent": "Preserve valid analyzer-facing syntax and interfaces while keeping semantics unchanged.",
+              "supporting_evidence_ids": [
+                "pf_004",
+                "pf_005",
+                "pf_006",
+                "pf_003",
+                "pf_002"
+              ],
+              "repair_when": [
+                "semantic_execution_error"
+              ],
+              "analyzer_id": "csa"
+            }
+          ],
+          "repair_directives": [
+            {
+              "failure_mode": "fixed_noisy",
+              "target_clause": "vulnerable_trigger_clause",
+              "priority": "medium",
+              "action": "Repair the failing clause using the most directly supporting evidence.",
+              "supporting_evidence_ids": [
+                "csa_lifecycle_0",
+                "csa_state_0",
+                "csa_state_1"
+              ],
+              "counterexample_scope": "14_c3d749609472_Out_of_Bound",
+              "counterexample_location": {},
+              "feedback_hint": "KNighter E2 strict patch-local baseline: buggy_alerts=5, fixed_alerts=4, buggy_miss=false, fixed_noisy=true, pds=false, targets=drivers/gpu/drm/amd/amdgpu/../display/amdgpu_dm/amdgpu_dm.o;drivers/gpu/drm/amd/amdgpu/../display/amdgpu_dm/amdgpu_dm_crc.o."
+            }
+          ],
+          "constraints": [
+            {
+              "title": "Generalize beyond patch site",
+              "description": "Do not bind the detector to fixed file paths, line numbers, or exact patch strings.",
+              "priority": "high"
+            },
+            {
+              "title": "Preserve vulnerability semantics",
+              "description": "Keep the detector focused on the vulnerability family implied by the patch and evidence.",
+              "priority": "high"
+            },
+            {
+              "title": "Respect analyzer-native form",
+              "description": "Output must be a valid checker_plugin for csa.",
+              "priority": "high"
+            },
+            {
+              "title": "Stay within proven mechanism scope",
+              "description": "Generalize only along evidence-supported semantic dimensions. Do not broaden the detector into unrelated globals, APIs, or bug families.",
+              "priority": "high"
+            },
+            {
+              "title": "Honor mechanism contract",
+              "description": "Preserve the mechanism family `generic_vulnerability_mechanism` by keeping trigger invariants the vulnerable mechanism is reachable on a feasible path; the path lacks the barrier introduced by the patch; Patch-backed trigger clue: removed risky operation: secure_display_ctxs = kcalloc(AMDGPU_MAX_CRTCS, sizeof(struct secure_display_context), GFP_KERNEL);.",
+              "priority": "high"
+            },
+            {
+              "title": "Generalize only on contract axes",
+              "description": "Reuse semantics only along these transfer axes: only generalize along evidence-backed state, guard, flow, or API-role equivalence; equivalent local state transitions around the same sink or dereference; equivalent ownership or release/reinit lifecycle on the same symbolic resource.",
+              "priority": "high"
+            },
+            {
+              "title": "Anchor on patch-touched scope",
+              "description": "Use patch-touched files/functions as the semantic anchor for synthesis. Only extend beyond them when the same mechanism is explicitly supported by evidence.",
+              "priority": "high"
+            },
+            {
+              "title": "Encode the patch-added barrier",
+              "description": "model the absence of barriers like 将 secure_display_ctxs 的 kcalloc 元素数量从 AMDGPU_MAX_CRTCS 改为 adev->mode_info.num_crtc, 将访问 secure_display_ctxs[i] 的循环上界从 adev->dm.dc->caps.max_links 改为 adev->mode_info.num_crtc, 用同一个 authoritative CRTC 数量字段同时约束分配规模和数组索引消费; use APIs such as kcalloc as semantic clues, not string matches.",
+              "priority": "high"
+            },
+            {
+              "title": "Respect patched silence",
+              "description": "Use these no-report conditions when they are semantically proven: patch-introduced barrier pattern: 将 secure_display_ctxs 的 kcalloc 元素数量从 AMDGPU_MAX_CRTCS 改为 adev->mode_info.num_crtc; patch-introduced barrier pattern: 将访问 secure_display_ctxs[i] 的循环上界从 adev->dm.dc->caps.max_links 改为 adev->mode_info.num_crtc; patch-introduced barrier pattern: 用同一个 authoritative CRTC 数量字段同时约束分配规模和数组索引消费.",
+              "priority": "high"
+            },
+            {
+              "title": "Counterexample-guided repair",
+              "description": "Fix prior validation failures first: vulnerable_trigger_clause: Repair the failing clause using the most directly supporting evidence.; KNighter E2 strict patch-local baseline: buggy_alerts=5, fixed_alerts=4, buggy_miss=false, fixed_noisy=true, pds=false, targets=drivers/gpu/drm/amd/amdgpu/../display/amdgpu_dm/amdgpu_dm.o;drivers/gpu/drm/amd/amdgpu/../display/amdgpu_dm/amdgpu_dm_crc.o..",
+              "priority": "high"
+            },
+            {
+              "title": "Use path-sensitive evidence",
+              "description": "Prefer guards, state transitions, and lifecycle facts over broad textual matching.",
+              "priority": "high"
+            },
+            {
+              "title": "No placeholder helper logic",
+              "description": "Helper predicates must inspect AST/program state and must not be unconditional return-true/return-false stubs.",
+              "priority": "high"
+            }
+          ],
+          "implementation_hints": [
+            "Mechanism family: generic_vulnerability_mechanism",
+            "Mechanism dimensions: vulnerability trigger, patch-introduced barrier, local state or flow relation",
+            "Trigger invariants: the vulnerable mechanism is reachable on a feasible path, the path lacks the barrier introduced by the patch, Patch-backed trigger clue: removed risky operation: secure_display_ctxs = kcalloc(AMDGPU_MAX_CRTCS, sizeof(struct secure_display_context), GFP_KERNEL);",
+            "Silence invariants: patch-introduced guards, barriers, or safe APIs must suppress findings, patch-introduced barrier pattern: 将 secure_display_ctxs 的 kcalloc 元素数量从 AMDGPU_MAX_CRTCS 改为 adev->mode_info.num_crtc, patch-introduced barrier pattern: 将访问 secure_display_ctxs[i] 的循环上界从 adev->dm.dc->caps.max_links 改为 adev->mode_info.num_crtc",
+            "Transfer axes: only generalize along evidence-backed state, guard, flow, or API-role equivalence, equivalent local state transitions around the same sink or dereference, equivalent ownership or release/reinit lifecycle on the same symbolic resource",
+            "Focus files: drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c, drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crc.c",
+            "Priority functions: amdgpu_dm_fini, amdgpu_dm_crtc_configure_crc_source, amdgpu_dm_crtc_secure_display_create_contexts",
+            "Patch-added barriers: 将 secure_display_ctxs 的 kcalloc 元素数量从 AMDGPU_MAX_CRTCS 改为 adev->mode_info.num_crtc, 将访问 secure_display_ctxs[i] 的循环上界从 adev->dm.dc->caps.max_links 改为 adev->mode_info.num_crtc, 用同一个 authoritative CRTC 数量字段同时约束分配规模和数组索引消费"
+          ],
+          "validation_expectations": [
+            "Vulnerable version should trigger a out_of_bounds_access finding.",
+            "Patched version should stay silent for the same mechanism.",
+            "Semantic validation that executes but returns zero hits is not acceptable; recover coverage with evidence-backed semantics.",
+            "Repair phase may fix syntax/interfaces only; it must not simplify away the core detection logic.",
+            "Generalization must stay inside the mechanism contract transfer axes instead of widening to adjacent bug families.",
+            "Trigger invariant: the vulnerable mechanism is reachable on a feasible path.",
+            "Trigger invariant: the path lacks the barrier introduced by the patch.",
+            "Patched silence depends on: patch-introduced barrier pattern: 将 secure_display_ctxs 的 kcalloc 元素数量从 AMDGPU_MAX_CRTCS 改为 adev->mode_info.num_crtc.",
+            "Patched silence depends on: patch-introduced barrier pattern: 将访问 secure_display_ctxs[i] 的循环上界从 adev->dm.dc->caps.max_links 改为 adev->mode_info.num_crtc.",
+            "Fix counterexample: vulnerable_trigger_clause: Repair the failing clause using the most directly supporting evidence..",
+            "Fix counterexample: KNighter E2 strict patch-local baseline: buggy_alerts=5, fixed_alerts=4, buggy_miss=false, fixed_noisy=true, pds=false, targets=drivers/gpu/drm/amd/amdgpu/../display/amdgpu_dm/amdgpu_dm.o;drivers/gpu/drm/amd/amdgpu/../display/amdgpu_dm/amdgpu_dm_crc.o.."
+          ]
+        },
+        "evidence_effectiveness": {
+          "baseline_records": 21,
+          "post_validation_records": 22,
+          "new_records": 1,
+          "baseline_missing": [],
+          "post_validation_missing": [],
+          "resolved_missing": [],
+          "improved": true,
+          "summary": "新增 1 条反馈后证据"
+        },
+        "baseline_source": "",
+        "knighter_candidate_group": "",
+        "knighter_report_count": "",
+        "knighter_manual_bugs": "",
+        "knighter_manual_not_bugs": "",
+        "metric_scope_note": ""
+      }
+    }
+  }
+}

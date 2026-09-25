@@ -1,0 +1,39 @@
+This section introduces the background on static vulnerability checkers, LLM-based checker generation from security patches, and the analyzer-internal intermediate results that motivate our approach.
+
+\subsection{Static Vulnerability Checkers}
+
+Static analysis examines source code without executing it, aiming to find bugs, security vulnerabilities, and code-quality issues at compile time or during code review~\cite{engler2001bugs,bessey2010coverity}.
+A vulnerability checker is a rule or query within a static-analysis framework that flags program locations matching a security-relevant condition.
+Modern frameworks support different checker paradigms.
+Path-sensitive engines such as the Clang Static Analyzer (CSA) perform symbolic exploration over program paths, tracking branch guards, symbolic values, memory regions, and lifetime transitions to detect bugs like use-after-free, null dereference, and resource leaks~\cite{clangsaDocs}.
+Relational query engines such as CodeQL compile source code into a queryable database and express checkers as declarative queries over data-flow edges, call-graph relations, type hierarchies, and API-usage patterns~\cite{avgustinov2016ql,codeqlDocs}.
+Both paradigms have been deployed at industrial scale for continuous vulnerability detection~\cite{sadowski2015tricorder,calcagno2015infer}.
+
+Writing effective checkers remains a bottleneck.
+A checker must encode not only the syntactic pattern of a vulnerability but also the semantic conditions (path guards, state invariants, data-flow relations, and API contracts) that distinguish real bugs from safe code.
+This requires deep domain knowledge of both the target codebase and the analysis framework, making manual checker authoring expensive and error-prone.
+
+\subsection{LLM-Based Patch-Driven Checker Generation}
+
+Recent work has proposed using LLMs to automate checker generation from security patches.
+A security patch provides a compact before/after specification: the vulnerable revision should trigger the generated checker, and the fixed revision should not.
+This idea builds on a well-established line of work that treats patches as vulnerability specifications, including semantic patching~\cite{padioleau2008coccinelle}, clone-based vulnerability discovery~\cite{jang2012redebug,kim2017vuddy}, and patch-derived datasets~\cite{fan2020bigvul}.
+KNighter~\cite{yang2025knighter} is a representative system that synthesizes CSA checkers from historical Linux kernel fixes and validates them against the vulnerable and fixed revisions.
+
+However, the generated checkers are seldom semantically adequate.
+A patch is inherently underspecified: a one-line edit may encode a path guard, an ownership transition, a lifetime barrier, or an API contract, yet the generated checker often captures only the syntactic shape of the edit without the semantic condition the edit enforces.
+Existing refinement loops, including KNighter's own iterative strategy, operate at the output level~\cite{yang2025knighter,madaan2023selfrefine,shinn2023reflexion}.
+They feed behavioral signals (e.g., ``the fixed side still warns'') back to the LLM, revealing the symptom but not diagnosing the cause.
+This feedback cannot tell the LLM whether the missing predicate is a path guard, a cleanup barrier, an ownership transition, or an API contract, so the model must guess which semantic condition to add.
+
+\subsection{Analyzer-Internal Intermediate Results}
+
+Static-analysis backends compute intermediate representations that can be exposed through debugging interfaces or database queries, but these are not normally supplied to a checker-refinement loop.
+
+CSA, as a path-sensitive engine, internally maintains per-path symbolic states that record branch conditions, memory region bindings, allocation/free events, and object lifetime transitions~\cite{clangsaDocs}.
+CodeQL, as a relational engine, materializes a full program database from which data-flow edges, call-graph relations, type hierarchies, member-access patterns, and API-usage sequences can be queried~\cite{avgustinov2016ql,codeqlDocs}.
+These intermediate facts have long underpinned taint analysis, graph-based detection, and interprocedural security reasoning~\cite{livshits2005finding,jovanovic2006pixy,arzt2014flowdroid,yamaguchi2014cpg}.
+
+These representations may suggest a missing predicate, but a CFG branch or database tuple does not itself establish vulnerability semantics.
+The operational distinction between a backend-produced representation, a diagnostic, and a source-window fallback is central to our evidence accounting (Section~\ref{sec:evidence-roles}).
+This motivates extracting bounded, provenance-labelled context for refinement while retaining paired validation as the correctness gate.

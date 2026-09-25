@@ -1,0 +1,1006 @@
+{
+  "records": [
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/i915/i915_hwmon.c",
+        "function": "hwm_power1_max_interval_show"
+      },
+      "location": {
+        "line": 175,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "do ... while 0",
+        "summary": "Analyzer CFG for hwm_power1_max_interval_show in drivers/gpu/drm/i915/i915_hwmon.c: bindings: struct hwm_drvdata *ddat = dev_get_drvdata(dev);; r = intel_uncore_read (ImplicitCastExpr, FunctionToPointerDecay, u32 (*)(struct intel_uncore *, i915_reg_t))(ddat (ImplicitCastExpr, LValueToRValue, struct hwm_drvdata *)->uncore (ImplicitCastExpr, LValueToRValue, struct intel_uncore *), hwmon (ImplicitCastExpr, LValueToRValue, struct i915_hwmon *)->rg.pkg_rapl_limit (ImplicitCastExpr, LValueToRValue, i915_reg_t)) | branches: do ... while 0; if !(!((((((u32)(([B4.22]) + [B4.25]) (CStyleCastExpr, IntegralCast, u32))) (ImplicitCastExpr, IntegralCast, unsigned long long) + (1ULL << ([B4.31]([B4.59]) - 1))) & (((((u32)([B4.90]) (CStyleCastExpr, IntegralCast, u32))) (ImplicitCastExpr, IntegralCast, unsigned long long) + (1ULL << ([B4.124] - [B4.125]))) - 1 (ImplicitCastExpr, IntegralCast, unsigned long long))) != 0 (ImplicitCastExpr, IntegralCast, unsigned long long))) | calls: hwm_power1_max_interval_show -> dev_get_drvdata; hwm_power1_max_interval_show -> intel_runtime_pm_get",
+        "state_before": [
+          "buffer(ddat->hwmon)",
+          "buffer(ei->reg_val_prev)",
+          "sinks(mutex_unlock, hwm_power1_max_interval_show)"
+        ],
+        "state_after": [
+          "cfg_binding(struct hwm_drvdata *ddat = dev_get_drvdata(dev);)",
+          "cfg_binding(r = intel_uncore_read (ImplicitCastExpr, FunctionToPointerDecay, u32 (*)(struct intel_uncore *, i915_reg_t))(ddat (ImplicitCastExpr, LValueToRValue, struct hwm_drvdata *)->uncore (ImplicitCastExpr, LValueToRValue, struct intel_uncore *), hwmon (ImplicitCastExpr, LValueToRValue, struct i915_hwmon *)->rg.pkg_rapl_limit (ImplicitCastExpr, LValueToRValue, i915_reg_t)))",
+          "cfg_branch(do ... while 0)",
+          "cfg_branch(if !(!((((((u32)(([B4.22]) + [B4.25]) (CStyleCastExpr, IntegralCast, u32))) (ImplicitCastExpr, IntegralCast, unsigned long long) + (1ULL << ([B4.31]([B4.59]) - 1))) & (((((u32)([B4.90]) (CStyleCastExpr, IntegralCast, u32))) (ImplicitCastExpr, IntegralCast, unsigned long long) + (1ULL << ([B4.124] - [B4.125]))) - 1 (ImplicitCastExpr, IntegralCast, unsigned long long))) != 0 (ImplicitCastExpr, IntegralCast, unsigned long long))))"
+        ],
+        "functions": [
+          "hwm_power1_max_interval_show"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "ddat->hwmon",
+          "ei->reg_val_prev",
+          "ei->accum_energy",
+          "hwmon->scl_shift_energy",
+          "hwmon->hwmon_lock",
+          "ddat->uncore"
+        ],
+        "buffer_fields": [
+          "ddat->hwmon",
+          "ei->reg_val_prev",
+          "ei->accum_energy",
+          "hwmon->scl_shift_energy",
+          "hwmon->hwmon_lock",
+          "ddat->uncore"
+        ],
+        "call_targets": [
+          "mutex_unlock",
+          "hwm_power1_max_interval_show",
+          "dev_get_drvdata",
+          "intel_uncore_read",
+          "mul_u64_u32_shr",
+          "sysfs_emit",
+          "hwm_power1_max_interval_store",
+          "kstrtoul"
+        ],
+        "call_edges": [
+          "hwm_power1_max_interval_show -> dev_get_drvdata",
+          "hwm_power1_max_interval_show -> intel_runtime_pm_get",
+          "hwm_power1_max_interval_show -> intel_runtime_pm_put",
+          "hwm_power1_max_interval_show -> intel_uncore_read",
+          "hwm_power1_max_interval_show -> __builtin_constant_p",
+          "hwm_power1_max_interval_show -> __compiletime_assert_1091"
+        ],
+        "cfg_branch_kinds": [
+          "if",
+          "for"
+        ],
+        "branch_conditions": [
+          "do ... while [B2.1]",
+          "if [B4.137]",
+          "do ... while [B6.1]",
+          "if [B8.34]",
+          "do ... while [B10.1]",
+          "if [B12.3]"
+        ],
+        "resolved_branch_conditions": [
+          "do ... while 0",
+          "if !(!((((((u32)(([B4.22]) + [B4.25]) (CStyleCastExpr, IntegralCast, u32))) (ImplicitCastExpr, IntegralCast, unsigned long long) + (1ULL << ([B4.31]([B4.59]) - 1))) & (((((u32)([B4.90]) (CStyleCastExpr, IntegralCast, u32))) (ImplicitCastExpr, IntegralCast, unsigned long long) + (1ULL << ([B4.124] - [B4.125]))) - 1 (ImplicitCastExpr, IntegralCast, unsigned long long))) != 0 (ImplicitCastExpr, IntegralCast, unsigned long long)))",
+          "if !(!(((typeof (_Generic((((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))) + (((~(((0UL)))) - ((((1UL))) << (17)) + 1) & (~(((0UL))) >> (64 - 1 - (21))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))))), char: (unsigned char)0, unsigned char: (unsigned char)0, signed char: (unsigned char)0, unsigned short: (unsigned short)0, short: (unsigned short)0, unsigned int: (unsigned int)0, int: (unsigned int)0, unsigned long: (unsigned long)0, long: (unsigned long)0, unsigned long long: (unsigned long long)0, long long: (unsigned long long)0, default: (((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))) + (((~(((0UL)))) - ((((1UL))) << (17)) + 1) & (~(((0UL))) >> (64 - 1 - (21))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))))))))(((u32)(((([B8.2])) (ImplicitCastExpr, IntegralCast, unsigned long) + (([B8.12]) & ([B8.20]))) + ((int)([B8.23]) (CStyleCastExpr, IntegralCast, int)) (ImplicitCastExpr, IntegralCast, unsigned long)) (CStyleCastExpr, IntegralCast, u32))) (CStyleCastExpr, NoOp, typeof (_Generic((((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))) + (((~(((0UL)))) - ((((1UL))) << (17)) + 1) & (~(((0UL))) >> (64 - 1 - (21))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))))), char: (unsigned char)0, unsigned char: (unsigned char)0, signed char: (unsigned char)0, unsigned short: (unsigned short)0, short: (unsigned short)0, unsigned int: (unsigned int)0, int: (unsigned int)0, unsigned long: (unsigned long)0, long: (unsigned long)0, unsigned long long: (unsigned long long)0, long long: (unsigned long long)0, default: (((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))) + (((~(((0UL)))) - ((((1UL))) << (17)) + 1) & (~(((0UL))) >> (64 - 1 - (21))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))))))))) > ((typeof (_Generic((r), char: (unsigned char)0, unsigned char: (unsigned char)0, signed char: (unsigned char)0, unsigned short: (unsigned short)0, short: (unsigned short)0, unsigned int: (unsigned int)0, int: (unsigned int)0, unsigned long: (unsigned long)0, long: (unsigned long)0, unsigned long long: (unsigned long long)0, long long: (unsigned long long)0, default: (r))))(~0ULL) (CStyleCastExpr, IntegralCast, typeof (_Generic((r), char: (unsigned char)0, unsigned char: (unsigned char)0, signed char: (unsigned char)0, unsigned short: (unsigned short)0, short: (unsigned short)0, unsigned int: (unsigned int)0, int: (unsigned int)0, unsigned long: (unsigned long)0, long: (unsigned long)0, unsigned long long: (unsigned long long)0, long long: (unsigned long long)0, default: (r)))))))",
+          "if !(!(__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(0U) ? ~((((u32)(([B13.22]) + [B13.25]) (CStyleCastExpr, IntegralCast, u32))) >> ([B13.29]([B13.57]) - 1)) & (0U) : 0 (ImplicitCastExpr, IntegralCast, unsigned int)))",
+          "__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(0U) ? ... : ...",
+          "if !(!((((u32)(((((int)([B19.1]) (CStyleCastExpr, IntegralCast, int))) (ImplicitCastExpr, IntegralCast, unsigned long) + (([B19.9] + [B19.11]) & ([B19.14] >> ([B19.19])))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))) (CStyleCastExpr, IntegralCast, int)) (ImplicitCastExpr, IntegralCast, unsigned long)) (CStyleCastExpr, IntegralCast, u32))) == 0 (ImplicitCastExpr, IntegralCast, u32)))"
+        ],
+        "cfg_value_bindings": [
+          "struct hwm_drvdata *ddat = dev_get_drvdata(dev);",
+          "r = intel_uncore_read (ImplicitCastExpr, FunctionToPointerDecay, u32 (*)(struct intel_uncore *, i915_reg_t))(ddat (ImplicitCastExpr, LValueToRValue, struct hwm_drvdata *)->uncore (ImplicitCastExpr, LValueToRValue, struct intel_uncore *), hwmon (ImplicitCastExpr, LValueToRValue, struct i915_hwmon *)->rg.pkg_rapl_limit (ImplicitCastExpr, LValueToRValue, i915_reg_t))",
+          "out = mul_u64_u32_shr (ImplicitCastExpr, FunctionToPointerDecay, u64 (*)(u64, u32, unsigned int))(tau4 (ImplicitCastExpr, LValueToRValue, u64), 1000 (ImplicitCastExpr, IntegralCast, u32), hwmon (ImplicitCastExpr, LValueToRValue, struct i915_hwmon *)->scl_shift_time (ImplicitCastExpr, LValueToRValue, int) (ImplicitCastExpr, IntegralCast, u32) + x_w (ImplicitCastExpr, LValueToRValue, u32))",
+          "u32 x_w = 2;",
+          "struct i915_hwmon *hwmon = ddat->hwmon;",
+          "(wakeref) = 0 (ImplicitCastExpr, IntegralCast, intel_wakeref_t)"
+        ],
+        "state_statements": [
+          "sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))",
+          "(typeof (((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))) + (((~(((0UL)))) - ((((1UL))) << (17)) + 1) & (~(((0UL))) >> (64 - 1 - (21))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))))))([B1.65]) (CStyleCastExpr, NoOp, typeof (((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))) + (((~(((0UL)))) - ((((1UL))) << (17)) + 1) & (~(((0UL))) >> (64 - 1 - (21))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))))))",
+          "[B1.69] = ([B1.68])",
+          "[B1.83] = [B1.82]",
+          "[B1.92]->scl_shift_time",
+          "[B1.100] = [B1.99]"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,drivers/gpu/drm/i915/.i915_hwmon.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/uapi -I./...",
+        "source_file": "drivers/gpu/drm/i915/i915_hwmon.c",
+        "source_excerpt": "143: \n144: \tif (reg_val >= ei->reg_val_prev)\n145: \t\tei->accum_energy += reg_val - ei->reg_val_prev;\n146: \telse\n147: \t\tei->accum_energy += UINT_MAX - ei->reg_val_prev + reg_val;\n148: \tei->reg_val_prev = reg_val;\n149: \n150: \t*energy = mul_u64_u32_shr(ei->accum_energy, SF_ENERGY,\n151: \t\t\t\t  hwmon->scl_shift_energy);\n152: \tmutex_unlock(&hwmon->hwmon_lock);\n153: }\n154: \n155: static ssize_t\n156: hwm_power1_max_interval_show(struct device *dev, struct device_attribute *attr,\n157: \t\t\t     char *buf)\n158: {\n159: \tstruct hwm_drvdata *ddat = dev_get_drvdata(dev);\n160: \tstruct i915_hwmon *hwmon = ddat->hwmon;\n161: \tintel_wakeref_t wakeref;\n162: \tu32 r, x, y, x_w = 2; /* 2 bits */\n163: \tu64 tau4, out;\n164: \n165: \twith_intel_runtime_pm(ddat->uncore->rpm, wakeref)\n166: \t\tr = intel_uncore_read(ddat->uncore, hwmon->rg.pkg_rapl_limit);\n167: \n168: \tx = REG_FIELD_GET(PKG_PWR_LIM_1_TIME_X, r);\n169: \ty = REG_FIELD_GET(PKG_PWR_LIM_1_TIME_Y, r);\n170: \t/*\n171: \t * tau = 1.x * power(2,y), x = bits(23:22), y = bits(21:17)\n172: \t *     = (4 | x) << (y - 2)\n173: \t * where (y - 2) ensures a 1.x fixed point representation of 1.x\n174: \t * However because y can be < 2, we compute\n175: \t *     tau4 = (4 | x) << y\n176: \t * but add 2 when doing the final right shift to account for units\n177: \t */\n178: \ttau4 = ((1 << x_w) | x) << y;\n179: \t/* val in hwmon interface units (millisec) */\n180: \tout = mul_u64_u32_shr(tau4, SF_TIME, hwmon->scl_shift_time + x_w);\n181: \n182: \treturn sysfs_emit(buf, \"%llu\\n\", out);\n183: }\n184: \n185: static ssize_t\n186: hwm_power1_max_interval_store(struct device *dev,\n187: \t\t\t      struct device_attribute *attr,\n188: \t\t\t      const char *buf, size_t count)\n189: {\n190: \tstruct hwm_drvdata *ddat = dev_get_drvdata(dev);\n191: \tstruct i915_hwmon *hwmon = ddat->hwmon;\n192: \tu32 x, y, rxy, x_w = 2; /* 2 bits */\n193: \tu64 tau4, r, max_win;\n194: \tunsigned long val;\n195: \tint ret;\n196: \n197: \tret = kstrtoul(buf, 0, &val);\n198: \tif (ret)\n199: \t\treturn ret;\n200: \n201: \t/*\n202: \t * Max HW supported tau in '1.x * power(2,y)' format, x = 0, y = 0x12\n203: \t * The hwmon->scl_shift_time default of 0xa results in a max tau of 256 seconds\n204: \t */\n205: #define PKG_MAX_WIN_DEFAULT 0x12ull\n206: \n207: \t/*",
+        "summary_line": 175,
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/semweaver_treatment_evidence_cohort_v3/08_768f17fd25e4_Integer_Overflow/csa/patchweaver_runtime/csa_raw/drivers-gpu-drm-i915-i915_hwmon.c-hwm_power1_max_interval_show.txt",
+        "raw_output_sha256": "b24bdc824d21ed50f207b7a68265a6777c4e9631c75c3cbd1abde1ce4d95de64",
+        "command_sha256": "cf1490dd541b656baca54c6abf76f326a0d316fcdf873a2ee4233097df8ee057"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:debug-cfg",
+        "confidence": 0.92,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/i915/i915_hwmon.c",
+          "hunk_index": 0,
+          "source_line": 175
+        },
+        "summary": "Analyzer CFG for hwm_power1_max_interval_show in drivers/gpu/drm/i915/i915_hwmon.c: bindings: struct hwm_drvdata *ddat = dev_get_drvdata(dev);; r = intel_uncore_read (ImplicitCastExpr, FunctionToPointerDecay, u32 (*)(struct intel_uncore *, i915_reg_t))(ddat (ImplicitCastExpr, LValueToRValue, struct hwm_drvdata *)->uncore (ImplicitCastExpr, LValueToRValue, struct intel_uncore *), hwmon (ImplicitCastExpr, LValueToRValue, struct i915_hwmon *)->rg.pkg_rapl_limit (ImplicitCastExpr, LValueToRValue, i915_reg_t)) | branches: do ... while 0; if !(!((((((u32)(([B4.22]) + [B4.25]) (CStyleCastExpr, IntegralCast, u32))) (ImplicitCastExpr, IntegralCast, unsigned long long) + (1ULL << ([B4.31]([B4.59]) - 1))) & (((((u32)([B4.90]) (CStyleCastExpr, IntegralCast, u32))) (ImplicitCastExpr, IntegralCast, unsigned long long) + (1ULL << ([B4.124] - [B4.125]))) - 1 (ImplicitCastExpr, IntegralCast, unsigned long long))) != 0 (ImplicitCastExpr, IntegralCast, unsigned long long))) | calls: hwm_power1_max_interval_show -> dev_get_drvdata; hwm_power1_max_interval_show -> intel_runtime_pm_get",
+        "statements": [
+          "143:",
+          "144: \tif (reg_val >= ei->reg_val_prev)",
+          "145: \t\tei->accum_energy += reg_val - ei->reg_val_prev;",
+          "146: \telse",
+          "147: \t\tei->accum_energy += UINT_MAX - ei->reg_val_prev + reg_val;",
+          "148: \tei->reg_val_prev = reg_val;"
+        ],
+        "guards": [
+          "do ... while 0",
+          "if !(!((((((u32)(([B4.22]) + [B4.25]) (CStyleCastExpr, IntegralCast, u32))) (ImplicitCastExpr, IntegralCast, unsigned long long) + (1ULL << ([B4.31]([B4.59]) - 1))) & (((((u32)([B4.90]) (CStyleCastExpr, IntegralCast, u32))) (ImplicitCastExpr, IntegralCast, unsigned long long) + (1ULL << ([B4.124] - [B4.125]))) - 1 (ImplicitCastExpr, IntegralCast, unsigned long long))) != 0 (ImplicitCastExpr, IntegralCast, unsigned long long)))",
+          "if !(!(((typeof (_Generic((((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))) + (((~(((0UL)))) - ((((1UL))) << (17)) + 1) & (~(((0UL))) >> (64 - 1 - (21))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))))), char: (unsigned char)0, unsigned char: (unsigned char)0, signed char: (unsigned char)0, unsigned short: (unsigned short)0, short: (unsigned short)0, unsigned int: (unsigned int)0, int: (unsigned int)0, unsigned long: (unsigned long)0, long: (unsigned long)0, unsigned long long: (unsigned long long)0, long long: (unsigned long long)0, default: (((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))) + (((~(((0UL)))) - ((((1UL))) << (17)) + 1) & (~(((0UL))) >> (64 - 1 - (21))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))))))))(((u32)(((([B8.2])) (ImplicitCastExpr, IntegralCast, unsigned long) + (([B8.12]) & ([B8.20]))) + ((int)([B8.23]) (CStyleCastExpr, IntegralCast, int)) (ImplicitCastExpr, IntegralCast, unsigned long)) (CStyleCastExpr, IntegralCast, u32))) (CStyleCastExpr, NoOp, typeof (_Generic((((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))) + (((~(((0UL)))) - ((((1UL))) << (17)) + 1) & (~(((0UL))) >> (64 - 1 - (21))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))))), char: (unsigned char)0, unsigned char: (unsigned char)0, signed char: (unsigned char)0, unsigned short: (unsigned short)0, short: (unsigned short)0, unsigned int: (unsigned int)0, int: (unsigned int)0, unsigned long: (unsigned long)0, long: (unsigned long)0, unsigned long long: (unsigned long long)0, long long: (unsigned long long)0, default: (((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))) + (((~(((0UL)))) - ((((1UL))) << (17)) + 1) & (~(((0UL))) >> (64 - 1 - (21))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))))))))) > ((typeof (_Generic((r), char: (unsigned char)0, unsigned char: (unsigned char)0, signed char: (unsigned char)0, unsigned short: (unsigned short)0, short: (unsigned short)0, unsigned int: (unsigned int)0, int: (unsigned int)0, unsigned long: (unsigned long)0, long: (unsigned long)0, unsigned long long: (unsigned long long)0, long long: (unsigned long long)0, default: (r))))(~0ULL) (CStyleCastExpr, IntegralCast, typeof (_Generic((r), char: (unsigned char)0, unsigned char: (unsigned char)0, signed char: (unsigned char)0, unsigned short: (unsigned short)0, short: (unsigned short)0, unsigned int: (unsigned int)0, int: (unsigned int)0, unsigned long: (unsigned long)0, long: (unsigned long)0, unsigned long long: (unsigned long long)0, long long: (unsigned long long)0, default: (r)))))))",
+          "if !(!(__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(0U) ? ~((((u32)(([B13.22]) + [B13.25]) (CStyleCastExpr, IntegralCast, u32))) >> ([B13.29]([B13.57]) - 1)) & (0U) : 0 (ImplicitCastExpr, IntegralCast, unsigned int)))"
+        ],
+        "call_boundary": [
+          "mutex_unlock",
+          "hwm_power1_max_interval_show",
+          "dev_get_drvdata",
+          "intel_uncore_read",
+          "mul_u64_u32_shr",
+          "sysfs_emit"
+        ],
+        "call_edges": [
+          "hwm_power1_max_interval_show -> dev_get_drvdata",
+          "hwm_power1_max_interval_show -> intel_runtime_pm_get",
+          "hwm_power1_max_interval_show -> intel_runtime_pm_put",
+          "hwm_power1_max_interval_show -> intel_uncore_read",
+          "hwm_power1_max_interval_show -> __builtin_constant_p",
+          "hwm_power1_max_interval_show -> __compiletime_assert_1091",
+          "hwm_power1_max_interval_show -> __compiletime_assert_1092",
+          "hwm_power1_max_interval_show -> __builtin_ffsll"
+        ],
+        "state_transitions": [
+          "cfg_binding(struct hwm_drvdata *ddat = dev_get_drvdata(dev);)",
+          "cfg_binding(r = intel_uncore_read (ImplicitCastExpr, FunctionToPointerDecay, u32 (*)(struct intel_uncore *, i915_reg_t))(ddat (ImplicitCastExpr, LValueToRValue, struct hwm_drvdata *)->uncore (ImplicitCastExpr, LValueToRValue, struct intel_uncore *), hwmon (ImplicitCastExpr, LValueToRValue, struct i915_hwmon *)->rg.pkg_rapl_limit (ImplicitCastExpr, LValueToRValue, i915_reg_t)))",
+          "cfg_branch(do ... while 0)",
+          "cfg_branch(if !(!((((((u32)(([B4.22]) + [B4.25]) (CStyleCastExpr, IntegralCast, u32))) (ImplicitCastExpr, IntegralCast, unsigned long long) + (1ULL << ([B4.31]([B4.59]) - 1))) & (((((u32)([B4.90]) (CStyleCastExpr, IntegralCast, u32))) (ImplicitCastExpr, IntegralCast, unsigned long long) + (1ULL << ([B4.124] - [B4.125]))) - 1 (ImplicitCastExpr, IntegralCast, unsigned long long))) != 0 (ImplicitCastExpr, IntegralCast, unsigned long long))))",
+          "sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))",
+          "(typeof (((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))) + (((~(((0UL)))) - ((((1UL))) << (17)) + 1) & (~(((0UL))) >> (64 - 1 - (21))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))))))([B1.65]) (CStyleCastExpr, NoOp, typeof (((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))) + (((~(((0UL)))) - ((((1UL))) << (17)) + 1) & (~(((0UL))) >> (64 - 1 - (21))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))))))"
+        ],
+        "api_terms": [
+          "dev_get_drvdata",
+          "intel_runtime_pm_get",
+          "intel_runtime_pm_put",
+          "intel_uncore_read",
+          "__builtin_constant_p",
+          "__compiletime_assert_1091"
+        ],
+        "related_symbols": [
+          "ddat->hwmon",
+          "ei->reg_val_prev",
+          "ei->accum_energy",
+          "hwmon->scl_shift_energy",
+          "hwmon->hwmon_lock",
+          "ddat->uncore"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_guard_1",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/i915/i915_hwmon.c",
+        "function": "hwm_power1_max_interval_store"
+      },
+      "location": {
+        "line": 211,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "if ret (ImplicitCastExpr, LValueToRValue, int)",
+        "summary": "Analyzer CFG for hwm_power1_max_interval_store in drivers/gpu/drm/i915/i915_hwmon.c: bindings: ret = kstrtoul (ImplicitCastExpr, FunctionToPointerDecay, int (*)(const char *, unsigned int, unsigned long *))(buf (ImplicitCastExpr, LValueToRValue, const char *), 0 (ImplicitCastExpr, IntegralCast, unsigned int), &val); struct hwm_drvdata *ddat = dev_get_drvdata(dev); | branches: if ret (ImplicitCastExpr, LValueToRValue, int); (val) (ImplicitCastExpr, LValueToRValue, unsigned long) < 2 (ImplicitCastExpr, IntegralCast, unsigned long) ? ... : ... | calls: hwm_power1_max_interval_store -> dev_get_drvdata; hwm_power1_max_interval_store -> kstrtoul",
+        "state_before": [
+          "buffer(hwmon->scl_shift_time)",
+          "buffer(ddat->hwmon)",
+          "sinks(mul_u64_u32_shr, sysfs_emit)"
+        ],
+        "state_after": [
+          "cfg_binding(ret = kstrtoul (ImplicitCastExpr, FunctionToPointerDecay, int (*)(const char *, unsigned int, unsigned long *))(buf (ImplicitCastExpr, LValueToRValue, const char *), 0 (ImplicitCastExpr, IntegralCast, unsigned int), &val))",
+          "cfg_binding(struct hwm_drvdata *ddat = dev_get_drvdata(dev);)",
+          "cfg_branch(if ret (ImplicitCastExpr, LValueToRValue, int))",
+          "cfg_branch((val) (ImplicitCastExpr, LValueToRValue, unsigned long) < 2 (ImplicitCastExpr, IntegralCast, unsigned long) ? ... : ...)"
+        ],
+        "functions": [
+          "hwm_power1_max_interval_store"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "hwmon->scl_shift_time",
+          "ddat->hwmon",
+          "hwmon->rg"
+        ],
+        "buffer_fields": [
+          "hwmon->scl_shift_time",
+          "ddat->hwmon",
+          "hwmon->rg"
+        ],
+        "call_targets": [
+          "mul_u64_u32_shr",
+          "sysfs_emit",
+          "hwm_power1_max_interval_store",
+          "dev_get_drvdata",
+          "kstrtoul",
+          "ilog2",
+          "hwm_locked_with_pm_intel_uncore_rmw",
+          "__builtin_constant_p"
+        ],
+        "call_edges": [
+          "hwm_power1_max_interval_store -> dev_get_drvdata",
+          "hwm_power1_max_interval_store -> kstrtoul",
+          "hwm_power1_max_interval_store -> __builtin_constant_p",
+          "hwm_power1_max_interval_store -> __compiletime_assert_1101",
+          "hwm_power1_max_interval_store -> __compiletime_assert_1102",
+          "hwm_power1_max_interval_store -> __builtin_ffsll"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "[B6.5] ? ... : ...",
+          "([B10.4]) ? ... : ...",
+          "[B11.5] ? ... : ...",
+          "if [B13.53]",
+          "if [B15.97]",
+          "do ... while [B16.1]"
+        ],
+        "resolved_branch_conditions": [
+          "if ret (ImplicitCastExpr, LValueToRValue, int)",
+          "(val) (ImplicitCastExpr, LValueToRValue, unsigned long) < 2 (ImplicitCastExpr, IntegralCast, unsigned long) ? ... : ...",
+          "(sizeof (val) <= 4 (ImplicitCastExpr, IntegralCast, unsigned long)) ? ... : ...",
+          "__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(val (ImplicitCastExpr, LValueToRValue, unsigned long)) ? ... : ...",
+          "if !val (ImplicitCastExpr, LValueToRValue, unsigned long)",
+          "if val (ImplicitCastExpr, LValueToRValue, unsigned long) (ImplicitCastExpr, IntegralCast, u64) > max_win (ImplicitCastExpr, LValueToRValue, u64)"
+        ],
+        "cfg_value_bindings": [
+          "ret = kstrtoul (ImplicitCastExpr, FunctionToPointerDecay, int (*)(const char *, unsigned int, unsigned long *))(buf (ImplicitCastExpr, LValueToRValue, const char *), 0 (ImplicitCastExpr, IntegralCast, unsigned int), &val)",
+          "struct hwm_drvdata *ddat = dev_get_drvdata(dev);",
+          "max_win = mul_u64_u32_shr (ImplicitCastExpr, FunctionToPointerDecay, u64 (*)(u64, u32, unsigned int))(tau4 (ImplicitCastExpr, LValueToRValue, u64), 1000 (ImplicitCastExpr, IntegralCast, u32), hwmon (ImplicitCastExpr, LValueToRValue, struct i915_hwmon *)->scl_shift_time (ImplicitCastExpr, LValueToRValue, int) (ImplicitCastExpr, IntegralCast, u32) + x_w (ImplicitCastExpr, LValueToRValue, u32))",
+          "y = (__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(val (ImplicitCastExpr, LValueToRValue, unsigned long)) ? ((val) (ImplicitCastExpr, LValueToRValue, unsigned long) < 2 (ImplicitCastExpr, IntegralCast, unsigned long) ? 0 : 63 - __builtin_clzll (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)(unsigned long long))(val (ImplicitCastExpr, LValueToRValue, unsigned long) (ImplicitCastExpr, IntegralCast, unsigned long long))) : (sizeof (val) <= 4 (ImplicitCastExpr, IntegralCast, unsigned long)) ? __ilog2_u32 (ImplicitCastExpr, FunctionToPointerDecay, int (*)(u32))(val (ImplicitCastExpr, LValueToRValue, unsigned long) (ImplicitCastExpr, IntegralCast, u32)) : __ilog2_u64 (ImplicitCastExpr, FunctionToPointerDecay, int (*)(u64))(val (ImplicitCastExpr, LValueToRValue, unsigned long) (ImplicitCastExpr, IntegralCast, u64))) (ImplicitCastExpr, IntegralCast, u32)",
+          "u32 x_w = 2;",
+          "uint32_t __base = (__d);"
+        ],
+        "state_statements": [
+          "(typeof (((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:233:8))))) + (((~(((0UL)))) - ((((1UL))) << (22)) + 1) & (~(((0UL))) >> (64 - 1 - (23))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:233:8))))))))[B1.2] (CStyleCastExpr, NoOp, typeof (((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:233:8))))) + (((~(((0UL)))) - ((((1UL))) << (22)) + 1) & (~(((0UL))) >> (64 - 1 - (23))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:233:8))))))))",
+          "sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:233:8))",
+          "(typeof (((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:233:50))))) + (((~(((0UL)))) - ((((1UL))) << (17)) + 1) & (~(((0UL))) >> (64 - 1 - (21))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:233:50))))))))[B1.84] (CStyleCastExpr, NoOp, typeof (((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:233:50))))) + (((~(((0UL)))) - ((((1UL))) << (17)) + 1) & (~(((0UL))) >> (64 - 1 - (21))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:233:50))))))))",
+          "sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:233:50))",
+          "[B1.166] = [B1.165]",
+          "[B1.173]->rg"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,drivers/gpu/drm/i915/.i915_hwmon.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/uapi -I./...",
+        "source_file": "drivers/gpu/drm/i915/i915_hwmon.c",
+        "source_excerpt": "179: \t/* val in hwmon interface units (millisec) */\n180: \tout = mul_u64_u32_shr(tau4, SF_TIME, hwmon->scl_shift_time + x_w);\n181: \n182: \treturn sysfs_emit(buf, \"%llu\\n\", out);\n183: }\n184: \n185: static ssize_t\n186: hwm_power1_max_interval_store(struct device *dev,\n187: \t\t\t      struct device_attribute *attr,\n188: \t\t\t      const char *buf, size_t count)\n189: {\n190: \tstruct hwm_drvdata *ddat = dev_get_drvdata(dev);\n191: \tstruct i915_hwmon *hwmon = ddat->hwmon;\n192: \tu32 x, y, rxy, x_w = 2; /* 2 bits */\n193: \tu64 tau4, r, max_win;\n194: \tunsigned long val;\n195: \tint ret;\n196: \n197: \tret = kstrtoul(buf, 0, &val);\n198: \tif (ret)\n199: \t\treturn ret;\n200: \n201: \t/*\n202: \t * Max HW supported tau in '1.x * power(2,y)' format, x = 0, y = 0x12\n203: \t * The hwmon->scl_shift_time default of 0xa results in a max tau of 256 seconds\n204: \t */\n205: #define PKG_MAX_WIN_DEFAULT 0x12ull\n206: \n207: \t/*\n208: \t * val must be < max in hwmon interface units. The steps below are\n209: \t * explained in i915_power1_max_interval_show()\n210: \t */\n211: \tr = FIELD_PREP(PKG_MAX_WIN, PKG_MAX_WIN_DEFAULT);\n212: \tx = REG_FIELD_GET(PKG_MAX_WIN_X, r);\n213: \ty = REG_FIELD_GET(PKG_MAX_WIN_Y, r);\n214: \ttau4 = ((1 << x_w) | x) << y;\n215: \tmax_win = mul_u64_u32_shr(tau4, SF_TIME, hwmon->scl_shift_time + x_w);\n216: \n217: \tif (val > max_win)\n218: \t\treturn -EINVAL;\n219: \n220: \t/* val in hw units */\n221: \tval = DIV_ROUND_CLOSEST_ULL((u64)val << hwmon->scl_shift_time, SF_TIME);\n222: \t/* Convert to 1.x * power(2,y) */\n223: \tif (!val) {\n224: \t\t/* Avoid ilog2(0) */\n225: \t\ty = 0;\n226: \t\tx = 0;\n227: \t} else {\n228: \t\ty = ilog2(val);\n229: \t\t/* x = (val - (1 << y)) >> (y - 2); */\n230: \t\tx = (val - (1ul << y)) << x_w >> y;\n231: \t}\n232: \n233: \trxy = REG_FIELD_PREP(PKG_PWR_LIM_1_TIME_X, x) | REG_FIELD_PREP(PKG_PWR_LIM_1_TIME_Y, y);\n234: \n235: \thwm_locked_with_pm_intel_uncore_rmw(ddat, hwmon->rg.pkg_rapl_limit,\n236: \t\t\t\t\t    PKG_PWR_LIM_1_TIME, rxy);\n237: \treturn count;\n238: }\n239: \n240: static SENSOR_DEVICE_ATTR(power1_max_interval, 0664,\n241: \t\t\t  hwm_power1_max_interval_show,\n242: \t\t\t  hwm_power1_max_interval_store, 0);\n243: ",
+        "summary_line": 211,
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/semweaver_treatment_evidence_cohort_v3/08_768f17fd25e4_Integer_Overflow/csa/patchweaver_runtime/csa_raw/drivers-gpu-drm-i915-i915_hwmon.c-hwm_power1_max_interval_store.txt",
+        "raw_output_sha256": "b24bdc824d21ed50f207b7a68265a6777c4e9631c75c3cbd1abde1ce4d95de64",
+        "command_sha256": "cf1490dd541b656baca54c6abf76f326a0d316fcdf873a2ee4233097df8ee057"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:debug-cfg",
+        "confidence": 0.92,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/i915/i915_hwmon.c",
+          "hunk_index": 1,
+          "source_line": 211
+        },
+        "summary": "Analyzer CFG for hwm_power1_max_interval_store in drivers/gpu/drm/i915/i915_hwmon.c: bindings: ret = kstrtoul (ImplicitCastExpr, FunctionToPointerDecay, int (*)(const char *, unsigned int, unsigned long *))(buf (ImplicitCastExpr, LValueToRValue, const char *), 0 (ImplicitCastExpr, IntegralCast, unsigned int), &val); struct hwm_drvdata *ddat = dev_get_drvdata(dev); | branches: if ret (ImplicitCastExpr, LValueToRValue, int); (val) (ImplicitCastExpr, LValueToRValue, unsigned long) < 2 (ImplicitCastExpr, IntegralCast, unsigned long) ? ... : ... | calls: hwm_power1_max_interval_store -> dev_get_drvdata; hwm_power1_max_interval_store -> kstrtoul",
+        "statements": [
+          "179: \t/* val in hwmon interface units (millisec) */",
+          "180: \tout = mul_u64_u32_shr(tau4, SF_TIME, hwmon->scl_shift_time + x_w);",
+          "181:",
+          "182: \treturn sysfs_emit(buf, \"%llu\\n\", out);",
+          "183: }",
+          "184:"
+        ],
+        "guards": [
+          "if ret (ImplicitCastExpr, LValueToRValue, int)",
+          "(val) (ImplicitCastExpr, LValueToRValue, unsigned long) < 2 (ImplicitCastExpr, IntegralCast, unsigned long) ? ... : ...",
+          "(sizeof (val) <= 4 (ImplicitCastExpr, IntegralCast, unsigned long)) ? ... : ...",
+          "__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(val (ImplicitCastExpr, LValueToRValue, unsigned long)) ? ... : ..."
+        ],
+        "call_boundary": [
+          "mul_u64_u32_shr",
+          "sysfs_emit",
+          "hwm_power1_max_interval_store",
+          "dev_get_drvdata",
+          "kstrtoul",
+          "ilog2"
+        ],
+        "call_edges": [
+          "hwm_power1_max_interval_store -> dev_get_drvdata",
+          "hwm_power1_max_interval_store -> kstrtoul",
+          "hwm_power1_max_interval_store -> __builtin_constant_p",
+          "hwm_power1_max_interval_store -> __compiletime_assert_1101",
+          "hwm_power1_max_interval_store -> __compiletime_assert_1102",
+          "hwm_power1_max_interval_store -> __builtin_ffsll",
+          "hwm_power1_max_interval_store -> __compiletime_assert_1103",
+          "hwm_power1_max_interval_store -> __compiletime_assert_1104"
+        ],
+        "state_transitions": [
+          "cfg_binding(ret = kstrtoul (ImplicitCastExpr, FunctionToPointerDecay, int (*)(const char *, unsigned int, unsigned long *))(buf (ImplicitCastExpr, LValueToRValue, const char *), 0 (ImplicitCastExpr, IntegralCast, unsigned int), &val))",
+          "cfg_binding(struct hwm_drvdata *ddat = dev_get_drvdata(dev);)",
+          "cfg_branch(if ret (ImplicitCastExpr, LValueToRValue, int))",
+          "cfg_branch((val) (ImplicitCastExpr, LValueToRValue, unsigned long) < 2 (ImplicitCastExpr, IntegralCast, unsigned long) ? ... : ...)",
+          "(typeof (((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:233:8))))) + (((~(((0UL)))) - ((((1UL))) << (22)) + 1) & (~(((0UL))) >> (64 - 1 - (23))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:233:8))))))))[B1.2] (CStyleCastExpr, NoOp, typeof (((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:233:8))))) + (((~(((0UL)))) - ((((1UL))) << (22)) + 1) & (~(((0UL))) >> (64 - 1 - (23))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:233:8))))))))",
+          "sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:233:8))"
+        ],
+        "api_terms": [
+          "dev_get_drvdata",
+          "kstrtoul",
+          "__builtin_constant_p",
+          "__compiletime_assert_1101",
+          "__compiletime_assert_1102",
+          "__builtin_ffsll"
+        ],
+        "related_symbols": [
+          "hwmon->scl_shift_time",
+          "ddat->hwmon",
+          "hwmon->rg"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/i915/i915_hwmon.c",
+        "function": "hwm_power1_max_interval_show"
+      },
+      "location": {
+        "line": 175,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "hwm_power1_max_interval_show in drivers/gpu/drm/i915/i915_hwmon.c: locks=mutex_unlock | cfg_calls=hwm_power1_max_interval_show -> dev_get_drvdata; hwm_power1_max_interval_show -> intel_runtime_pm_get",
+        "state_before": [
+          "buffer(ddat->hwmon)",
+          "buffer(ei->reg_val_prev)",
+          "sinks(mutex_unlock, hwm_power1_max_interval_show)"
+        ],
+        "state_after": [
+          "transition(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6)))",
+          "transition((typeof (((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))) + (((~(((0UL)))) - ((((1UL))) << (17)) + 1) & (~(((0UL))) >> (64 - 1 - (21))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))))))([B1.65]) (CStyleCastExpr, NoOp, typeof (((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))) + (((~(((0UL)))) - ((((1UL))) << (17)) + 1) & (~(((0UL))) >> (64 - 1 - (21))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6)))))))))",
+          "transition([B1.69] = ([B1.68]))",
+          "locked(mutex_unlock)"
+        ],
+        "functions": [
+          "hwm_power1_max_interval_show"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "ddat->hwmon",
+          "ei->reg_val_prev",
+          "ei->accum_energy",
+          "hwmon->scl_shift_energy",
+          "hwmon->hwmon_lock",
+          "ddat->uncore"
+        ],
+        "buffer_fields": [
+          "ddat->hwmon",
+          "ei->reg_val_prev",
+          "ei->accum_energy",
+          "hwmon->scl_shift_energy",
+          "hwmon->hwmon_lock",
+          "ddat->uncore"
+        ],
+        "call_targets": [
+          "mutex_unlock",
+          "hwm_power1_max_interval_show",
+          "dev_get_drvdata",
+          "intel_uncore_read",
+          "mul_u64_u32_shr",
+          "sysfs_emit",
+          "hwm_power1_max_interval_store",
+          "kstrtoul"
+        ],
+        "call_edges": [
+          "hwm_power1_max_interval_show -> dev_get_drvdata",
+          "hwm_power1_max_interval_show -> intel_runtime_pm_get",
+          "hwm_power1_max_interval_show -> intel_runtime_pm_put",
+          "hwm_power1_max_interval_show -> intel_uncore_read",
+          "hwm_power1_max_interval_show -> __builtin_constant_p",
+          "hwm_power1_max_interval_show -> __compiletime_assert_1091"
+        ],
+        "cfg_branch_kinds": [
+          "if",
+          "for"
+        ],
+        "branch_conditions": [
+          "do ... while [B2.1]",
+          "if [B4.137]",
+          "do ... while [B6.1]",
+          "if [B8.34]"
+        ],
+        "state_statements": [
+          "sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))",
+          "(typeof (((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))) + (((~(((0UL)))) - ((((1UL))) << (17)) + 1) & (~(((0UL))) >> (64 - 1 - (21))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))))))([B1.65]) (CStyleCastExpr, NoOp, typeof (((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))) + (((~(((0UL)))) - ((((1UL))) << (17)) + 1) & (~(((0UL))) >> (64 - 1 - (21))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))))))",
+          "[B1.69] = ([B1.68])",
+          "[B1.83] = [B1.82]",
+          "[B1.92]->scl_shift_time",
+          "[B1.100] = [B1.99]",
+          "return [B1.112];",
+          "([B4.132]) != [B4.134]"
+        ],
+        "return_statements": [
+          "return [B1.112];"
+        ],
+        "source_file": "drivers/gpu/drm/i915/i915_hwmon.c",
+        "source_excerpt": "143: \n144: \tif (reg_val >= ei->reg_val_prev)\n145: \t\tei->accum_energy += reg_val - ei->reg_val_prev;\n146: \telse\n147: \t\tei->accum_energy += UINT_MAX - ei->reg_val_prev + reg_val;\n148: \tei->reg_val_prev = reg_val;\n149: \n150: \t*energy = mul_u64_u32_shr(ei->accum_energy, SF_ENERGY,\n151: \t\t\t\t  hwmon->scl_shift_energy);\n152: \tmutex_unlock(&hwmon->hwmon_lock);\n153: }\n154: \n155: static ssize_t\n156: hwm_power1_max_interval_show(struct device *dev, struct device_attribute *attr,\n157: \t\t\t     char *buf)\n158: {\n159: \tstruct hwm_drvdata *ddat = dev_get_drvdata(dev);\n160: \tstruct i915_hwmon *hwmon = ddat->hwmon;\n161: \tintel_wakeref_t wakeref;\n162: \tu32 r, x, y, x_w = 2; /* 2 bits */\n163: \tu64 tau4, out;\n164: \n165: \twith_intel_runtime_pm(ddat->uncore->rpm, wakeref)\n166: \t\tr = intel_uncore_read(ddat->uncore, hwmon->rg.pkg_rapl_limit);\n167: \n168: \tx = REG_FIELD_GET(PKG_PWR_LIM_1_TIME_X, r);\n169: \ty = REG_FIELD_GET(PKG_PWR_LIM_1_TIME_Y, r);\n170: \t/*\n171: \t * tau = 1.x * power(2,y), x = bits(23:22), y = bits(21:17)\n172: \t *     = (4 | x) << (y - 2)\n173: \t * where (y - 2) ensures a 1.x fixed point representation of 1.x\n174: \t * However because y can be < 2, we compute\n175: \t *     tau4 = (4 | x) << y\n176: \t * but add 2 when doing the final right shift to account for units\n177: \t */\n178: \ttau4 = ((1 << x_w) | x) << y;\n179: \t/* val in hwmon interface units (millisec) */\n180: \tout = mul_u64_u32_shr(tau4, SF_TIME, hwmon->scl_shift_time + x_w);\n181: \n182: \treturn sysfs_emit(buf, \"%llu\\n\", out);\n183: }\n184: \n185: static ssize_t\n186: hwm_power1_max_interval_store(struct device *dev,\n187: \t\t\t      struct device_attribute *attr,\n188: \t\t\t      const char *buf, size_t count)\n189: {\n190: \tstruct hwm_drvdata *ddat = dev_get_drvdata(dev);\n191: \tstruct i915_hwmon *hwmon = ddat->hwmon;\n192: \tu32 x, y, rxy, x_w = 2; /* 2 bits */\n193: \tu64 tau4, r, max_win;\n194: \tunsigned long val;\n195: \tint ret;\n196: \n197: \tret = kstrtoul(buf, 0, &val);\n198: \tif (ret)\n199: \t\treturn ret;\n200: \n201: \t/*\n202: \t * Max HW supported tau in '1.x * power(2,y)' format, x = 0, y = 0x12\n203: \t * The hwmon->scl_shift_time default of 0xa results in a max tau of 256 seconds\n204: \t */\n205: #define PKG_MAX_WIN_DEFAULT 0x12ull\n206: \n207: \t/*",
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/semweaver_treatment_evidence_cohort_v3/08_768f17fd25e4_Integer_Overflow/csa/patchweaver_runtime/csa_raw/drivers-gpu-drm-i915-i915_hwmon.c-hwm_power1_max_interval_show.txt",
+        "raw_output_sha256": "b24bdc824d21ed50f207b7a68265a6777c4e9631c75c3cbd1abde1ce4d95de64",
+        "command_sha256": "cf1490dd541b656baca54c6abf76f326a0d316fcdf873a2ee4233097df8ee057"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:symbolic-state",
+        "confidence": 0.88,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/i915/i915_hwmon.c",
+          "hunk_index": 0,
+          "source_line": 175
+        },
+        "summary": "hwm_power1_max_interval_show in drivers/gpu/drm/i915/i915_hwmon.c: locks=mutex_unlock | cfg_calls=hwm_power1_max_interval_show -> dev_get_drvdata; hwm_power1_max_interval_show -> intel_runtime_pm_get",
+        "statements": [
+          "143:",
+          "144: \tif (reg_val >= ei->reg_val_prev)",
+          "145: \t\tei->accum_energy += reg_val - ei->reg_val_prev;",
+          "146: \telse",
+          "147: \t\tei->accum_energy += UINT_MAX - ei->reg_val_prev + reg_val;",
+          "148: \tei->reg_val_prev = reg_val;"
+        ],
+        "guards": [
+          "do ... while [B2.1]",
+          "if [B4.137]",
+          "do ... while [B6.1]"
+        ],
+        "call_boundary": [
+          "mutex_unlock",
+          "hwm_power1_max_interval_show",
+          "dev_get_drvdata",
+          "intel_uncore_read",
+          "mul_u64_u32_shr",
+          "sysfs_emit"
+        ],
+        "call_edges": [
+          "hwm_power1_max_interval_show -> dev_get_drvdata",
+          "hwm_power1_max_interval_show -> intel_runtime_pm_get",
+          "hwm_power1_max_interval_show -> intel_runtime_pm_put",
+          "hwm_power1_max_interval_show -> intel_uncore_read",
+          "hwm_power1_max_interval_show -> __builtin_constant_p",
+          "hwm_power1_max_interval_show -> __compiletime_assert_1091",
+          "hwm_power1_max_interval_show -> __compiletime_assert_1092",
+          "hwm_power1_max_interval_show -> __builtin_ffsll"
+        ],
+        "state_transitions": [
+          "transition(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6)))",
+          "transition((typeof (((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))) + (((~(((0UL)))) - ((((1UL))) << (17)) + 1) & (~(((0UL))) >> (64 - 1 - (21))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))))))([B1.65]) (CStyleCastExpr, NoOp, typeof (((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))) + (((~(((0UL)))) - ((((1UL))) << (17)) + 1) & (~(((0UL))) >> (64 - 1 - (21))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6)))))))))",
+          "transition([B1.69] = ([B1.68]))",
+          "locked(mutex_unlock)",
+          "sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))",
+          "(typeof (((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))) + (((~(((0UL)))) - ((((1UL))) << (17)) + 1) & (~(((0UL))) >> (64 - 1 - (21))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))))))([B1.65]) (CStyleCastExpr, NoOp, typeof (((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))) + (((~(((0UL)))) - ((((1UL))) << (17)) + 1) & (~(((0UL))) >> (64 - 1 - (21))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))))))"
+        ],
+        "api_terms": [
+          "mutex_unlock",
+          "dev_get_drvdata",
+          "intel_runtime_pm_get",
+          "intel_runtime_pm_put",
+          "intel_uncore_read",
+          "__builtin_constant_p"
+        ],
+        "related_symbols": [
+          "ddat->hwmon",
+          "ei->reg_val_prev",
+          "ei->accum_energy",
+          "hwmon->scl_shift_energy",
+          "hwmon->hwmon_lock",
+          "ddat->uncore"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_state_1",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/i915/i915_hwmon.c",
+        "function": "hwm_power1_max_interval_store"
+      },
+      "location": {
+        "line": 211,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "hwm_power1_max_interval_store in drivers/gpu/drm/i915/i915_hwmon.c: locks=hwm_locked_with_pm_intel_uncore_rmw | cfg_calls=hwm_power1_max_interval_store -> dev_get_drvdata; hwm_power1_max_interval_store -> kstrtoul",
+        "state_before": [
+          "buffer(hwmon->scl_shift_time)",
+          "buffer(ddat->hwmon)",
+          "sinks(mul_u64_u32_shr, sysfs_emit)"
+        ],
+        "state_after": [
+          "transition((typeof (((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:233:8))))) + (((~(((0UL)))) - ((((1UL))) << (22)) + 1) & (~(((0UL))) >> (64 - 1 - (23))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:233:8))))))))[B1.2] (CStyleCastExpr, NoOp, typeof (((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:233:8))))) + (((~(((0UL)))) - ((((1UL))) << (22)) + 1) & (~(((0UL))) >> (64 - 1 - (23))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:233:8)))))))))",
+          "transition(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:233:8)))",
+          "transition((typeof (((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:233:50))))) + (((~(((0UL)))) - ((((1UL))) << (17)) + 1) & (~(((0UL))) >> (64 - 1 - (21))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:233:50))))))))[B1.84] (CStyleCastExpr, NoOp, typeof (((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:233:50))))) + (((~(((0UL)))) - ((((1UL))) << (17)) + 1) & (~(((0UL))) >> (64 - 1 - (21))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:233:50)))))))))",
+          "locked(hwm_locked_with_pm_intel_uncore_rmw)"
+        ],
+        "functions": [
+          "hwm_power1_max_interval_store"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "hwmon->scl_shift_time",
+          "ddat->hwmon",
+          "hwmon->rg"
+        ],
+        "buffer_fields": [
+          "hwmon->scl_shift_time",
+          "ddat->hwmon",
+          "hwmon->rg"
+        ],
+        "call_targets": [
+          "mul_u64_u32_shr",
+          "sysfs_emit",
+          "hwm_power1_max_interval_store",
+          "dev_get_drvdata",
+          "kstrtoul",
+          "ilog2",
+          "hwm_locked_with_pm_intel_uncore_rmw",
+          "__builtin_constant_p"
+        ],
+        "call_edges": [
+          "hwm_power1_max_interval_store -> dev_get_drvdata",
+          "hwm_power1_max_interval_store -> kstrtoul",
+          "hwm_power1_max_interval_store -> __builtin_constant_p",
+          "hwm_power1_max_interval_store -> __compiletime_assert_1101",
+          "hwm_power1_max_interval_store -> __compiletime_assert_1102",
+          "hwm_power1_max_interval_store -> __builtin_ffsll"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "[B6.5] ? ... : ...",
+          "([B10.4]) ? ... : ...",
+          "[B11.5] ? ... : ...",
+          "if [B13.53]"
+        ],
+        "state_statements": [
+          "(typeof (((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:233:8))))) + (((~(((0UL)))) - ((((1UL))) << (22)) + 1) & (~(((0UL))) >> (64 - 1 - (23))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:233:8))))))))[B1.2] (CStyleCastExpr, NoOp, typeof (((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:233:8))))) + (((~(((0UL)))) - ((((1UL))) << (22)) + 1) & (~(((0UL))) >> (64 - 1 - (23))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:233:8))))))))",
+          "sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:233:8))",
+          "(typeof (((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:233:50))))) + (((~(((0UL)))) - ((((1UL))) << (17)) + 1) & (~(((0UL))) >> (64 - 1 - (21))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:233:50))))))))[B1.84] (CStyleCastExpr, NoOp, typeof (((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:233:50))))) + (((~(((0UL)))) - ((((1UL))) << (17)) + 1) & (~(((0UL))) >> (64 - 1 - (21))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:233:50))))))))",
+          "sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:233:50))",
+          "[B1.166] = [B1.165]",
+          "[B1.173]->rg",
+          "sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:236:10))",
+          "return [B1.209];"
+        ],
+        "return_statements": [
+          "return [B1.209];",
+          "return [B14.3];",
+          "return [B87.3];"
+        ],
+        "source_file": "drivers/gpu/drm/i915/i915_hwmon.c",
+        "source_excerpt": "179: \t/* val in hwmon interface units (millisec) */\n180: \tout = mul_u64_u32_shr(tau4, SF_TIME, hwmon->scl_shift_time + x_w);\n181: \n182: \treturn sysfs_emit(buf, \"%llu\\n\", out);\n183: }\n184: \n185: static ssize_t\n186: hwm_power1_max_interval_store(struct device *dev,\n187: \t\t\t      struct device_attribute *attr,\n188: \t\t\t      const char *buf, size_t count)\n189: {\n190: \tstruct hwm_drvdata *ddat = dev_get_drvdata(dev);\n191: \tstruct i915_hwmon *hwmon = ddat->hwmon;\n192: \tu32 x, y, rxy, x_w = 2; /* 2 bits */\n193: \tu64 tau4, r, max_win;\n194: \tunsigned long val;\n195: \tint ret;\n196: \n197: \tret = kstrtoul(buf, 0, &val);\n198: \tif (ret)\n199: \t\treturn ret;\n200: \n201: \t/*\n202: \t * Max HW supported tau in '1.x * power(2,y)' format, x = 0, y = 0x12\n203: \t * The hwmon->scl_shift_time default of 0xa results in a max tau of 256 seconds\n204: \t */\n205: #define PKG_MAX_WIN_DEFAULT 0x12ull\n206: \n207: \t/*\n208: \t * val must be < max in hwmon interface units. The steps below are\n209: \t * explained in i915_power1_max_interval_show()\n210: \t */\n211: \tr = FIELD_PREP(PKG_MAX_WIN, PKG_MAX_WIN_DEFAULT);\n212: \tx = REG_FIELD_GET(PKG_MAX_WIN_X, r);\n213: \ty = REG_FIELD_GET(PKG_MAX_WIN_Y, r);\n214: \ttau4 = ((1 << x_w) | x) << y;\n215: \tmax_win = mul_u64_u32_shr(tau4, SF_TIME, hwmon->scl_shift_time + x_w);\n216: \n217: \tif (val > max_win)\n218: \t\treturn -EINVAL;\n219: \n220: \t/* val in hw units */\n221: \tval = DIV_ROUND_CLOSEST_ULL((u64)val << hwmon->scl_shift_time, SF_TIME);\n222: \t/* Convert to 1.x * power(2,y) */\n223: \tif (!val) {\n224: \t\t/* Avoid ilog2(0) */\n225: \t\ty = 0;\n226: \t\tx = 0;\n227: \t} else {\n228: \t\ty = ilog2(val);\n229: \t\t/* x = (val - (1 << y)) >> (y - 2); */\n230: \t\tx = (val - (1ul << y)) << x_w >> y;\n231: \t}\n232: \n233: \trxy = REG_FIELD_PREP(PKG_PWR_LIM_1_TIME_X, x) | REG_FIELD_PREP(PKG_PWR_LIM_1_TIME_Y, y);\n234: \n235: \thwm_locked_with_pm_intel_uncore_rmw(ddat, hwmon->rg.pkg_rapl_limit,\n236: \t\t\t\t\t    PKG_PWR_LIM_1_TIME, rxy);\n237: \treturn count;\n238: }\n239: \n240: static SENSOR_DEVICE_ATTR(power1_max_interval, 0664,\n241: \t\t\t  hwm_power1_max_interval_show,\n242: \t\t\t  hwm_power1_max_interval_store, 0);\n243: ",
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/semweaver_treatment_evidence_cohort_v3/08_768f17fd25e4_Integer_Overflow/csa/patchweaver_runtime/csa_raw/drivers-gpu-drm-i915-i915_hwmon.c-hwm_power1_max_interval_store.txt",
+        "raw_output_sha256": "b24bdc824d21ed50f207b7a68265a6777c4e9631c75c3cbd1abde1ce4d95de64",
+        "command_sha256": "cf1490dd541b656baca54c6abf76f326a0d316fcdf873a2ee4233097df8ee057"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:symbolic-state",
+        "confidence": 0.88,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/i915/i915_hwmon.c",
+          "hunk_index": 1,
+          "source_line": 211
+        },
+        "summary": "hwm_power1_max_interval_store in drivers/gpu/drm/i915/i915_hwmon.c: locks=hwm_locked_with_pm_intel_uncore_rmw | cfg_calls=hwm_power1_max_interval_store -> dev_get_drvdata; hwm_power1_max_interval_store -> kstrtoul",
+        "statements": [
+          "179: \t/* val in hwmon interface units (millisec) */",
+          "180: \tout = mul_u64_u32_shr(tau4, SF_TIME, hwmon->scl_shift_time + x_w);",
+          "181:",
+          "182: \treturn sysfs_emit(buf, \"%llu\\n\", out);",
+          "183: }",
+          "184:"
+        ],
+        "guards": [
+          "[B6.5] ? ... : ...",
+          "([B10.4]) ? ... : ...",
+          "[B11.5] ? ... : ..."
+        ],
+        "call_boundary": [
+          "mul_u64_u32_shr",
+          "sysfs_emit",
+          "hwm_power1_max_interval_store",
+          "dev_get_drvdata",
+          "kstrtoul",
+          "ilog2"
+        ],
+        "call_edges": [
+          "hwm_power1_max_interval_store -> dev_get_drvdata",
+          "hwm_power1_max_interval_store -> kstrtoul",
+          "hwm_power1_max_interval_store -> __builtin_constant_p",
+          "hwm_power1_max_interval_store -> __compiletime_assert_1101",
+          "hwm_power1_max_interval_store -> __compiletime_assert_1102",
+          "hwm_power1_max_interval_store -> __builtin_ffsll",
+          "hwm_power1_max_interval_store -> __compiletime_assert_1103",
+          "hwm_power1_max_interval_store -> __compiletime_assert_1104"
+        ],
+        "state_transitions": [
+          "transition((typeof (((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:233:8))))) + (((~(((0UL)))) - ((((1UL))) << (22)) + 1) & (~(((0UL))) >> (64 - 1 - (23))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:233:8))))))))[B1.2] (CStyleCastExpr, NoOp, typeof (((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:233:8))))) + (((~(((0UL)))) - ((((1UL))) << (22)) + 1) & (~(((0UL))) >> (64 - 1 - (23))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:233:8)))))))))",
+          "transition(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:233:8)))",
+          "transition((typeof (((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:233:50))))) + (((~(((0UL)))) - ((((1UL))) << (17)) + 1) & (~(((0UL))) >> (64 - 1 - (21))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:233:50))))))))[B1.84] (CStyleCastExpr, NoOp, typeof (((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:233:50))))) + (((~(((0UL)))) - ((((1UL))) << (17)) + 1) & (~(((0UL))) >> (64 - 1 - (21))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:233:50)))))))))",
+          "locked(hwm_locked_with_pm_intel_uncore_rmw)",
+          "(typeof (((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:233:8))))) + (((~(((0UL)))) - ((((1UL))) << (22)) + 1) & (~(((0UL))) >> (64 - 1 - (23))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:233:8))))))))[B1.2] (CStyleCastExpr, NoOp, typeof (((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:233:8))))) + (((~(((0UL)))) - ((((1UL))) << (22)) + 1) & (~(((0UL))) >> (64 - 1 - (23))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:233:8))))))))",
+          "sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:233:8))"
+        ],
+        "api_terms": [
+          "hwm_locked_with_pm_intel_uncore_rmw",
+          "dev_get_drvdata",
+          "kstrtoul",
+          "__builtin_constant_p",
+          "__compiletime_assert_1101",
+          "__compiletime_assert_1102"
+        ],
+        "related_symbols": [
+          "hwmon->scl_shift_time",
+          "ddat->hwmon",
+          "hwmon->rg"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_validation_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/i915/i915_hwmon.c",
+        "function": "hwm_power1_max_interval_show"
+      },
+      "location": {
+        "line": 175,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at drivers/gpu/drm/i915/i915_hwmon.c:175",
+        "diagnostic_message": "",
+        "diagnostic_checker": "",
+        "state_before": [
+          "buffer(ddat->hwmon)",
+          "buffer(ei->reg_val_prev)",
+          "sinks(mutex_unlock, hwm_power1_max_interval_show)"
+        ],
+        "state_after": [
+          "diagnostic(csa)"
+        ],
+        "functions": [
+          "hwm_power1_max_interval_show"
+        ],
+        "globals": [],
+        "tracked_symbols": [],
+        "buffer_fields": [
+          "ddat->hwmon",
+          "ei->reg_val_prev",
+          "ei->accum_energy",
+          "hwmon->scl_shift_energy",
+          "hwmon->hwmon_lock",
+          "ddat->uncore"
+        ],
+        "call_targets": [
+          "mutex_unlock",
+          "hwm_power1_max_interval_show",
+          "dev_get_drvdata",
+          "intel_uncore_read",
+          "mul_u64_u32_shr",
+          "sysfs_emit"
+        ],
+        "call_edges": [
+          "hwm_power1_max_interval_show -> dev_get_drvdata",
+          "hwm_power1_max_interval_show -> intel_runtime_pm_get",
+          "hwm_power1_max_interval_show -> intel_runtime_pm_put",
+          "hwm_power1_max_interval_show -> intel_uncore_read",
+          "hwm_power1_max_interval_show -> __builtin_constant_p",
+          "hwm_power1_max_interval_show -> __compiletime_assert_1091"
+        ],
+        "state_statements": [
+          "sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))",
+          "(typeof (((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))) + (((~(((0UL)))) - ((((1UL))) << (17)) + 1) & (~(((0UL))) >> (64 - 1 - (21))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))))))([B1.65]) (CStyleCastExpr, NoOp, typeof (((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))) + (((~(((0UL)))) - ((((1UL))) << (17)) + 1) & (~(((0UL))) >> (64 - 1 - (21))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))))))",
+          "[B1.69] = ([B1.68])",
+          "[B1.83] = [B1.82]",
+          "[B1.92]->scl_shift_time",
+          "[B1.100] = [B1.99]"
+        ],
+        "source_file": "drivers/gpu/drm/i915/i915_hwmon.c",
+        "source_excerpt": "143: \n144: \tif (reg_val >= ei->reg_val_prev)\n145: \t\tei->accum_energy += reg_val - ei->reg_val_prev;\n146: \telse\n147: \t\tei->accum_energy += UINT_MAX - ei->reg_val_prev + reg_val;\n148: \tei->reg_val_prev = reg_val;\n149: \n150: \t*energy = mul_u64_u32_shr(ei->accum_energy, SF_ENERGY,\n151: \t\t\t\t  hwmon->scl_shift_energy);\n152: \tmutex_unlock(&hwmon->hwmon_lock);\n153: }\n154: \n155: static ssize_t\n156: hwm_power1_max_interval_show(struct device *dev, struct device_attribute *attr,\n157: \t\t\t     char *buf)\n158: {\n159: \tstruct hwm_drvdata *ddat = dev_get_drvdata(dev);\n160: \tstruct i915_hwmon *hwmon = ddat->hwmon;\n161: \tintel_wakeref_t wakeref;\n162: \tu32 r, x, y, x_w = 2; /* 2 bits */\n163: \tu64 tau4, out;\n164: \n165: \twith_intel_runtime_pm(ddat->uncore->rpm, wakeref)\n166: \t\tr = intel_uncore_read(ddat->uncore, hwmon->rg.pkg_rapl_limit);\n167: \n168: \tx = REG_FIELD_GET(PKG_PWR_LIM_1_TIME_X, r);\n169: \ty = REG_FIELD_GET(PKG_PWR_LIM_1_TIME_Y, r);\n170: \t/*\n171: \t * tau = 1.x * power(2,y), x = bits(23:22), y = bits(21:17)\n172: \t *     = (4 | x) << (y - 2)\n173: \t * where (y - 2) ensures a 1.x fixed point representation of 1.x\n174: \t * However because y can be < 2, we compute\n175: \t *     tau4 = (4 | x) << y\n176: \t * but add 2 when doing the final right shift to account for units\n177: \t */\n178: \ttau4 = ((1 << x_w) | x) << y;\n179: \t/* val in hwmon interface units (millisec) */\n180: \tout = mul_u64_u32_shr(tau4, SF_TIME, hwmon->scl_shift_time + x_w);\n181: \n182: \treturn sysfs_emit(buf, \"%llu\\n\", out);\n183: }\n184: \n185: static ssize_t\n186: hwm_power1_max_interval_store(struct device *dev,\n187: \t\t\t      struct device_attribute *attr,\n188: \t\t\t      const char *buf, size_t count)\n189: {\n190: \tstruct hwm_drvdata *ddat = dev_get_drvdata(dev);\n191: \tstruct i915_hwmon *hwmon = ddat->hwmon;\n192: \tu32 x, y, rxy, x_w = 2; /* 2 bits */\n193: \tu64 tau4, r, max_win;\n194: \tunsigned long val;\n195: \tint ret;\n196: \n197: \tret = kstrtoul(buf, 0, &val);\n198: \tif (ret)\n199: \t\treturn ret;\n200: \n201: \t/*\n202: \t * Max HW supported tau in '1.x * power(2,y)' format, x = 0, y = 0x12\n203: \t * The hwmon->scl_shift_time default of 0xa results in a max tau of 256 seconds\n204: \t */\n205: #define PKG_MAX_WIN_DEFAULT 0x12ull\n206: \n207: \t/*",
+        "coverage_status": "partial",
+        "contract_type": "",
+        "guard_exprs": [
+          "reg_val >= ei->reg_val_prev",
+          "ret",
+          "do ... while [B2.1]",
+          "if [B4.137]"
+        ],
+        "sink_calls": [
+          "mutex_unlock",
+          "hwm_power1_max_interval_show",
+          "dev_get_drvdata",
+          "intel_uncore_read"
+        ]
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.72,
+        "origin": "analyzer_output"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/i915/i915_hwmon.c",
+          "hunk_index": 0,
+          "source_line": 175
+        },
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at drivers/gpu/drm/i915/i915_hwmon.c:175",
+        "statements": [
+          "143:",
+          "144: \tif (reg_val >= ei->reg_val_prev)",
+          "145: \t\tei->accum_energy += reg_val - ei->reg_val_prev;",
+          "146: \telse",
+          "147: \t\tei->accum_energy += UINT_MAX - ei->reg_val_prev + reg_val;",
+          "148: \tei->reg_val_prev = reg_val;"
+        ],
+        "guards": [
+          "reg_val >= ei->reg_val_prev",
+          "ret",
+          "do ... while [B2.1]",
+          "if [B4.137]"
+        ],
+        "call_boundary": [
+          "mutex_unlock",
+          "hwm_power1_max_interval_show",
+          "dev_get_drvdata",
+          "intel_uncore_read",
+          "mul_u64_u32_shr",
+          "sysfs_emit"
+        ],
+        "call_edges": [
+          "hwm_power1_max_interval_show -> dev_get_drvdata",
+          "hwm_power1_max_interval_show -> intel_runtime_pm_get",
+          "hwm_power1_max_interval_show -> intel_runtime_pm_put",
+          "hwm_power1_max_interval_show -> intel_uncore_read",
+          "hwm_power1_max_interval_show -> __builtin_constant_p",
+          "hwm_power1_max_interval_show -> __compiletime_assert_1091"
+        ],
+        "state_transitions": [
+          "diagnostic(csa)"
+        ],
+        "api_terms": [
+          "sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))",
+          "(typeof (((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))) + (((~(((0UL)))) - ((((1UL))) << (17)) + 1) & (~(((0UL))) >> (64 - 1 - (21))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))))))([B1.65]) (CStyleCastExpr, NoOp, typeof (((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))) + (((~(((0UL)))) - ((((1UL))) << (17)) + 1) & (~(((0UL))) >> (64 - 1 - (21))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))))))",
+          "[B1.69] = ([B1.68])",
+          "[B1.83] = [B1.82]",
+          "[B1.92]->scl_shift_time",
+          "[B1.100] = [B1.99]"
+        ],
+        "related_symbols": [],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      }
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_1",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/i915/i915_hwmon.c",
+        "function": "hwm_power1_max_interval_show"
+      },
+      "location": {
+        "line": 175,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "hwm_power1_max_interval_show in drivers/gpu/drm/i915/i915_hwmon.c provides CSA-backed pointer/resource lifecycle context near line 175",
+        "diagnostic_message": "",
+        "diagnostic_checker": "",
+        "state_before": [
+          "buffer(ddat->hwmon)",
+          "buffer(ei->reg_val_prev)",
+          "sinks(mutex_unlock, hwm_power1_max_interval_show)"
+        ],
+        "state_after": [
+          "operation(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6)))",
+          "operation((typeof (((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))) + (((~(((0UL)))) - ((((1UL))) << (17)) + 1) & (~(((0UL))) >> (64 - 1 - (21))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))))))([B1.65]) (CStyleCastExpr, NoOp, typeof (((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))) + (((~(((0UL)))) - ((((1UL))) << (17)) + 1) & (~(((0UL))) >> (64 - 1 - (21))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6)))))))))",
+          "operation([B1.69] = ([B1.68]))",
+          "operation([B1.83] = [B1.82])"
+        ],
+        "functions": [
+          "hwm_power1_max_interval_show"
+        ],
+        "globals": [],
+        "tracked_symbols": [],
+        "buffer_fields": [
+          "ddat->hwmon",
+          "ei->reg_val_prev",
+          "ei->accum_energy",
+          "hwmon->scl_shift_energy",
+          "hwmon->hwmon_lock",
+          "ddat->uncore"
+        ],
+        "call_targets": [
+          "mutex_unlock",
+          "hwm_power1_max_interval_show",
+          "dev_get_drvdata",
+          "intel_uncore_read",
+          "mul_u64_u32_shr",
+          "sysfs_emit"
+        ],
+        "call_edges": [
+          "hwm_power1_max_interval_show -> dev_get_drvdata",
+          "hwm_power1_max_interval_show -> intel_runtime_pm_get",
+          "hwm_power1_max_interval_show -> intel_runtime_pm_put",
+          "hwm_power1_max_interval_show -> intel_uncore_read",
+          "hwm_power1_max_interval_show -> __builtin_constant_p",
+          "hwm_power1_max_interval_show -> __compiletime_assert_1091"
+        ],
+        "state_statements": [
+          "sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))",
+          "(typeof (((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))) + (((~(((0UL)))) - ((((1UL))) << (17)) + 1) & (~(((0UL))) >> (64 - 1 - (21))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))))))([B1.65]) (CStyleCastExpr, NoOp, typeof (((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))) + (((~(((0UL)))) - ((((1UL))) << (17)) + 1) & (~(((0UL))) >> (64 - 1 - (21))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))))))",
+          "[B1.69] = ([B1.68])",
+          "[B1.83] = [B1.82]",
+          "[B1.92]->scl_shift_time",
+          "[B1.100] = [B1.99]"
+        ],
+        "source_file": "drivers/gpu/drm/i915/i915_hwmon.c",
+        "source_excerpt": "143: \n144: \tif (reg_val >= ei->reg_val_prev)\n145: \t\tei->accum_energy += reg_val - ei->reg_val_prev;\n146: \telse\n147: \t\tei->accum_energy += UINT_MAX - ei->reg_val_prev + reg_val;\n148: \tei->reg_val_prev = reg_val;\n149: \n150: \t*energy = mul_u64_u32_shr(ei->accum_energy, SF_ENERGY,\n151: \t\t\t\t  hwmon->scl_shift_energy);\n152: \tmutex_unlock(&hwmon->hwmon_lock);\n153: }\n154: \n155: static ssize_t\n156: hwm_power1_max_interval_show(struct device *dev, struct device_attribute *attr,\n157: \t\t\t     char *buf)\n158: {\n159: \tstruct hwm_drvdata *ddat = dev_get_drvdata(dev);\n160: \tstruct i915_hwmon *hwmon = ddat->hwmon;\n161: \tintel_wakeref_t wakeref;\n162: \tu32 r, x, y, x_w = 2; /* 2 bits */\n163: \tu64 tau4, out;\n164: \n165: \twith_intel_runtime_pm(ddat->uncore->rpm, wakeref)\n166: \t\tr = intel_uncore_read(ddat->uncore, hwmon->rg.pkg_rapl_limit);\n167: \n168: \tx = REG_FIELD_GET(PKG_PWR_LIM_1_TIME_X, r);\n169: \ty = REG_FIELD_GET(PKG_PWR_LIM_1_TIME_Y, r);\n170: \t/*\n171: \t * tau = 1.x * power(2,y), x = bits(23:22), y = bits(21:17)\n172: \t *     = (4 | x) << (y - 2)\n173: \t * where (y - 2) ensures a 1.x fixed point representation of 1.x\n174: \t * However because y can be < 2, we compute\n175: \t *     tau4 = (4 | x) << y\n176: \t * but add 2 when doing the final right shift to account for units\n177: \t */\n178: \ttau4 = ((1 << x_w) | x) << y;\n179: \t/* val in hwmon interface units (millisec) */\n180: \tout = mul_u64_u32_shr(tau4, SF_TIME, hwmon->scl_shift_time + x_w);\n181: \n182: \treturn sysfs_emit(buf, \"%llu\\n\", out);\n183: }\n184: \n185: static ssize_t\n186: hwm_power1_max_interval_store(struct device *dev,\n187: \t\t\t      struct device_attribute *attr,\n188: \t\t\t      const char *buf, size_t count)\n189: {\n190: \tstruct hwm_drvdata *ddat = dev_get_drvdata(dev);\n191: \tstruct i915_hwmon *hwmon = ddat->hwmon;\n192: \tu32 x, y, rxy, x_w = 2; /* 2 bits */\n193: \tu64 tau4, r, max_win;\n194: \tunsigned long val;\n195: \tint ret;\n196: \n197: \tret = kstrtoul(buf, 0, &val);\n198: \tif (ret)\n199: \t\treturn ret;\n200: \n201: \t/*\n202: \t * Max HW supported tau in '1.x * power(2,y)' format, x = 0, y = 0x12\n203: \t * The hwmon->scl_shift_time default of 0xa results in a max tau of 256 seconds\n204: \t */\n205: #define PKG_MAX_WIN_DEFAULT 0x12ull\n206: \n207: \t/*",
+        "coverage_status": "partial",
+        "operations": [
+          "sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))",
+          "(typeof (((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))) + (((~(((0UL)))) - ((((1UL))) << (17)) + 1) & (~(((0UL))) >> (64 - 1 - (21))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))))))([B1.65]) (CStyleCastExpr, NoOp, typeof (((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))) + (((~(((0UL)))) - ((((1UL))) << (17)) + 1) & (~(((0UL))) >> (64 - 1 - (21))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))))))",
+          "[B1.69] = ([B1.68])",
+          "[B1.83] = [B1.82]",
+          "[B1.92]->scl_shift_time",
+          "[B1.100] = [B1.99]"
+        ],
+        "acquisition_ops": [],
+        "release_ops": []
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.72,
+        "origin": "analyzer_output"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/i915/i915_hwmon.c",
+          "hunk_index": 0,
+          "source_line": 175
+        },
+        "summary": "hwm_power1_max_interval_show in drivers/gpu/drm/i915/i915_hwmon.c provides CSA-backed pointer/resource lifecycle context near line 175",
+        "statements": [
+          "143:",
+          "144: \tif (reg_val >= ei->reg_val_prev)",
+          "145: \t\tei->accum_energy += reg_val - ei->reg_val_prev;",
+          "146: \telse",
+          "147: \t\tei->accum_energy += UINT_MAX - ei->reg_val_prev + reg_val;",
+          "148: \tei->reg_val_prev = reg_val;"
+        ],
+        "guards": [
+          "reg_val >= ei->reg_val_prev",
+          "ret",
+          "do ... while [B2.1]",
+          "if [B4.137]"
+        ],
+        "call_boundary": [
+          "mutex_unlock",
+          "hwm_power1_max_interval_show",
+          "dev_get_drvdata",
+          "intel_uncore_read",
+          "mul_u64_u32_shr",
+          "sysfs_emit"
+        ],
+        "call_edges": [
+          "hwm_power1_max_interval_show -> dev_get_drvdata",
+          "hwm_power1_max_interval_show -> intel_runtime_pm_get",
+          "hwm_power1_max_interval_show -> intel_runtime_pm_put",
+          "hwm_power1_max_interval_show -> intel_uncore_read",
+          "hwm_power1_max_interval_show -> __builtin_constant_p",
+          "hwm_power1_max_interval_show -> __compiletime_assert_1091"
+        ],
+        "state_transitions": [
+          "operation(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6)))",
+          "operation((typeof (((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))) + (((~(((0UL)))) - ((((1UL))) << (17)) + 1) & (~(((0UL))) >> (64 - 1 - (21))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))))))([B1.65]) (CStyleCastExpr, NoOp, typeof (((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))) + (((~(((0UL)))) - ((((1UL))) << (17)) + 1) & (~(((0UL))) >> (64 - 1 - (21))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6)))))))))",
+          "operation([B1.69] = ([B1.68]))",
+          "operation([B1.83] = [B1.82])"
+        ],
+        "api_terms": [
+          "sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))",
+          "(typeof (((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))) + (((~(((0UL)))) - ((((1UL))) << (17)) + 1) & (~(((0UL))) >> (64 - 1 - (21))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))))))([B1.65]) (CStyleCastExpr, NoOp, typeof (((u32)(((((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))) + (((~(((0UL)))) - ((((1UL))) << (17)) + 1) & (~(((0UL))) >> (64 - 1 - (21))))) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/i915/i915_hwmon.c:169:6))))))))",
+          "[B1.69] = ([B1.68])",
+          "[B1.83] = [B1.82]",
+          "[B1.92]->scl_shift_time",
+          "[B1.100] = [B1.99]"
+        ],
+        "related_symbols": [],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "collected_analyzers": [
+    "csa"
+  ],
+  "provenance_summary": {
+    "total_records": 6,
+    "origin_counts": {
+      "analyzer_internal": 4,
+      "analyzer_output": 2
+    },
+    "analyzer_internal_records": 4,
+    "analyzer_internal_fraction": 0.6666666666666666,
+    "analyzer_backed_records": 6,
+    "analyzer_backed_fraction": 1.0,
+    "source_derived_records": 0,
+    "source_derived_fraction": 0.0
+  }
+}
