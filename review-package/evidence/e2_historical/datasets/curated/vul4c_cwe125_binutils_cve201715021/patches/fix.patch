@@ -1,0 +1,12 @@
+diff --git a/bfd/opncls.c b/bfd/opncls.c
+--- a/bfd/opncls.c
++++ b/bfd/opncls.c
+@@ -1201,7 +1201,7 @@
+   /* PR 17597: avoid reading off the end of the buffer.  */
+   crc_offset = strnlen (name, bfd_get_section_size (sect)) + 1;
+   crc_offset = (crc_offset + 3) & ~3;
+-  if (crc_offset >= bfd_get_section_size (sect))
++  if (crc_offset + 4 > bfd_get_section_size (sect))
+     return NULL;
+ 
+   *crc32 = bfd_get_32 (abfd, contents + crc_offset);

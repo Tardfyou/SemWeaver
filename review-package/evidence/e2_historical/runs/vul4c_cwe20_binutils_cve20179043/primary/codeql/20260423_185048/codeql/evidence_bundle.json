@@ -1,0 +1,580 @@
+{
+  "records": [
+    {
+      "evidence_id": "pf_000",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "binutils/readelf.c",
+        "function": "binutils/readelf.c numeric GNU build attribute parsing block"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "patch_overview",
+        "label": "Patch overview",
+        "attributes": {
+          "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe20_binutils_cve20179043/patches/fix.patch",
+          "changed_files": [
+            "binutils/readelf.c"
+          ],
+          "changed_file_count": 1,
+          "added_line_count": 15,
+          "deleted_line_count": 7
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "patch_overview",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_001",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "binutils/readelf.c",
+        "function": "binutils/readelf.c numeric GNU build attribute parsing block"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "vulnerability_patterns",
+        "label": "Vulnerability patterns inferred from patch",
+        "attributes": {
+          "patterns": [
+            "improper_input_validation_numeric_length"
+          ],
+          "descriptions": [
+            "A length derived from an input note name field controls a numeric decode loop without first being bounded to the capacity of the destination integer. Oversized bytes values let untrusted name data continue through shift-based numeric accumulation beyond the intended value width. The patch blocks this by checking bytes against sizeof (val), reporting a corrupt name field, and returning FALSE before the loop."
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "vulnerability_patterns",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_002",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "binutils/readelf.c",
+        "function": "binutils/readelf.c numeric GNU build attribute parsing block"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "affected_functions",
+        "label": "Functions implicated by removed or fixed code",
+        "attributes": {
+          "functions": [
+            "binutils/readelf.c numeric GNU build attribute parsing block",
+            "print_gnu_build_attribute_name"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "affected_functions",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_003",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "binutils/readelf.c",
+        "function": "binutils/readelf.c numeric GNU build attribute parsing block"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "detection_strategy",
+        "label": "Existing patch analysis detection strategy",
+        "attributes": {
+          "primary_pattern": "improper_input_validation_numeric_length",
+          "check_types": [
+            "local_length_to_loop_bound_check",
+            "integer_capacity_guard_check",
+            "shift_based_numeric_decode_check",
+            "error_path_early_return_barrier_check"
+          ],
+          "entry_points": [
+            "binutils/readelf.c numeric GNU build attribute parsing block",
+            "case GNU_BUILD_ATTRIBUTE_TYPE_NUMERIC"
+          ],
+          "data_flow_tracking": true,
+          "cross_file_analysis": false,
+          "suggestions": [
+            "First-draft detector should anchor on bytes derived from pnote->namesz - (name - pnote->namedata) and then used as the while (bytes --) loop bound.",
+            "Treat the missing guard bytes > sizeof (val) before the loop as the main vulnerability condition, but do not require the exact error(...) text for initial matching.",
+            "Track local data flow from pnote->namesz into bytes and from bytes into the decode loop; interprocedural or cross-file analysis is not needed for this patch.",
+            "Use the shift/accumulation loop and *name++ consumption as stronger anchors than the later printf formatting changes.",
+            "Use printf format changes only as secondary convergence evidence, not as the primary sink."
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "detection_strategy",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_004",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "binutils/readelf.c",
+        "function": "binutils/readelf.c numeric GNU build attribute parsing block"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "added_guards",
+        "label": "Patch introduces or strengthens guards",
+        "attributes": {
+          "guards": [
+            "if (bytes > sizeof (val))"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "added_guards",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_005",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "binutils/readelf.c",
+        "function": "binutils/readelf.c numeric GNU build attribute parsing block"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "fix_patterns",
+        "label": "Patch introduces reusable fix patterns",
+        "attributes": {
+          "patterns": [
+            "change val from unsigned long to unsigned long long to match the intended numeric print width",
+            "add if (bytes > sizeof (val)) as a barrier before the decode loop",
+            "on oversized bytes, call error(...) and return FALSE instead of continuing to parse",
+            "keep printf format specifiers consistent with the widened val type",
+            "bounds check"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "fix_patterns",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_006",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "binutils/readelf.c",
+        "function": "binutils/readelf.c numeric GNU build attribute parsing block"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "added_api_calls",
+        "label": "Patch introduces or highlights API usage",
+        "attributes": {
+          "apis": [
+            "error",
+            "_",
+            "printf"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "added_api_calls",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "codeql_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "codeql",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "binutils/readelf.c",
+        "function": "print_gnu_build_attribute_name"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "summary": "focus=print_gnu_build_attribute_name | state=guard(bytes > sizeof (val)) | call_edges=print_gnu_build_attribute_name -> error; print_gnu_build_attribute_name -> _; print_gnu_build_attribute_name -> print_symbol | targets=error, _, print_symbol, printf | patch_contracts=print_gnu_build_attribute_name: barrier `bytes > sizeof (val)` around error, _ | patch_fix=bounds check | patched_apis=error, _, printf | guards=text; strchr (expected_types, name_type) == NULL | symbols=pnote, pnote->namedata, namedata, pnote->namesz | deps=elf/sh.h, time.h, elf/score.h | apis=error, _, print_symbol, printf",
+        "focus_function": "print_gnu_build_attribute_name",
+        "call_edges": [
+          "print_gnu_build_attribute_name -> error",
+          "print_gnu_build_attribute_name -> _",
+          "print_gnu_build_attribute_name -> print_symbol",
+          "print_gnu_build_attribute_name -> printf",
+          "print_gnu_build_attribute_name -> strlen",
+          "print_gnu_build_attribute_name -> warn",
+          "print_gnu_build_attribute_name -> type"
+        ],
+        "call_targets": [
+          "error",
+          "_",
+          "print_symbol",
+          "printf"
+        ],
+        "entry_points": [
+          "pnote",
+          "pnote->namedata",
+          "namedata",
+          "pnote->namesz",
+          "namesz"
+        ],
+        "tracked_symbols": [
+          "bytes",
+          "val",
+          "pnote",
+          "namesz",
+          "name",
+          "namedata"
+        ],
+        "sink_calls": [],
+        "state_transitions": [
+          "guard(bytes > sizeof (val))"
+        ],
+        "statements": [
+          "unsigned int        bytes = pnote->namesz - (name - pnote->namedata);",
+          "unsigned long long  val = 0;",
+          "unsigned int        shift = 0;",
+          "char *              decoded = NULL;",
+          "/* PR 21378 */",
+          "if (bytes > sizeof (val))"
+        ],
+        "apis": [
+          "error",
+          "_",
+          "print_symbol",
+          "printf",
+          "strlen",
+          "warn"
+        ],
+        "dependencies": [
+          "elf/sh.h",
+          "time.h",
+          "elf/score.h"
+        ],
+        "source_excerpt": "16907:       expected_types = \"*$!+\";\n16908:       break;\n16909:     }\n16910: \n16911:   if (text)\n16912:     {\n16913:       printf (\"%s\", text);\n16914:       left -= strlen (text);\n16915:     }\n16916: \n16917:   if (strchr (expected_types, name_type) == NULL)\n16918:     warn (_(\"attribute does not have an expected type (%c)\\n\"), name_type);\n16919: \n16920:   if ((unsigned long)(name - pnote->namedata) > pnote->namesz)\n16921:     {\n16922:       error (_(\"corrupt name field: namesz: %lu but parsing gets to %ld\\n\"),\n16923: \t     (unsigned long) pnote->namesz,\n16924: \t     (long) (name - pnote->namedata));\n16925:       return FALSE;\n16926:     }\n16927: \n16928:   if (left < 1 && ! do_wide)\n16929:     return TRUE;\n16930: \n16931:   switch (name_type)\n16932:     {\n16933:     case GNU_BUILD_ATTRIBUTE_TYPE_NUMERIC:\n16934:       {\n16935: \tunsigned int   bytes = pnote->namesz - (name - pnote->namedata);\n16936: \tunsigned long  val = 0;\n16937: \tunsigned int   shift = 0;\n16938: \tchar *         decoded = NULL;\n16939: \n16940: \twhile (bytes --)\n16941: \t  {\n16942: \t    unsigned long byte = (* name ++) & 0xff;\n16943: \n16944: \t    val |= byte << shift;\n16945: \t    shift += 8;\n16946: \t  }\n16947: \n16948: \tswitch (name_attribute)\n16949: \t  {\n16950: \t  case GNU_BUILD_ATTRIBUTE_PIC:\n16951: \t    switch (val)\n16952: \t      {\n16953: \t      case 0: decoded = \"static\"; break;\n16954: \t      case 1: decoded = \"pic\"; break;\n16955: \t      case 2: decoded = \"PIC\"; break;\n16956: \t      case 3: decoded = \"pie\"; break;\n16957: \t      case 4: decoded = \"PIE\"; break;\n16958: \t      default: break;\n16959: \t      }\n16960: \t    break;\n16961: \t  case GNU_BUILD_ATTRIBUTE_STACK_PROT:\n16962: \t    switch (val)\n16963: \t      {\n16964: \t\t/* Based upon the SPCT_FLAG_xxx enum values in gcc/cfgexpand.c.  */\n16965: \t      case 0: decoded = \"off\"; break;\n16966: \t      case 1: decoded = \"on\"; break;\n16967: \t      case 2: decoded = \"all\"; break;\n16968: \t      case 3: decoded = \"strong\"; break;\n16969: \t      case 4: decoded = \"explicit\"; break;\n16970: \t      default: break;\n16971: \t      }",
+        "coverage_status": "partial"
+      },
+      "provenance": {
+        "tool": "codeql",
+        "artifact": "source-window:semantic-slice",
+        "confidence": 0.8
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "binutils/readelf.c",
+          "hunk_index": 0,
+          "source_line": 16935
+        },
+        "summary": "focus=print_gnu_build_attribute_name | state=guard(bytes > sizeof (val)) | call_edges=print_gnu_build_attribute_name -> error; print_gnu_build_attribute_name -> _; print_gnu_build_attribute_name -> print_symbol | targets=error, _, print_symbol, printf | patch_contracts=print_gnu_build_attribute_name: barrier `bytes > sizeof (val)` around error, _ | patch_fix=bounds check | patched_apis=error, _, printf | guards=text; strchr (expected_types, name_type) == NULL | symbols=pnote, pnote->namedata, namedata, pnote->namesz | deps=elf/sh.h, time.h, elf/score.h | apis=error, _, print_symbol, printf",
+        "statements": [
+          "unsigned int        bytes = pnote->namesz - (name - pnote->namedata);",
+          "unsigned long long  val = 0;",
+          "unsigned int        shift = 0;",
+          "char *              decoded = NULL;",
+          "/* PR 21378 */",
+          "if (bytes > sizeof (val))"
+        ],
+        "guards": [],
+        "call_boundary": [
+          "error",
+          "_",
+          "print_symbol",
+          "printf"
+        ],
+        "call_edges": [
+          "print_gnu_build_attribute_name -> error",
+          "print_gnu_build_attribute_name -> _",
+          "print_gnu_build_attribute_name -> print_symbol",
+          "print_gnu_build_attribute_name -> printf",
+          "print_gnu_build_attribute_name -> strlen",
+          "print_gnu_build_attribute_name -> warn",
+          "print_gnu_build_attribute_name -> type"
+        ],
+        "state_transitions": [
+          "guard(bytes > sizeof (val))"
+        ],
+        "api_terms": [
+          "error",
+          "_",
+          "print_symbol",
+          "printf",
+          "strlen",
+          "warn"
+        ],
+        "related_symbols": [
+          "bytes",
+          "val",
+          "pnote",
+          "namesz",
+          "name",
+          "namedata"
+        ],
+        "verifier": "source-window",
+        "extraction_method": "source_window",
+        "coverage_status": "partial"
+      }
+    },
+    {
+      "evidence_id": "codeql_flow_0",
+      "type": "dataflow_candidate",
+      "analyzer": "codeql",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "binutils/readelf.c",
+        "function": "print_gnu_build_attribute_name"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "source": "bytes, val, pnote, namesz",
+        "sink": "error, _",
+        "path": [
+          "function:print_gnu_build_attribute_name",
+          "guard:bytes > sizeof (val)",
+          "api:error",
+          "api:_",
+          "print_gnu_build_attribute_name -> printf",
+          "print_gnu_build_attribute_name -> _"
+        ],
+        "summary": "print_gnu_build_attribute_name: barrier `bytes > sizeof (val)` around error, _",
+        "focus_function": "print_gnu_build_attribute_name",
+        "entry_points": [
+          "bytes",
+          "val",
+          "pnote",
+          "namesz",
+          "name",
+          "namedata"
+        ],
+        "call_targets": [
+          "error",
+          "_",
+          "print_symbol",
+          "printf"
+        ],
+        "state_transitions": [
+          "guard(bytes > sizeof (val))"
+        ],
+        "source_excerpt": "16907:       expected_types = \"*$!+\";\n16908:       break;\n16909:     }\n16910: \n16911:   if (text)\n16912:     {\n16913:       printf (\"%s\", text);\n16914:       left -= strlen (text);\n16915:     }\n16916: \n16917:   if (strchr (expected_types, name_type) == NULL)\n16918:     warn (_(\"attribute does not have an expected type (%c)\\n\"), name_type);\n16919: \n16920:   if ((unsigned long)(name - pnote->namedata) > pnote->namesz)\n16921:     {\n16922:       error (_(\"corrupt name field: namesz: %lu but parsing gets to %ld\\n\"),\n16923: \t     (unsigned long) pnote->namesz,\n16924: \t     (long) (name - pnote->namedata));\n16925:       return FALSE;\n16926:     }\n16927: \n16928:   if (left < 1 && ! do_wide)\n16929:     return TRUE;\n16930: \n16931:   switch (name_type)\n16932:     {\n16933:     case GNU_BUILD_ATTRIBUTE_TYPE_NUMERIC:\n16934:       {\n16935: \tunsigned int   bytes = pnote->namesz - (name - pnote->namedata);\n16936: \tunsigned long  val = 0;\n16937: \tunsigned int   shift = 0;\n16938: \tchar *         decoded = NULL;\n16939: \n16940: \twhile (bytes --)\n16941: \t  {\n16942: \t    unsigned long byte = (* name ++) & 0xff;\n16943: \n16944: \t    val |= byte << shift;\n16945: \t    shift += 8;\n16946: \t  }\n16947: \n16948: \tswitch (name_attribute)\n16949: \t  {\n16950: \t  case GNU_BUILD_ATTRIBUTE_PIC:\n16951: \t    switch (val)\n16952: \t      {\n16953: \t      case 0: decoded = \"static\"; break;\n16954: \t      case 1: decoded = \"pic\"; break;\n16955: \t      case 2: decoded = \"PIC\"; break;\n16956: \t      case 3: decoded = \"pie\"; break;\n16957: \t      case 4: decoded = \"PIE\"; break;\n16958: \t      default: break;\n16959: \t      }\n16960: \t    break;\n16961: \t  case GNU_BUILD_ATTRIBUTE_STACK_PROT:\n16962: \t    switch (val)\n16963: \t      {\n16964: \t\t/* Based upon the SPCT_FLAG_xxx enum values in gcc/cfgexpand.c.  */\n16965: \t      case 0: decoded = \"off\"; break;\n16966: \t      case 1: decoded = \"on\"; break;\n16967: \t      case 2: decoded = \"all\"; break;\n16968: \t      case 3: decoded = \"strong\"; break;\n16969: \t      case 4: decoded = \"explicit\"; break;\n16970: \t      default: break;\n16971: \t      }",
+        "live_query_status": "database_missing",
+        "database_status": "missing",
+        "database_create_message": "CodeQL 数据库创建失败: Initializing database at /anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe20_binutils_cve20179043/primary/codeql/20260423_185048/codeql/codeql/database.\nRunning build command: [/bin/sh, /anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe20_binutils_cve20179043/primary/codeql/20260423_185048/codeql/codeql/codeql_build_zp7zqusg.sh]\nRunning command in /anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe20_binutils_cve20179043/vulnerable: [/bin/sh, /anonymous/home/LLM-Native/v2_experiments/runs/",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "codeql",
+        "artifact": "source-window:data-flow-seed",
+        "confidence": 0.84
+      },
+      "evidence_slice": {
+        "kind": "flow_witness",
+        "anchor": {
+          "patch_file": "binutils/readelf.c",
+          "hunk_index": 0,
+          "source_line": 16935
+        },
+        "summary": "print_gnu_build_attribute_name: barrier `bytes > sizeof (val)` around error, _",
+        "statements": [
+          "16903: \t  error (_(\"unexpected character in name field\\n\"));",
+          "16904: \t  print_symbol (- left, _(\"<unknown attribute>\"));",
+          "16905: \t  return 0;",
+          "16906: \t}",
+          "16907:       expected_types = \"*$!+\";",
+          "16908:       break;"
+        ],
+        "guards": [],
+        "call_boundary": [
+          "error, _"
+        ],
+        "call_edges": [
+          "function:print_gnu_build_attribute_name",
+          "guard:bytes > sizeof (val)",
+          "api:error",
+          "api:_",
+          "print_gnu_build_attribute_name -> printf",
+          "print_gnu_build_attribute_name -> _"
+        ],
+        "state_transitions": [
+          "guard(bytes > sizeof (val))"
+        ],
+        "api_terms": [
+          "error",
+          "_",
+          "print_symbol",
+          "printf"
+        ],
+        "related_symbols": [
+          "bytes",
+          "val",
+          "pnote",
+          "namesz",
+          "name",
+          "namedata"
+        ],
+        "verifier": "source-window",
+        "extraction_method": "source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "codeql_chain_0",
+      "type": "call_chain",
+      "analyzer": "codeql",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "binutils/readelf.c",
+        "function": "print_gnu_build_attribute_name"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": [
+          "print_gnu_build_attribute_name -> error",
+          "print_gnu_build_attribute_name -> _",
+          "print_gnu_build_attribute_name -> print_symbol",
+          "print_gnu_build_attribute_name -> printf",
+          "print_gnu_build_attribute_name -> strlen",
+          "print_gnu_build_attribute_name -> warn"
+        ],
+        "call_edges": [
+          "print_gnu_build_attribute_name -> error",
+          "print_gnu_build_attribute_name -> _",
+          "print_gnu_build_attribute_name -> print_symbol",
+          "print_gnu_build_attribute_name -> printf",
+          "print_gnu_build_attribute_name -> strlen",
+          "print_gnu_build_attribute_name -> warn",
+          "print_gnu_build_attribute_name -> type"
+        ],
+        "live_query_status": "database_missing",
+        "database_status": "missing",
+        "database_create_message": "CodeQL 数据库创建失败: Initializing database at /anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe20_binutils_cve20179043/primary/codeql/20260423_185048/codeql/codeql/database.\nRunning build command: [/bin/sh, /anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe20_binutils_cve20179043/primary/codeql/20260423_185048/codeql/codeql/codeql_build_zp7zqusg.sh]\nRunning command in /anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe20_binutils_cve20179043/vulnerable: [/bin/sh, /anonymous/home/LLM-Native/v2_experiments/runs/",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "codeql",
+        "artifact": "source-window:interprocedural-summary",
+        "confidence": 0.78
+      },
+      "evidence_slice": {
+        "kind": "interprocedural_slice",
+        "anchor": {
+          "patch_file": "binutils/readelf.c",
+          "hunk_index": 0,
+          "source_line": 16935
+        },
+        "summary": "print_gnu_build_attribute_name -> error, print_gnu_build_attribute_name -> _, print_gnu_build_attribute_name -> print_symbol, print_gnu_build_attribute_name -> printf",
+        "statements": [
+          "16903: \t  error (_(\"unexpected character in name field\\n\"));",
+          "16904: \t  print_symbol (- left, _(\"<unknown attribute>\"));",
+          "16905: \t  return 0;",
+          "16906: \t}",
+          "16907:       expected_types = \"*$!+\";",
+          "16908:       break;"
+        ],
+        "guards": [],
+        "call_boundary": [
+          "error",
+          "_",
+          "print_symbol",
+          "printf",
+          "strlen",
+          "warn"
+        ],
+        "call_edges": [
+          "print_gnu_build_attribute_name -> error",
+          "print_gnu_build_attribute_name -> _",
+          "print_gnu_build_attribute_name -> print_symbol",
+          "print_gnu_build_attribute_name -> printf",
+          "print_gnu_build_attribute_name -> strlen",
+          "print_gnu_build_attribute_name -> warn",
+          "print_gnu_build_attribute_name -> type"
+        ],
+        "state_transitions": [],
+        "api_terms": [
+          "error",
+          "_",
+          "print_symbol",
+          "printf",
+          "strlen",
+          "warn"
+        ],
+        "related_symbols": [
+          "pnote",
+          "pnote->namedata",
+          "namedata",
+          "pnote->namesz",
+          "namesz"
+        ],
+        "verifier": "source-window",
+        "extraction_method": "source_window",
+        "coverage_status": "full"
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "collected_analyzers": [
+    "codeql",
+    "patch"
+  ]
+}

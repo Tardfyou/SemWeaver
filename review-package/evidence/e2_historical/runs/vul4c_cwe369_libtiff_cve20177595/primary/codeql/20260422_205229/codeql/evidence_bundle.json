@@ -1,0 +1,544 @@
+{
+  "records": [
+    {
+      "evidence_id": "pf_000",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "libtiff/tif_jpeg.c",
+        "function": "JPEGSetupEncode"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "patch_overview",
+        "label": "Patch overview",
+        "attributes": {
+          "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe369_libtiff_cve20177595/patches/fix.patch",
+          "changed_files": [
+            "libtiff/tif_jpeg.c"
+          ],
+          "changed_file_count": 1,
+          "added_line_count": 7,
+          "deleted_line_count": 0
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "patch_overview",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_001",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "libtiff/tif_jpeg.c",
+        "function": "JPEGSetupEncode"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "vulnerability_patterns",
+        "label": "Vulnerability patterns inferred from patch",
+        "attributes": {
+          "patterns": [
+            "divide_by_zero"
+          ],
+          "descriptions": [
+            "Before the patch, zero values copied from `td->td_ycbcrsubsampling[0/1]` into `sp->h_sampling` or `sp->v_sampling` could continue through the `PHOTOMETRIC_YCBCR` path and be consumed by later arithmetic that assumes positive sampling factors. The patch blocks this by rejecting zero immediately after assignment and before any further processing."
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "vulnerability_patterns",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_002",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "libtiff/tif_jpeg.c",
+        "function": "JPEGSetupEncode"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "affected_functions",
+        "label": "Functions implicated by removed or fixed code",
+        "attributes": {
+          "functions": [
+            "JPEGSetupEncode",
+            "TIFFErrorExt"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "affected_functions",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_003",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "libtiff/tif_jpeg.c",
+        "function": "JPEGSetupEncode"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "detection_strategy",
+        "label": "Existing patch analysis detection strategy",
+        "attributes": {
+          "primary_pattern": "divide_by_zero",
+          "check_types": [
+            "guard_inference",
+            "local_arithmetic_precondition_check",
+            "patch_local_source_to_sink_field_usage",
+            "path_sensitive_zero_value_barrier_detection"
+          ],
+          "entry_points": [
+            "Assignments to `sp->h_sampling` and `sp->v_sampling` from `td->td_ycbcrsubsampling[]` in the `PHOTOMETRIC_YCBCR` branch of `libtiff/tif_jpeg.c`",
+            "Subsequent uses of `sp->h_sampling` or `sp->v_sampling` in arithmetic operations, especially divisor positions, modulo, scale/stride/block calculations, or loop-step/bounds computations in the same function/file"
+          ],
+          "data_flow_tracking": false,
+          "cross_file_analysis": false,
+          "suggestions": [
+            "首稿先命中 patch-local 锚点：`sp->h_sampling`/`sp->v_sampling` 从 `td->td_ycbcrsubsampling[]` 取值后，在同一路径上被后续算术消费且缺少零值屏障。",
+            "不要把新增的 `if( sp->h_sampling == 0 || sp->v_sampling == 0 )` 一开始写成硬过滤；首稿应先找未受该类 guard 保护的相同消费模式。",
+            "优先把后续对 `sp->h_sampling` 或 `sp->v_sampling` 的除法、取模、按采样因子缩放、分块尺寸/循环边界计算作为 sink；如果没有显式除法，也应纳入依赖非零因子的算术表达式。",
+            "该补丁的最小语义单位是“数组元素赋值到采样字段后立即做零值 barrier”；检测器可用局部 AST/CFG 完成，无需跨文件分析。",
+            "辅助收敛条件可以包括 `PHOTOMETRIC_YCBCR` 分支、字段名包含 `sampling`、来源为 `td_ycbcrsubsampling`；这些适合作为二次过滤，不应替代对危险消费点的首要匹配。",
+            "不要把‘字段非空/已赋值’误当作安全条件；这里需要的是‘字段数值非零’这一算术前置条件。"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "detection_strategy",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_004",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "libtiff/tif_jpeg.c",
+        "function": "JPEGSetupEncode"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "added_guards",
+        "label": "Patch introduces or strengthens guards",
+        "attributes": {
+          "guards": [
+            "if( sp->h_sampling == 0 || sp->v_sampling == 0 )"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "added_guards",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_005",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "libtiff/tif_jpeg.c",
+        "function": "JPEGSetupEncode"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "fix_patterns",
+        "label": "Patch introduces reusable fix patterns",
+        "attributes": {
+          "patterns": [
+            "Add a guard immediately after assignment: `if( sp->h_sampling == 0 || sp->v_sampling == 0 )`",
+            "On zero sampling, emit an error via `TIFFErrorExt(...)` and abort the path with `return (0)`",
+            "Prevent any subsequent computation from consuming zero-valued sampling fields"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "fix_patterns",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_006",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "libtiff/tif_jpeg.c",
+        "function": "JPEGSetupEncode"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "added_api_calls",
+        "label": "Patch introduces or highlights API usage",
+        "attributes": {
+          "apis": [
+            "TIFFErrorExt"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "added_api_calls",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "codeql_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "codeql",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "libtiff/tif_jpeg.c",
+        "function": "JPEGSetupEncode"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "summary": "focus=JPEGSetupEncode | state=guard(sp->h_sampling == 0 || sp->v_sampling == 0) | call_edges=JPEGSetupEncode -> TIFFGetField; JPEGSetupEncode -> TIFFSetField; JPEGSetupEncode -> TIFFErrorExt | targets=TIFFGetField, TIFFSetField, TIFFErrorExt | patch_contracts=JPEGSetupEncode: barrier `sp->h_sampling == 0 || sp->v_sampling == 0` around TIFFGetField, TIFFSetField | patched_apis=TIFFErrorExt | guards=td->td_planarconfig == PLANARCONFIG_CONTIG; sp->photometric == PHOTOMETRIC_YCBCR | symbols=tif, td->td_planarconfig, td_planarconfig, sp->cinfo | deps=tiffiop.h, jerror.h, jpeglib.h | apis=TIFFGetField, TIFFSetField, TIFFErrorExt",
+        "focus_function": "JPEGSetupEncode",
+        "call_edges": [
+          "JPEGSetupEncode -> TIFFGetField",
+          "JPEGSetupEncode -> TIFFSetField",
+          "JPEGSetupEncode -> TIFFErrorExt"
+        ],
+        "call_targets": [
+          "TIFFGetField",
+          "TIFFSetField",
+          "TIFFErrorExt"
+        ],
+        "entry_points": [
+          "tif",
+          "td->td_planarconfig",
+          "td_planarconfig",
+          "sp->cinfo",
+          "cinfo",
+          "td->td_samplesperpixel"
+        ],
+        "tracked_symbols": [
+          "sp",
+          "h_sampling",
+          "v_sampling",
+          "TIFFErrorExt",
+          "tif",
+          "tif_clientdata"
+        ],
+        "sink_calls": [],
+        "state_transitions": [
+          "guard(sp->h_sampling == 0 || sp->v_sampling == 0)"
+        ],
+        "statements": [
+          "if( sp->h_sampling == 0 || sp->v_sampling == 0 )",
+          "{",
+          "TIFFErrorExt(tif->tif_clientdata, module,",
+          "\"Invalig horizontal/vertical sampling value\");",
+          "return (0);",
+          "}"
+        ],
+        "apis": [
+          "TIFFGetField",
+          "TIFFSetField",
+          "TIFFErrorExt"
+        ],
+        "dependencies": [
+          "tiffiop.h",
+          "jerror.h",
+          "jpeglib.h"
+        ],
+        "source_excerpt": "1594: \n1595: \t/*\n1596: \t * Initialize all JPEG parameters to default values.\n1597: \t * Note that jpeg_set_defaults needs legal values for\n1598: \t * in_color_space and input_components.\n1599: \t */\n1600: \tif (td->td_planarconfig == PLANARCONFIG_CONTIG) {\n1601: \t\tsp->cinfo.c.input_components = td->td_samplesperpixel;\n1602: \t\tif (sp->photometric == PHOTOMETRIC_YCBCR) {\n1603: \t\t\tif (sp->jpegcolormode == JPEGCOLORMODE_RGB) {\n1604: \t\t\t\tsp->cinfo.c.in_color_space = JCS_RGB;\n1605: \t\t\t} else {\n1606: \t\t\t\tsp->cinfo.c.in_color_space = JCS_YCbCr;\n1607: \t\t\t}\n1608: \t\t} else {\n1609: \t\t\tif ((td->td_photometric == PHOTOMETRIC_MINISWHITE || td->td_photometric == PHOTOMETRIC_MINISBLACK) && td->td_samplesperpixel == 1)\n1610: \t\t\t\tsp->cinfo.c.in_color_space = JCS_GRAYSCALE;\n1611: \t\t\telse if (td->td_photometric == PHOTOMETRIC_RGB && td->td_samplesperpixel == 3)\n1612: \t\t\t\tsp->cinfo.c.in_color_space = JCS_RGB;\n1613: \t\t\telse if (td->td_photometric == PHOTOMETRIC_SEPARATED && td->td_samplesperpixel == 4)\n1614: \t\t\t\tsp->cinfo.c.in_color_space = JCS_CMYK;\n1615: \t\t\telse\n1616: \t\t\t\tsp->cinfo.c.in_color_space = JCS_UNKNOWN;\n1617: \t\t}\n1618: \t} else {\n1619: \t\tsp->cinfo.c.input_components = 1;\n1620: \t\tsp->cinfo.c.in_color_space = JCS_UNKNOWN;\n1621: \t}\n1622: \tif (!TIFFjpeg_set_defaults(sp))\n1623: \t\treturn (0);\n1624: \t/* Set per-file parameters */\n1625: \tswitch (sp->photometric) {\n1626: \tcase PHOTOMETRIC_YCBCR:\n1627: \t\tsp->h_sampling = td->td_ycbcrsubsampling[0];\n1628: \t\tsp->v_sampling = td->td_ycbcrsubsampling[1];\n1629: \t\t/*\n1630: \t\t * A ReferenceBlackWhite field *must* be present since the\n1631: \t\t * default value is inappropriate for YCbCr.  Fill in the\n1632: \t\t * proper value if application didn't set it.\n1633: \t\t */\n1634: \t\t{\n1635: \t\t\tfloat *ref;\n1636: \t\t\tif (!TIFFGetField(tif, TIFFTAG_REFERENCEBLACKWHITE,\n1637: \t\t\t\t\t  &ref)) {\n1638: \t\t\t\tfloat refbw[6];\n1639: \t\t\t\tlong top = 1L << td->td_bitspersample;\n1640: \t\t\t\trefbw[0] = 0;\n1641: \t\t\t\trefbw[1] = (float)(top-1L);\n1642: \t\t\t\trefbw[2] = (float)(top>>1);\n1643: \t\t\t\trefbw[3] = refbw[1];\n1644: \t\t\t\trefbw[4] = refbw[2];\n1645: \t\t\t\trefbw[5] = refbw[1];\n1646: \t\t\t\tTIFFSetField(tif, TIFFTAG_REFERENCEBLACKWHITE,\n1647: \t\t\t\t\t     refbw);\n1648: \t\t\t}\n1649: \t\t}\n1650: \t\tbreak;\n1651: \tcase PHOTOMETRIC_PALETTE:\t\t/* disallowed by Tech Note */\n1652: \tcase PHOTOMETRIC_MASK:\n1653: \t\tTIFFErrorExt(tif->tif_clientdata, module,\n1654: \t\t\t  \"PhotometricInterpretation %d not allowed for JPEG\",\n1655: \t\t\t  (int) sp->photometric);\n1656: \t\treturn (0);\n1657: \tdefault:\n1658: \t\t/* TIFF 6.0 forbids subsampling of all other color spaces */",
+        "coverage_status": "partial"
+      },
+      "provenance": {
+        "tool": "codeql",
+        "artifact": "source-window:semantic-slice",
+        "confidence": 0.8
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "libtiff/tif_jpeg.c",
+          "hunk_index": 0,
+          "source_line": 1626
+        },
+        "summary": "focus=JPEGSetupEncode | state=guard(sp->h_sampling == 0 || sp->v_sampling == 0) | call_edges=JPEGSetupEncode -> TIFFGetField; JPEGSetupEncode -> TIFFSetField; JPEGSetupEncode -> TIFFErrorExt | targets=TIFFGetField, TIFFSetField, TIFFErrorExt | patch_contracts=JPEGSetupEncode: barrier `sp->h_sampling == 0 || sp->v_sampling == 0` around TIFFGetField, TIFFSetField | patched_apis=TIFFErrorExt | guards=td->td_planarconfig == PLANARCONFIG_CONTIG; sp->photometric == PHOTOMETRIC_YCBCR | symbols=tif, td->td_planarconfig, td_planarconfig, sp->cinfo | deps=tiffiop.h, jerror.h, jpeglib.h | apis=TIFFGetField, TIFFSetField, TIFFErrorExt",
+        "statements": [
+          "if( sp->h_sampling == 0 || sp->v_sampling == 0 )",
+          "{",
+          "TIFFErrorExt(tif->tif_clientdata, module,",
+          "\"Invalig horizontal/vertical sampling value\");",
+          "return (0);",
+          "}"
+        ],
+        "guards": [],
+        "call_boundary": [
+          "TIFFGetField",
+          "TIFFSetField",
+          "TIFFErrorExt"
+        ],
+        "call_edges": [
+          "JPEGSetupEncode -> TIFFGetField",
+          "JPEGSetupEncode -> TIFFSetField",
+          "JPEGSetupEncode -> TIFFErrorExt"
+        ],
+        "state_transitions": [
+          "guard(sp->h_sampling == 0 || sp->v_sampling == 0)"
+        ],
+        "api_terms": [
+          "TIFFGetField",
+          "TIFFSetField",
+          "TIFFErrorExt"
+        ],
+        "related_symbols": [
+          "sp",
+          "h_sampling",
+          "v_sampling",
+          "TIFFErrorExt",
+          "tif",
+          "tif_clientdata"
+        ],
+        "verifier": "source-window",
+        "extraction_method": "source_window",
+        "coverage_status": "partial"
+      }
+    },
+    {
+      "evidence_id": "codeql_flow_0",
+      "type": "dataflow_candidate",
+      "analyzer": "codeql",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "libtiff/tif_jpeg.c",
+        "function": "JPEGSetupEncode"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "source": "sp, h_sampling, v_sampling, TIFFErrorExt",
+        "sink": "TIFFGetField, TIFFSetField",
+        "path": [
+          "function:JPEGSetupEncode",
+          "guard:sp->h_sampling == 0 || sp->v_sampling == 0",
+          "api:TIFFGetField",
+          "api:TIFFSetField",
+          "JPEGSetupEncode -> TIFFGetField",
+          "JPEGSetupEncode -> TIFFSetField"
+        ],
+        "summary": "JPEGSetupEncode: barrier `sp->h_sampling == 0 || sp->v_sampling == 0` around TIFFGetField, TIFFSetField",
+        "focus_function": "JPEGSetupEncode",
+        "entry_points": [
+          "sp",
+          "h_sampling",
+          "v_sampling",
+          "TIFFErrorExt",
+          "tif",
+          "tif_clientdata"
+        ],
+        "call_targets": [
+          "TIFFGetField",
+          "TIFFSetField",
+          "TIFFErrorExt"
+        ],
+        "state_transitions": [
+          "guard(sp->h_sampling == 0 || sp->v_sampling == 0)"
+        ],
+        "source_excerpt": "1594: \n1595: \t/*\n1596: \t * Initialize all JPEG parameters to default values.\n1597: \t * Note that jpeg_set_defaults needs legal values for\n1598: \t * in_color_space and input_components.\n1599: \t */\n1600: \tif (td->td_planarconfig == PLANARCONFIG_CONTIG) {\n1601: \t\tsp->cinfo.c.input_components = td->td_samplesperpixel;\n1602: \t\tif (sp->photometric == PHOTOMETRIC_YCBCR) {\n1603: \t\t\tif (sp->jpegcolormode == JPEGCOLORMODE_RGB) {\n1604: \t\t\t\tsp->cinfo.c.in_color_space = JCS_RGB;\n1605: \t\t\t} else {\n1606: \t\t\t\tsp->cinfo.c.in_color_space = JCS_YCbCr;\n1607: \t\t\t}\n1608: \t\t} else {\n1609: \t\t\tif ((td->td_photometric == PHOTOMETRIC_MINISWHITE || td->td_photometric == PHOTOMETRIC_MINISBLACK) && td->td_samplesperpixel == 1)\n1610: \t\t\t\tsp->cinfo.c.in_color_space = JCS_GRAYSCALE;\n1611: \t\t\telse if (td->td_photometric == PHOTOMETRIC_RGB && td->td_samplesperpixel == 3)\n1612: \t\t\t\tsp->cinfo.c.in_color_space = JCS_RGB;\n1613: \t\t\telse if (td->td_photometric == PHOTOMETRIC_SEPARATED && td->td_samplesperpixel == 4)\n1614: \t\t\t\tsp->cinfo.c.in_color_space = JCS_CMYK;\n1615: \t\t\telse\n1616: \t\t\t\tsp->cinfo.c.in_color_space = JCS_UNKNOWN;\n1617: \t\t}\n1618: \t} else {\n1619: \t\tsp->cinfo.c.input_components = 1;\n1620: \t\tsp->cinfo.c.in_color_space = JCS_UNKNOWN;\n1621: \t}\n1622: \tif (!TIFFjpeg_set_defaults(sp))\n1623: \t\treturn (0);\n1624: \t/* Set per-file parameters */\n1625: \tswitch (sp->photometric) {\n1626: \tcase PHOTOMETRIC_YCBCR:\n1627: \t\tsp->h_sampling = td->td_ycbcrsubsampling[0];\n1628: \t\tsp->v_sampling = td->td_ycbcrsubsampling[1];\n1629: \t\t/*\n1630: \t\t * A ReferenceBlackWhite field *must* be present since the\n1631: \t\t * default value is inappropriate for YCbCr.  Fill in the\n1632: \t\t * proper value if application didn't set it.\n1633: \t\t */\n1634: \t\t{\n1635: \t\t\tfloat *ref;\n1636: \t\t\tif (!TIFFGetField(tif, TIFFTAG_REFERENCEBLACKWHITE,\n1637: \t\t\t\t\t  &ref)) {\n1638: \t\t\t\tfloat refbw[6];\n1639: \t\t\t\tlong top = 1L << td->td_bitspersample;\n1640: \t\t\t\trefbw[0] = 0;\n1641: \t\t\t\trefbw[1] = (float)(top-1L);\n1642: \t\t\t\trefbw[2] = (float)(top>>1);\n1643: \t\t\t\trefbw[3] = refbw[1];\n1644: \t\t\t\trefbw[4] = refbw[2];\n1645: \t\t\t\trefbw[5] = refbw[1];\n1646: \t\t\t\tTIFFSetField(tif, TIFFTAG_REFERENCEBLACKWHITE,\n1647: \t\t\t\t\t     refbw);\n1648: \t\t\t}\n1649: \t\t}\n1650: \t\tbreak;\n1651: \tcase PHOTOMETRIC_PALETTE:\t\t/* disallowed by Tech Note */\n1652: \tcase PHOTOMETRIC_MASK:\n1653: \t\tTIFFErrorExt(tif->tif_clientdata, module,\n1654: \t\t\t  \"PhotometricInterpretation %d not allowed for JPEG\",\n1655: \t\t\t  (int) sp->photometric);\n1656: \t\treturn (0);\n1657: \tdefault:\n1658: \t\t/* TIFF 6.0 forbids subsampling of all other color spaces */",
+        "live_query_status": "database_missing",
+        "database_status": "missing",
+        "database_create_message": "CodeQL 数据库创建失败: Initializing database at /anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe369_libtiff_cve20177595/primary/codeql/20260422_205229/codeql/codeql/database.\nRunning build command: [/bin/sh, /anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe369_libtiff_cve20177595/primary/codeql/20260422_205229/codeql/codeql/codeql_build_7n643l4b.sh]\nRunning command in /anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe369_libtiff_cve20177595/vulnerable: [/bin/sh, /anonymous/home/LLM-Native/v2_experiments/runs/",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "codeql",
+        "artifact": "source-window:data-flow-seed",
+        "confidence": 0.84
+      },
+      "evidence_slice": {
+        "kind": "flow_witness",
+        "anchor": {
+          "patch_file": "libtiff/tif_jpeg.c",
+          "hunk_index": 0,
+          "source_line": 1626
+        },
+        "summary": "JPEGSetupEncode: barrier `sp->h_sampling == 0 || sp->v_sampling == 0` around TIFFGetField, TIFFSetField",
+        "statements": [
+          "1594:",
+          "1595: \t/*",
+          "1596: \t * Initialize all JPEG parameters to default values.",
+          "1597: \t * Note that jpeg_set_defaults needs legal values for",
+          "1598: \t * in_color_space and input_components.",
+          "1599: \t */"
+        ],
+        "guards": [],
+        "call_boundary": [
+          "TIFFGetField, TIFFSetField"
+        ],
+        "call_edges": [
+          "function:JPEGSetupEncode",
+          "guard:sp->h_sampling == 0 || sp->v_sampling == 0",
+          "api:TIFFGetField",
+          "api:TIFFSetField",
+          "JPEGSetupEncode -> TIFFGetField",
+          "JPEGSetupEncode -> TIFFSetField"
+        ],
+        "state_transitions": [
+          "guard(sp->h_sampling == 0 || sp->v_sampling == 0)"
+        ],
+        "api_terms": [
+          "TIFFGetField",
+          "TIFFSetField",
+          "TIFFErrorExt"
+        ],
+        "related_symbols": [
+          "sp",
+          "h_sampling",
+          "v_sampling",
+          "TIFFErrorExt",
+          "tif",
+          "tif_clientdata"
+        ],
+        "verifier": "source-window",
+        "extraction_method": "source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "codeql_chain_0",
+      "type": "call_chain",
+      "analyzer": "codeql",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "libtiff/tif_jpeg.c",
+        "function": "JPEGSetupEncode"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": [
+          "JPEGSetupEncode -> TIFFGetField",
+          "JPEGSetupEncode -> TIFFSetField",
+          "JPEGSetupEncode -> TIFFErrorExt"
+        ],
+        "call_edges": [
+          "JPEGSetupEncode -> TIFFGetField",
+          "JPEGSetupEncode -> TIFFSetField",
+          "JPEGSetupEncode -> TIFFErrorExt"
+        ],
+        "live_query_status": "database_missing",
+        "database_status": "missing",
+        "database_create_message": "CodeQL 数据库创建失败: Initializing database at /anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe369_libtiff_cve20177595/primary/codeql/20260422_205229/codeql/codeql/database.\nRunning build command: [/bin/sh, /anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe369_libtiff_cve20177595/primary/codeql/20260422_205229/codeql/codeql/codeql_build_7n643l4b.sh]\nRunning command in /anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe369_libtiff_cve20177595/vulnerable: [/bin/sh, /anonymous/home/LLM-Native/v2_experiments/runs/",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "codeql",
+        "artifact": "source-window:interprocedural-summary",
+        "confidence": 0.78
+      },
+      "evidence_slice": {
+        "kind": "interprocedural_slice",
+        "anchor": {
+          "patch_file": "libtiff/tif_jpeg.c",
+          "hunk_index": 0,
+          "source_line": 1626
+        },
+        "summary": "JPEGSetupEncode -> TIFFGetField, JPEGSetupEncode -> TIFFSetField, JPEGSetupEncode -> TIFFErrorExt",
+        "statements": [
+          "1594:",
+          "1595: \t/*",
+          "1596: \t * Initialize all JPEG parameters to default values.",
+          "1597: \t * Note that jpeg_set_defaults needs legal values for",
+          "1598: \t * in_color_space and input_components.",
+          "1599: \t */"
+        ],
+        "guards": [],
+        "call_boundary": [
+          "TIFFGetField",
+          "TIFFSetField",
+          "TIFFErrorExt"
+        ],
+        "call_edges": [
+          "JPEGSetupEncode -> TIFFGetField",
+          "JPEGSetupEncode -> TIFFSetField",
+          "JPEGSetupEncode -> TIFFErrorExt"
+        ],
+        "state_transitions": [],
+        "api_terms": [
+          "TIFFGetField",
+          "TIFFSetField",
+          "TIFFErrorExt"
+        ],
+        "related_symbols": [
+          "tif",
+          "td->td_planarconfig",
+          "td_planarconfig",
+          "sp->cinfo",
+          "cinfo",
+          "td->td_samplesperpixel"
+        ],
+        "verifier": "source-window",
+        "extraction_method": "source_window",
+        "coverage_status": "full"
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "collected_analyzers": [
+    "codeql",
+    "patch"
+  ]
+}

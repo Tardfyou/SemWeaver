@@ -1,0 +1,1169 @@
+{
+  "analyzer_id": "csa",
+  "detector_artifact": "checker_plugin",
+  "primary_pattern": "divide_by_zero",
+  "objective": "Synthesize a path-sensitive divide_by_zero detector that encodes the same local state, guards, and lifecycle mechanism evidenced by the patch, while still generalizing to semantically equivalent sites.",
+  "mechanism_contract": {
+    "mechanism_family": "arithmetic_guard_violation",
+    "semantic_dimensions": [
+      "divisor expression",
+      "division or modulo sink",
+      "zero-check barrier"
+    ],
+    "trigger_invariants": [
+      "a divisor reaches division or modulo",
+      "the active path does not prove the divisor is non-zero",
+      "Patch-backed trigger clue: added guard: if( sp->h_sampling == 0 || sp->v_sampling == 0 )",
+      "Patch-backed trigger clue: added or highlighted APIs: TIFFErrorExt",
+      "Patch-backed trigger clue: detection hints: 首稿先命中 patch-local 锚点：从 `td->td_ycbcrsubsampling[...]` 读取后赋给 `sp->h_sampling`/`sp->v_sampling`，且在同一控制路径上缺少 `== 0` 拒绝后继续执行。, 不要一开始把新增 guard 本身写成硬过滤；先找“元数据字段赋值为可能为零的采样值后继续执行”的局部模式，再把零值检查作为修复对照。, 首稿重点关注这两个字段后续作为除数、分块/步长分母、比例缩放分母的消费点；若具体 sink 不稳定，也可先以“缺少零值 barrier 的采样赋值路径”作为候选命中。"
+    ],
+    "silence_invariants": [
+      "a dominating non-zero guard or early return blocks the zero path",
+      "patch-added validation proves the divisor is constrained before the sink",
+      "length/capacity guard present: if( sp->h_sampling == 0 || sp->v_sampling == 0 )",
+      "patch-introduced barrier pattern: Add a guard `if( sp->h_sampling == 0 || sp->v_sampling == 0 )` immediately after assignment from metadata.",
+      "patch-introduced barrier pattern: Emit an error via `TIFFErrorExt(...)` and terminate the path with `return (0);` before later consumption.",
+      "patch-introduced barrier pattern: Use the guard as a barrier on invalid metadata-derived denominator/state, not merely as logging."
+    ],
+    "transfer_axes": [
+      "equivalent divisor validation around sibling arithmetic sinks",
+      "equivalent guard omission on the same parameter or field role",
+      "equivalent guard or barrier predicates on sibling paths",
+      "equivalent local state transitions around the same sink or dereference",
+      "equivalent ownership or release/reinit lifecycle on the same symbolic resource"
+    ],
+    "forbidden_shortcuts": [
+      "bind the detector to fixed file paths, line numbers, or exact patch strings",
+      "broaden into unrelated bug families just to improve hit count",
+      "flag every arithmetic expression regardless of operator and divisor role",
+      "treat unrelated range checks as proof that the divisor is non-zero",
+      "placeholder helper logic or empty ProgramState modeling"
+    ],
+    "evidence_backed_axes": [
+      "path guards and barrier conditions",
+      "semantic trigger slice",
+      "state transitions",
+      "resource lifecycle"
+    ]
+  },
+  "detector_name_hint": "YCbCrSamplingZeroDivisorChecker",
+  "focus_files": [
+    "libtiff/tif_jpeg.c"
+  ],
+  "focus_functions": [
+    "TIFFErrorExt"
+  ],
+  "hypotheses": [
+    "Patch likely encodes a reusable vulnerability mechanism but available metadata is weak; keep evidence collection broad."
+  ],
+  "required_evidence_types": [
+    "patch_fact"
+  ],
+  "missing_evidence_types": [],
+  "evidence_degraded": false,
+  "patch_mechanism_signals": [
+    "added guard: if( sp->h_sampling == 0 || sp->v_sampling == 0 )",
+    "added or highlighted APIs: TIFFErrorExt",
+    "detection hints: 首稿先命中 patch-local 锚点：从 `td->td_ycbcrsubsampling[...]` 读取后赋给 `sp->h_sampling`/`sp->v_sampling`，且在同一控制路径上缺少 `== 0` 拒绝后继续执行。, 不要一开始把新增 guard 本身写成硬过滤；先找“元数据字段赋值为可能为零的采样值后继续执行”的局部模式，再把零值检查作为修复对照。, 首稿重点关注这两个字段后续作为除数、分块/步长分母、比例缩放分母的消费点；若具体 sink 不稳定，也可先以“缺少零值 barrier 的采样赋值路径”作为候选命中。"
+  ],
+  "silencing_conditions": [
+    "length/capacity guard present: if( sp->h_sampling == 0 || sp->v_sampling == 0 )",
+    "patch-introduced barrier pattern: Add a guard `if( sp->h_sampling == 0 || sp->v_sampling == 0 )` immediately after assignment from metadata.",
+    "patch-introduced barrier pattern: Emit an error via `TIFFErrorExt(...)` and terminate the path with `return (0);` before later consumption.",
+    "patch-introduced barrier pattern: Use the guard as a barrier on invalid metadata-derived denominator/state, not merely as logging.",
+    "a dominating non-zero guard or early return blocks zero divisors before the arithmetic sink"
+  ],
+  "retry_guidance": [],
+  "selected_evidence_ids": [
+    "csa_guard_0",
+    "csa_semantic_slice_0",
+    "csa_state_0",
+    "csa_validation_allocation_lifecycle_0",
+    "pf_004",
+    "pf_005",
+    "pf_006",
+    "pf_003",
+    "pf_002"
+  ],
+  "selected_evidence": [
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "libtiff/tif_jpeg.c",
+        "function": "JPEGSetupEncode"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "sp->h_sampling == 0 || sp->v_sampling == 0",
+        "summary": "JPEGSetupEncode introduces patch guard `sp->h_sampling == 0 || sp->v_sampling == 0` before TIFFGetField, TIFFSetField.",
+        "summary_line": 1626,
+        "state_before": [
+          "input(sp)",
+          "input(h_sampling)",
+          "buffer(sp->h_sampling)",
+          "buffer(sp->v_sampling)"
+        ],
+        "state_after": [
+          "guard(sp->h_sampling == 0 || sp->v_sampling == 0)",
+          "current_call(TIFFGetField)",
+          "current_call(TIFFSetField)"
+        ],
+        "tracked_symbols": [
+          "sp",
+          "h_sampling",
+          "v_sampling",
+          "TIFFErrorExt",
+          "tif",
+          "tif_clientdata"
+        ],
+        "buffer_fields": [
+          "sp->h_sampling",
+          "sp->v_sampling",
+          "tif->tif_clientdata"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "JPEGSetupEncode"
+        ],
+        "call_targets": [
+          "TIFFGetField",
+          "TIFFSetField",
+          "TIFFErrorExt"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "sp->h_sampling == 0 || sp->v_sampling == 0"
+        ],
+        "call_edges": [
+          "JPEGSetupEncode -> TIFFGetField",
+          "JPEGSetupEncode -> TIFFSetField",
+          "JPEGSetupEncode -> TIFFErrorExt"
+        ],
+        "state_statements": [
+          "if( sp->h_sampling == 0 || sp->v_sampling == 0 )",
+          "{",
+          "TIFFErrorExt(tif->tif_clientdata, module,",
+          "\"Invalig horizontal/vertical sampling value\");",
+          "return (0);",
+          "}"
+        ],
+        "source_file": "libtiff/tif_jpeg.c"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "libtiff/tif_jpeg.c",
+          "hunk_index": 0,
+          "source_line": 1626
+        },
+        "summary": "JPEGSetupEncode introduces patch guard `sp->h_sampling == 0 || sp->v_sampling == 0` before TIFFGetField, TIFFSetField.",
+        "statements": [
+          "if( sp->h_sampling == 0 || sp->v_sampling == 0 )",
+          "{",
+          "TIFFErrorExt(tif->tif_clientdata, module,",
+          "\"Invalig horizontal/vertical sampling value\");",
+          "return (0);",
+          "}"
+        ],
+        "guards": [
+          "sp->h_sampling == 0 || sp->v_sampling == 0"
+        ],
+        "call_boundary": [
+          "TIFFGetField",
+          "TIFFSetField",
+          "TIFFErrorExt"
+        ],
+        "call_edges": [
+          "JPEGSetupEncode -> TIFFGetField",
+          "JPEGSetupEncode -> TIFFSetField",
+          "JPEGSetupEncode -> TIFFErrorExt"
+        ],
+        "state_transitions": [
+          "guard(sp->h_sampling == 0 || sp->v_sampling == 0)",
+          "current_call(TIFFGetField)",
+          "current_call(TIFFSetField)"
+        ],
+        "api_terms": [
+          "TIFFGetField",
+          "TIFFSetField",
+          "TIFFErrorExt"
+        ],
+        "related_symbols": [
+          "sp",
+          "h_sampling",
+          "v_sampling",
+          "TIFFErrorExt",
+          "tif",
+          "tif_clientdata"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "libtiff/tif_jpeg.c",
+        "function": "JPEGSetupEncode"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "JPEGSetupEncode adds patch barrier `sp->h_sampling == 0 || sp->v_sampling == 0` around TIFFGetField, TIFFSetField.",
+        "tracked_symbols": [
+          "sp",
+          "h_sampling",
+          "v_sampling",
+          "TIFFErrorExt",
+          "tif",
+          "tif_clientdata",
+          "module",
+          "Invalig"
+        ],
+        "buffer_fields": [
+          "sp->h_sampling",
+          "sp->v_sampling",
+          "tif->tif_clientdata"
+        ],
+        "coverage_status": "full",
+        "source_file": "libtiff/tif_jpeg.c"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "libtiff/tif_jpeg.c",
+          "hunk_index": 0,
+          "source_line": 1626
+        },
+        "summary": "JPEGSetupEncode adds patch barrier `sp->h_sampling == 0 || sp->v_sampling == 0` around TIFFGetField, TIFFSetField.",
+        "statements": [
+          "if( sp->h_sampling == 0 || sp->v_sampling == 0 )",
+          "{",
+          "TIFFErrorExt(tif->tif_clientdata, module,",
+          "\"Invalig horizontal/vertical sampling value\");",
+          "return (0);",
+          "}"
+        ],
+        "guards": [
+          "sp->h_sampling == 0 || sp->v_sampling == 0"
+        ],
+        "call_boundary": [
+          "TIFFGetField",
+          "TIFFSetField",
+          "TIFFErrorExt"
+        ],
+        "call_edges": [
+          "JPEGSetupEncode -> TIFFGetField",
+          "JPEGSetupEncode -> TIFFSetField",
+          "JPEGSetupEncode -> TIFFErrorExt"
+        ],
+        "state_transitions": [
+          "",
+          "report when a risky write proceeds without the patch-style barrier",
+          "stay silent when the nearby guard proves the current write is blocked or bounded"
+        ],
+        "api_terms": [
+          "TIFFGetField",
+          "TIFFSetField",
+          "TIFFErrorExt",
+          "TIFFErrorExt"
+        ],
+        "related_symbols": [
+          "sp",
+          "h_sampling",
+          "v_sampling",
+          "TIFFErrorExt",
+          "tif",
+          "tif_clientdata"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "libtiff/tif_jpeg.c",
+        "function": "JPEGSetupEncode"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "JPEGSetupEncode adds patch barrier `sp->h_sampling == 0 || sp->v_sampling == 0` around TIFFGetField, TIFFSetField.",
+        "state_before": [
+          "input(sp)",
+          "input(h_sampling)",
+          "buffer(sp->h_sampling)",
+          "buffer(sp->v_sampling)"
+        ],
+        "state_after": [
+          "guard(sp->h_sampling == 0 || sp->v_sampling == 0)",
+          "sink(TIFFGetField)",
+          "sink(TIFFSetField)"
+        ],
+        "tracked_symbols": [
+          "sp",
+          "h_sampling",
+          "v_sampling",
+          "TIFFErrorExt",
+          "tif",
+          "tif_clientdata"
+        ],
+        "buffer_fields": [
+          "sp->h_sampling",
+          "sp->v_sampling",
+          "tif->tif_clientdata"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "JPEGSetupEncode"
+        ],
+        "call_targets": [
+          "TIFFGetField",
+          "TIFFSetField",
+          "TIFFErrorExt"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "sp->h_sampling == 0 || sp->v_sampling == 0"
+        ],
+        "call_edges": [
+          "JPEGSetupEncode -> TIFFGetField",
+          "JPEGSetupEncode -> TIFFSetField",
+          "JPEGSetupEncode -> TIFFErrorExt"
+        ],
+        "state_statements": [
+          "if( sp->h_sampling == 0 || sp->v_sampling == 0 )",
+          "{",
+          "TIFFErrorExt(tif->tif_clientdata, module,",
+          "\"Invalig horizontal/vertical sampling value\");",
+          "return (0);",
+          "}"
+        ],
+        "source_file": "libtiff/tif_jpeg.c"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "libtiff/tif_jpeg.c",
+          "hunk_index": 0,
+          "source_line": 1626
+        },
+        "summary": "JPEGSetupEncode adds patch barrier `sp->h_sampling == 0 || sp->v_sampling == 0` around TIFFGetField, TIFFSetField.",
+        "statements": [
+          "if( sp->h_sampling == 0 || sp->v_sampling == 0 )",
+          "{",
+          "TIFFErrorExt(tif->tif_clientdata, module,",
+          "\"Invalig horizontal/vertical sampling value\");",
+          "return (0);",
+          "}"
+        ],
+        "guards": [
+          "sp->h_sampling == 0 || sp->v_sampling == 0"
+        ],
+        "call_boundary": [
+          "TIFFGetField",
+          "TIFFSetField",
+          "TIFFErrorExt"
+        ],
+        "call_edges": [
+          "JPEGSetupEncode -> TIFFGetField",
+          "JPEGSetupEncode -> TIFFSetField",
+          "JPEGSetupEncode -> TIFFErrorExt"
+        ],
+        "state_transitions": [
+          "guard(sp->h_sampling == 0 || sp->v_sampling == 0)",
+          "sink(TIFFGetField)",
+          "sink(TIFFSetField)"
+        ],
+        "api_terms": [
+          "TIFFGetField",
+          "TIFFSetField",
+          "TIFFErrorExt"
+        ],
+        "related_symbols": [
+          "sp",
+          "h_sampling",
+          "v_sampling",
+          "TIFFErrorExt",
+          "tif",
+          "tif_clientdata"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      },
+      "confidence": 0.9
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_0",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "libtiff/tif_jpeg.c",
+        "function": "JPEGSetupEncode"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "JPEGSetupEncode in libtiff/tif_jpeg.c provides CSA-backed pointer/resource lifecycle context near line 1687",
+        "state_before": [
+          "input(tif)",
+          "buffer(td->td_planarconfig)",
+          "buffer(sp->cinfo)",
+          "sinks(TIFFGetField, TIFFSetField)"
+        ],
+        "state_after": [
+          "diagnostic(Division or remainder uses sampling/size-like value derived from metadata without a prior zero-value rejection guard [custom.InvalidSamplingFactorValidationChecker])"
+        ],
+        "tracked_symbols": [
+          "tif",
+          "sp",
+          "h_sampling",
+          "v_sampling",
+          "TIFFErrorExt",
+          "tif_clientdata"
+        ],
+        "buffer_fields": [
+          "td->td_planarconfig",
+          "sp->cinfo",
+          "td->td_samplesperpixel",
+          "sp->photometric",
+          "sp->jpegcolormode",
+          "td->td_photometric"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "JPEGSetupEncode"
+        ],
+        "call_targets": [
+          "TIFFGetField",
+          "TIFFSetField",
+          "TIFFErrorExt"
+        ],
+        "source_file": "libtiff/tif_jpeg.c"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "libtiff/tif_jpeg.c",
+          "hunk_index": 0,
+          "source_line": 1687
+        },
+        "summary": "JPEGSetupEncode in libtiff/tif_jpeg.c provides CSA-backed pointer/resource lifecycle context near line 1687",
+        "statements": [
+          "1594:",
+          "1595: \t/*",
+          "1596: \t * Initialize all JPEG parameters to default values.",
+          "1597: \t * Note that jpeg_set_defaults needs legal values for",
+          "1598: \t * in_color_space and input_components.",
+          "1599: \t */"
+        ],
+        "guards": [
+          "td->td_planarconfig == PLANARCONFIG_CONTIG",
+          "sp->photometric == PHOTOMETRIC_YCBCR",
+          "sp->jpegcolormode == JPEGCOLORMODE_RGB",
+          "(td->td_photometric == PHOTOMETRIC_MINISWHITE || td->td_photometric == PHOTOMETRIC_MINISBLACK) && td->td_samplesperpixel == 1"
+        ],
+        "call_boundary": [
+          "TIFFGetField",
+          "TIFFSetField",
+          "TIFFErrorExt"
+        ],
+        "call_edges": [],
+        "state_transitions": [
+          "diagnostic(Division or remainder uses sampling/size-like value derived from metadata without a prior zero-value rejection guard [custom.InvalidSamplingFactorValidationChecker])"
+        ],
+        "api_terms": [
+          "TIFFGetField",
+          "TIFFSetField",
+          "TIFFErrorExt"
+        ],
+        "related_symbols": [
+          "tif",
+          "sp",
+          "h_sampling",
+          "v_sampling",
+          "TIFFErrorExt",
+          "tif_clientdata"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.86
+    },
+    {
+      "evidence_id": "pf_004",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "libtiff/tif_jpeg.c",
+        "function": "JPEGSetupEncode"
+      },
+      "semantic_payload": {
+        "label": "Patch introduces or strengthens guards"
+      },
+      "evidence_slice": {},
+      "confidence": 0.95
+    },
+    {
+      "evidence_id": "pf_005",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "libtiff/tif_jpeg.c",
+        "function": "JPEGSetupEncode"
+      },
+      "semantic_payload": {
+        "label": "Patch introduces reusable fix patterns"
+      },
+      "evidence_slice": {},
+      "confidence": 0.95
+    },
+    {
+      "evidence_id": "pf_006",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "libtiff/tif_jpeg.c",
+        "function": "JPEGSetupEncode"
+      },
+      "semantic_payload": {
+        "label": "Patch introduces or highlights API usage"
+      },
+      "evidence_slice": {},
+      "confidence": 0.95
+    },
+    {
+      "evidence_id": "pf_003",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "libtiff/tif_jpeg.c",
+        "function": "JPEGSetupEncode"
+      },
+      "semantic_payload": {
+        "label": "Existing patch analysis detection strategy"
+      },
+      "evidence_slice": {},
+      "confidence": 0.95
+    },
+    {
+      "evidence_id": "pf_002",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "libtiff/tif_jpeg.c",
+        "function": "JPEGSetupEncode"
+      },
+      "semantic_payload": {
+        "label": "Functions implicated by removed or fixed code"
+      },
+      "evidence_slice": {},
+      "confidence": 0.95
+    }
+  ],
+  "semantic_slice_count": 4,
+  "context_summary_count": 0,
+  "semantic_slice_coverage": "full",
+  "selected_semantic_slice_ids": [
+    "csa_guard_0",
+    "csa_semantic_slice_0",
+    "csa_state_0",
+    "csa_validation_allocation_lifecycle_0"
+  ],
+  "selected_context_summary_ids": [],
+  "selected_semantic_slices": [
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "libtiff/tif_jpeg.c",
+        "function": "JPEGSetupEncode"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "sp->h_sampling == 0 || sp->v_sampling == 0",
+        "summary": "JPEGSetupEncode introduces patch guard `sp->h_sampling == 0 || sp->v_sampling == 0` before TIFFGetField, TIFFSetField.",
+        "summary_line": 1626,
+        "state_before": [
+          "input(sp)",
+          "input(h_sampling)",
+          "buffer(sp->h_sampling)",
+          "buffer(sp->v_sampling)"
+        ],
+        "state_after": [
+          "guard(sp->h_sampling == 0 || sp->v_sampling == 0)",
+          "current_call(TIFFGetField)",
+          "current_call(TIFFSetField)"
+        ],
+        "tracked_symbols": [
+          "sp",
+          "h_sampling",
+          "v_sampling",
+          "TIFFErrorExt",
+          "tif",
+          "tif_clientdata"
+        ],
+        "buffer_fields": [
+          "sp->h_sampling",
+          "sp->v_sampling",
+          "tif->tif_clientdata"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "JPEGSetupEncode"
+        ],
+        "call_targets": [
+          "TIFFGetField",
+          "TIFFSetField",
+          "TIFFErrorExt"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "sp->h_sampling == 0 || sp->v_sampling == 0"
+        ],
+        "call_edges": [
+          "JPEGSetupEncode -> TIFFGetField",
+          "JPEGSetupEncode -> TIFFSetField",
+          "JPEGSetupEncode -> TIFFErrorExt"
+        ],
+        "state_statements": [
+          "if( sp->h_sampling == 0 || sp->v_sampling == 0 )",
+          "{",
+          "TIFFErrorExt(tif->tif_clientdata, module,",
+          "\"Invalig horizontal/vertical sampling value\");",
+          "return (0);",
+          "}"
+        ],
+        "source_file": "libtiff/tif_jpeg.c"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "libtiff/tif_jpeg.c",
+          "hunk_index": 0,
+          "source_line": 1626
+        },
+        "summary": "JPEGSetupEncode introduces patch guard `sp->h_sampling == 0 || sp->v_sampling == 0` before TIFFGetField, TIFFSetField.",
+        "statements": [
+          "if( sp->h_sampling == 0 || sp->v_sampling == 0 )",
+          "{",
+          "TIFFErrorExt(tif->tif_clientdata, module,",
+          "\"Invalig horizontal/vertical sampling value\");",
+          "return (0);",
+          "}"
+        ],
+        "guards": [
+          "sp->h_sampling == 0 || sp->v_sampling == 0"
+        ],
+        "call_boundary": [
+          "TIFFGetField",
+          "TIFFSetField",
+          "TIFFErrorExt"
+        ],
+        "call_edges": [
+          "JPEGSetupEncode -> TIFFGetField",
+          "JPEGSetupEncode -> TIFFSetField",
+          "JPEGSetupEncode -> TIFFErrorExt"
+        ],
+        "state_transitions": [
+          "guard(sp->h_sampling == 0 || sp->v_sampling == 0)",
+          "current_call(TIFFGetField)",
+          "current_call(TIFFSetField)"
+        ],
+        "api_terms": [
+          "TIFFGetField",
+          "TIFFSetField",
+          "TIFFErrorExt"
+        ],
+        "related_symbols": [
+          "sp",
+          "h_sampling",
+          "v_sampling",
+          "TIFFErrorExt",
+          "tif",
+          "tif_clientdata"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "libtiff/tif_jpeg.c",
+        "function": "JPEGSetupEncode"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "JPEGSetupEncode adds patch barrier `sp->h_sampling == 0 || sp->v_sampling == 0` around TIFFGetField, TIFFSetField.",
+        "tracked_symbols": [
+          "sp",
+          "h_sampling",
+          "v_sampling",
+          "TIFFErrorExt",
+          "tif",
+          "tif_clientdata",
+          "module",
+          "Invalig"
+        ],
+        "buffer_fields": [
+          "sp->h_sampling",
+          "sp->v_sampling",
+          "tif->tif_clientdata"
+        ],
+        "coverage_status": "full",
+        "source_file": "libtiff/tif_jpeg.c"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "libtiff/tif_jpeg.c",
+          "hunk_index": 0,
+          "source_line": 1626
+        },
+        "summary": "JPEGSetupEncode adds patch barrier `sp->h_sampling == 0 || sp->v_sampling == 0` around TIFFGetField, TIFFSetField.",
+        "statements": [
+          "if( sp->h_sampling == 0 || sp->v_sampling == 0 )",
+          "{",
+          "TIFFErrorExt(tif->tif_clientdata, module,",
+          "\"Invalig horizontal/vertical sampling value\");",
+          "return (0);",
+          "}"
+        ],
+        "guards": [
+          "sp->h_sampling == 0 || sp->v_sampling == 0"
+        ],
+        "call_boundary": [
+          "TIFFGetField",
+          "TIFFSetField",
+          "TIFFErrorExt"
+        ],
+        "call_edges": [
+          "JPEGSetupEncode -> TIFFGetField",
+          "JPEGSetupEncode -> TIFFSetField",
+          "JPEGSetupEncode -> TIFFErrorExt"
+        ],
+        "state_transitions": [
+          "",
+          "report when a risky write proceeds without the patch-style barrier",
+          "stay silent when the nearby guard proves the current write is blocked or bounded"
+        ],
+        "api_terms": [
+          "TIFFGetField",
+          "TIFFSetField",
+          "TIFFErrorExt",
+          "TIFFErrorExt"
+        ],
+        "related_symbols": [
+          "sp",
+          "h_sampling",
+          "v_sampling",
+          "TIFFErrorExt",
+          "tif",
+          "tif_clientdata"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "libtiff/tif_jpeg.c",
+        "function": "JPEGSetupEncode"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "JPEGSetupEncode adds patch barrier `sp->h_sampling == 0 || sp->v_sampling == 0` around TIFFGetField, TIFFSetField.",
+        "state_before": [
+          "input(sp)",
+          "input(h_sampling)",
+          "buffer(sp->h_sampling)",
+          "buffer(sp->v_sampling)"
+        ],
+        "state_after": [
+          "guard(sp->h_sampling == 0 || sp->v_sampling == 0)",
+          "sink(TIFFGetField)",
+          "sink(TIFFSetField)"
+        ],
+        "tracked_symbols": [
+          "sp",
+          "h_sampling",
+          "v_sampling",
+          "TIFFErrorExt",
+          "tif",
+          "tif_clientdata"
+        ],
+        "buffer_fields": [
+          "sp->h_sampling",
+          "sp->v_sampling",
+          "tif->tif_clientdata"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "JPEGSetupEncode"
+        ],
+        "call_targets": [
+          "TIFFGetField",
+          "TIFFSetField",
+          "TIFFErrorExt"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "sp->h_sampling == 0 || sp->v_sampling == 0"
+        ],
+        "call_edges": [
+          "JPEGSetupEncode -> TIFFGetField",
+          "JPEGSetupEncode -> TIFFSetField",
+          "JPEGSetupEncode -> TIFFErrorExt"
+        ],
+        "state_statements": [
+          "if( sp->h_sampling == 0 || sp->v_sampling == 0 )",
+          "{",
+          "TIFFErrorExt(tif->tif_clientdata, module,",
+          "\"Invalig horizontal/vertical sampling value\");",
+          "return (0);",
+          "}"
+        ],
+        "source_file": "libtiff/tif_jpeg.c"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "libtiff/tif_jpeg.c",
+          "hunk_index": 0,
+          "source_line": 1626
+        },
+        "summary": "JPEGSetupEncode adds patch barrier `sp->h_sampling == 0 || sp->v_sampling == 0` around TIFFGetField, TIFFSetField.",
+        "statements": [
+          "if( sp->h_sampling == 0 || sp->v_sampling == 0 )",
+          "{",
+          "TIFFErrorExt(tif->tif_clientdata, module,",
+          "\"Invalig horizontal/vertical sampling value\");",
+          "return (0);",
+          "}"
+        ],
+        "guards": [
+          "sp->h_sampling == 0 || sp->v_sampling == 0"
+        ],
+        "call_boundary": [
+          "TIFFGetField",
+          "TIFFSetField",
+          "TIFFErrorExt"
+        ],
+        "call_edges": [
+          "JPEGSetupEncode -> TIFFGetField",
+          "JPEGSetupEncode -> TIFFSetField",
+          "JPEGSetupEncode -> TIFFErrorExt"
+        ],
+        "state_transitions": [
+          "guard(sp->h_sampling == 0 || sp->v_sampling == 0)",
+          "sink(TIFFGetField)",
+          "sink(TIFFSetField)"
+        ],
+        "api_terms": [
+          "TIFFGetField",
+          "TIFFSetField",
+          "TIFFErrorExt"
+        ],
+        "related_symbols": [
+          "sp",
+          "h_sampling",
+          "v_sampling",
+          "TIFFErrorExt",
+          "tif",
+          "tif_clientdata"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      },
+      "confidence": 0.9
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_0",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "libtiff/tif_jpeg.c",
+        "function": "JPEGSetupEncode"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "JPEGSetupEncode in libtiff/tif_jpeg.c provides CSA-backed pointer/resource lifecycle context near line 1687",
+        "state_before": [
+          "input(tif)",
+          "buffer(td->td_planarconfig)",
+          "buffer(sp->cinfo)",
+          "sinks(TIFFGetField, TIFFSetField)"
+        ],
+        "state_after": [
+          "diagnostic(Division or remainder uses sampling/size-like value derived from metadata without a prior zero-value rejection guard [custom.InvalidSamplingFactorValidationChecker])"
+        ],
+        "tracked_symbols": [
+          "tif",
+          "sp",
+          "h_sampling",
+          "v_sampling",
+          "TIFFErrorExt",
+          "tif_clientdata"
+        ],
+        "buffer_fields": [
+          "td->td_planarconfig",
+          "sp->cinfo",
+          "td->td_samplesperpixel",
+          "sp->photometric",
+          "sp->jpegcolormode",
+          "td->td_photometric"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "JPEGSetupEncode"
+        ],
+        "call_targets": [
+          "TIFFGetField",
+          "TIFFSetField",
+          "TIFFErrorExt"
+        ],
+        "source_file": "libtiff/tif_jpeg.c"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "libtiff/tif_jpeg.c",
+          "hunk_index": 0,
+          "source_line": 1687
+        },
+        "summary": "JPEGSetupEncode in libtiff/tif_jpeg.c provides CSA-backed pointer/resource lifecycle context near line 1687",
+        "statements": [
+          "1594:",
+          "1595: \t/*",
+          "1596: \t * Initialize all JPEG parameters to default values.",
+          "1597: \t * Note that jpeg_set_defaults needs legal values for",
+          "1598: \t * in_color_space and input_components.",
+          "1599: \t */"
+        ],
+        "guards": [
+          "td->td_planarconfig == PLANARCONFIG_CONTIG",
+          "sp->photometric == PHOTOMETRIC_YCBCR",
+          "sp->jpegcolormode == JPEGCOLORMODE_RGB",
+          "(td->td_photometric == PHOTOMETRIC_MINISWHITE || td->td_photometric == PHOTOMETRIC_MINISBLACK) && td->td_samplesperpixel == 1"
+        ],
+        "call_boundary": [
+          "TIFFGetField",
+          "TIFFSetField",
+          "TIFFErrorExt"
+        ],
+        "call_edges": [],
+        "state_transitions": [
+          "diagnostic(Division or remainder uses sampling/size-like value derived from metadata without a prior zero-value rejection guard [custom.InvalidSamplingFactorValidationChecker])"
+        ],
+        "api_terms": [
+          "TIFFGetField",
+          "TIFFSetField",
+          "TIFFErrorExt"
+        ],
+        "related_symbols": [
+          "tif",
+          "sp",
+          "h_sampling",
+          "v_sampling",
+          "TIFFErrorExt",
+          "tif_clientdata"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.86
+    }
+  ],
+  "selected_context_summaries": [],
+  "semantic_clause_plan": [
+    {
+      "clause_id": "vulnerable_trigger_clause",
+      "intent": "Trigger on the vulnerable divide_by_zero mechanism using evidence-backed path/flow semantics.",
+      "supporting_evidence_ids": [
+        "csa_guard_0",
+        "csa_semantic_slice_0",
+        "csa_state_0",
+        "csa_validation_allocation_lifecycle_0"
+      ],
+      "repair_when": [
+        "semantic_no_hits"
+      ],
+      "focus_functions": [
+        "TIFFErrorExt"
+      ]
+    },
+    {
+      "clause_id": "patched_silence_clause",
+      "intent": "Stay silent on patched code when patch-added guards, barriers, or safe APIs prove the mechanism is blocked.",
+      "supporting_evidence_ids": [
+        "csa_guard_0",
+        "csa_semantic_slice_0",
+        "csa_state_0",
+        "pf_004",
+        "pf_005",
+        "pf_006",
+        "pf_003",
+        "pf_002"
+      ],
+      "repair_when": [],
+      "silencing_conditions": [
+        "length/capacity guard present: if( sp->h_sampling == 0 || sp->v_sampling == 0 )",
+        "patch-introduced barrier pattern: Add a guard `if( sp->h_sampling == 0 || sp->v_sampling == 0 )` immediately after assignment from metadata.",
+        "patch-introduced barrier pattern: Emit an error via `TIFFErrorExt(...)` and terminate the path with `return (0);` before later consumption.",
+        "patch-introduced barrier pattern: Use the guard as a barrier on invalid metadata-derived denominator/state, not merely as logging."
+      ]
+    },
+    {
+      "clause_id": "semantic_transfer_clause",
+      "intent": "Generalize along semantic slices and call-chain evidence rather than patch-local syntax.",
+      "supporting_evidence_ids": [
+        "csa_semantic_slice_0"
+      ],
+      "repair_when": [],
+      "analyzer_id": "csa"
+    },
+    {
+      "clause_id": "analyzer_interface_clause",
+      "intent": "Preserve valid analyzer-facing syntax and interfaces while keeping semantics unchanged.",
+      "supporting_evidence_ids": [
+        "pf_004",
+        "pf_005",
+        "pf_006",
+        "pf_003",
+        "pf_002"
+      ],
+      "repair_when": [
+        "semantic_execution_error"
+      ],
+      "analyzer_id": "csa"
+    }
+  ],
+  "repair_directives": [],
+  "constraints": [
+    {
+      "title": "Generalize beyond patch site",
+      "description": "Do not bind the detector to fixed file paths, line numbers, or exact patch strings.",
+      "priority": "high"
+    },
+    {
+      "title": "Preserve vulnerability semantics",
+      "description": "Keep the detector focused on the vulnerability family implied by the patch and evidence.",
+      "priority": "high"
+    },
+    {
+      "title": "Respect analyzer-native form",
+      "description": "Output must be a valid checker_plugin for csa.",
+      "priority": "high"
+    },
+    {
+      "title": "Stay within proven mechanism scope",
+      "description": "Generalize only along evidence-supported semantic dimensions. Do not broaden the detector into unrelated globals, APIs, or bug families.",
+      "priority": "high"
+    },
+    {
+      "title": "Honor mechanism contract",
+      "description": "Preserve the mechanism family `arithmetic_guard_violation` by keeping trigger invariants a divisor reaches division or modulo; the active path does not prove the divisor is non-zero; Patch-backed trigger clue: added guard: if( sp->h_sampling == 0 || sp->v_sampling == 0 ).",
+      "priority": "high"
+    },
+    {
+      "title": "Generalize only on contract axes",
+      "description": "Reuse semantics only along these transfer axes: equivalent divisor validation around sibling arithmetic sinks; equivalent guard omission on the same parameter or field role; equivalent guard or barrier predicates on sibling paths.",
+      "priority": "high"
+    },
+    {
+      "title": "Anchor on patch-touched scope",
+      "description": "Use patch-touched files/functions as the semantic anchor for synthesis. Only extend beyond them when the same mechanism is explicitly supported by evidence.",
+      "priority": "high"
+    },
+    {
+      "title": "Encode the patch-added barrier",
+      "description": "model the absence of barriers like Add a guard `if( sp->h_sampling == 0 || sp->v_sampling == 0 )` immediately after assignment from metadata., Emit an error via `TIFFErrorExt(...)` and terminate the path with `return (0);` before later consumption., Use the guard as a barrier on invalid metadata-derived denominator/state, not merely as logging.; treat guards such as if( sp->h_sampling == 0 || sp->v_sampling == 0 ) as semantic barriers; use APIs such as TIFFErrorExt as semantic clues, not string matches.",
+      "priority": "high"
+    },
+    {
+      "title": "Respect patched silence",
+      "description": "Use these no-report conditions when they are semantically proven: length/capacity guard present: if( sp->h_sampling == 0 || sp->v_sampling == 0 ); patch-introduced barrier pattern: Add a guard `if( sp->h_sampling == 0 || sp->v_sampling == 0 )` immediately after assignment from metadata.; patch-introduced barrier pattern: Emit an error via `TIFFErrorExt(...)` and terminate the path with `return (0);` before later consumption..",
+      "priority": "high"
+    },
+    {
+      "title": "Require missing divisor guard",
+      "description": "Model the divisor, division/modulo sink, and non-zero guard together; do not flag arithmetic that is already protected by a dominating zero check.",
+      "priority": "high"
+    },
+    {
+      "title": "Use path-sensitive evidence",
+      "description": "Prefer guards, state transitions, and lifecycle facts over broad textual matching.",
+      "priority": "high"
+    },
+    {
+      "title": "No placeholder helper logic",
+      "description": "Helper predicates must inspect AST/program state and must not be unconditional return-true/return-false stubs.",
+      "priority": "high"
+    }
+  ],
+  "implementation_hints": [
+    "Mechanism family: arithmetic_guard_violation",
+    "Mechanism dimensions: divisor expression, division or modulo sink, zero-check barrier",
+    "Trigger invariants: a divisor reaches division or modulo, the active path does not prove the divisor is non-zero, Patch-backed trigger clue: added guard: if( sp->h_sampling == 0 || sp->v_sampling == 0 )",
+    "Silence invariants: a dominating non-zero guard or early return blocks the zero path, patch-added validation proves the divisor is constrained before the sink, length/capacity guard present: if( sp->h_sampling == 0 || sp->v_sampling == 0 )",
+    "Transfer axes: equivalent divisor validation around sibling arithmetic sinks, equivalent guard omission on the same parameter or field role, equivalent guard or barrier predicates on sibling paths",
+    "Focus files: libtiff/tif_jpeg.c",
+    "Priority functions: TIFFErrorExt",
+    "Patch-added barriers: Add a guard `if( sp->h_sampling == 0 || sp->v_sampling == 0 )` immediately after assignment from metadata., Emit an error via `TIFFErrorExt(...)` and terminate the path with `return (0);` before later consumption., Use the guard as a barrier on invalid metadata-derived denominator/state, not merely as logging."
+  ],
+  "validation_expectations": [
+    "Vulnerable version should trigger a divide_by_zero finding.",
+    "Patched version should stay silent for the same mechanism.",
+    "Semantic validation that executes but returns zero hits is not acceptable; recover coverage with evidence-backed semantics.",
+    "Repair phase may fix syntax/interfaces only; it must not simplify away the core detection logic.",
+    "Generalization must stay inside the mechanism contract transfer axes instead of widening to adjacent bug families.",
+    "Trigger invariant: a divisor reaches division or modulo.",
+    "Trigger invariant: the active path does not prove the divisor is non-zero.",
+    "Patched silence depends on: length/capacity guard present: if( sp->h_sampling == 0 || sp->v_sampling == 0 ).",
+    "Patched silence depends on: patch-introduced barrier pattern: Add a guard `if( sp->h_sampling == 0 || sp->v_sampling == 0 )` immediately after assignment from metadata.."
+  ]
+}

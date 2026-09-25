@@ -1,0 +1,851 @@
+{
+  "files_changed": [
+    "jpgfile.c"
+  ],
+  "file_details": [
+    {
+      "path": "jpgfile.c",
+      "additions": 1,
+      "deletions": 1,
+      "hunks": 1
+    }
+  ],
+  "vulnerability_patterns": [
+    {
+      "type": "out_of_bounds_read",
+      "description": "A lookahead array access reads past the end of the input buffer when the loop index reaches the last valid element and the condition still evaluates the next element.",
+      "trigger_conditions": [
+        "Loop variable `a` iterates with condition `a < length`, so the final iteration allows `a == length-1`",
+        "Current byte `ch` is loaded from `Data[a]` and equals `\\r` on that final iteration",
+        "The code then evaluates `Data[a+1]` without first proving `a+1 < length`"
+      ],
+      "fix_patterns": [
+        "Add an explicit upper-bound guard `a < length-1` before evaluating the lookahead access `Data[a+1]`",
+        "Keep the dangerous sink unchanged but place a short-circuit barrier in the same condition so the out-of-bounds read is never evaluated"
+      ],
+      "affected_functions": [
+        "unknown"
+      ],
+      "cross_file": false,
+      "source": "llm",
+      "confidence": 0.97,
+      "evidence_lines": [
+        "Loop header: `for (a=2;a<length;a++){`",
+        "Current element read: `ch = Data[a];`",
+        "Old dangerous condition: `if (ch == '\\r' && Data[a+1] == '\\n') continue;`",
+        "New guarded condition: `if (ch == '\\r' && a < length-1 && Data[a+1] == '\\n') continue;`"
+      ]
+    }
+  ],
+  "cross_file_dependencies": [],
+  "detection_strategy": {
+    "primary_pattern": "out_of_bounds_read",
+    "check_types": [
+      "local_ast_pattern_matching",
+      "intra_procedural_bounds_reasoning",
+      "cfg_short_circuit_guard_recognition"
+    ],
+    "entry_points": [
+      "Lookahead reads of the form `buffer[index+1]` inside loops bounded by `index < length`",
+      "Conditions that read `arr[i+1]` after loading `arr[i]` from the same loop index",
+      "Branches where a sentinel/current-byte test gates a next-byte access without an explicit `i < length-1` check"
+    ],
+    "data_flow_tracking": false,
+    "cross_file_analysis": false,
+    "suggestions": [
+      "首稿先命中补丁本地最小锚点：条件表达式中的 `Data[a+1]` lookahead 访问。",
+      "首稿不要把新增的 `a < length-1` 写成必须同时存在/不存在的复杂模板；先抓“循环上界是 `a < length` 但读取了 `a+1`”这一局部模式。",
+      "把 `ch == '\\r'` 当作辅助收敛条件，而不是首要命中条件；真正的危险 sink 是 `Data[a+1]`。",
+      "只需函数内 AST/CFG 即可：识别循环末次迭代可达、以及短路求值前是否有上界 barrier。",
+      "不需要跨文件分析，也不需要复杂数据流；`length`、`a`、`Data` 在同一局部代码片段内已足够。",
+      "二次收敛可加入：同一条件中已有 `arr[i]` 读取、循环变量单调递增、访问偏移为 `+1`、且无先行边界证明。",
+      "生成器应特别避免把“数组非空”或“索引变量在循环里”误当成 `i+1` 已有边界保证。"
+    ]
+  },
+  "checker_name_suggestion": "LookaheadBoundsChecker",
+  "affected_functions": [
+    "unknown"
+  ],
+  "key_functions": [
+    "unknown"
+  ],
+  "patch_semantics": {
+    "added_guards": [
+      "if (ch == '\\r' && a < length-1 && Data[a+1] == '\\n') continue; // Remove cr followed by lf."
+    ],
+    "added_api_calls": [],
+    "removed_api_calls": [],
+    "state_resets": [],
+    "lifecycle_changes": []
+  },
+  "analysis_backend": "llm",
+  "analysis_confidence": 0.97,
+  "analysis_rationale": "The patch changes a direct lookahead read `Data[a+1]` inside the loop body to a guarded read `a < length-1 && Data[a+1] == '\\n'`. In the old code, the loop permits `a == length-1`, so when `ch == '\\r'` on the last iteration it evaluates `Data[a+1]`, reading one byte past the valid range. The fix is a patch-local bounds barrier placed on the exact expression that performed the dangerous access.",
+  "llm_usage": {
+    "prompt_tokens": 6740,
+    "completion_tokens": 954,
+    "total_tokens": 7694,
+    "call_count": 1,
+    "available": true,
+    "model": "gpt-5.4"
+  },
+  "patchweaver": {
+    "summary": "Patch suggests out_of_bounds_read semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=4, metadata refs=0.",
+    "patch_facts": [
+      {
+        "fact_type": "patch_overview",
+        "label": "Patch overview",
+        "attributes": {
+          "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe120_jhead_cve202028840/patches/fix.patch",
+          "changed_files": [
+            "jpgfile.c"
+          ],
+          "changed_file_count": 1,
+          "added_line_count": 1,
+          "deleted_line_count": 1
+        }
+      },
+      {
+        "fact_type": "vulnerability_patterns",
+        "label": "Vulnerability patterns inferred from patch",
+        "attributes": {
+          "patterns": [
+            "out_of_bounds_read",
+            "integer_overflow"
+          ],
+          "descriptions": [
+            "A lookahead array access reads past the end of the input buffer when the loop index reaches the last valid element and the condition still evaluates the next element."
+          ]
+        }
+      },
+      {
+        "fact_type": "affected_functions",
+        "label": "Functions implicated by removed or fixed code",
+        "attributes": {
+          "functions": [
+            "process_COM",
+            "unknown"
+          ]
+        }
+      },
+      {
+        "fact_type": "detection_strategy",
+        "label": "Existing patch analysis detection strategy",
+        "attributes": {
+          "primary_pattern": "out_of_bounds_read",
+          "check_types": [
+            "local_ast_pattern_matching",
+            "intra_procedural_bounds_reasoning",
+            "cfg_short_circuit_guard_recognition"
+          ],
+          "entry_points": [
+            "Lookahead reads of the form `buffer[index+1]` inside loops bounded by `index < length`",
+            "Conditions that read `arr[i+1]` after loading `arr[i]` from the same loop index",
+            "Branches where a sentinel/current-byte test gates a next-byte access without an explicit `i < length-1` check"
+          ],
+          "data_flow_tracking": false,
+          "cross_file_analysis": false,
+          "suggestions": [
+            "首稿先命中补丁本地最小锚点：条件表达式中的 `Data[a+1]` lookahead 访问。",
+            "首稿不要把新增的 `a < length-1` 写成必须同时存在/不存在的复杂模板；先抓“循环上界是 `a < length` 但读取了 `a+1`”这一局部模式。",
+            "把 `ch == '\\r'` 当作辅助收敛条件，而不是首要命中条件；真正的危险 sink 是 `Data[a+1]`。",
+            "只需函数内 AST/CFG 即可：识别循环末次迭代可达、以及短路求值前是否有上界 barrier。",
+            "不需要跨文件分析，也不需要复杂数据流；`length`、`a`、`Data` 在同一局部代码片段内已足够。",
+            "二次收敛可加入：同一条件中已有 `arr[i]` 读取、循环变量单调递增、访问偏移为 `+1`、且无先行边界证明。",
+            "生成器应特别避免把“数组非空”或“索引变量在循环里”误当成 `i+1` 已有边界保证。"
+          ]
+        }
+      },
+      {
+        "fact_type": "added_guards",
+        "label": "Patch introduces or strengthens guards",
+        "attributes": {
+          "guards": [
+            "if (ch == '\\r' && a < length-1 && Data[a+1] == '\\n') continue; // Remove cr followed by lf."
+          ]
+        }
+      },
+      {
+        "fact_type": "fix_patterns",
+        "label": "Patch introduces reusable fix patterns",
+        "attributes": {
+          "patterns": [
+            "Add an explicit upper-bound guard `a < length-1` before evaluating the lookahead access `Data[a+1]`",
+            "Keep the dangerous sink unchanged but place a short-circuit barrier in the same condition so the out-of-bounds read is never evaluated",
+            "overflow-safe accumulator",
+            "overflow bounds check"
+          ]
+        }
+      }
+    ],
+    "mechanism_graph": {
+      "summary": "Patch suggests out_of_bounds_read semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=4, metadata refs=0.",
+      "primary_patterns": [
+        "out_of_bounds_read"
+      ],
+      "nodes": [
+        {
+          "node_id": "patch",
+          "kind": "patch",
+          "label": "Security patch",
+          "attributes": {
+            "changed_files": [
+              "jpgfile.c"
+            ]
+          }
+        },
+        {
+          "node_id": "file_0",
+          "kind": "file",
+          "label": "jpgfile.c",
+          "attributes": {
+            "path": "jpgfile.c",
+            "additions": 1,
+            "deletions": 1,
+            "hunks": 1
+          }
+        },
+        {
+          "node_id": "pattern_0",
+          "kind": "pattern",
+          "label": "out_of_bounds_read",
+          "attributes": {
+            "type": "out_of_bounds_read",
+            "description": "A lookahead array access reads past the end of the input buffer when the loop index reaches the last valid element and the condition still evaluates the next element.",
+            "trigger_conditions": [
+              "Loop variable `a` iterates with condition `a < length`, so the final iteration allows `a == length-1`",
+              "Current byte `ch` is loaded from `Data[a]` and equals `\\r` on that final iteration",
+              "The code then evaluates `Data[a+1]` without first proving `a+1 < length`"
+            ],
+            "fix_patterns": [
+              "Add an explicit upper-bound guard `a < length-1` before evaluating the lookahead access `Data[a+1]`",
+              "Keep the dangerous sink unchanged but place a short-circuit barrier in the same condition so the out-of-bounds read is never evaluated"
+            ],
+            "affected_functions": [
+              "unknown"
+            ],
+            "cross_file": false,
+            "source": "llm",
+            "confidence": 0.97,
+            "evidence_lines": [
+              "Loop header: `for (a=2;a<length;a++){`",
+              "Current element read: `ch = Data[a];`",
+              "Old dangerous condition: `if (ch == '\\r' && Data[a+1] == '\\n') continue;`",
+              "New guarded condition: `if (ch == '\\r' && a < length-1 && Data[a+1] == '\\n') continue;`"
+            ]
+          }
+        },
+        {
+          "node_id": "func_1",
+          "kind": "function",
+          "label": "unknown",
+          "attributes": {
+            "function": "unknown"
+          }
+        },
+        {
+          "node_id": "guard_1",
+          "kind": "guard",
+          "label": "Loop variable `a` iterates with condition `a < length`, so the final iteration allows `a == length-1`",
+          "attributes": {
+            "condition": "Loop variable `a` iterates with condition `a < length`, so the final iteration allows `a == length-1`"
+          }
+        },
+        {
+          "node_id": "guard_2",
+          "kind": "guard",
+          "label": "Current byte `ch` is loaded from `Data[a]` and equals `\\r` on that final iteration",
+          "attributes": {
+            "condition": "Current byte `ch` is loaded from `Data[a]` and equals `\\r` on that final iteration"
+          }
+        },
+        {
+          "node_id": "guard_3",
+          "kind": "guard",
+          "label": "The code then evaluates `Data[a+1]` without first proving `a+1 < length`",
+          "attributes": {
+            "condition": "The code then evaluates `Data[a+1]` without first proving `a+1 < length`"
+          }
+        },
+        {
+          "node_id": "strategy",
+          "kind": "strategy",
+          "label": "out_of_bounds_read",
+          "attributes": {
+            "primary_pattern": "out_of_bounds_read",
+            "check_types": [
+              "local_ast_pattern_matching",
+              "intra_procedural_bounds_reasoning",
+              "cfg_short_circuit_guard_recognition"
+            ],
+            "entry_points": [
+              "Lookahead reads of the form `buffer[index+1]` inside loops bounded by `index < length`",
+              "Conditions that read `arr[i+1]` after loading `arr[i]` from the same loop index",
+              "Branches where a sentinel/current-byte test gates a next-byte access without an explicit `i < length-1` check"
+            ],
+            "data_flow_tracking": false,
+            "cross_file_analysis": false,
+            "suggestions": [
+              "首稿先命中补丁本地最小锚点：条件表达式中的 `Data[a+1]` lookahead 访问。",
+              "首稿不要把新增的 `a < length-1` 写成必须同时存在/不存在的复杂模板；先抓“循环上界是 `a < length` 但读取了 `a+1`”这一局部模式。",
+              "把 `ch == '\\r'` 当作辅助收敛条件，而不是首要命中条件；真正的危险 sink 是 `Data[a+1]`。",
+              "只需函数内 AST/CFG 即可：识别循环末次迭代可达、以及短路求值前是否有上界 barrier。",
+              "不需要跨文件分析，也不需要复杂数据流；`length`、`a`、`Data` 在同一局部代码片段内已足够。",
+              "二次收敛可加入：同一条件中已有 `arr[i]` 读取、循环变量单调递增、访问偏移为 `+1`、且无先行边界证明。",
+              "生成器应特别避免把“数组非空”或“索引变量在循环里”误当成 `i+1` 已有边界保证。"
+            ]
+          }
+        },
+        {
+          "node_id": "func_2",
+          "kind": "function",
+          "label": "process_COM",
+          "attributes": {
+            "function": "process_COM",
+            "source": "patch_fact"
+          }
+        },
+        {
+          "node_id": "guard_4",
+          "kind": "guard",
+          "label": "if (ch == '\\r' && a < length-1 && Data[a+1] == '\\n') continue; // Remove cr followed by lf.",
+          "attributes": {
+            "condition": "if (ch == '\\r' && a < length-1 && Data[a+1] == '\\n') continue; // Remove cr followed by lf.",
+            "source": "patch_fact"
+          }
+        },
+        {
+          "node_id": "fix_1",
+          "kind": "fix",
+          "label": "Add an explicit upper-bound guard `a < length-1` before evaluating the lookahead access `Data[a+1]`",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "Add an explicit upper-bound guard `a < length-1` before evaluating the lookahead access `Data[a+1]`"
+          }
+        },
+        {
+          "node_id": "fix_2",
+          "kind": "fix",
+          "label": "Keep the dangerous sink unchanged but place a short-circuit barrier in the same condition so the out-of-bounds read is never evaluated",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "Keep the dangerous sink unchanged but place a short-circuit barrier in the same condition so the out-of-bounds read is never evaluated"
+          }
+        },
+        {
+          "node_id": "fix_3",
+          "kind": "fix",
+          "label": "overflow-safe accumulator",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "overflow-safe accumulator"
+          }
+        },
+        {
+          "node_id": "fix_4",
+          "kind": "fix",
+          "label": "overflow bounds check",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "overflow bounds check"
+          }
+        }
+      ],
+      "edges": [
+        {
+          "source": "patch",
+          "target": "file_0",
+          "relation": "touches",
+          "confidence": 0.95
+        },
+        {
+          "source": "patch",
+          "target": "pattern_0",
+          "relation": "indicates",
+          "confidence": 0.9
+        },
+        {
+          "source": "pattern_0",
+          "target": "func_1",
+          "relation": "affects",
+          "confidence": 0.75
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_1",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_2",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_3",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "patch",
+          "target": "strategy",
+          "relation": "guides",
+          "confidence": 0.85
+        },
+        {
+          "source": "patch",
+          "target": "func_2",
+          "relation": "focuses_on",
+          "confidence": 0.82
+        },
+        {
+          "source": "patch",
+          "target": "guard_4",
+          "relation": "adds_guard",
+          "confidence": 0.84
+        },
+        {
+          "source": "patch",
+          "target": "fix_1",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_2",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_3",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_4",
+          "relation": "introduces",
+          "confidence": 0.8
+        }
+      ]
+    },
+    "evidence_plan": {
+      "primary_pattern": "out_of_bounds_read",
+      "hypotheses": [
+        "Patch likely encodes a reusable vulnerability mechanism but available metadata is weak; keep evidence collection broad."
+      ],
+      "requirements": [
+        {
+          "evidence_type": "patch_fact",
+          "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+          "priority": 100,
+          "preferred_analyzers": [],
+          "confidence": 1.0,
+          "mechanism_refs": [
+            "patch"
+          ]
+        }
+      ],
+      "recommended_analyzers": [
+        "csa",
+        "codeql"
+      ],
+      "planner_notes": [
+        "Added guards detected in patch diff; path-sensitive evidence should stay near top priority."
+      ],
+      "coverage_gaps": [],
+      "uncertainty_budget": "low",
+      "escalation_triggers": []
+    },
+    "refinement_targets": {
+      "csa": {
+        "checker_name": "OutOfBoundsLookaheadReadChecker",
+        "artifact_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe120_jhead_cve202028840/primary/csa/20260423_113029/csa/OutOfBoundsLookaheadReadChecker.cpp",
+        "artifact_kind": "checker_source",
+        "validation_summary": "命中验证目标并通过功能验证",
+        "refinement_summary": "- validation_outcome @ semantic_validation: semantic validation passed with 27 diagnostics [coverage=full]"
+      }
+    },
+    "validation_feedback_history": [
+      {
+        "analyzer": "csa",
+        "phase": "initial_validation",
+        "summary": "- validation_outcome @ semantic_validation: semantic validation passed with 27 diagnostics [coverage=full]"
+      }
+    ]
+  },
+  "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe120_jhead_cve202028840/patches/fix.patch",
+  "summary": "Patch suggests out_of_bounds_read semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=4, metadata refs=0.",
+  "patch_facts": [
+    {
+      "fact_type": "patch_overview",
+      "label": "Patch overview",
+      "attributes": {
+        "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe120_jhead_cve202028840/patches/fix.patch",
+        "changed_files": [
+          "jpgfile.c"
+        ],
+        "changed_file_count": 1,
+        "added_line_count": 1,
+        "deleted_line_count": 1
+      }
+    },
+    {
+      "fact_type": "vulnerability_patterns",
+      "label": "Vulnerability patterns inferred from patch",
+      "attributes": {
+        "patterns": [
+          "out_of_bounds_read",
+          "integer_overflow"
+        ],
+        "descriptions": [
+          "A lookahead array access reads past the end of the input buffer when the loop index reaches the last valid element and the condition still evaluates the next element."
+        ]
+      }
+    },
+    {
+      "fact_type": "affected_functions",
+      "label": "Functions implicated by removed or fixed code",
+      "attributes": {
+        "functions": [
+          "process_COM",
+          "unknown"
+        ]
+      }
+    },
+    {
+      "fact_type": "detection_strategy",
+      "label": "Existing patch analysis detection strategy",
+      "attributes": {
+        "primary_pattern": "out_of_bounds_read",
+        "check_types": [
+          "local_ast_pattern_matching",
+          "intra_procedural_bounds_reasoning",
+          "cfg_short_circuit_guard_recognition"
+        ],
+        "entry_points": [
+          "Lookahead reads of the form `buffer[index+1]` inside loops bounded by `index < length`",
+          "Conditions that read `arr[i+1]` after loading `arr[i]` from the same loop index",
+          "Branches where a sentinel/current-byte test gates a next-byte access without an explicit `i < length-1` check"
+        ],
+        "data_flow_tracking": false,
+        "cross_file_analysis": false,
+        "suggestions": [
+          "首稿先命中补丁本地最小锚点：条件表达式中的 `Data[a+1]` lookahead 访问。",
+          "首稿不要把新增的 `a < length-1` 写成必须同时存在/不存在的复杂模板；先抓“循环上界是 `a < length` 但读取了 `a+1`”这一局部模式。",
+          "把 `ch == '\\r'` 当作辅助收敛条件，而不是首要命中条件；真正的危险 sink 是 `Data[a+1]`。",
+          "只需函数内 AST/CFG 即可：识别循环末次迭代可达、以及短路求值前是否有上界 barrier。",
+          "不需要跨文件分析，也不需要复杂数据流；`length`、`a`、`Data` 在同一局部代码片段内已足够。",
+          "二次收敛可加入：同一条件中已有 `arr[i]` 读取、循环变量单调递增、访问偏移为 `+1`、且无先行边界证明。",
+          "生成器应特别避免把“数组非空”或“索引变量在循环里”误当成 `i+1` 已有边界保证。"
+        ]
+      }
+    },
+    {
+      "fact_type": "added_guards",
+      "label": "Patch introduces or strengthens guards",
+      "attributes": {
+        "guards": [
+          "if (ch == '\\r' && a < length-1 && Data[a+1] == '\\n') continue; // Remove cr followed by lf."
+        ]
+      }
+    },
+    {
+      "fact_type": "fix_patterns",
+      "label": "Patch introduces reusable fix patterns",
+      "attributes": {
+        "patterns": [
+          "Add an explicit upper-bound guard `a < length-1` before evaluating the lookahead access `Data[a+1]`",
+          "Keep the dangerous sink unchanged but place a short-circuit barrier in the same condition so the out-of-bounds read is never evaluated",
+          "overflow-safe accumulator",
+          "overflow bounds check"
+        ]
+      }
+    }
+  ],
+  "mechanism_graph": {
+    "summary": "Patch suggests out_of_bounds_read semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=4, metadata refs=0.",
+    "primary_patterns": [
+      "out_of_bounds_read"
+    ],
+    "nodes": [
+      {
+        "node_id": "patch",
+        "kind": "patch",
+        "label": "Security patch",
+        "attributes": {
+          "changed_files": [
+            "jpgfile.c"
+          ]
+        }
+      },
+      {
+        "node_id": "file_0",
+        "kind": "file",
+        "label": "jpgfile.c",
+        "attributes": {
+          "path": "jpgfile.c",
+          "additions": 1,
+          "deletions": 1,
+          "hunks": 1
+        }
+      },
+      {
+        "node_id": "pattern_0",
+        "kind": "pattern",
+        "label": "out_of_bounds_read",
+        "attributes": {
+          "type": "out_of_bounds_read",
+          "description": "A lookahead array access reads past the end of the input buffer when the loop index reaches the last valid element and the condition still evaluates the next element.",
+          "trigger_conditions": [
+            "Loop variable `a` iterates with condition `a < length`, so the final iteration allows `a == length-1`",
+            "Current byte `ch` is loaded from `Data[a]` and equals `\\r` on that final iteration",
+            "The code then evaluates `Data[a+1]` without first proving `a+1 < length`"
+          ],
+          "fix_patterns": [
+            "Add an explicit upper-bound guard `a < length-1` before evaluating the lookahead access `Data[a+1]`",
+            "Keep the dangerous sink unchanged but place a short-circuit barrier in the same condition so the out-of-bounds read is never evaluated"
+          ],
+          "affected_functions": [
+            "unknown"
+          ],
+          "cross_file": false,
+          "source": "llm",
+          "confidence": 0.97,
+          "evidence_lines": [
+            "Loop header: `for (a=2;a<length;a++){`",
+            "Current element read: `ch = Data[a];`",
+            "Old dangerous condition: `if (ch == '\\r' && Data[a+1] == '\\n') continue;`",
+            "New guarded condition: `if (ch == '\\r' && a < length-1 && Data[a+1] == '\\n') continue;`"
+          ]
+        }
+      },
+      {
+        "node_id": "func_1",
+        "kind": "function",
+        "label": "unknown",
+        "attributes": {
+          "function": "unknown"
+        }
+      },
+      {
+        "node_id": "guard_1",
+        "kind": "guard",
+        "label": "Loop variable `a` iterates with condition `a < length`, so the final iteration allows `a == length-1`",
+        "attributes": {
+          "condition": "Loop variable `a` iterates with condition `a < length`, so the final iteration allows `a == length-1`"
+        }
+      },
+      {
+        "node_id": "guard_2",
+        "kind": "guard",
+        "label": "Current byte `ch` is loaded from `Data[a]` and equals `\\r` on that final iteration",
+        "attributes": {
+          "condition": "Current byte `ch` is loaded from `Data[a]` and equals `\\r` on that final iteration"
+        }
+      },
+      {
+        "node_id": "guard_3",
+        "kind": "guard",
+        "label": "The code then evaluates `Data[a+1]` without first proving `a+1 < length`",
+        "attributes": {
+          "condition": "The code then evaluates `Data[a+1]` without first proving `a+1 < length`"
+        }
+      },
+      {
+        "node_id": "strategy",
+        "kind": "strategy",
+        "label": "out_of_bounds_read",
+        "attributes": {
+          "primary_pattern": "out_of_bounds_read",
+          "check_types": [
+            "local_ast_pattern_matching",
+            "intra_procedural_bounds_reasoning",
+            "cfg_short_circuit_guard_recognition"
+          ],
+          "entry_points": [
+            "Lookahead reads of the form `buffer[index+1]` inside loops bounded by `index < length`",
+            "Conditions that read `arr[i+1]` after loading `arr[i]` from the same loop index",
+            "Branches where a sentinel/current-byte test gates a next-byte access without an explicit `i < length-1` check"
+          ],
+          "data_flow_tracking": false,
+          "cross_file_analysis": false,
+          "suggestions": [
+            "首稿先命中补丁本地最小锚点：条件表达式中的 `Data[a+1]` lookahead 访问。",
+            "首稿不要把新增的 `a < length-1` 写成必须同时存在/不存在的复杂模板；先抓“循环上界是 `a < length` 但读取了 `a+1`”这一局部模式。",
+            "把 `ch == '\\r'` 当作辅助收敛条件，而不是首要命中条件；真正的危险 sink 是 `Data[a+1]`。",
+            "只需函数内 AST/CFG 即可：识别循环末次迭代可达、以及短路求值前是否有上界 barrier。",
+            "不需要跨文件分析，也不需要复杂数据流；`length`、`a`、`Data` 在同一局部代码片段内已足够。",
+            "二次收敛可加入：同一条件中已有 `arr[i]` 读取、循环变量单调递增、访问偏移为 `+1`、且无先行边界证明。",
+            "生成器应特别避免把“数组非空”或“索引变量在循环里”误当成 `i+1` 已有边界保证。"
+          ]
+        }
+      },
+      {
+        "node_id": "func_2",
+        "kind": "function",
+        "label": "process_COM",
+        "attributes": {
+          "function": "process_COM",
+          "source": "patch_fact"
+        }
+      },
+      {
+        "node_id": "guard_4",
+        "kind": "guard",
+        "label": "if (ch == '\\r' && a < length-1 && Data[a+1] == '\\n') continue; // Remove cr followed by lf.",
+        "attributes": {
+          "condition": "if (ch == '\\r' && a < length-1 && Data[a+1] == '\\n') continue; // Remove cr followed by lf.",
+          "source": "patch_fact"
+        }
+      },
+      {
+        "node_id": "fix_1",
+        "kind": "fix",
+        "label": "Add an explicit upper-bound guard `a < length-1` before evaluating the lookahead access `Data[a+1]`",
+        "attributes": {
+          "kind": "fix_patterns",
+          "value": "Add an explicit upper-bound guard `a < length-1` before evaluating the lookahead access `Data[a+1]`"
+        }
+      },
+      {
+        "node_id": "fix_2",
+        "kind": "fix",
+        "label": "Keep the dangerous sink unchanged but place a short-circuit barrier in the same condition so the out-of-bounds read is never evaluated",
+        "attributes": {
+          "kind": "fix_patterns",
+          "value": "Keep the dangerous sink unchanged but place a short-circuit barrier in the same condition so the out-of-bounds read is never evaluated"
+        }
+      },
+      {
+        "node_id": "fix_3",
+        "kind": "fix",
+        "label": "overflow-safe accumulator",
+        "attributes": {
+          "kind": "fix_patterns",
+          "value": "overflow-safe accumulator"
+        }
+      },
+      {
+        "node_id": "fix_4",
+        "kind": "fix",
+        "label": "overflow bounds check",
+        "attributes": {
+          "kind": "fix_patterns",
+          "value": "overflow bounds check"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "patch",
+        "target": "file_0",
+        "relation": "touches",
+        "confidence": 0.95
+      },
+      {
+        "source": "patch",
+        "target": "pattern_0",
+        "relation": "indicates",
+        "confidence": 0.9
+      },
+      {
+        "source": "pattern_0",
+        "target": "func_1",
+        "relation": "affects",
+        "confidence": 0.75
+      },
+      {
+        "source": "pattern_0",
+        "target": "guard_1",
+        "relation": "requires",
+        "confidence": 0.7
+      },
+      {
+        "source": "pattern_0",
+        "target": "guard_2",
+        "relation": "requires",
+        "confidence": 0.7
+      },
+      {
+        "source": "pattern_0",
+        "target": "guard_3",
+        "relation": "requires",
+        "confidence": 0.7
+      },
+      {
+        "source": "patch",
+        "target": "strategy",
+        "relation": "guides",
+        "confidence": 0.85
+      },
+      {
+        "source": "patch",
+        "target": "func_2",
+        "relation": "focuses_on",
+        "confidence": 0.82
+      },
+      {
+        "source": "patch",
+        "target": "guard_4",
+        "relation": "adds_guard",
+        "confidence": 0.84
+      },
+      {
+        "source": "patch",
+        "target": "fix_1",
+        "relation": "introduces",
+        "confidence": 0.8
+      },
+      {
+        "source": "patch",
+        "target": "fix_2",
+        "relation": "introduces",
+        "confidence": 0.8
+      },
+      {
+        "source": "patch",
+        "target": "fix_3",
+        "relation": "introduces",
+        "confidence": 0.8
+      },
+      {
+        "source": "patch",
+        "target": "fix_4",
+        "relation": "introduces",
+        "confidence": 0.8
+      }
+    ]
+  },
+  "evidence_plan": {
+    "primary_pattern": "out_of_bounds_read",
+    "hypotheses": [
+      "Patch likely encodes a reusable vulnerability mechanism but available metadata is weak; keep evidence collection broad."
+    ],
+    "requirements": [
+      {
+        "evidence_type": "patch_fact",
+        "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+        "priority": 100,
+        "preferred_analyzers": [],
+        "confidence": 1.0,
+        "mechanism_refs": [
+          "patch"
+        ]
+      }
+    ],
+    "recommended_analyzers": [
+      "csa",
+      "codeql"
+    ],
+    "planner_notes": [
+      "Added guards detected in patch diff; path-sensitive evidence should stay near top priority."
+    ],
+    "coverage_gaps": [],
+    "uncertainty_budget": "low",
+    "escalation_triggers": []
+  }
+}

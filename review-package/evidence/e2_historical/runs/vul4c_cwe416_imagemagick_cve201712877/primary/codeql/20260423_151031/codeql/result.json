@@ -1,0 +1,304 @@
+{
+  "success": true,
+  "validation_requested": true,
+  "functional_validation_passed": false,
+  "semantic_target_hit": false,
+  "validation_state": "executed_no_hit",
+  "semantic_acceptance": false,
+  "semantic_acceptance_summary": "功能验证执行成功，但未命中验证目标",
+  "checker_name": "ImageListDeletedAliasUseAfterFree",
+  "artifact_display_name": "ImageListDeletedAliasUseAfterFree",
+  "output_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe416_imagemagick_cve201712877/primary/codeql/20260423_151031/codeql/ImageListDeletedAliasUseAfterFree.ql",
+  "source_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe416_imagemagick_cve201712877/primary/codeql/20260423_151031/codeql/ImageListDeletedAliasUseAfterFree.ql",
+  "iterations": 4,
+  "compile_attempts": 0,
+  "error": "",
+  "validation": {
+    "stage": "semantic",
+    "analyzer": "codeql",
+    "success": true,
+    "execution_time": 56.480918884277344,
+    "error_message": "",
+    "diagnostics": [],
+    "diagnostics_count": 0,
+    "warnings_count": 0,
+    "errors_count": 0,
+    "environment_blocked": false,
+    "environment_block_reason": "",
+    "validation_target": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe416_imagemagick_cve201712877/vulnerable"
+  },
+  "llm_usage": {
+    "prompt_tokens": 32507,
+    "completion_tokens": 2251,
+    "total_tokens": 34758,
+    "call_count": 4,
+    "available": true,
+    "model": "gpt-5.4-high"
+  },
+  "artifact_metrics": {
+    "path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe416_imagemagick_cve201712877/primary/codeql/20260423_151031/codeql/ImageListDeletedAliasUseAfterFree.ql",
+    "total_lines": 108,
+    "nonempty_lines": 97,
+    "char_count": 3575,
+    "byte_count": 3745
+  },
+  "artifact_delta": {},
+  "artifact_review": {
+    "success": true,
+    "error": "",
+    "findings": []
+  },
+  "evidence_records": 0,
+  "missing_evidence": [],
+  "evidence_degraded": false,
+  "semantic_slice_records": 0,
+  "context_summary_records": 0,
+  "slice_coverage": "missing",
+  "verifier_backed_slices": 0,
+  "slice_kinds": {},
+  "evidence_escalation": {},
+  "validation_feedback_records": 1,
+  "validation_feedback_summary": "- validation_outcome @ semantic_validation: semantic_no_hits [coverage=empty]",
+  "validation_feedback_history": [
+    {
+      "analyzer": "codeql",
+      "phase": "initial_validation",
+      "summary": "- validation_outcome @ semantic_validation: semantic_no_hits [coverage=empty]"
+    }
+  ],
+  "refinement_attempted": false,
+  "refinement_adopted": false,
+  "refinement_iterations_attempted": 0,
+  "refinement_skipped_reason": "",
+  "last_refinement_candidate_success": false,
+  "last_refinement_candidate_error": "",
+  "last_refinement_candidate_artifact_review": {},
+  "last_refinement_candidate_output_path": "",
+  "post_validation_evidence_records": 1,
+  "post_validation_missing_evidence": [],
+  "post_validation_semantic_slice_records": 0,
+  "post_validation_context_summary_records": 0,
+  "post_validation_slice_coverage": "missing",
+  "synthesis_input": {
+    "analyzer_id": "codeql",
+    "detector_artifact": "ql_query",
+    "primary_pattern": "use_after_free",
+    "objective": "Synthesize a reusable use_after_free query that captures the same semantic mechanism, interprocedural flow, or API contract implied by the patch rather than a generic broad class proxy.",
+    "mechanism_contract": {
+      "mechanism_family": "resource_lifetime_violation",
+      "semantic_dimensions": [
+        "resource identity or alias",
+        "release event",
+        "later use sink on the same resource",
+        "reinitialization/nulling/ownership transfer barrier"
+      ],
+      "trigger_invariants": [
+        "a resource is released",
+        "the same symbolic resource reaches a later use without reinitialization or ownership transfer",
+        "Patch-backed trigger clue: added guard: if (tmp == image2)",
+        "Patch-backed trigger clue: detection hints: Prefer consumer-side misuse detection over simple release->use continuity when the patch explicitly invalidates aliases before deletion., Treat deletion APIs such as `DeleteImageFromList(&tmp)` as freeing/invalidation events for all aliases to the same object., Avoid using null/non-null as freshness proof for image/list objects; track whether an alias may outlive a deleted node."
+      ],
+      "silence_invariants": [
+        "the resource is nulled, rebound, or reinitialized before reuse",
+        "ownership transfer or guard logic blocks access after release",
+        "length/capacity guard present: if (tmp == image2)",
+        "patch-introduced barrier pattern: Explicit invalidation of aliases before deletion of the underlying object",
+        "patch-introduced barrier pattern: Consumer-side stale pointer prevention instead of relying on non-null as proof of validity"
+      ],
+      "transfer_axes": [
+        "equivalent release-then-use sequences on the same resource role",
+        "equivalent lifecycle transitions across wrappers or helper functions"
+      ],
+      "forbidden_shortcuts": [
+        "bind the detector to fixed file paths, line numbers, or exact patch strings",
+        "broaden into unrelated bug families just to improve hit count",
+        "report every free/delete call as if it were a bug",
+        "ignore resource identity and alias continuity between release and use",
+        "identify resources only by variable or field names such as session/cache/context instead of lifecycle evidence",
+        "callee-only matching or stringified guard inference instead of structured predicates"
+      ],
+      "evidence_backed_axes": []
+    },
+    "detector_name_hint": "UseAfterFree",
+    "focus_files": [
+      "coders/mat.c"
+    ],
+    "focus_functions": [
+      "DestroyImageInfo"
+    ],
+    "hypotheses": [
+      "The patch changes a data propagation condition that should generalize beyond the edited lines.",
+      "The vulnerability mechanism crosses file boundaries and should not be captured with local-only reasoning.",
+      "The patch likely changes a resource lifecycle or stale-state transition."
+    ],
+    "required_evidence_types": [
+      "patch_fact",
+      "dataflow_candidate",
+      "allocation_lifecycle",
+      "state_transition",
+      "semantic_slice",
+      "call_chain"
+    ],
+    "missing_evidence_types": [],
+    "evidence_degraded": false,
+    "patch_mechanism_signals": [
+      "added guard: if (tmp == image2)",
+      "detection hints: Prefer consumer-side misuse detection over simple release->use continuity when the patch explicitly invalidates aliases before deletion., Treat deletion APIs such as `DeleteImageFromList(&tmp)` as freeing/invalidation events for all aliases to the same object., Avoid using null/non-null as freshness proof for image/list objects; track whether an alias may outlive a deleted node."
+    ],
+    "silencing_conditions": [
+      "length/capacity guard present: if (tmp == image2)",
+      "patch-introduced barrier pattern: Explicit invalidation of aliases before deletion of the underlying object",
+      "patch-introduced barrier pattern: Consumer-side stale pointer prevention instead of relying on non-null as proof of validity"
+    ],
+    "retry_guidance": [],
+    "selected_evidence_ids": [],
+    "selected_evidence": [],
+    "semantic_slice_count": 0,
+    "context_summary_count": 0,
+    "semantic_slice_coverage": "missing",
+    "selected_semantic_slice_ids": [],
+    "selected_context_summary_ids": [],
+    "selected_semantic_slices": [],
+    "selected_context_summaries": [],
+    "semantic_clause_plan": [
+      {
+        "clause_id": "vulnerable_trigger_clause",
+        "intent": "Trigger on the vulnerable use_after_free mechanism using evidence-backed path/flow semantics.",
+        "supporting_evidence_ids": [],
+        "repair_when": [
+          "semantic_no_hits"
+        ],
+        "focus_functions": [
+          "DestroyImageInfo"
+        ]
+      },
+      {
+        "clause_id": "patched_silence_clause",
+        "intent": "Stay silent on patched code when patch-added guards, barriers, or safe APIs prove the mechanism is blocked.",
+        "supporting_evidence_ids": [],
+        "repair_when": [],
+        "silencing_conditions": [
+          "length/capacity guard present: if (tmp == image2)",
+          "patch-introduced barrier pattern: Explicit invalidation of aliases before deletion of the underlying object",
+          "patch-introduced barrier pattern: Consumer-side stale pointer prevention instead of relying on non-null as proof of validity"
+        ]
+      },
+      {
+        "clause_id": "semantic_transfer_clause",
+        "intent": "Generalize along semantic slices and call-chain evidence rather than patch-local syntax.",
+        "supporting_evidence_ids": [],
+        "repair_when": [],
+        "analyzer_id": "codeql"
+      },
+      {
+        "clause_id": "analyzer_interface_clause",
+        "intent": "Preserve valid analyzer-facing syntax and interfaces while keeping semantics unchanged.",
+        "supporting_evidence_ids": [],
+        "repair_when": [
+          "semantic_execution_error"
+        ],
+        "analyzer_id": "codeql"
+      }
+    ],
+    "repair_directives": [],
+    "constraints": [
+      {
+        "title": "Generalize beyond patch site",
+        "description": "Do not bind the detector to fixed file paths, line numbers, or exact patch strings.",
+        "priority": "high"
+      },
+      {
+        "title": "Preserve vulnerability semantics",
+        "description": "Keep the detector focused on the vulnerability family implied by the patch and evidence.",
+        "priority": "high"
+      },
+      {
+        "title": "Respect analyzer-native form",
+        "description": "Output must be a valid ql_query for codeql.",
+        "priority": "high"
+      },
+      {
+        "title": "Stay within proven mechanism scope",
+        "description": "Generalize only along evidence-supported semantic dimensions. Do not broaden the detector into unrelated globals, APIs, or bug families.",
+        "priority": "high"
+      },
+      {
+        "title": "Honor mechanism contract",
+        "description": "Preserve the mechanism family `resource_lifetime_violation` by keeping trigger invariants a resource is released; the same symbolic resource reaches a later use without reinitialization or ownership transfer; Patch-backed trigger clue: added guard: if (tmp == image2).",
+        "priority": "high"
+      },
+      {
+        "title": "Generalize only on contract axes",
+        "description": "Reuse semantics only along these transfer axes: equivalent release-then-use sequences on the same resource role; equivalent lifecycle transitions across wrappers or helper functions.",
+        "priority": "high"
+      },
+      {
+        "title": "Anchor on patch-touched scope",
+        "description": "Use patch-touched files/functions as the semantic anchor for synthesis. Only extend beyond them when the same mechanism is explicitly supported by evidence.",
+        "priority": "high"
+      },
+      {
+        "title": "Encode the patch-added barrier",
+        "description": "model the absence of barriers like Explicit invalidation of aliases before deletion of the underlying object, Consumer-side stale pointer prevention instead of relying on non-null as proof of validity; treat guards such as if (tmp == image2) as semantic barriers.",
+        "priority": "high"
+      },
+      {
+        "title": "Respect patched silence",
+        "description": "Use these no-report conditions when they are semantically proven: length/capacity guard present: if (tmp == image2); patch-introduced barrier pattern: Explicit invalidation of aliases before deletion of the underlying object; patch-introduced barrier pattern: Consumer-side stale pointer prevention instead of relying on non-null as proof of validity.",
+        "priority": "high"
+      },
+      {
+        "title": "Track resource identity across lifetime edges",
+        "description": "Model release, reuse, reinitialization, and ownership transfer on the same symbolic resource; do not count frees or uses in isolation.",
+        "priority": "high"
+      },
+      {
+        "title": "Do not key on local identifier names",
+        "description": "Do not define the vulnerable resource role solely by field/variable names such as session/cache/context; infer it from release-use-nulling-relookup semantics and alias continuity.",
+        "priority": "high"
+      },
+      {
+        "title": "Prefer semantic predicates",
+        "description": "Prefer reusable predicates, flow steps, and API modeling over patch-location matching.",
+        "priority": "high"
+      },
+      {
+        "title": "No callee-only matching",
+        "description": "Do not report every call to risky APIs by name alone; require an unchecked write/copy condition and absence of a patch-style barrier.",
+        "priority": "high"
+      }
+    ],
+    "implementation_hints": [
+      "Mechanism family: resource_lifetime_violation",
+      "Mechanism dimensions: resource identity or alias, release event, later use sink on the same resource, reinitialization/nulling/ownership transfer barrier",
+      "Trigger invariants: a resource is released, the same symbolic resource reaches a later use without reinitialization or ownership transfer, Patch-backed trigger clue: added guard: if (tmp == image2)",
+      "Silence invariants: the resource is nulled, rebound, or reinitialized before reuse, ownership transfer or guard logic blocks access after release, length/capacity guard present: if (tmp == image2)",
+      "Transfer axes: equivalent release-then-use sequences on the same resource role, equivalent lifecycle transitions across wrappers or helper functions",
+      "Focus files: coders/mat.c",
+      "Priority functions: DestroyImageInfo",
+      "Patch-added barriers: Explicit invalidation of aliases before deletion of the underlying object, Consumer-side stale pointer prevention instead of relying on non-null as proof of validity"
+    ],
+    "validation_expectations": [
+      "Vulnerable version should trigger a use_after_free finding.",
+      "Patched version should stay silent for the same mechanism.",
+      "Semantic validation that executes but returns zero hits is not acceptable; recover coverage with evidence-backed semantics.",
+      "Repair phase may fix syntax/interfaces only; it must not simplify away the core detection logic.",
+      "Generalization must stay inside the mechanism contract transfer axes instead of widening to adjacent bug families.",
+      "Sibling variants that preserve the same release-then-use lifecycle should also trigger; patch-local identifier matching is not sufficient.",
+      "Trigger invariant: a resource is released.",
+      "Trigger invariant: the same symbolic resource reaches a later use without reinitialization or ownership transfer.",
+      "Patched silence depends on: length/capacity guard present: if (tmp == image2).",
+      "Patched silence depends on: patch-introduced barrier pattern: Explicit invalidation of aliases before deletion of the underlying object."
+    ]
+  },
+  "evidence_effectiveness": {
+    "baseline_records": 0,
+    "post_validation_records": 1,
+    "new_records": 1,
+    "baseline_missing": [],
+    "post_validation_missing": [],
+    "resolved_missing": [],
+    "improved": true,
+    "summary": "新增 1 条反馈后证据"
+  }
+}

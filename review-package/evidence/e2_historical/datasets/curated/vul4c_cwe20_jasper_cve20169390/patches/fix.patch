@@ -1,0 +1,14 @@
+diff --git a/src/libjasper/jpc/jpc_dec.c b/src/libjasper/jpc/jpc_dec.c
+--- a/src/libjasper/jpc/jpc_dec.c
++++ b/src/libjasper/jpc/jpc_dec.c
+@@ -508,6 +508,10 @@
+ 	  !siz->tileheight || !siz->numcomps || siz->numcomps > 16384) {
+ 		return -1;
+ 	}
++		if (siz->tilexoff >= siz->width || siz->tileyoff >= siz->height) {
++		jas_eprintf("all tiles are outside the image area\n");
++		return -1;
++	}
+ 	if (!(siz->comps = jas_alloc2(siz->numcomps, sizeof(jpc_sizcomp_t)))) {
+ 		return -1;
+ 	}

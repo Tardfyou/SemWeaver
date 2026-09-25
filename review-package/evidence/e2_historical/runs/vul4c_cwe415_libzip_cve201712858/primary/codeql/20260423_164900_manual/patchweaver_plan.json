@@ -1,0 +1,647 @@
+{
+  "files_changed": [
+    "lib/zip_dirent.c"
+  ],
+  "file_details": [
+    {
+      "path": "lib/zip_dirent.c",
+      "additions": 0,
+      "deletions": 3,
+      "hunks": 1
+    }
+  ],
+  "vulnerability_patterns": [
+    {
+      "type": "double_free",
+      "description": "错误返回路径在调用 `_zip_dirent_process_winzip_aes` 失败后，对 `buffer` 执行额外 `_zip_buffer_free(buffer)`，补丁通过删除该释放避免同一缓冲区在别处再次释放。",
+      "trigger_conditions": [
+        "函数处于 `_zip_dirent_process_winzip_aes(zde, error)` 返回假值的错误路径",
+        "局部条件 `!from_buffer` 成立，从而进入旧的 `_zip_buffer_free(buffer)` 分支",
+        "`buffer` 的生命周期并未在该错误分支独占结束，后续清理或调用方仍会释放/处理同一对象"
+      ],
+      "fix_patterns": [
+        "删除错误路径中的 `_zip_buffer_free(buffer)`，避免额外释放",
+        "将资源回收留给其他统一清理/所有权路径，而不是在该失败分支立即释放"
+      ],
+      "affected_functions": [
+        "_zip_buffer_free"
+      ],
+      "cross_file": false,
+      "source": "llm",
+      "confidence": 0.92,
+      "evidence_lines": [
+        "`if (!_zip_dirent_process_winzip_aes(zde, error)) {`",
+        "删除的危险操作：`_zip_buffer_free(buffer);`",
+        "删除后该分支直接 `return -1;`，不再在此处分配/释放 `buffer`"
+      ]
+    }
+  ],
+  "cross_file_dependencies": [],
+  "detection_strategy": {
+    "primary_pattern": "double_free",
+    "check_types": [
+      "local_ast_match",
+      "intra_procedural_cfg_path_analysis",
+      "resource_lifetime_state_transition_analysis"
+    ],
+    "entry_points": [
+      "`lib/zip_dirent.c` 中 `_zip_dirent_process_winzip_aes(... )` 失败分支附近的 `_zip_buffer_free(buffer)`",
+      "同一函数内错误路径上的 `_zip_buffer_free` / `free` / destroy 类调用"
+    ],
+    "data_flow_tracking": false,
+    "cross_file_analysis": false,
+    "suggestions": [
+      "首稿先命中 patch-local 最小锚点：失败条件 `_zip_dirent_process_winzip_aes(...)` 的分支内对 `buffer` 的 `_zip_buffer_free(buffer)` 调用。",
+      "不要把 `!from_buffer` 当作硬过滤的充分安全条件；它只是旧代码中控制额外释放的辅助条件，不证明对象拥有权正确。",
+      "首稿优先检测“错误路径中的额外释放”这一局部模式，而不是一开始要求证明全局二次释放；可先报可疑点，再用统一 cleanup 路径存在性做二次收敛。",
+      "二次收敛可检查：同一函数后续/外层是否还有对同一 `buffer` 的统一释放或隐式清理；但这不应成为首稿必需条件。",
+      "该补丁不体现跨文件依赖，先用函数内 AST/CFG 即可，不必上跨文件分析。",
+      "若生成 CodeQL/CSA 规则，可围绕‘在错误返回前释放局部资源，但函数整体仍有统一清理职责’这一形态建模。"
+    ]
+  },
+  "checker_name_suggestion": "DoubleFreeOnErrorPathChecker",
+  "affected_functions": [
+    "_zip_buffer_free"
+  ],
+  "key_functions": [
+    "_zip_buffer_free"
+  ],
+  "patch_semantics": {
+    "added_guards": [],
+    "added_api_calls": [],
+    "removed_api_calls": [
+      "_zip_buffer_free"
+    ],
+    "state_resets": [],
+    "lifecycle_changes": []
+  },
+  "analysis_backend": "llm",
+  "analysis_confidence": 0.92,
+  "analysis_rationale": "补丁仅在 `lib/zip_dirent.c` 的失败路径中删除了 `_zip_buffer_free(buffer)` 调用，且删除点位于 `if (!_zip_dirent_process_winzip_aes(zde, error)) { ... return -1; }` 内。补丁没有新增 guard，而是直接移除一次释放动作，说明修复形态是“旧错误路径多做了一次释放”。由于释放受 `!from_buffer` 条件控制，危险机制是：当 `_zip_dirent_process_winzip_aes(zde, error)` 失败时，旧代码在返回 `-1` 前额外释放 `buffer`，而该对象的所有权/清理很可能由其他路径统一处理；继续保留该释放会导致同一对象被重复释放，或在后续清理中消费已失效对象。此结论直接来自补丁删除唯一资源释放语句，而非新增校验。",
+  "llm_usage": {
+    "prompt_tokens": 6677,
+    "completion_tokens": 899,
+    "total_tokens": 7576,
+    "call_count": 1,
+    "available": true,
+    "model": "gpt-5.4"
+  },
+  "patchweaver": {
+    "summary": "Patch suggests double_free semantics across 1 file(s); added guards=0, removed risky operations=1, fix patterns=2, metadata refs=0.",
+    "patch_facts": [
+      {
+        "fact_type": "patch_overview",
+        "label": "Patch overview",
+        "attributes": {
+          "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe415_libzip_cve201712858/patches/fix.patch",
+          "changed_files": [
+            "lib/zip_dirent.c"
+          ],
+          "changed_file_count": 1,
+          "added_line_count": 0,
+          "deleted_line_count": 3
+        }
+      },
+      {
+        "fact_type": "vulnerability_patterns",
+        "label": "Vulnerability patterns inferred from patch",
+        "attributes": {
+          "patterns": [
+            "double_free"
+          ],
+          "descriptions": [
+            "错误返回路径在调用 `_zip_dirent_process_winzip_aes` 失败后，对 `buffer` 执行额外 `_zip_buffer_free(buffer)`，补丁通过删除该释放避免同一缓冲区在别处再次释放。"
+          ]
+        }
+      },
+      {
+        "fact_type": "affected_functions",
+        "label": "Functions implicated by removed or fixed code",
+        "attributes": {
+          "functions": [
+            "_zip_buffer_free",
+            "_zip_dirent_read"
+          ]
+        }
+      },
+      {
+        "fact_type": "detection_strategy",
+        "label": "Existing patch analysis detection strategy",
+        "attributes": {
+          "primary_pattern": "double_free",
+          "check_types": [
+            "local_ast_match",
+            "intra_procedural_cfg_path_analysis",
+            "resource_lifetime_state_transition_analysis"
+          ],
+          "entry_points": [
+            "`lib/zip_dirent.c` 中 `_zip_dirent_process_winzip_aes(... )` 失败分支附近的 `_zip_buffer_free(buffer)`",
+            "同一函数内错误路径上的 `_zip_buffer_free` / `free` / destroy 类调用"
+          ],
+          "data_flow_tracking": false,
+          "cross_file_analysis": false,
+          "suggestions": [
+            "首稿先命中 patch-local 最小锚点：失败条件 `_zip_dirent_process_winzip_aes(...)` 的分支内对 `buffer` 的 `_zip_buffer_free(buffer)` 调用。",
+            "不要把 `!from_buffer` 当作硬过滤的充分安全条件；它只是旧代码中控制额外释放的辅助条件，不证明对象拥有权正确。",
+            "首稿优先检测“错误路径中的额外释放”这一局部模式，而不是一开始要求证明全局二次释放；可先报可疑点，再用统一 cleanup 路径存在性做二次收敛。",
+            "二次收敛可检查：同一函数后续/外层是否还有对同一 `buffer` 的统一释放或隐式清理；但这不应成为首稿必需条件。",
+            "该补丁不体现跨文件依赖，先用函数内 AST/CFG 即可，不必上跨文件分析。",
+            "若生成 CodeQL/CSA 规则，可围绕‘在错误返回前释放局部资源，但函数整体仍有统一清理职责’这一形态建模。"
+          ]
+        }
+      },
+      {
+        "fact_type": "removed_risky_operations",
+        "label": "Patch removes risky operations",
+        "attributes": {
+          "operations": [
+            "_zip_buffer_free(buffer);"
+          ]
+        }
+      },
+      {
+        "fact_type": "fix_patterns",
+        "label": "Patch introduces reusable fix patterns",
+        "attributes": {
+          "patterns": [
+            "删除错误路径中的 `_zip_buffer_free(buffer)`，避免额外释放",
+            "将资源回收留给其他统一清理/所有权路径，而不是在该失败分支立即释放"
+          ]
+        }
+      }
+    ],
+    "mechanism_graph": {
+      "summary": "Patch suggests double_free semantics across 1 file(s); added guards=0, removed risky operations=1, fix patterns=2, metadata refs=0.",
+      "primary_patterns": [
+        "double_free"
+      ],
+      "nodes": [
+        {
+          "node_id": "patch",
+          "kind": "patch",
+          "label": "Security patch",
+          "attributes": {
+            "changed_files": [
+              "lib/zip_dirent.c"
+            ]
+          }
+        },
+        {
+          "node_id": "file_0",
+          "kind": "file",
+          "label": "lib/zip_dirent.c",
+          "attributes": {
+            "path": "lib/zip_dirent.c",
+            "additions": 0,
+            "deletions": 3,
+            "hunks": 1
+          }
+        },
+        {
+          "node_id": "pattern_0",
+          "kind": "pattern",
+          "label": "double_free",
+          "attributes": {
+            "type": "double_free",
+            "description": "错误返回路径在调用 `_zip_dirent_process_winzip_aes` 失败后，对 `buffer` 执行额外 `_zip_buffer_free(buffer)`，补丁通过删除该释放避免同一缓冲区在别处再次释放。",
+            "trigger_conditions": [
+              "函数处于 `_zip_dirent_process_winzip_aes(zde, error)` 返回假值的错误路径",
+              "局部条件 `!from_buffer` 成立，从而进入旧的 `_zip_buffer_free(buffer)` 分支",
+              "`buffer` 的生命周期并未在该错误分支独占结束，后续清理或调用方仍会释放/处理同一对象"
+            ],
+            "fix_patterns": [
+              "删除错误路径中的 `_zip_buffer_free(buffer)`，避免额外释放",
+              "将资源回收留给其他统一清理/所有权路径，而不是在该失败分支立即释放"
+            ],
+            "affected_functions": [
+              "_zip_buffer_free"
+            ],
+            "cross_file": false,
+            "source": "llm",
+            "confidence": 0.92,
+            "evidence_lines": [
+              "`if (!_zip_dirent_process_winzip_aes(zde, error)) {`",
+              "删除的危险操作：`_zip_buffer_free(buffer);`",
+              "删除后该分支直接 `return -1;`，不再在此处分配/释放 `buffer`"
+            ]
+          }
+        },
+        {
+          "node_id": "func_1",
+          "kind": "function",
+          "label": "_zip_buffer_free",
+          "attributes": {
+            "function": "_zip_buffer_free"
+          }
+        },
+        {
+          "node_id": "guard_1",
+          "kind": "guard",
+          "label": "函数处于 `_zip_dirent_process_winzip_aes(zde, error)` 返回假值的错误路径",
+          "attributes": {
+            "condition": "函数处于 `_zip_dirent_process_winzip_aes(zde, error)` 返回假值的错误路径"
+          }
+        },
+        {
+          "node_id": "guard_2",
+          "kind": "guard",
+          "label": "局部条件 `!from_buffer` 成立，从而进入旧的 `_zip_buffer_free(buffer)` 分支",
+          "attributes": {
+            "condition": "局部条件 `!from_buffer` 成立，从而进入旧的 `_zip_buffer_free(buffer)` 分支"
+          }
+        },
+        {
+          "node_id": "guard_3",
+          "kind": "guard",
+          "label": "`buffer` 的生命周期并未在该错误分支独占结束，后续清理或调用方仍会释放/处理同一对象",
+          "attributes": {
+            "condition": "`buffer` 的生命周期并未在该错误分支独占结束，后续清理或调用方仍会释放/处理同一对象"
+          }
+        },
+        {
+          "node_id": "strategy",
+          "kind": "strategy",
+          "label": "double_free",
+          "attributes": {
+            "primary_pattern": "double_free",
+            "check_types": [
+              "local_ast_match",
+              "intra_procedural_cfg_path_analysis",
+              "resource_lifetime_state_transition_analysis"
+            ],
+            "entry_points": [
+              "`lib/zip_dirent.c` 中 `_zip_dirent_process_winzip_aes(... )` 失败分支附近的 `_zip_buffer_free(buffer)`",
+              "同一函数内错误路径上的 `_zip_buffer_free` / `free` / destroy 类调用"
+            ],
+            "data_flow_tracking": false,
+            "cross_file_analysis": false,
+            "suggestions": [
+              "首稿先命中 patch-local 最小锚点：失败条件 `_zip_dirent_process_winzip_aes(...)` 的分支内对 `buffer` 的 `_zip_buffer_free(buffer)` 调用。",
+              "不要把 `!from_buffer` 当作硬过滤的充分安全条件；它只是旧代码中控制额外释放的辅助条件，不证明对象拥有权正确。",
+              "首稿优先检测“错误路径中的额外释放”这一局部模式，而不是一开始要求证明全局二次释放；可先报可疑点，再用统一 cleanup 路径存在性做二次收敛。",
+              "二次收敛可检查：同一函数后续/外层是否还有对同一 `buffer` 的统一释放或隐式清理；但这不应成为首稿必需条件。",
+              "该补丁不体现跨文件依赖，先用函数内 AST/CFG 即可，不必上跨文件分析。",
+              "若生成 CodeQL/CSA 规则，可围绕‘在错误返回前释放局部资源，但函数整体仍有统一清理职责’这一形态建模。"
+            ]
+          }
+        },
+        {
+          "node_id": "func_2",
+          "kind": "function",
+          "label": "_zip_dirent_read",
+          "attributes": {
+            "function": "_zip_dirent_read",
+            "source": "patch_fact"
+          }
+        },
+        {
+          "node_id": "fix_1",
+          "kind": "fix",
+          "label": "删除错误路径中的 `_zip_buffer_free(buffer)`，避免额外释放",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "删除错误路径中的 `_zip_buffer_free(buffer)`，避免额外释放"
+          }
+        },
+        {
+          "node_id": "fix_2",
+          "kind": "fix",
+          "label": "将资源回收留给其他统一清理/所有权路径，而不是在该失败分支立即释放",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "将资源回收留给其他统一清理/所有权路径，而不是在该失败分支立即释放"
+          }
+        }
+      ],
+      "edges": [
+        {
+          "source": "patch",
+          "target": "file_0",
+          "relation": "touches",
+          "confidence": 0.95
+        },
+        {
+          "source": "patch",
+          "target": "pattern_0",
+          "relation": "indicates",
+          "confidence": 0.9
+        },
+        {
+          "source": "pattern_0",
+          "target": "func_1",
+          "relation": "affects",
+          "confidence": 0.75
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_1",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_2",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_3",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "patch",
+          "target": "strategy",
+          "relation": "guides",
+          "confidence": 0.85
+        },
+        {
+          "source": "patch",
+          "target": "func_2",
+          "relation": "focuses_on",
+          "confidence": 0.82
+        },
+        {
+          "source": "patch",
+          "target": "fix_1",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_2",
+          "relation": "introduces",
+          "confidence": 0.8
+        }
+      ]
+    },
+    "evidence_plan": {
+      "primary_pattern": "double_free",
+      "hypotheses": [
+        "The patch likely changes a resource lifecycle or stale-state transition."
+      ],
+      "requirements": [
+        {
+          "evidence_type": "patch_fact",
+          "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+          "priority": 100,
+          "preferred_analyzers": [],
+          "confidence": 1.0,
+          "mechanism_refs": [
+            "patch"
+          ]
+        },
+        {
+          "evidence_type": "allocation_lifecycle",
+          "reason": "Lifetime-sensitive bug family requires allocation/free reasoning.",
+          "priority": 92,
+          "preferred_analyzers": [
+            "csa"
+          ],
+          "confidence": 0.92,
+          "mechanism_refs": [
+            "pattern_0"
+          ]
+        },
+        {
+          "evidence_type": "state_transition",
+          "reason": "Need local state transitions around free/delete and later uses.",
+          "priority": 89,
+          "preferred_analyzers": [
+            "csa"
+          ],
+          "confidence": 0.88,
+          "mechanism_refs": [
+            "pattern_0"
+          ]
+        }
+      ],
+      "recommended_analyzers": [
+        "csa"
+      ],
+      "planner_notes": [
+        "Selected analyzers do not cover every planned evidence primitive."
+      ],
+      "coverage_gaps": [
+        "allocation_lifecycle is not covered by selected analyzers ['codeql']",
+        "state_transition is not covered by selected analyzers ['codeql']"
+      ],
+      "uncertainty_budget": "low",
+      "escalation_triggers": [
+        "selected_coverage_gap"
+      ]
+    },
+    "evidence_bundle": {
+      "records": [
+        {
+          "evidence_id": "pf_000",
+          "type": "patch_fact",
+          "analyzer": "patch",
+          "scope": {
+            "repo": "fix.patch",
+            "file": "lib/zip_dirent.c",
+            "function": "_zip_buffer_free"
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "fact_type": "patch_overview",
+            "label": "Patch overview",
+            "attributes": {
+              "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe415_libzip_cve201712858/patches/fix.patch",
+              "changed_files": [
+                "lib/zip_dirent.c"
+              ],
+              "changed_file_count": 1,
+              "added_line_count": 0,
+              "deleted_line_count": 3
+            }
+          },
+          "provenance": {
+            "tool": "patch-analysis",
+            "artifact": "patch_overview",
+            "confidence": 0.95
+          },
+          "evidence_slice": {}
+        },
+        {
+          "evidence_id": "pf_001",
+          "type": "patch_fact",
+          "analyzer": "patch",
+          "scope": {
+            "repo": "fix.patch",
+            "file": "lib/zip_dirent.c",
+            "function": "_zip_buffer_free"
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "fact_type": "vulnerability_patterns",
+            "label": "Vulnerability patterns inferred from patch",
+            "attributes": {
+              "patterns": [
+                "double_free"
+              ],
+              "descriptions": [
+                "错误返回路径在调用 `_zip_dirent_process_winzip_aes` 失败后，对 `buffer` 执行额外 `_zip_buffer_free(buffer)`，补丁通过删除该释放避免同一缓冲区在别处再次释放。"
+              ]
+            }
+          },
+          "provenance": {
+            "tool": "patch-analysis",
+            "artifact": "vulnerability_patterns",
+            "confidence": 0.95
+          },
+          "evidence_slice": {}
+        },
+        {
+          "evidence_id": "pf_002",
+          "type": "patch_fact",
+          "analyzer": "patch",
+          "scope": {
+            "repo": "fix.patch",
+            "file": "lib/zip_dirent.c",
+            "function": "_zip_buffer_free"
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "fact_type": "affected_functions",
+            "label": "Functions implicated by removed or fixed code",
+            "attributes": {
+              "functions": [
+                "_zip_buffer_free",
+                "_zip_dirent_read"
+              ]
+            }
+          },
+          "provenance": {
+            "tool": "patch-analysis",
+            "artifact": "affected_functions",
+            "confidence": 0.95
+          },
+          "evidence_slice": {}
+        },
+        {
+          "evidence_id": "pf_003",
+          "type": "patch_fact",
+          "analyzer": "patch",
+          "scope": {
+            "repo": "fix.patch",
+            "file": "lib/zip_dirent.c",
+            "function": "_zip_buffer_free"
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "fact_type": "detection_strategy",
+            "label": "Existing patch analysis detection strategy",
+            "attributes": {
+              "primary_pattern": "double_free",
+              "check_types": [
+                "local_ast_match",
+                "intra_procedural_cfg_path_analysis",
+                "resource_lifetime_state_transition_analysis"
+              ],
+              "entry_points": [
+                "`lib/zip_dirent.c` 中 `_zip_dirent_process_winzip_aes(... )` 失败分支附近的 `_zip_buffer_free(buffer)`",
+                "同一函数内错误路径上的 `_zip_buffer_free` / `free` / destroy 类调用"
+              ],
+              "data_flow_tracking": false,
+              "cross_file_analysis": false,
+              "suggestions": [
+                "首稿先命中 patch-local 最小锚点：失败条件 `_zip_dirent_process_winzip_aes(...)` 的分支内对 `buffer` 的 `_zip_buffer_free(buffer)` 调用。",
+                "不要把 `!from_buffer` 当作硬过滤的充分安全条件；它只是旧代码中控制额外释放的辅助条件，不证明对象拥有权正确。",
+                "首稿优先检测“错误路径中的额外释放”这一局部模式，而不是一开始要求证明全局二次释放；可先报可疑点，再用统一 cleanup 路径存在性做二次收敛。",
+                "二次收敛可检查：同一函数后续/外层是否还有对同一 `buffer` 的统一释放或隐式清理；但这不应成为首稿必需条件。",
+                "该补丁不体现跨文件依赖，先用函数内 AST/CFG 即可，不必上跨文件分析。",
+                "若生成 CodeQL/CSA 规则，可围绕‘在错误返回前释放局部资源，但函数整体仍有统一清理职责’这一形态建模。"
+              ]
+            }
+          },
+          "provenance": {
+            "tool": "patch-analysis",
+            "artifact": "detection_strategy",
+            "confidence": 0.95
+          },
+          "evidence_slice": {}
+        },
+        {
+          "evidence_id": "pf_004",
+          "type": "patch_fact",
+          "analyzer": "patch",
+          "scope": {
+            "repo": "fix.patch",
+            "file": "lib/zip_dirent.c",
+            "function": "_zip_buffer_free"
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "fact_type": "removed_risky_operations",
+            "label": "Patch removes risky operations",
+            "attributes": {
+              "operations": [
+                "_zip_buffer_free(buffer);"
+              ]
+            }
+          },
+          "provenance": {
+            "tool": "patch-analysis",
+            "artifact": "removed_risky_operations",
+            "confidence": 0.95
+          },
+          "evidence_slice": {}
+        },
+        {
+          "evidence_id": "pf_005",
+          "type": "patch_fact",
+          "analyzer": "patch",
+          "scope": {
+            "repo": "fix.patch",
+            "file": "lib/zip_dirent.c",
+            "function": "_zip_buffer_free"
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "fact_type": "fix_patterns",
+            "label": "Patch introduces reusable fix patterns",
+            "attributes": {
+              "patterns": [
+                "删除错误路径中的 `_zip_buffer_free(buffer)`，避免额外释放",
+                "将资源回收留给其他统一清理/所有权路径，而不是在该失败分支立即释放"
+              ]
+            }
+          },
+          "provenance": {
+            "tool": "patch-analysis",
+            "artifact": "fix_patterns",
+            "confidence": 0.95
+          },
+          "evidence_slice": {}
+        }
+      ],
+      "missing_evidence": [
+        "allocation_lifecycle",
+        "state_transition"
+      ],
+      "collected_analyzers": [
+        "patch"
+      ]
+    }
+  }
+}

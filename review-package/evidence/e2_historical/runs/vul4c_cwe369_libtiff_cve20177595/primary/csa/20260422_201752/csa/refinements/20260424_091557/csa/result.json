@@ -1,0 +1,329 @@
+{
+  "success": true,
+  "validation_requested": true,
+  "functional_validation_passed": true,
+  "semantic_target_hit": true,
+  "validation_state": "target_hit",
+  "semantic_acceptance": true,
+  "semantic_acceptance_summary": "命中验证目标并通过功能验证",
+  "checker_name": "InvalidSamplingFactorValidationChecker",
+  "artifact_display_name": "InvalidSamplingFactorValidationChecker",
+  "output_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe369_libtiff_cve20177595/primary/csa/20260422_201752/csa/refinements/20260424_091557/csa/InvalidSamplingFactorValidationChecker.so",
+  "source_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe369_libtiff_cve20177595/primary/csa/20260422_201752/csa/refinements/20260424_091557/csa/InvalidSamplingFactorValidationChecker.cpp",
+  "iterations": 0,
+  "compile_attempts": 0,
+  "error": "",
+  "validation": {
+    "stage": "semantic",
+    "analyzer": "csa",
+    "success": true,
+    "execution_time": 81.85713148117065,
+    "error_message": "",
+    "diagnostics": [
+      {
+        "file_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe369_libtiff_cve20177595/vulnerable/libtiff/tif_jpeg.c",
+        "line": 1687,
+        "column": 26,
+        "severity": "warning",
+        "message": "Division or remainder uses sampling/size-like value derived from metadata without a prior zero-value rejection guard [custom.InvalidSamplingFactorValidationChecker]",
+        "source": "csa",
+        "code": "",
+        "suggestion": ""
+      },
+      {
+        "file_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe369_libtiff_cve20177595/vulnerable/libtiff/tif_jpeg.c",
+        "line": 1693,
+        "column": 25,
+        "severity": "warning",
+        "message": "Division or remainder uses sampling/size-like value derived from metadata without a prior zero-value rejection guard [custom.InvalidSamplingFactorValidationChecker]",
+        "source": "csa",
+        "code": "",
+        "suggestion": ""
+      },
+      {
+        "file_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe369_libtiff_cve20177595/vulnerable/libtiff/tif_jpeg.c",
+        "line": 1701,
+        "column": 28,
+        "severity": "warning",
+        "message": "Division or remainder uses sampling/size-like value derived from metadata without a prior zero-value rejection guard [custom.InvalidSamplingFactorValidationChecker]",
+        "source": "csa",
+        "code": "",
+        "suggestion": ""
+      }
+    ],
+    "diagnostics_count": 3,
+    "all_diagnostics_count": 3,
+    "generated_diagnostics_count": 3,
+    "warnings_count": 3,
+    "errors_count": 0,
+    "environment_blocked": false,
+    "environment_block_reason": "",
+    "validation_target": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe369_libtiff_cve20177595/vulnerable",
+    "diagnostics_filtered": false
+  },
+  "llm_usage": {
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+    "total_tokens": 0,
+    "call_count": 0,
+    "available": false,
+    "model": ""
+  },
+  "artifact_metrics": {},
+  "artifact_delta": {},
+  "artifact_review": {},
+  "evidence_records": 0,
+  "missing_evidence": [],
+  "evidence_degraded": false,
+  "semantic_slice_records": 0,
+  "context_summary_records": 0,
+  "slice_coverage": "missing",
+  "verifier_backed_slices": 0,
+  "slice_kinds": {},
+  "evidence_escalation": {},
+  "validation_feedback_records": 1,
+  "validation_feedback_summary": "- validation_outcome @ semantic_validation: semantic validation passed with 105 diagnostics [coverage=full]",
+  "validation_feedback_history": [
+    {
+      "analyzer": "csa",
+      "phase": "initial_validation",
+      "summary": "- validation_outcome @ semantic_validation: semantic validation passed with 105 diagnostics [coverage=full]"
+    },
+    {
+      "analyzer": "csa",
+      "phase": "baseline_reused_validation",
+      "summary": "- validation_outcome @ semantic_validation: semantic validation passed with 105 diagnostics [coverage=full]"
+    }
+  ],
+  "refinement_attempted": true,
+  "refinement_adopted": false,
+  "refinement_iterations_attempted": 1,
+  "refinement_skipped_reason": "",
+  "last_refinement_candidate_success": true,
+  "last_refinement_candidate_error": "",
+  "last_refinement_candidate_artifact_review": {
+    "success": true,
+    "error": "",
+    "findings": []
+  },
+  "last_refinement_candidate_output_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe369_libtiff_cve20177595/primary/csa/20260422_201752/csa/refinements/20260424_091557/csa/InvalidSamplingFactorValidationChecker.so",
+  "post_validation_evidence_records": 1,
+  "post_validation_missing_evidence": [],
+  "post_validation_semantic_slice_records": 0,
+  "post_validation_context_summary_records": 0,
+  "post_validation_slice_coverage": "missing",
+  "synthesis_input": {
+    "analyzer_id": "csa",
+    "detector_artifact": "checker_plugin",
+    "primary_pattern": "divide_by_zero",
+    "objective": "Synthesize a path-sensitive divide_by_zero detector that encodes the same local state, guards, and lifecycle mechanism evidenced by the patch, while still generalizing to semantically equivalent sites.",
+    "mechanism_contract": {
+      "mechanism_family": "arithmetic_guard_violation",
+      "semantic_dimensions": [
+        "divisor expression",
+        "division or modulo sink",
+        "zero-check barrier"
+      ],
+      "trigger_invariants": [
+        "a divisor reaches division or modulo",
+        "the active path does not prove the divisor is non-zero",
+        "Patch-backed trigger clue: added guard: if( sp->h_sampling == 0 || sp->v_sampling == 0 )",
+        "Patch-backed trigger clue: added or highlighted APIs: TIFFErrorExt",
+        "Patch-backed trigger clue: detection hints: Track values loaded from image metadata into arithmetic-sensitive fields such as sampling factors., Prefer detecting missing nonzero validation on consumer-side arithmetic inputs over generic null-check reasoning., Look for assignments from external tags/headers followed by later ratio, stride, block-size, or per-sample computations without a zero guard."
+      ],
+      "silence_invariants": [
+        "a dominating non-zero guard or early return blocks the zero path",
+        "patch-added validation proves the divisor is constrained before the sink",
+        "length/capacity guard present: if( sp->h_sampling == 0 || sp->v_sampling == 0 )",
+        "patch-introduced barrier pattern: Added explicit nonzero validation on metadata-derived sampling factors",
+        "patch-introduced barrier pattern: Added fail-fast error reporting and early return when invalid values are detected",
+        "a dominating non-zero guard or early return blocks zero divisors before the arithmetic sink"
+      ],
+      "transfer_axes": [
+        "equivalent divisor validation around sibling arithmetic sinks",
+        "equivalent guard omission on the same parameter or field role"
+      ],
+      "forbidden_shortcuts": [
+        "bind the detector to fixed file paths, line numbers, or exact patch strings",
+        "broaden into unrelated bug families just to improve hit count",
+        "flag every arithmetic expression regardless of operator and divisor role",
+        "treat unrelated range checks as proof that the divisor is non-zero",
+        "placeholder helper logic or empty ProgramState modeling"
+      ],
+      "evidence_backed_axes": []
+    },
+    "detector_name_hint": "DivideByZeroChecker",
+    "focus_files": [
+      "libtiff/tif_jpeg.c"
+    ],
+    "focus_functions": [
+      "TIFFErrorExt"
+    ],
+    "hypotheses": [
+      "The patch changes a data propagation condition that should generalize beyond the edited lines."
+    ],
+    "required_evidence_types": [
+      "patch_fact",
+      "dataflow_candidate",
+      "call_chain"
+    ],
+    "missing_evidence_types": [],
+    "evidence_degraded": false,
+    "patch_mechanism_signals": [
+      "added guard: if( sp->h_sampling == 0 || sp->v_sampling == 0 )",
+      "added or highlighted APIs: TIFFErrorExt",
+      "detection hints: Track values loaded from image metadata into arithmetic-sensitive fields such as sampling factors., Prefer detecting missing nonzero validation on consumer-side arithmetic inputs over generic null-check reasoning., Look for assignments from external tags/headers followed by later ratio, stride, block-size, or per-sample computations without a zero guard."
+    ],
+    "silencing_conditions": [
+      "length/capacity guard present: if( sp->h_sampling == 0 || sp->v_sampling == 0 )",
+      "patch-introduced barrier pattern: Added explicit nonzero validation on metadata-derived sampling factors",
+      "patch-introduced barrier pattern: Added fail-fast error reporting and early return when invalid values are detected",
+      "a dominating non-zero guard or early return blocks zero divisors before the arithmetic sink"
+    ],
+    "retry_guidance": [],
+    "selected_evidence_ids": [],
+    "selected_evidence": [],
+    "semantic_slice_count": 0,
+    "context_summary_count": 0,
+    "semantic_slice_coverage": "missing",
+    "selected_semantic_slice_ids": [],
+    "selected_context_summary_ids": [],
+    "selected_semantic_slices": [],
+    "selected_context_summaries": [],
+    "semantic_clause_plan": [
+      {
+        "clause_id": "vulnerable_trigger_clause",
+        "intent": "Trigger on the vulnerable divide_by_zero mechanism using evidence-backed path/flow semantics.",
+        "supporting_evidence_ids": [],
+        "repair_when": [
+          "semantic_no_hits"
+        ],
+        "focus_functions": [
+          "TIFFErrorExt"
+        ]
+      },
+      {
+        "clause_id": "patched_silence_clause",
+        "intent": "Stay silent on patched code when patch-added guards, barriers, or safe APIs prove the mechanism is blocked.",
+        "supporting_evidence_ids": [],
+        "repair_when": [],
+        "silencing_conditions": [
+          "length/capacity guard present: if( sp->h_sampling == 0 || sp->v_sampling == 0 )",
+          "patch-introduced barrier pattern: Added explicit nonzero validation on metadata-derived sampling factors",
+          "patch-introduced barrier pattern: Added fail-fast error reporting and early return when invalid values are detected",
+          "a dominating non-zero guard or early return blocks zero divisors before the arithmetic sink"
+        ]
+      },
+      {
+        "clause_id": "semantic_transfer_clause",
+        "intent": "Generalize along semantic slices and call-chain evidence rather than patch-local syntax.",
+        "supporting_evidence_ids": [],
+        "repair_when": [],
+        "analyzer_id": "csa"
+      },
+      {
+        "clause_id": "analyzer_interface_clause",
+        "intent": "Preserve valid analyzer-facing syntax and interfaces while keeping semantics unchanged.",
+        "supporting_evidence_ids": [],
+        "repair_when": [
+          "semantic_execution_error"
+        ],
+        "analyzer_id": "csa"
+      }
+    ],
+    "repair_directives": [],
+    "constraints": [
+      {
+        "title": "Generalize beyond patch site",
+        "description": "Do not bind the detector to fixed file paths, line numbers, or exact patch strings.",
+        "priority": "high"
+      },
+      {
+        "title": "Preserve vulnerability semantics",
+        "description": "Keep the detector focused on the vulnerability family implied by the patch and evidence.",
+        "priority": "high"
+      },
+      {
+        "title": "Respect analyzer-native form",
+        "description": "Output must be a valid checker_plugin for csa.",
+        "priority": "high"
+      },
+      {
+        "title": "Stay within proven mechanism scope",
+        "description": "Generalize only along evidence-supported semantic dimensions. Do not broaden the detector into unrelated globals, APIs, or bug families.",
+        "priority": "high"
+      },
+      {
+        "title": "Honor mechanism contract",
+        "description": "Preserve the mechanism family `arithmetic_guard_violation` by keeping trigger invariants a divisor reaches division or modulo; the active path does not prove the divisor is non-zero; Patch-backed trigger clue: added guard: if( sp->h_sampling == 0 || sp->v_sampling == 0 ).",
+        "priority": "high"
+      },
+      {
+        "title": "Generalize only on contract axes",
+        "description": "Reuse semantics only along these transfer axes: equivalent divisor validation around sibling arithmetic sinks; equivalent guard omission on the same parameter or field role.",
+        "priority": "high"
+      },
+      {
+        "title": "Anchor on patch-touched scope",
+        "description": "Use patch-touched files/functions as the semantic anchor for synthesis. Only extend beyond them when the same mechanism is explicitly supported by evidence.",
+        "priority": "high"
+      },
+      {
+        "title": "Encode the patch-added barrier",
+        "description": "model the absence of barriers like Added explicit nonzero validation on metadata-derived sampling factors, Added fail-fast error reporting and early return when invalid values are detected; treat guards such as if( sp->h_sampling == 0 || sp->v_sampling == 0 ) as semantic barriers; use APIs such as TIFFErrorExt as semantic clues, not string matches.",
+        "priority": "high"
+      },
+      {
+        "title": "Respect patched silence",
+        "description": "Use these no-report conditions when they are semantically proven: length/capacity guard present: if( sp->h_sampling == 0 || sp->v_sampling == 0 ); patch-introduced barrier pattern: Added explicit nonzero validation on metadata-derived sampling factors; patch-introduced barrier pattern: Added fail-fast error reporting and early return when invalid values are detected.",
+        "priority": "high"
+      },
+      {
+        "title": "Require missing divisor guard",
+        "description": "Model the divisor, division/modulo sink, and non-zero guard together; do not flag arithmetic that is already protected by a dominating zero check.",
+        "priority": "high"
+      },
+      {
+        "title": "Use path-sensitive evidence",
+        "description": "Prefer guards, state transitions, and lifecycle facts over broad textual matching.",
+        "priority": "high"
+      },
+      {
+        "title": "No placeholder helper logic",
+        "description": "Helper predicates must inspect AST/program state and must not be unconditional return-true/return-false stubs.",
+        "priority": "high"
+      }
+    ],
+    "implementation_hints": [
+      "Mechanism family: arithmetic_guard_violation",
+      "Mechanism dimensions: divisor expression, division or modulo sink, zero-check barrier",
+      "Trigger invariants: a divisor reaches division or modulo, the active path does not prove the divisor is non-zero, Patch-backed trigger clue: added guard: if( sp->h_sampling == 0 || sp->v_sampling == 0 )",
+      "Silence invariants: a dominating non-zero guard or early return blocks the zero path, patch-added validation proves the divisor is constrained before the sink, length/capacity guard present: if( sp->h_sampling == 0 || sp->v_sampling == 0 )",
+      "Transfer axes: equivalent divisor validation around sibling arithmetic sinks, equivalent guard omission on the same parameter or field role",
+      "Focus files: libtiff/tif_jpeg.c",
+      "Priority functions: TIFFErrorExt",
+      "Patch-added barriers: Added explicit nonzero validation on metadata-derived sampling factors, Added fail-fast error reporting and early return when invalid values are detected"
+    ],
+    "validation_expectations": [
+      "Vulnerable version should trigger a divide_by_zero finding.",
+      "Patched version should stay silent for the same mechanism.",
+      "Semantic validation that executes but returns zero hits is not acceptable; recover coverage with evidence-backed semantics.",
+      "Repair phase may fix syntax/interfaces only; it must not simplify away the core detection logic.",
+      "Generalization must stay inside the mechanism contract transfer axes instead of widening to adjacent bug families.",
+      "Trigger invariant: a divisor reaches division or modulo.",
+      "Trigger invariant: the active path does not prove the divisor is non-zero.",
+      "Patched silence depends on: length/capacity guard present: if( sp->h_sampling == 0 || sp->v_sampling == 0 ).",
+      "Patched silence depends on: patch-introduced barrier pattern: Added explicit nonzero validation on metadata-derived sampling factors."
+    ]
+  },
+  "evidence_effectiveness": {
+    "baseline_records": 0,
+    "post_validation_records": 1,
+    "new_records": 1,
+    "baseline_missing": [],
+    "post_validation_missing": [],
+    "resolved_missing": [],
+    "improved": true,
+    "summary": "新增 1 条反馈后证据"
+  }
+}

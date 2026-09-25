@@ -1,0 +1,787 @@
+{
+  "schema_version": 1,
+  "workflow_mode": "generate",
+  "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe190_binutils_cve201714745/patches/fix.patch",
+  "validate_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe190_binutils_cve201714745/vulnerable",
+  "analyzer_choice": "csa",
+  "shared_analysis_path": "patchweaver_plan.json",
+  "shared_analysis": {
+    "files_changed": [
+      "bfd/elf64-x86-64.c"
+    ],
+    "file_details": [
+      {
+        "path": "bfd/elf64-x86-64.c",
+        "additions": 2,
+        "deletions": 0,
+        "hunks": 1
+      }
+    ],
+    "vulnerability_patterns": [
+      {
+        "type": "integer_overflow",
+        "description": "A negative element count from a relocation canonicalization routine is now rejected before being passed to `qsort`, which may otherwise reinterpret the value as a very large unsigned count.",
+        "trigger_conditions": [
+          "`bfd_canonicalize_dynamic_reloc` returns a negative value to signal failure",
+          "Caller treats the signed result as a valid element count",
+          "The negative count flows into `qsort` as the `nmemb` argument"
+        ],
+        "fix_patterns": [
+          "Validate signed count/error returns before using them as collection sizes",
+          "Early-return on invalid negative counts before sort or iteration"
+        ],
+        "affected_functions": [
+          "unknown"
+        ],
+        "cross_file": false,
+        "source": "llm",
+        "confidence": 0.29,
+        "evidence_lines": [
+          "Added `if (dynrelcount < 0) return -1;` immediately after `bfd_canonicalize_dynamic_reloc(...)`",
+          "Existing code calls `qsort (dynrelbuf, dynrelcount, sizeof (arelent *), compare_relocs);` using the returned count"
+        ]
+      }
+    ],
+    "cross_file_dependencies": [],
+    "detection_strategy": {
+      "primary_pattern": "unknown",
+      "check_types": [
+        "signed_to_size_count_validation",
+        "error_code_as_length_misuse",
+        "unsafe_library_call_with_unvalidated_element_count"
+      ],
+      "entry_points": [
+        "call sites of `bfd_canonicalize_dynamic_reloc`",
+        "uses of `dynrelcount` in sorting or iteration"
+      ],
+      "data_flow_tracking": true,
+      "cross_file_analysis": true,
+      "suggestions": [
+        "Track integer results from producer APIs that can return negative error codes and verify they are range-checked before use as `size_t`-like counts",
+        "Prefer reasoning about missing validation of authoritative return values over keyword matching on allocation or sorting APIs",
+        "Flag paths where a signed count flows into `qsort`, loops, allocations, or memcpy-like APIs without a non-negative guard",
+        "Do not treat non-null buffers as proof that the associated count is valid",
+        "Model consumer-side misuse of error-coded counts, not just the producer API itself"
+      ]
+    },
+    "checker_name_suggestion": "NegativeCountValidationChecker",
+    "affected_functions": [
+      "unknown"
+    ],
+    "key_functions": [
+      "unknown"
+    ],
+    "patch_semantics": {
+      "added_guards": [
+        "if (dynrelcount < 0)"
+      ],
+      "added_api_calls": [],
+      "removed_api_calls": [],
+      "state_resets": [],
+      "lifecycle_changes": []
+    },
+    "analysis_backend": "llm",
+    "analysis_confidence": 0.29,
+    "analysis_rationale": "The patch adds a guard immediately after `dynrelcount = bfd_canonicalize_dynamic_reloc(abfd, dynrelbuf, dynsyms);` and returns `-1` when `dynrelcount < 0`, preventing the subsequent `qsort(dynrelbuf, dynrelcount, sizeof(arelent *), compare_relocs);` from using a negative count. The diff clearly shows validation of an error-coded count before a size/count-consuming API, but it does not by itself prove whether the exploitable consequence was integer overflow, out-of-bounds access, or another downstream size-conversion issue.",
+    "llm_usage": {
+      "prompt_tokens": 5447,
+      "completion_tokens": 687,
+      "total_tokens": 6134,
+      "call_count": 1,
+      "available": true,
+      "model": "gpt-5.4-high"
+    },
+    "patchweaver": {
+      "summary": "Patch suggests unknown semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=2, metadata refs=0.",
+      "patch_facts": [
+        {
+          "fact_type": "patch_overview",
+          "label": "Patch overview",
+          "attributes": {
+            "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe190_binutils_cve201714745/patches/fix.patch",
+            "changed_files": [
+              "bfd/elf64-x86-64.c"
+            ],
+            "changed_file_count": 1,
+            "added_line_count": 2,
+            "deleted_line_count": 0
+          }
+        },
+        {
+          "fact_type": "vulnerability_patterns",
+          "label": "Vulnerability patterns inferred from patch",
+          "attributes": {
+            "patterns": [
+              "integer_overflow",
+              "unknown"
+            ],
+            "descriptions": [
+              "A negative element count from a relocation canonicalization routine is now rejected before being passed to `qsort`, which may otherwise reinterpret the value as a very large unsigned count."
+            ]
+          }
+        },
+        {
+          "fact_type": "affected_functions",
+          "label": "Functions implicated by removed or fixed code",
+          "attributes": {
+            "functions": [
+              "elf_section_data",
+              "unknown"
+            ]
+          }
+        },
+        {
+          "fact_type": "detection_strategy",
+          "label": "Existing patch analysis detection strategy",
+          "attributes": {
+            "primary_pattern": "unknown",
+            "check_types": [
+              "signed_to_size_count_validation",
+              "error_code_as_length_misuse",
+              "unsafe_library_call_with_unvalidated_element_count"
+            ],
+            "entry_points": [
+              "call sites of `bfd_canonicalize_dynamic_reloc`",
+              "uses of `dynrelcount` in sorting or iteration"
+            ],
+            "data_flow_tracking": true,
+            "cross_file_analysis": true,
+            "suggestions": [
+              "Track integer results from producer APIs that can return negative error codes and verify they are range-checked before use as `size_t`-like counts",
+              "Prefer reasoning about missing validation of authoritative return values over keyword matching on allocation or sorting APIs",
+              "Flag paths where a signed count flows into `qsort`, loops, allocations, or memcpy-like APIs without a non-negative guard",
+              "Do not treat non-null buffers as proof that the associated count is valid",
+              "Model consumer-side misuse of error-coded counts, not just the producer API itself"
+            ]
+          }
+        },
+        {
+          "fact_type": "added_guards",
+          "label": "Patch introduces or strengthens guards",
+          "attributes": {
+            "guards": [
+              "if (dynrelcount < 0)"
+            ]
+          }
+        },
+        {
+          "fact_type": "fix_patterns",
+          "label": "Patch introduces reusable fix patterns",
+          "attributes": {
+            "patterns": [
+              "Validate signed count/error returns before using them as collection sizes",
+              "Early-return on invalid negative counts before sort or iteration"
+            ]
+          }
+        }
+      ],
+      "mechanism_graph": {
+        "summary": "Patch suggests unknown semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=2, metadata refs=0.",
+        "primary_patterns": [
+          "integer_overflow"
+        ],
+        "nodes": [
+          {
+            "node_id": "patch",
+            "kind": "patch",
+            "label": "Security patch",
+            "attributes": {
+              "changed_files": [
+                "bfd/elf64-x86-64.c"
+              ]
+            }
+          },
+          {
+            "node_id": "file_0",
+            "kind": "file",
+            "label": "bfd/elf64-x86-64.c",
+            "attributes": {
+              "path": "bfd/elf64-x86-64.c",
+              "additions": 2,
+              "deletions": 0,
+              "hunks": 1
+            }
+          },
+          {
+            "node_id": "pattern_0",
+            "kind": "pattern",
+            "label": "integer_overflow",
+            "attributes": {
+              "type": "integer_overflow",
+              "description": "A negative element count from a relocation canonicalization routine is now rejected before being passed to `qsort`, which may otherwise reinterpret the value as a very large unsigned count.",
+              "trigger_conditions": [
+                "`bfd_canonicalize_dynamic_reloc` returns a negative value to signal failure",
+                "Caller treats the signed result as a valid element count",
+                "The negative count flows into `qsort` as the `nmemb` argument"
+              ],
+              "fix_patterns": [
+                "Validate signed count/error returns before using them as collection sizes",
+                "Early-return on invalid negative counts before sort or iteration"
+              ],
+              "affected_functions": [
+                "unknown"
+              ],
+              "cross_file": false,
+              "source": "llm",
+              "confidence": 0.29,
+              "evidence_lines": [
+                "Added `if (dynrelcount < 0) return -1;` immediately after `bfd_canonicalize_dynamic_reloc(...)`",
+                "Existing code calls `qsort (dynrelbuf, dynrelcount, sizeof (arelent *), compare_relocs);` using the returned count"
+              ]
+            }
+          },
+          {
+            "node_id": "func_1",
+            "kind": "function",
+            "label": "unknown",
+            "attributes": {
+              "function": "unknown"
+            }
+          },
+          {
+            "node_id": "guard_1",
+            "kind": "guard",
+            "label": "`bfd_canonicalize_dynamic_reloc` returns a negative value to signal failure",
+            "attributes": {
+              "condition": "`bfd_canonicalize_dynamic_reloc` returns a negative value to signal failure"
+            }
+          },
+          {
+            "node_id": "guard_2",
+            "kind": "guard",
+            "label": "Caller treats the signed result as a valid element count",
+            "attributes": {
+              "condition": "Caller treats the signed result as a valid element count"
+            }
+          },
+          {
+            "node_id": "guard_3",
+            "kind": "guard",
+            "label": "The negative count flows into `qsort` as the `nmemb` argument",
+            "attributes": {
+              "condition": "The negative count flows into `qsort` as the `nmemb` argument"
+            }
+          },
+          {
+            "node_id": "strategy",
+            "kind": "strategy",
+            "label": "unknown",
+            "attributes": {
+              "primary_pattern": "unknown",
+              "check_types": [
+                "signed_to_size_count_validation",
+                "error_code_as_length_misuse",
+                "unsafe_library_call_with_unvalidated_element_count"
+              ],
+              "entry_points": [
+                "call sites of `bfd_canonicalize_dynamic_reloc`",
+                "uses of `dynrelcount` in sorting or iteration"
+              ],
+              "data_flow_tracking": true,
+              "cross_file_analysis": true,
+              "suggestions": [
+                "Track integer results from producer APIs that can return negative error codes and verify they are range-checked before use as `size_t`-like counts",
+                "Prefer reasoning about missing validation of authoritative return values over keyword matching on allocation or sorting APIs",
+                "Flag paths where a signed count flows into `qsort`, loops, allocations, or memcpy-like APIs without a non-negative guard",
+                "Do not treat non-null buffers as proof that the associated count is valid",
+                "Model consumer-side misuse of error-coded counts, not just the producer API itself"
+              ]
+            }
+          },
+          {
+            "node_id": "func_2",
+            "kind": "function",
+            "label": "elf_section_data",
+            "attributes": {
+              "function": "elf_section_data",
+              "source": "patch_fact"
+            }
+          },
+          {
+            "node_id": "guard_4",
+            "kind": "guard",
+            "label": "if (dynrelcount < 0)",
+            "attributes": {
+              "condition": "if (dynrelcount < 0)",
+              "source": "patch_fact"
+            }
+          },
+          {
+            "node_id": "fix_1",
+            "kind": "fix",
+            "label": "Validate signed count/error returns before using them as collection sizes",
+            "attributes": {
+              "kind": "fix_patterns",
+              "value": "Validate signed count/error returns before using them as collection sizes"
+            }
+          },
+          {
+            "node_id": "fix_2",
+            "kind": "fix",
+            "label": "Early-return on invalid negative counts before sort or iteration",
+            "attributes": {
+              "kind": "fix_patterns",
+              "value": "Early-return on invalid negative counts before sort or iteration"
+            }
+          }
+        ],
+        "edges": [
+          {
+            "source": "patch",
+            "target": "file_0",
+            "relation": "touches",
+            "confidence": 0.95
+          },
+          {
+            "source": "patch",
+            "target": "pattern_0",
+            "relation": "indicates",
+            "confidence": 0.9
+          },
+          {
+            "source": "pattern_0",
+            "target": "func_1",
+            "relation": "affects",
+            "confidence": 0.75
+          },
+          {
+            "source": "pattern_0",
+            "target": "guard_1",
+            "relation": "requires",
+            "confidence": 0.7
+          },
+          {
+            "source": "pattern_0",
+            "target": "guard_2",
+            "relation": "requires",
+            "confidence": 0.7
+          },
+          {
+            "source": "pattern_0",
+            "target": "guard_3",
+            "relation": "requires",
+            "confidence": 0.7
+          },
+          {
+            "source": "patch",
+            "target": "strategy",
+            "relation": "guides",
+            "confidence": 0.85
+          },
+          {
+            "source": "patch",
+            "target": "func_2",
+            "relation": "focuses_on",
+            "confidence": 0.82
+          },
+          {
+            "source": "patch",
+            "target": "guard_4",
+            "relation": "adds_guard",
+            "confidence": 0.84
+          },
+          {
+            "source": "patch",
+            "target": "fix_1",
+            "relation": "introduces",
+            "confidence": 0.8
+          },
+          {
+            "source": "patch",
+            "target": "fix_2",
+            "relation": "introduces",
+            "confidence": 0.8
+          }
+        ]
+      },
+      "evidence_plan": {
+        "primary_pattern": "integer_overflow",
+        "hypotheses": [
+          "The patch changes a data propagation condition that should generalize beyond the edited lines.",
+          "The vulnerability mechanism crosses file boundaries and should not be captured with local-only reasoning.",
+          "The fix widens arithmetic carriers or restores a wider numeric domain before a size-related sink."
+        ],
+        "requirements": [
+          {
+            "evidence_type": "patch_fact",
+            "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+            "priority": 100,
+            "preferred_analyzers": [],
+            "confidence": 1.0,
+            "mechanism_refs": [
+              "patch"
+            ]
+          },
+          {
+            "evidence_type": "dataflow_candidate",
+            "reason": "Patch analysis requests data-flow tracking.",
+            "priority": 95,
+            "preferred_analyzers": [
+              "codeql"
+            ],
+            "confidence": 0.9,
+            "mechanism_refs": [
+              "strategy"
+            ]
+          },
+          {
+            "evidence_type": "semantic_slice",
+            "reason": "Arithmetic-overflow fixes need the concrete accumulator/sink slice, not a patch headline.",
+            "priority": 90,
+            "preferred_analyzers": [
+              "csa",
+              "codeql"
+            ],
+            "confidence": 0.9,
+            "mechanism_refs": [
+              "pattern_0"
+            ]
+          },
+          {
+            "evidence_type": "state_transition",
+            "reason": "Need local numeric-domain transitions such as int32 accumulator to i64 accumulator before the sink.",
+            "priority": 84,
+            "preferred_analyzers": [
+              "csa"
+            ],
+            "confidence": 0.82,
+            "mechanism_refs": [
+              "pattern_0"
+            ]
+          },
+          {
+            "evidence_type": "call_chain",
+            "reason": "Cross-file patch needs interprocedural call edges, not only local edited-line context.",
+            "priority": 82,
+            "preferred_analyzers": [
+              "codeql"
+            ],
+            "confidence": 0.78,
+            "mechanism_refs": [
+              "strategy"
+            ]
+          }
+        ],
+        "recommended_analyzers": [
+          "codeql",
+          "csa"
+        ],
+        "planner_notes": [
+          "Added guards detected in patch diff; path-sensitive evidence should stay near top priority.",
+          "Selected analyzers do not cover every planned evidence primitive."
+        ],
+        "coverage_gaps": [
+          "dataflow_candidate is not covered by selected analyzers ['csa']",
+          "call_chain is not covered by selected analyzers ['csa']"
+        ],
+        "uncertainty_budget": "medium",
+        "escalation_triggers": [
+          "cross_file_mechanism",
+          "selected_coverage_gap"
+        ]
+      }
+    }
+  },
+  "artifacts": {
+    "csa": {
+      "analyzer_id": "csa",
+      "checker_name": "UncheckedNegativeCountToSizeChecker",
+      "source_path": "csa/UncheckedNegativeCountToSizeChecker.cpp",
+      "output_path": "csa/UncheckedNegativeCountToSizeChecker.so",
+      "result_path": "csa/result.json",
+      "report_entry": {
+        "success": true,
+        "validation_requested": true,
+        "functional_validation_passed": true,
+        "semantic_target_hit": true,
+        "validation_state": "target_hit",
+        "semantic_acceptance": true,
+        "semantic_acceptance_summary": "命中验证目标并通过功能验证",
+        "checker_name": "UncheckedNegativeCountToSizeChecker",
+        "artifact_display_name": "UncheckedNegativeCountToSizeChecker",
+        "output_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe190_binutils_cve201714745/primary/csa/20260423_133731/csa/UncheckedNegativeCountToSizeChecker.so",
+        "source_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe190_binutils_cve201714745/primary/csa/20260423_133731/csa/UncheckedNegativeCountToSizeChecker.cpp",
+        "iterations": 4,
+        "compile_attempts": 1,
+        "error": "",
+        "validation": {
+          "stage": "semantic",
+          "analyzer": "csa",
+          "success": true,
+          "execution_time": 46.17055940628052,
+          "error_message": "",
+          "diagnostics": [],
+          "diagnostics_count": 0,
+          "warnings_count": 0,
+          "errors_count": 0,
+          "environment_blocked": false,
+          "environment_block_reason": "",
+          "validation_target": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe190_binutils_cve201714745/vulnerable",
+          "all_diagnostics_count": 140,
+          "generated_diagnostics_count": 0,
+          "patch_targets": [
+            "bfd/elf64-x86-64.c"
+          ]
+        },
+        "llm_usage": {
+          "prompt_tokens": 31791,
+          "completion_tokens": 3383,
+          "total_tokens": 35174,
+          "call_count": 4,
+          "available": true,
+          "model": "gpt-5.4-high"
+        },
+        "artifact_metrics": {
+          "path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe190_binutils_cve201714745/primary/csa/20260423_133731/csa/UncheckedNegativeCountToSizeChecker.cpp",
+          "total_lines": 305,
+          "nonempty_lines": 250,
+          "char_count": 8687,
+          "byte_count": 8687
+        },
+        "artifact_delta": {},
+        "artifact_review": {
+          "success": true,
+          "error": "",
+          "findings": []
+        },
+        "evidence_records": 0,
+        "missing_evidence": [],
+        "evidence_degraded": false,
+        "semantic_slice_records": 0,
+        "context_summary_records": 0,
+        "slice_coverage": "missing",
+        "verifier_backed_slices": 0,
+        "slice_kinds": {},
+        "evidence_escalation": {},
+        "validation_feedback_records": 1,
+        "validation_feedback_summary": "- validation_outcome @ semantic_validation: semantic validation passed with 140 diagnostics [coverage=full]",
+        "validation_feedback_history": [
+          {
+            "analyzer": "csa",
+            "phase": "initial_validation",
+            "summary": "- validation_outcome @ semantic_validation: semantic validation passed with 140 diagnostics [coverage=full]"
+          }
+        ],
+        "refinement_attempted": false,
+        "refinement_adopted": false,
+        "refinement_iterations_attempted": 0,
+        "refinement_skipped_reason": "",
+        "last_refinement_candidate_success": false,
+        "last_refinement_candidate_error": "",
+        "last_refinement_candidate_artifact_review": {},
+        "last_refinement_candidate_output_path": "",
+        "post_validation_evidence_records": 1,
+        "post_validation_missing_evidence": [],
+        "post_validation_semantic_slice_records": 0,
+        "post_validation_context_summary_records": 0,
+        "post_validation_slice_coverage": "missing",
+        "synthesis_input": {
+          "analyzer_id": "csa",
+          "detector_artifact": "checker_plugin",
+          "primary_pattern": "unknown",
+          "objective": "Synthesize a path-sensitive detector that encodes the patch-evidenced local state, guards, and lifecycle mechanism, while remaining open to the true vulnerability family being uncertain.",
+          "mechanism_contract": {
+            "mechanism_family": "generic_vulnerability_mechanism",
+            "semantic_dimensions": [
+              "vulnerability trigger",
+              "patch-introduced barrier",
+              "local state or flow relation"
+            ],
+            "trigger_invariants": [
+              "the vulnerable mechanism is reachable on a feasible path",
+              "the path lacks the barrier introduced by the patch",
+              "Patch-backed trigger clue: added guard: if (dynrelcount < 0)",
+              "Patch-backed trigger clue: detection hints: Track integer results from producer APIs that can return negative error codes and verify they are range-checked before use as `size_t`-like counts, Prefer reasoning about missing validation of authoritative return values over keyword matching on allocation or sorting APIs, Flag paths where a signed count flows into `qsort`, loops, allocations, or memcpy-like APIs without a non-negative guard"
+            ],
+            "silence_invariants": [
+              "patch-introduced guards, barriers, or safe APIs must suppress findings",
+              "length/capacity guard present: if (dynrelcount < 0)",
+              "patch-introduced barrier pattern: Validate signed count/error returns before using them as collection sizes",
+              "patch-introduced barrier pattern: Early-return on invalid negative counts before sort or iteration"
+            ],
+            "transfer_axes": [
+              "only generalize along evidence-backed state, guard, flow, or API-role equivalence"
+            ],
+            "forbidden_shortcuts": [
+              "bind the detector to fixed file paths, line numbers, or exact patch strings",
+              "broaden into unrelated bug families just to improve hit count",
+              "use the patch text itself as the matching rule",
+              "widen to unrelated bug families without evidence",
+              "placeholder helper logic or empty ProgramState modeling"
+            ],
+            "evidence_backed_axes": []
+          },
+          "detector_name_hint": "NegativeCountValidationChecker",
+          "focus_files": [
+            "bfd/elf64-x86-64.c"
+          ],
+          "focus_functions": [
+            "unknown"
+          ],
+          "hypotheses": [
+            "The patch changes a data propagation condition that should generalize beyond the edited lines.",
+            "The vulnerability mechanism crosses file boundaries and should not be captured with local-only reasoning.",
+            "The fix widens arithmetic carriers or restores a wider numeric domain before a size-related sink."
+          ],
+          "required_evidence_types": [
+            "patch_fact",
+            "dataflow_candidate",
+            "semantic_slice",
+            "state_transition",
+            "call_chain"
+          ],
+          "missing_evidence_types": [],
+          "evidence_degraded": false,
+          "patch_mechanism_signals": [
+            "added guard: if (dynrelcount < 0)",
+            "detection hints: Track integer results from producer APIs that can return negative error codes and verify they are range-checked before use as `size_t`-like counts, Prefer reasoning about missing validation of authoritative return values over keyword matching on allocation or sorting APIs, Flag paths where a signed count flows into `qsort`, loops, allocations, or memcpy-like APIs without a non-negative guard"
+          ],
+          "silencing_conditions": [
+            "length/capacity guard present: if (dynrelcount < 0)",
+            "patch-introduced barrier pattern: Validate signed count/error returns before using them as collection sizes",
+            "patch-introduced barrier pattern: Early-return on invalid negative counts before sort or iteration"
+          ],
+          "retry_guidance": [],
+          "selected_evidence_ids": [],
+          "selected_evidence": [],
+          "semantic_slice_count": 0,
+          "context_summary_count": 0,
+          "semantic_slice_coverage": "missing",
+          "selected_semantic_slice_ids": [],
+          "selected_context_summary_ids": [],
+          "selected_semantic_slices": [],
+          "selected_context_summaries": [],
+          "semantic_clause_plan": [
+            {
+              "clause_id": "vulnerable_trigger_clause",
+              "intent": "Trigger on the vulnerable unknown mechanism using evidence-backed path/flow semantics.",
+              "supporting_evidence_ids": [],
+              "repair_when": [
+                "semantic_no_hits"
+              ],
+              "focus_functions": [
+                "unknown"
+              ]
+            },
+            {
+              "clause_id": "patched_silence_clause",
+              "intent": "Stay silent on patched code when patch-added guards, barriers, or safe APIs prove the mechanism is blocked.",
+              "supporting_evidence_ids": [],
+              "repair_when": [],
+              "silencing_conditions": [
+                "length/capacity guard present: if (dynrelcount < 0)",
+                "patch-introduced barrier pattern: Validate signed count/error returns before using them as collection sizes",
+                "patch-introduced barrier pattern: Early-return on invalid negative counts before sort or iteration"
+              ]
+            },
+            {
+              "clause_id": "semantic_transfer_clause",
+              "intent": "Generalize along semantic slices and call-chain evidence rather than patch-local syntax.",
+              "supporting_evidence_ids": [],
+              "repair_when": [],
+              "analyzer_id": "csa"
+            },
+            {
+              "clause_id": "analyzer_interface_clause",
+              "intent": "Preserve valid analyzer-facing syntax and interfaces while keeping semantics unchanged.",
+              "supporting_evidence_ids": [],
+              "repair_when": [
+                "semantic_execution_error"
+              ],
+              "analyzer_id": "csa"
+            }
+          ],
+          "repair_directives": [],
+          "constraints": [
+            {
+              "title": "Generalize beyond patch site",
+              "description": "Do not bind the detector to fixed file paths, line numbers, or exact patch strings.",
+              "priority": "high"
+            },
+            {
+              "title": "Preserve vulnerability semantics",
+              "description": "Keep the detector focused on the vulnerability family implied by the patch and evidence.",
+              "priority": "high"
+            },
+            {
+              "title": "Respect analyzer-native form",
+              "description": "Output must be a valid checker_plugin for csa.",
+              "priority": "high"
+            },
+            {
+              "title": "Stay within proven mechanism scope",
+              "description": "Generalize only along evidence-supported semantic dimensions. Do not broaden the detector into unrelated globals, APIs, or bug families.",
+              "priority": "high"
+            },
+            {
+              "title": "Honor mechanism contract",
+              "description": "Preserve the mechanism family `generic_vulnerability_mechanism` by keeping trigger invariants the vulnerable mechanism is reachable on a feasible path; the path lacks the barrier introduced by the patch; Patch-backed trigger clue: added guard: if (dynrelcount < 0).",
+              "priority": "high"
+            },
+            {
+              "title": "Generalize only on contract axes",
+              "description": "Reuse semantics only along these transfer axes: only generalize along evidence-backed state, guard, flow, or API-role equivalence.",
+              "priority": "high"
+            },
+            {
+              "title": "Anchor on patch-touched scope",
+              "description": "Use patch-touched files/functions as the semantic anchor for synthesis. Only extend beyond them when the same mechanism is explicitly supported by evidence.",
+              "priority": "high"
+            },
+            {
+              "title": "Encode the patch-added barrier",
+              "description": "model the absence of barriers like Validate signed count/error returns before using them as collection sizes, Early-return on invalid negative counts before sort or iteration; treat guards such as if (dynrelcount < 0) as semantic barriers.",
+              "priority": "high"
+            },
+            {
+              "title": "Respect patched silence",
+              "description": "Use these no-report conditions when they are semantically proven: length/capacity guard present: if (dynrelcount < 0); patch-introduced barrier pattern: Validate signed count/error returns before using them as collection sizes; patch-introduced barrier pattern: Early-return on invalid negative counts before sort or iteration.",
+              "priority": "high"
+            },
+            {
+              "title": "Use path-sensitive evidence",
+              "description": "Prefer guards, state transitions, and lifecycle facts over broad textual matching.",
+              "priority": "high"
+            },
+            {
+              "title": "No placeholder helper logic",
+              "description": "Helper predicates must inspect AST/program state and must not be unconditional return-true/return-false stubs.",
+              "priority": "high"
+            }
+          ],
+          "implementation_hints": [
+            "Mechanism family: generic_vulnerability_mechanism",
+            "Mechanism dimensions: vulnerability trigger, patch-introduced barrier, local state or flow relation",
+            "Trigger invariants: the vulnerable mechanism is reachable on a feasible path, the path lacks the barrier introduced by the patch, Patch-backed trigger clue: added guard: if (dynrelcount < 0)",
+            "Silence invariants: patch-introduced guards, barriers, or safe APIs must suppress findings, length/capacity guard present: if (dynrelcount < 0), patch-introduced barrier pattern: Validate signed count/error returns before using them as collection sizes",
+            "Transfer axes: only generalize along evidence-backed state, guard, flow, or API-role equivalence",
+            "Focus files: bfd/elf64-x86-64.c",
+            "Priority functions: unknown",
+            "Patch-added barriers: Validate signed count/error returns before using them as collection sizes, Early-return on invalid negative counts before sort or iteration"
+          ],
+          "validation_expectations": [
+            "Vulnerable version should trigger a unknown finding.",
+            "Patched version should stay silent for the same mechanism.",
+            "Semantic validation that executes but returns zero hits is not acceptable; recover coverage with evidence-backed semantics.",
+            "Repair phase may fix syntax/interfaces only; it must not simplify away the core detection logic.",
+            "Generalization must stay inside the mechanism contract transfer axes instead of widening to adjacent bug families.",
+            "Trigger invariant: the vulnerable mechanism is reachable on a feasible path.",
+            "Trigger invariant: the path lacks the barrier introduced by the patch.",
+            "Patched silence depends on: length/capacity guard present: if (dynrelcount < 0).",
+            "Patched silence depends on: patch-introduced barrier pattern: Validate signed count/error returns before using them as collection sizes."
+          ]
+        },
+        "evidence_effectiveness": {
+          "baseline_records": 0,
+          "post_validation_records": 1,
+          "new_records": 1,
+          "baseline_missing": [],
+          "post_validation_missing": [],
+          "resolved_missing": [],
+          "improved": true,
+          "summary": "新增 1 条反馈后证据"
+        }
+      }
+    }
+  }
+}

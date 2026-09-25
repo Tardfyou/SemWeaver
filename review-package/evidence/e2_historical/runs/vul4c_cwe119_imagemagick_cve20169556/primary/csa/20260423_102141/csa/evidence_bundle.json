@@ -1,0 +1,655 @@
+{
+  "records": [
+    {
+      "evidence_id": "pf_000",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "coders/sgi.c",
+        "function": "ReadSGIImage"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "patch_overview",
+        "label": "Patch overview",
+        "attributes": {
+          "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe119_imagemagick_cve20169556/patches/fix.patch",
+          "changed_files": [
+            "coders/sgi.c"
+          ],
+          "changed_file_count": 1,
+          "added_line_count": 2,
+          "deleted_line_count": 0
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "patch_overview",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_001",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "coders/sgi.c",
+        "function": "ReadSGIImage"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "vulnerability_patterns",
+        "label": "Vulnerability patterns inferred from patch",
+        "attributes": {
+          "patterns": [
+            "unknown"
+          ],
+          "descriptions": []
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "vulnerability_patterns",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_002",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "coders/sgi.c",
+        "function": "ReadSGIImage"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "affected_functions",
+        "label": "Functions implicated by removed or fixed code",
+        "attributes": {
+          "functions": [
+            "ReadSGIImage"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "affected_functions",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_003",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "coders/sgi.c",
+        "function": "ReadSGIImage"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "detection_strategy",
+        "label": "Existing patch analysis detection strategy",
+        "attributes": {
+          "primary_pattern": "unknown",
+          "check_types": [],
+          "entry_points": [
+            "ThrowReaderException"
+          ],
+          "data_flow_tracking": false,
+          "cross_file_analysis": false,
+          "suggestions": []
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "detection_strategy",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_004",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "coders/sgi.c",
+        "function": "ReadSGIImage"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "added_guards",
+        "label": "Patch introduces or strengthens guards",
+        "attributes": {
+          "guards": [
+            "if ((iris_info.dimension == 0) || (iris_info.dimension > 3))"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "added_guards",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_005",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "coders/sgi.c",
+        "function": "ReadSGIImage"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "added_api_calls",
+        "label": "Patch introduces or highlights API usage",
+        "attributes": {
+          "apis": [
+            "ThrowReaderException"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "added_api_calls",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "csa_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "coders/sgi.c",
+        "function": "ReadSGIImage"
+      },
+      "location": {
+        "line": 336,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "ReadSGIImage adds patch barrier `(iris_info.dimension == 0) || (iris_info.dimension > 3)` around LogMagickEvent, GetMagickModule.",
+        "contract_type": "patch_barrier",
+        "same_call_binding": "tie the guard to the current downstream sink or protected state transition instead of any unrelated if-statement",
+        "trigger_contract": "report when a risky write proceeds without the patch-style barrier",
+        "silence_contract": "stay silent when the nearby guard proves the current write is blocked or bounded",
+        "guard_exprs": [
+          "(iris_info.dimension == 0) || (iris_info.dimension > 3)"
+        ],
+        "removed_calls": [],
+        "added_calls": [
+          "ThrowReaderException"
+        ],
+        "tracked_symbols": [
+          "iris_info",
+          "dimension",
+          "ThrowReaderException",
+          "CorruptImageError",
+          "ImproperImageHeader"
+        ],
+        "widened_variables": [],
+        "state_resets": [],
+        "old_numeric_type": "",
+        "new_numeric_type": "",
+        "numeric_domain_change": "",
+        "arithmetic_operations": [],
+        "sink_calls": [
+          "LogMagickEvent",
+          "GetMagickModule",
+          "AcquireImage",
+          "OpenBlob"
+        ],
+        "buffer_fields": [],
+        "source_file": "coders/sgi.c",
+        "function": "ReadSGIImage",
+        "source_excerpt": "304:   if (image_info->debug != MagickFalse)\n305:     (void) LogMagickEvent(TraceEvent,GetMagickModule(),\"%s\",\n306:       image_info->filename);\n307:   assert(exception != (ExceptionInfo *) NULL);\n308:   assert(exception->signature == MagickCoreSignature);\n309:   image=AcquireImage(image_info,exception);\n310:   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);\n311:   if (status == MagickFalse)\n312:     {\n313:       image=DestroyImageList(image);\n314:       return((Image *) NULL);\n315:     }\n316:   /*\n317:     Read SGI raster header.\n318:   */\n319:   iris_info.magic=ReadBlobMSBShort(image);\n320:   do\n321:   {\n322:     /*\n323:       Verify SGI identifier.\n324:     */\n325:     if (iris_info.magic != 0x01DA)\n326:       ThrowReaderException(CorruptImageError,\"ImproperImageHeader\");\n327:     iris_info.storage=(unsigned char) ReadBlobByte(image);\n328:     switch (iris_info.storage)\n329:     {\n330:       case 0x00: image->compression=NoCompression; break;\n331:       case 0x01: image->compression=RLECompression; break;\n332:       default:\n333:         ThrowReaderException(CorruptImageError,\"ImproperImageHeader\");\n334:     }\n335:     iris_info.bytes_per_pixel=(unsigned char) ReadBlobByte(image);\n336:     if ((iris_info.bytes_per_pixel == 0) || (iris_info.bytes_per_pixel > 2))\n337:       ThrowReaderException(CorruptImageError,\"ImproperImageHeader\");\n338:     iris_info.dimension=ReadBlobMSBShort(image);\n339:     iris_info.columns=ReadBlobMSBShort(image);\n340:     iris_info.rows=ReadBlobMSBShort(image);\n341:     iris_info.depth=ReadBlobMSBShort(image);\n342:     if ((iris_info.depth == 0) || (iris_info.depth > 4))\n343:       ThrowReaderException(CorruptImageError,\"ImproperImageHeader\");\n344:     iris_info.minimum_value=ReadBlobMSBLong(image);\n345:     iris_info.maximum_value=ReadBlobMSBLong(image);\n346:     iris_info.sans=ReadBlobMSBLong(image);\n347:     count=ReadBlob(image,sizeof(iris_info.name),(unsigned char *)\n348:       iris_info.name);\n349:     if ((size_t) count != sizeof(iris_info.name))\n350:       ThrowReaderException(CorruptImageError,\"ImproperImageHeader\");\n351:     iris_info.name[sizeof(iris_info.name)-1]='\\0';\n352:     if (*iris_info.name != '\\0')\n353:       (void) SetImageProperty(image,\"label\",iris_info.name,exception);\n354:     iris_info.pixel_format=ReadBlobMSBLong(image);\n355:     if (iris_info.pixel_format != 0)\n356:       ThrowReaderException(CorruptImageError,\"ImproperImageHeader\");\n357:     count=ReadBlob(image,sizeof(iris_info.filler),iris_info.filler);\n358:     if ((size_t) count != sizeof(iris_info.filler))\n359:       ThrowReaderException(CorruptImageError,\"ImproperImageHeader\");\n360:     image->columns=iris_info.columns;\n361:     image->rows=iris_info.rows;\n362:     image->depth=(size_t) MagickMin(iris_info.depth,MAGICKCORE_QUANTUM_DEPTH);\n363:     if (iris_info.pixel_format == 0)\n364:       image->depth=(size_t) MagickMin((size_t) 8*iris_info.bytes_per_pixel,\n365:         MAGICKCORE_QUANTUM_DEPTH);\n366:     if (iris_info.depth < 3)\n367:       {\n368:         image->storage_class=PseudoClass;",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:semantic-contract",
+        "confidence": 0.92
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "coders/sgi.c",
+          "hunk_index": 0,
+          "source_line": 336
+        },
+        "summary": "ReadSGIImage adds patch barrier `(iris_info.dimension == 0) || (iris_info.dimension > 3)` around LogMagickEvent, GetMagickModule.",
+        "statements": [
+          "if ((iris_info.dimension == 0) || (iris_info.dimension > 3))",
+          "ThrowReaderException(CorruptImageError,\"ImproperImageHeader\");"
+        ],
+        "guards": [
+          "(iris_info.dimension == 0) || (iris_info.dimension > 3)"
+        ],
+        "call_boundary": [
+          "LogMagickEvent",
+          "GetMagickModule",
+          "AcquireImage",
+          "OpenBlob"
+        ],
+        "call_edges": [
+          "ReadSGIImage -> LogMagickEvent",
+          "ReadSGIImage -> GetMagickModule",
+          "ReadSGIImage -> AcquireImage"
+        ],
+        "state_transitions": [
+          "",
+          "report when a risky write proceeds without the patch-style barrier",
+          "stay silent when the nearby guard proves the current write is blocked or bounded"
+        ],
+        "api_terms": [
+          "LogMagickEvent",
+          "GetMagickModule",
+          "AcquireImage",
+          "ThrowReaderException"
+        ],
+        "related_symbols": [
+          "iris_info",
+          "dimension",
+          "ThrowReaderException",
+          "CorruptImageError",
+          "ImproperImageHeader"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "coders/sgi.c",
+        "function": "ReadSGIImage"
+      },
+      "location": {
+        "line": 336,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "(iris_info.dimension == 0) || (iris_info.dimension > 3)",
+        "summary": "ReadSGIImage introduces patch guard `(iris_info.dimension == 0) || (iris_info.dimension > 3)` before LogMagickEvent, GetMagickModule.",
+        "state_before": [
+          "input(iris_info)",
+          "input(dimension)"
+        ],
+        "state_after": [
+          "guard((iris_info.dimension == 0) || (iris_info.dimension > 3))",
+          "current_call(LogMagickEvent)",
+          "current_call(GetMagickModule)"
+        ],
+        "functions": [
+          "ReadSGIImage"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "iris_info",
+          "dimension",
+          "ThrowReaderException",
+          "CorruptImageError",
+          "ImproperImageHeader"
+        ],
+        "buffer_fields": [],
+        "call_targets": [
+          "LogMagickEvent",
+          "GetMagickModule",
+          "AcquireImage",
+          "OpenBlob"
+        ],
+        "call_edges": [
+          "ReadSGIImage -> LogMagickEvent",
+          "ReadSGIImage -> GetMagickModule",
+          "ReadSGIImage -> AcquireImage"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "(iris_info.dimension == 0) || (iris_info.dimension > 3)"
+        ],
+        "state_statements": [
+          "if ((iris_info.dimension == 0) || (iris_info.dimension > 3))",
+          "ThrowReaderException(CorruptImageError,\"ImproperImageHeader\");"
+        ],
+        "compile_command_preview": "",
+        "source_file": "coders/sgi.c",
+        "source_excerpt": "304:   if (image_info->debug != MagickFalse)\n305:     (void) LogMagickEvent(TraceEvent,GetMagickModule(),\"%s\",\n306:       image_info->filename);\n307:   assert(exception != (ExceptionInfo *) NULL);\n308:   assert(exception->signature == MagickCoreSignature);\n309:   image=AcquireImage(image_info,exception);\n310:   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);\n311:   if (status == MagickFalse)\n312:     {\n313:       image=DestroyImageList(image);\n314:       return((Image *) NULL);\n315:     }\n316:   /*\n317:     Read SGI raster header.\n318:   */\n319:   iris_info.magic=ReadBlobMSBShort(image);\n320:   do\n321:   {\n322:     /*\n323:       Verify SGI identifier.\n324:     */\n325:     if (iris_info.magic != 0x01DA)\n326:       ThrowReaderException(CorruptImageError,\"ImproperImageHeader\");\n327:     iris_info.storage=(unsigned char) ReadBlobByte(image);\n328:     switch (iris_info.storage)\n329:     {\n330:       case 0x00: image->compression=NoCompression; break;\n331:       case 0x01: image->compression=RLECompression; break;\n332:       default:\n333:         ThrowReaderException(CorruptImageError,\"ImproperImageHeader\");\n334:     }\n335:     iris_info.bytes_per_pixel=(unsigned char) ReadBlobByte(image);\n336:     if ((iris_info.bytes_per_pixel == 0) || (iris_info.bytes_per_pixel > 2))\n337:       ThrowReaderException(CorruptImageError,\"ImproperImageHeader\");\n338:     iris_info.dimension=ReadBlobMSBShort(image);\n339:     iris_info.columns=ReadBlobMSBShort(image);\n340:     iris_info.rows=ReadBlobMSBShort(image);\n341:     iris_info.depth=ReadBlobMSBShort(image);\n342:     if ((iris_info.depth == 0) || (iris_info.depth > 4))\n343:       ThrowReaderException(CorruptImageError,\"ImproperImageHeader\");\n344:     iris_info.minimum_value=ReadBlobMSBLong(image);\n345:     iris_info.maximum_value=ReadBlobMSBLong(image);\n346:     iris_info.sans=ReadBlobMSBLong(image);\n347:     count=ReadBlob(image,sizeof(iris_info.name),(unsigned char *)\n348:       iris_info.name);\n349:     if ((size_t) count != sizeof(iris_info.name))\n350:       ThrowReaderException(CorruptImageError,\"ImproperImageHeader\");\n351:     iris_info.name[sizeof(iris_info.name)-1]='\\0';\n352:     if (*iris_info.name != '\\0')\n353:       (void) SetImageProperty(image,\"label\",iris_info.name,exception);\n354:     iris_info.pixel_format=ReadBlobMSBLong(image);\n355:     if (iris_info.pixel_format != 0)\n356:       ThrowReaderException(CorruptImageError,\"ImproperImageHeader\");\n357:     count=ReadBlob(image,sizeof(iris_info.filler),iris_info.filler);\n358:     if ((size_t) count != sizeof(iris_info.filler))\n359:       ThrowReaderException(CorruptImageError,\"ImproperImageHeader\");\n360:     image->columns=iris_info.columns;\n361:     image->rows=iris_info.rows;\n362:     image->depth=(size_t) MagickMin(iris_info.depth,MAGICKCORE_QUANTUM_DEPTH);\n363:     if (iris_info.pixel_format == 0)\n364:       image->depth=(size_t) MagickMin((size_t) 8*iris_info.bytes_per_pixel,\n365:         MAGICKCORE_QUANTUM_DEPTH);\n366:     if (iris_info.depth < 3)\n367:       {\n368:         image->storage_class=PseudoClass;",
+        "summary_line": 336,
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:path-guard",
+        "confidence": 0.92
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "coders/sgi.c",
+          "hunk_index": 0,
+          "source_line": 336
+        },
+        "summary": "ReadSGIImage introduces patch guard `(iris_info.dimension == 0) || (iris_info.dimension > 3)` before LogMagickEvent, GetMagickModule.",
+        "statements": [
+          "if ((iris_info.dimension == 0) || (iris_info.dimension > 3))",
+          "ThrowReaderException(CorruptImageError,\"ImproperImageHeader\");"
+        ],
+        "guards": [
+          "(iris_info.dimension == 0) || (iris_info.dimension > 3)"
+        ],
+        "call_boundary": [
+          "LogMagickEvent",
+          "GetMagickModule",
+          "AcquireImage",
+          "OpenBlob"
+        ],
+        "call_edges": [
+          "ReadSGIImage -> LogMagickEvent",
+          "ReadSGIImage -> GetMagickModule",
+          "ReadSGIImage -> AcquireImage"
+        ],
+        "state_transitions": [
+          "guard((iris_info.dimension == 0) || (iris_info.dimension > 3))",
+          "current_call(LogMagickEvent)",
+          "current_call(GetMagickModule)"
+        ],
+        "api_terms": [
+          "LogMagickEvent",
+          "GetMagickModule",
+          "AcquireImage"
+        ],
+        "related_symbols": [
+          "iris_info",
+          "dimension",
+          "ThrowReaderException",
+          "CorruptImageError",
+          "ImproperImageHeader"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "coders/sgi.c",
+        "function": "ReadSGIImage"
+      },
+      "location": {
+        "line": 336,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "ReadSGIImage adds patch barrier `(iris_info.dimension == 0) || (iris_info.dimension > 3)` around LogMagickEvent, GetMagickModule.",
+        "state_before": [
+          "input(iris_info)",
+          "input(dimension)"
+        ],
+        "state_after": [
+          "guard((iris_info.dimension == 0) || (iris_info.dimension > 3))",
+          "sink(LogMagickEvent)",
+          "sink(GetMagickModule)"
+        ],
+        "functions": [
+          "ReadSGIImage"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "iris_info",
+          "dimension",
+          "ThrowReaderException",
+          "CorruptImageError",
+          "ImproperImageHeader"
+        ],
+        "buffer_fields": [],
+        "call_targets": [
+          "LogMagickEvent",
+          "GetMagickModule",
+          "AcquireImage",
+          "OpenBlob"
+        ],
+        "call_edges": [
+          "ReadSGIImage -> LogMagickEvent",
+          "ReadSGIImage -> GetMagickModule",
+          "ReadSGIImage -> AcquireImage"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "(iris_info.dimension == 0) || (iris_info.dimension > 3)"
+        ],
+        "state_statements": [
+          "if ((iris_info.dimension == 0) || (iris_info.dimension > 3))",
+          "ThrowReaderException(CorruptImageError,\"ImproperImageHeader\");"
+        ],
+        "return_statements": [],
+        "source_file": "coders/sgi.c",
+        "source_excerpt": "304:   if (image_info->debug != MagickFalse)\n305:     (void) LogMagickEvent(TraceEvent,GetMagickModule(),\"%s\",\n306:       image_info->filename);\n307:   assert(exception != (ExceptionInfo *) NULL);\n308:   assert(exception->signature == MagickCoreSignature);\n309:   image=AcquireImage(image_info,exception);\n310:   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);\n311:   if (status == MagickFalse)\n312:     {\n313:       image=DestroyImageList(image);\n314:       return((Image *) NULL);\n315:     }\n316:   /*\n317:     Read SGI raster header.\n318:   */\n319:   iris_info.magic=ReadBlobMSBShort(image);\n320:   do\n321:   {\n322:     /*\n323:       Verify SGI identifier.\n324:     */\n325:     if (iris_info.magic != 0x01DA)\n326:       ThrowReaderException(CorruptImageError,\"ImproperImageHeader\");\n327:     iris_info.storage=(unsigned char) ReadBlobByte(image);\n328:     switch (iris_info.storage)\n329:     {\n330:       case 0x00: image->compression=NoCompression; break;\n331:       case 0x01: image->compression=RLECompression; break;\n332:       default:\n333:         ThrowReaderException(CorruptImageError,\"ImproperImageHeader\");\n334:     }\n335:     iris_info.bytes_per_pixel=(unsigned char) ReadBlobByte(image);\n336:     if ((iris_info.bytes_per_pixel == 0) || (iris_info.bytes_per_pixel > 2))\n337:       ThrowReaderException(CorruptImageError,\"ImproperImageHeader\");\n338:     iris_info.dimension=ReadBlobMSBShort(image);\n339:     iris_info.columns=ReadBlobMSBShort(image);\n340:     iris_info.rows=ReadBlobMSBShort(image);\n341:     iris_info.depth=ReadBlobMSBShort(image);\n342:     if ((iris_info.depth == 0) || (iris_info.depth > 4))\n343:       ThrowReaderException(CorruptImageError,\"ImproperImageHeader\");\n344:     iris_info.minimum_value=ReadBlobMSBLong(image);\n345:     iris_info.maximum_value=ReadBlobMSBLong(image);\n346:     iris_info.sans=ReadBlobMSBLong(image);\n347:     count=ReadBlob(image,sizeof(iris_info.name),(unsigned char *)\n348:       iris_info.name);\n349:     if ((size_t) count != sizeof(iris_info.name))\n350:       ThrowReaderException(CorruptImageError,\"ImproperImageHeader\");\n351:     iris_info.name[sizeof(iris_info.name)-1]='\\0';\n352:     if (*iris_info.name != '\\0')\n353:       (void) SetImageProperty(image,\"label\",iris_info.name,exception);\n354:     iris_info.pixel_format=ReadBlobMSBLong(image);\n355:     if (iris_info.pixel_format != 0)\n356:       ThrowReaderException(CorruptImageError,\"ImproperImageHeader\");\n357:     count=ReadBlob(image,sizeof(iris_info.filler),iris_info.filler);\n358:     if ((size_t) count != sizeof(iris_info.filler))\n359:       ThrowReaderException(CorruptImageError,\"ImproperImageHeader\");\n360:     image->columns=iris_info.columns;\n361:     image->rows=iris_info.rows;\n362:     image->depth=(size_t) MagickMin(iris_info.depth,MAGICKCORE_QUANTUM_DEPTH);\n363:     if (iris_info.pixel_format == 0)\n364:       image->depth=(size_t) MagickMin((size_t) 8*iris_info.bytes_per_pixel,\n365:         MAGICKCORE_QUANTUM_DEPTH);\n366:     if (iris_info.depth < 3)\n367:       {\n368:         image->storage_class=PseudoClass;",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:guarded-state",
+        "confidence": 0.9
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "coders/sgi.c",
+          "hunk_index": 0,
+          "source_line": 336
+        },
+        "summary": "ReadSGIImage adds patch barrier `(iris_info.dimension == 0) || (iris_info.dimension > 3)` around LogMagickEvent, GetMagickModule.",
+        "statements": [
+          "if ((iris_info.dimension == 0) || (iris_info.dimension > 3))",
+          "ThrowReaderException(CorruptImageError,\"ImproperImageHeader\");"
+        ],
+        "guards": [
+          "(iris_info.dimension == 0) || (iris_info.dimension > 3)"
+        ],
+        "call_boundary": [
+          "LogMagickEvent",
+          "GetMagickModule",
+          "AcquireImage",
+          "OpenBlob"
+        ],
+        "call_edges": [
+          "ReadSGIImage -> LogMagickEvent",
+          "ReadSGIImage -> GetMagickModule",
+          "ReadSGIImage -> AcquireImage"
+        ],
+        "state_transitions": [
+          "guard((iris_info.dimension == 0) || (iris_info.dimension > 3))",
+          "sink(LogMagickEvent)",
+          "sink(GetMagickModule)"
+        ],
+        "api_terms": [
+          "LogMagickEvent",
+          "GetMagickModule",
+          "AcquireImage"
+        ],
+        "related_symbols": [
+          "iris_info",
+          "dimension",
+          "ThrowReaderException",
+          "CorruptImageError",
+          "ImproperImageHeader"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_lifecycle_0",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "coders/sgi.c",
+        "function": "ReadSGIImage"
+      },
+      "location": {
+        "line": 336,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "ReadSGIImage in coders/sgi.c reaches AcquireImage, OpenBlob, DestroyImageList",
+        "operations": [
+          "AcquireImage",
+          "OpenBlob",
+          "DestroyImageList"
+        ],
+        "acquisition_ops": [
+          "AcquireImage",
+          "OpenBlob"
+        ],
+        "release_ops": [
+          "DestroyImageList"
+        ],
+        "transition_ops": [],
+        "state_before": [
+          "input(image_info)",
+          "input(exception)",
+          "buffer(image_info->debug)",
+          "buffer(image_info->filename)",
+          "sinks(LogMagickEvent, GetMagickModule)"
+        ],
+        "state_after": [
+          "transition(AcquireImage)",
+          "transition(OpenBlob)",
+          "transition(DestroyImageList)"
+        ],
+        "functions": [
+          "ReadSGIImage"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "image_info",
+          "exception",
+          "image_info->debug",
+          "image_info->filename",
+          "exception->signature",
+          "image->compression",
+          "image->columns",
+          "image->rows"
+        ],
+        "buffer_fields": [
+          "image_info->debug",
+          "image_info->filename",
+          "exception->signature",
+          "image->compression",
+          "image->columns",
+          "image->rows"
+        ],
+        "call_edges": [],
+        "source_file": "coders/sgi.c",
+        "source_excerpt": "304:   if (image_info->debug != MagickFalse)\n305:     (void) LogMagickEvent(TraceEvent,GetMagickModule(),\"%s\",\n306:       image_info->filename);\n307:   assert(exception != (ExceptionInfo *) NULL);\n308:   assert(exception->signature == MagickCoreSignature);\n309:   image=AcquireImage(image_info,exception);\n310:   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);\n311:   if (status == MagickFalse)\n312:     {\n313:       image=DestroyImageList(image);\n314:       return((Image *) NULL);\n315:     }\n316:   /*\n317:     Read SGI raster header.\n318:   */\n319:   iris_info.magic=ReadBlobMSBShort(image);\n320:   do\n321:   {\n322:     /*\n323:       Verify SGI identifier.\n324:     */\n325:     if (iris_info.magic != 0x01DA)\n326:       ThrowReaderException(CorruptImageError,\"ImproperImageHeader\");\n327:     iris_info.storage=(unsigned char) ReadBlobByte(image);\n328:     switch (iris_info.storage)\n329:     {\n330:       case 0x00: image->compression=NoCompression; break;\n331:       case 0x01: image->compression=RLECompression; break;\n332:       default:\n333:         ThrowReaderException(CorruptImageError,\"ImproperImageHeader\");\n334:     }\n335:     iris_info.bytes_per_pixel=(unsigned char) ReadBlobByte(image);\n336:     if ((iris_info.bytes_per_pixel == 0) || (iris_info.bytes_per_pixel > 2))\n337:       ThrowReaderException(CorruptImageError,\"ImproperImageHeader\");\n338:     iris_info.dimension=ReadBlobMSBShort(image);\n339:     iris_info.columns=ReadBlobMSBShort(image);\n340:     iris_info.rows=ReadBlobMSBShort(image);\n341:     iris_info.depth=ReadBlobMSBShort(image);\n342:     if ((iris_info.depth == 0) || (iris_info.depth > 4))\n343:       ThrowReaderException(CorruptImageError,\"ImproperImageHeader\");\n344:     iris_info.minimum_value=ReadBlobMSBLong(image);\n345:     iris_info.maximum_value=ReadBlobMSBLong(image);\n346:     iris_info.sans=ReadBlobMSBLong(image);\n347:     count=ReadBlob(image,sizeof(iris_info.name),(unsigned char *)\n348:       iris_info.name);\n349:     if ((size_t) count != sizeof(iris_info.name))\n350:       ThrowReaderException(CorruptImageError,\"ImproperImageHeader\");\n351:     iris_info.name[sizeof(iris_info.name)-1]='\\0';\n352:     if (*iris_info.name != '\\0')\n353:       (void) SetImageProperty(image,\"label\",iris_info.name,exception);\n354:     iris_info.pixel_format=ReadBlobMSBLong(image);\n355:     if (iris_info.pixel_format != 0)\n356:       ThrowReaderException(CorruptImageError,\"ImproperImageHeader\");\n357:     count=ReadBlob(image,sizeof(iris_info.filler),iris_info.filler);\n358:     if ((size_t) count != sizeof(iris_info.filler))\n359:       ThrowReaderException(CorruptImageError,\"ImproperImageHeader\");\n360:     image->columns=iris_info.columns;\n361:     image->rows=iris_info.rows;\n362:     image->depth=(size_t) MagickMin(iris_info.depth,MAGICKCORE_QUANTUM_DEPTH);\n363:     if (iris_info.pixel_format == 0)\n364:       image->depth=(size_t) MagickMin((size_t) 8*iris_info.bytes_per_pixel,\n365:         MAGICKCORE_QUANTUM_DEPTH);\n366:     if (iris_info.depth < 3)\n367:       {\n368:         image->storage_class=PseudoClass;",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:lifecycle",
+        "confidence": 0.86
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "coders/sgi.c",
+          "hunk_index": 0,
+          "source_line": 336
+        },
+        "summary": "ReadSGIImage in coders/sgi.c reaches AcquireImage, OpenBlob, DestroyImageList",
+        "statements": [
+          "304:   if (image_info->debug != MagickFalse)",
+          "305:     (void) LogMagickEvent(TraceEvent,GetMagickModule(),\"%s\",",
+          "306:       image_info->filename);",
+          "307:   assert(exception != (ExceptionInfo *) NULL);",
+          "308:   assert(exception->signature == MagickCoreSignature);",
+          "309:   image=AcquireImage(image_info,exception);"
+        ],
+        "guards": [],
+        "call_boundary": [
+          "LogMagickEvent",
+          "GetMagickModule",
+          "AcquireImage",
+          "OpenBlob",
+          "DestroyImageList",
+          "ReadBlobMSBShort"
+        ],
+        "call_edges": [],
+        "state_transitions": [
+          "transition(AcquireImage)",
+          "transition(OpenBlob)",
+          "transition(DestroyImageList)"
+        ],
+        "api_terms": [
+          "AcquireImage",
+          "OpenBlob",
+          "DestroyImageList"
+        ],
+        "related_symbols": [
+          "image_info",
+          "exception",
+          "image_info->debug",
+          "image_info->filename",
+          "exception->signature",
+          "image->compression"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "collected_analyzers": [
+    "csa",
+    "patch"
+  ]
+}

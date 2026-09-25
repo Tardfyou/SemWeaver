@@ -1,0 +1,422 @@
+{
+  "meta": {
+    "generated_at": "20260423_211923",
+    "analyzer_type": "codeql",
+    "workflow_mode": "generate",
+    "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/git_cwe120_xrdp_cve202223468/patches/fix.patch",
+    "validate_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/git_cwe120_xrdp_cve202223468/vulnerable",
+    "success": true,
+    "generation_success": true,
+    "semantic_success": true,
+    "error_message": null,
+    "preferred_analyzer": "codeql",
+    "run_metrics_summary": "codeql=147.2s(agent) | tokens=72765"
+  },
+  "csa": {},
+  "codeql": {
+    "success": true,
+    "validation_requested": true,
+    "functional_validation_passed": true,
+    "semantic_target_hit": true,
+    "validation_state": "target_hit",
+    "semantic_acceptance": true,
+    "semantic_acceptance_summary": "命中验证目标并通过功能验证",
+    "checker_name": "UnboundedFormatToBufferChecker",
+    "artifact_display_name": "UnboundedFormatToBufferChecker",
+    "output_path": "/anonymous/home/LLM-Native/v2_experiments/runs/git_cwe120_xrdp_cve202223468/primary/codeql/20260423_211656/codeql/UnboundedFormatToBufferChecker.ql",
+    "source_path": "/anonymous/home/LLM-Native/v2_experiments/runs/git_cwe120_xrdp_cve202223468/primary/codeql/20260423_211656/codeql/UnboundedFormatToBufferChecker.ql",
+    "iterations": 4,
+    "compile_attempts": 0,
+    "error": "",
+    "validation": {
+      "stage": "semantic",
+      "analyzer": "codeql",
+      "success": true,
+      "execution_time": 7.022587776184082,
+      "error_message": "",
+      "diagnostics": [
+        {
+          "file_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/git_cwe120_xrdp_cve202223468/vulnerable/xrdp/xrdp_login_wnd.c",
+          "line": 725,
+          "column": 9,
+          "severity": "warning",
+          "message": "Unbounded formatted write into a local buffer via g_sprintf; the patch replaces this sink with a size-bounded g_snprintf call.",
+          "source": "codeql",
+          "code": "#select",
+          "suggestion": ""
+        },
+        {
+          "file_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/git_cwe120_xrdp_cve202223468/vulnerable/xrdp/xrdp_login_wnd.c",
+          "line": 731,
+          "column": 9,
+          "severity": "warning",
+          "message": "Unbounded formatted write into a local buffer via g_sprintf; the patch replaces this sink with a size-bounded g_snprintf call.",
+          "source": "codeql",
+          "code": "#select",
+          "suggestion": ""
+        }
+      ],
+      "diagnostics_count": 2,
+      "all_diagnostics_count": 2,
+      "generated_diagnostics_count": 2,
+      "warnings_count": 2,
+      "errors_count": 0,
+      "environment_blocked": false,
+      "environment_block_reason": "",
+      "validation_target": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/git_cwe120_xrdp_cve202223468/vulnerable",
+      "diagnostics_filtered": false
+    },
+    "llm_usage": {
+      "prompt_tokens": 31149,
+      "completion_tokens": 1451,
+      "total_tokens": 32600,
+      "call_count": 4,
+      "available": true,
+      "model": "gpt-5.4"
+    },
+    "artifact_metrics": {
+      "path": "/anonymous/home/LLM-Native/v2_experiments/runs/git_cwe120_xrdp_cve202223468/primary/codeql/20260423_211656/codeql/UnboundedFormatToBufferChecker.ql",
+      "total_lines": 35,
+      "nonempty_lines": 30,
+      "char_count": 967,
+      "byte_count": 967
+    },
+    "artifact_delta": {},
+    "artifact_review": {
+      "success": true,
+      "error": "",
+      "findings": []
+    },
+    "evidence_records": 0,
+    "missing_evidence": [],
+    "evidence_degraded": false,
+    "semantic_slice_records": 0,
+    "context_summary_records": 0,
+    "slice_coverage": "missing",
+    "verifier_backed_slices": 0,
+    "slice_kinds": {},
+    "evidence_escalation": {},
+    "validation_feedback_records": 1,
+    "validation_feedback_summary": "- validation_outcome @ semantic_validation: semantic validation passed with 2 diagnostics [coverage=full]",
+    "validation_feedback_history": [
+      {
+        "analyzer": "codeql",
+        "phase": "initial_validation",
+        "summary": "- validation_outcome @ semantic_validation: semantic validation passed with 2 diagnostics [coverage=full]"
+      }
+    ],
+    "refinement_attempted": false,
+    "refinement_adopted": false,
+    "refinement_iterations_attempted": 0,
+    "refinement_skipped_reason": "",
+    "last_refinement_candidate_success": false,
+    "last_refinement_candidate_error": "",
+    "last_refinement_candidate_artifact_review": {},
+    "last_refinement_candidate_output_path": "",
+    "post_validation_evidence_records": 1,
+    "post_validation_missing_evidence": [],
+    "post_validation_semantic_slice_records": 0,
+    "post_validation_context_summary_records": 0,
+    "post_validation_slice_coverage": "missing",
+    "synthesis_input": {
+      "analyzer_id": "codeql",
+      "detector_artifact": "ql_query",
+      "primary_pattern": "unknown",
+      "objective": "Synthesize a reusable query centered on the patch-evidenced semantic mechanism, interprocedural flow, and API or state contract, without hard-coding an uncertain vulnerability label.",
+      "mechanism_contract": {
+        "mechanism_family": "generic_vulnerability_mechanism",
+        "semantic_dimensions": [
+          "vulnerability trigger",
+          "patch-introduced barrier",
+          "local state or flow relation"
+        ],
+        "trigger_invariants": [
+          "the vulnerable mechanism is reachable on a feasible path",
+          "the path lacks the barrier introduced by the patch"
+        ],
+        "silence_invariants": [
+          "patch-introduced guards, barriers, or safe APIs must suppress findings"
+        ],
+        "transfer_axes": [
+          "only generalize along evidence-backed state, guard, flow, or API-role equivalence"
+        ],
+        "forbidden_shortcuts": [
+          "bind the detector to fixed file paths, line numbers, or exact patch strings",
+          "broaden into unrelated bug families just to improve hit count",
+          "use the patch text itself as the matching rule",
+          "widen to unrelated bug families without evidence",
+          "callee-only matching or stringified guard inference instead of structured predicates"
+        ],
+        "evidence_backed_axes": []
+      },
+      "detector_name_hint": "",
+      "focus_files": [],
+      "focus_functions": [],
+      "hypotheses": [],
+      "required_evidence_types": [],
+      "missing_evidence_types": [],
+      "evidence_degraded": false,
+      "patch_mechanism_signals": [],
+      "silencing_conditions": [],
+      "retry_guidance": [],
+      "selected_evidence_ids": [],
+      "selected_evidence": [],
+      "semantic_slice_count": 0,
+      "context_summary_count": 0,
+      "semantic_slice_coverage": "missing",
+      "selected_semantic_slice_ids": [],
+      "selected_context_summary_ids": [],
+      "selected_semantic_slices": [],
+      "selected_context_summaries": [],
+      "semantic_clause_plan": [
+        {
+          "clause_id": "vulnerable_trigger_clause",
+          "intent": "Trigger on the vulnerable unknown mechanism using evidence-backed path/flow semantics.",
+          "supporting_evidence_ids": [],
+          "repair_when": [
+            "semantic_no_hits"
+          ],
+          "focus_functions": []
+        },
+        {
+          "clause_id": "patched_silence_clause",
+          "intent": "Stay silent on patched code when patch-added guards, barriers, or safe APIs prove the mechanism is blocked.",
+          "supporting_evidence_ids": [],
+          "repair_when": [],
+          "silencing_conditions": []
+        },
+        {
+          "clause_id": "semantic_transfer_clause",
+          "intent": "Generalize along semantic slices and call-chain evidence rather than patch-local syntax.",
+          "supporting_evidence_ids": [],
+          "repair_when": [],
+          "analyzer_id": "codeql"
+        },
+        {
+          "clause_id": "analyzer_interface_clause",
+          "intent": "Preserve valid analyzer-facing syntax and interfaces while keeping semantics unchanged.",
+          "supporting_evidence_ids": [],
+          "repair_when": [
+            "semantic_execution_error"
+          ],
+          "analyzer_id": "codeql"
+        }
+      ],
+      "repair_directives": [],
+      "constraints": [
+        {
+          "title": "Generalize beyond patch site",
+          "description": "Do not bind the detector to fixed file paths, line numbers, or exact patch strings.",
+          "priority": "high"
+        },
+        {
+          "title": "Preserve vulnerability semantics",
+          "description": "Keep the detector focused on the vulnerability family implied by the patch and evidence.",
+          "priority": "high"
+        },
+        {
+          "title": "Respect analyzer-native form",
+          "description": "Output must be a valid ql_query for codeql.",
+          "priority": "high"
+        },
+        {
+          "title": "Stay within proven mechanism scope",
+          "description": "Generalize only along evidence-supported semantic dimensions. Do not broaden the detector into unrelated globals, APIs, or bug families.",
+          "priority": "high"
+        },
+        {
+          "title": "Honor mechanism contract",
+          "description": "Preserve the mechanism family `generic_vulnerability_mechanism` by keeping trigger invariants the vulnerable mechanism is reachable on a feasible path; the path lacks the barrier introduced by the patch.",
+          "priority": "high"
+        },
+        {
+          "title": "Generalize only on contract axes",
+          "description": "Reuse semantics only along these transfer axes: only generalize along evidence-backed state, guard, flow, or API-role equivalence.",
+          "priority": "high"
+        },
+        {
+          "title": "Prefer semantic predicates",
+          "description": "Prefer reusable predicates, flow steps, and API modeling over patch-location matching.",
+          "priority": "high"
+        },
+        {
+          "title": "No callee-only matching",
+          "description": "Do not report every call to risky APIs by name alone; require an unchecked write/copy condition and absence of a patch-style barrier.",
+          "priority": "high"
+        }
+      ],
+      "implementation_hints": [
+        "Mechanism family: generic_vulnerability_mechanism",
+        "Mechanism dimensions: vulnerability trigger, patch-introduced barrier, local state or flow relation",
+        "Trigger invariants: the vulnerable mechanism is reachable on a feasible path, the path lacks the barrier introduced by the patch",
+        "Silence invariants: patch-introduced guards, barriers, or safe APIs must suppress findings",
+        "Transfer axes: only generalize along evidence-backed state, guard, flow, or API-role equivalence"
+      ],
+      "validation_expectations": [
+        "Vulnerable version should trigger a unknown finding.",
+        "Patched version should stay silent for the same mechanism.",
+        "Semantic validation that executes but returns zero hits is not acceptable; recover coverage with evidence-backed semantics.",
+        "Repair phase may fix syntax/interfaces only; it must not simplify away the core detection logic.",
+        "Generalization must stay inside the mechanism contract transfer axes instead of widening to adjacent bug families.",
+        "Trigger invariant: the vulnerable mechanism is reachable on a feasible path.",
+        "Trigger invariant: the path lacks the barrier introduced by the patch."
+      ]
+    },
+    "evidence_effectiveness": {
+      "baseline_records": 0,
+      "post_validation_records": 1,
+      "new_records": 1,
+      "baseline_missing": [],
+      "post_validation_missing": [],
+      "resolved_missing": [],
+      "improved": true,
+      "summary": "新增 1 条反馈后证据"
+    }
+  },
+  "patchweaver": {
+    "validation_feedback_history": [
+      {
+        "analyzer": "codeql",
+        "phase": "initial_validation",
+        "summary": "- validation_outcome @ semantic_validation: semantic validation passed with 2 diagnostics [coverage=full]"
+      }
+    ]
+  },
+  "validation_feedback": {
+    "csa": {
+      "success": false,
+      "validation_requested": false,
+      "functional_validation_passed": false,
+      "semantic_target_hit": false,
+      "validation_state": "",
+      "semantic_acceptance": false,
+      "semantic_acceptance_summary": "",
+      "missing_evidence": [],
+      "evidence_degraded": false,
+      "semantic_slice_records": 0,
+      "context_summary_records": 0,
+      "slice_coverage": "",
+      "evidence_escalation": {},
+      "validation_feedback_records": 0,
+      "validation_feedback_summary": "",
+      "validation_feedback_history": [],
+      "post_validation_evidence_records": 0,
+      "post_validation_missing_evidence": [],
+      "post_validation_semantic_slice_records": 0,
+      "post_validation_context_summary_records": 0,
+      "post_validation_slice_coverage": ""
+    },
+    "codeql": {
+      "success": true,
+      "validation_requested": true,
+      "functional_validation_passed": true,
+      "semantic_target_hit": true,
+      "validation_state": "target_hit",
+      "semantic_acceptance": true,
+      "semantic_acceptance_summary": "命中验证目标并通过功能验证",
+      "missing_evidence": [],
+      "evidence_degraded": false,
+      "semantic_slice_records": 0,
+      "context_summary_records": 0,
+      "slice_coverage": "missing",
+      "evidence_escalation": {},
+      "validation_feedback_records": 1,
+      "validation_feedback_summary": "- validation_outcome @ semantic_validation: semantic validation passed with 2 diagnostics [coverage=full]",
+      "validation_feedback_history": [
+        {
+          "analyzer": "codeql",
+          "phase": "initial_validation",
+          "summary": "- validation_outcome @ semantic_validation: semantic validation passed with 2 diagnostics [coverage=full]"
+        }
+      ],
+      "post_validation_evidence_records": 1,
+      "post_validation_missing_evidence": [],
+      "post_validation_semantic_slice_records": 0,
+      "post_validation_context_summary_records": 0,
+      "post_validation_slice_coverage": "missing"
+    }
+  },
+  "portfolio": {
+    "preferred_analyzer": "codeql",
+    "preferred_score": 47.0,
+    "preferred_reason": "通过功能验证，且综合得分最高",
+    "preferred_checker_name": "UnboundedFormatToBufferChecker",
+    "preferred_output_path": "/anonymous/home/LLM-Native/v2_experiments/runs/git_cwe120_xrdp_cve202223468/primary/codeql/20260423_211656/codeql/UnboundedFormatToBufferChecker.ql",
+    "confidence": "medium",
+    "recommended_bundle": [
+      "codeql"
+    ],
+    "complementary_usage": [
+      "CodeQL 适合跨函数、跨文件的数据流和 API 语义扩展。"
+    ],
+    "summary": "首选 codeql，置信度 medium，通过功能验证，且综合得分最高",
+    "candidates": [
+      {
+        "analyzer_id": "codeql",
+        "display_name": "CodeQL",
+        "score": 47.0,
+        "generation_success": true,
+        "semantic_success": true,
+        "accepted": true,
+        "evidence_records": 0,
+        "missing_evidence": 0,
+        "evidence_degraded": false,
+        "semantic_slice_records": 0,
+        "verifier_backed_slices": 0,
+        "slice_coverage": "missing",
+        "output_path": "/anonymous/home/LLM-Native/v2_experiments/runs/git_cwe120_xrdp_cve202223468/primary/codeql/20260423_211656/codeql/UnboundedFormatToBufferChecker.ql",
+        "checker_name": "UnboundedFormatToBufferChecker",
+        "pattern_fit": false,
+        "planner_recommended": false,
+        "reasons": [
+          "生成成功",
+          "功能验证通过",
+          "命中验证目标"
+        ],
+        "warnings": [
+          "缺少可用语义切片"
+        ],
+        "strengths": [
+          "interprocedural",
+          "global_semantics",
+          "api_modeling"
+        ]
+      }
+    ]
+  },
+  "run_metrics": {
+    "event_count": 61,
+    "total_seconds": 147.184,
+    "preflight_seconds": null,
+    "analyzers": {
+      "codeql": {
+        "total_seconds": 147.18,
+        "agent_seconds": 140.141,
+        "validation_seconds": 7.023,
+        "agent_tool_seconds": 64.212,
+        "early_search_knowledge_calls": 1,
+        "deferred_patch_reads": 0,
+        "deferred_knowledge_searches": 0,
+        "first_material_action_seconds": 92.875,
+        "bottleneck": "agent"
+      }
+    },
+    "llm_usage": {
+      "prompt_tokens": 69102,
+      "completion_tokens": 3663,
+      "total_tokens": 72765,
+      "call_count": 9,
+      "available": true,
+      "model": "gpt-5.4"
+    },
+    "summary": "codeql=147.2s(agent) | tokens=72765"
+  },
+  "artifacts": {
+    "csa_dir": "/anonymous/home/LLM-Native/v2_experiments/runs/git_cwe120_xrdp_cve202223468/primary/codeql/20260423_211656/csa",
+    "codeql_dir": "/anonymous/home/LLM-Native/v2_experiments/runs/git_cwe120_xrdp_cve202223468/primary/codeql/20260423_211656/codeql",
+    "patchweaver_plan": "/anonymous/home/LLM-Native/v2_experiments/runs/git_cwe120_xrdp_cve202223468/primary/codeql/20260423_211656/patchweaver_plan.json",
+    "validation_feedback": "/anonymous/home/LLM-Native/v2_experiments/runs/git_cwe120_xrdp_cve202223468/primary/codeql/20260423_211656/validation_feedback.json",
+    "final_report": "/anonymous/home/LLM-Native/v2_experiments/runs/git_cwe120_xrdp_cve202223468/primary/codeql/20260423_211656/final_report.json",
+    "refinement_input": "/anonymous/home/LLM-Native/v2_experiments/runs/git_cwe120_xrdp_cve202223468/primary/codeql/20260423_211656/refinement_input.json"
+  }
+}

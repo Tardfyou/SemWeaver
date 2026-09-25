@@ -1,0 +1,479 @@
+{
+  "files_changed": [
+    "bfd/elf64-x86-64.c"
+  ],
+  "file_details": [
+    {
+      "path": "bfd/elf64-x86-64.c",
+      "additions": 2,
+      "deletions": 0,
+      "hunks": 1
+    }
+  ],
+  "vulnerability_patterns": [],
+  "cross_file_dependencies": [],
+  "detection_strategy": {
+    "primary_pattern": "unknown",
+    "check_types": [
+      "local_ast_cfg_guard_absence",
+      "negative_return_as_size_count",
+      "error_code_used_in_library_length_parameter"
+    ],
+    "entry_points": [
+      "calls assigning from `bfd_canonicalize_dynamic_reloc(...)` or analogous count-returning APIs",
+      "calls to `qsort` where the element count argument is a recently assigned signed integer"
+    ],
+    "data_flow_tracking": false,
+    "cross_file_analysis": false,
+    "suggestions": [
+      "首稿优先命中 patch-local 锚点：同一函数内，某个有错误语义的 signed 返回值在缺少负值检查时直接作为 `qsort` 第二参数使用。",
+      "不要一开始把新增的 `if (dynrelcount < 0)` 写成硬过滤条件；首稿先抓“返回值直接流入计数/长度 sink”的局部模式，再把缺少负值 barrier 作为收敛。",
+      "首稿可只做局部 AST/CFG：赋值语句、随后的比较缺失、以及对 `qsort(..., count, ...)` 的调用，通常无需复杂数据流。",
+      "辅助收敛条件可以是：变量名/来源函数带有 `count/reloc/canonicalize` 语义，或 sink 为排序/拷贝/分配等需要非负大小的参数，但这些不应成为首要命中条件。",
+      "不要把变量非零或已初始化当作安全证据；这里真正需要的是‘负值错误码已被屏蔽’这一 barrier。",
+      "当前补丁未体现跨文件依赖；检测器首稿可只盯住补丁涉及函数/文件中的局部模式。"
+    ]
+  },
+  "checker_name_suggestion": "NegativeCountPassedToQsortChecker",
+  "affected_functions": [
+    "unknown"
+  ],
+  "key_functions": [
+    "unknown"
+  ],
+  "patch_semantics": {
+    "added_guards": [
+      "if (dynrelcount < 0)"
+    ],
+    "added_api_calls": [],
+    "removed_api_calls": [],
+    "state_resets": [],
+    "lifecycle_changes": []
+  },
+  "analysis_backend": "llm",
+  "analysis_confidence": 0.93,
+  "analysis_rationale": "补丁只在 `bfd/elf64-x86-64.c` 的同一函数内新增了对 `dynrelcount` 的负值检查。具体证据是：`dynrelcount = bfd_canonicalize_dynamic_reloc(abfd, dynrelbuf, dynsyms);` 之后新增 `if (dynrelcount < 0) return -1;`，而紧随其后的原有代码继续把 `dynrelcount` 作为 `qsort(dynrelbuf, dynrelcount, sizeof (arelent *), compare_relocs);` 的元素个数使用。补丁形状明确表明：修复前，来自 `bfd_canonicalize_dynamic_reloc` 的错误返回值会被当作计数继续消费；修复后，通过提前返回阻断该错误值流入 `qsort` 的长度参数。仅凭该 diff 能稳健确认的是“错误码/负值被当作长度或计数继续使用”的局部机制；是否最终归类为整数溢出、越界、内存破坏等，补丁本身证据不足，因此主模式保留为 `unknown`。",
+  "llm_usage": {
+    "prompt_tokens": 6724,
+    "completion_tokens": 1015,
+    "total_tokens": 7739,
+    "call_count": 1,
+    "available": true,
+    "model": "gpt-5.4"
+  },
+  "patchweaver": {
+    "summary": "Patch suggests unknown semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=0, metadata refs=0.",
+    "patch_facts": [
+      {
+        "fact_type": "patch_overview",
+        "label": "Patch overview",
+        "attributes": {
+          "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe190_binutils_cve201714745/patches/fix.patch",
+          "changed_files": [
+            "bfd/elf64-x86-64.c"
+          ],
+          "changed_file_count": 1,
+          "added_line_count": 2,
+          "deleted_line_count": 0
+        }
+      },
+      {
+        "fact_type": "vulnerability_patterns",
+        "label": "Vulnerability patterns inferred from patch",
+        "attributes": {
+          "patterns": [
+            "unknown"
+          ],
+          "descriptions": []
+        }
+      },
+      {
+        "fact_type": "affected_functions",
+        "label": "Functions implicated by removed or fixed code",
+        "attributes": {
+          "functions": [
+            "elf_section_data"
+          ]
+        }
+      },
+      {
+        "fact_type": "detection_strategy",
+        "label": "Existing patch analysis detection strategy",
+        "attributes": {
+          "primary_pattern": "unknown",
+          "check_types": [
+            "local_ast_cfg_guard_absence",
+            "negative_return_as_size_count",
+            "error_code_used_in_library_length_parameter"
+          ],
+          "entry_points": [
+            "calls assigning from `bfd_canonicalize_dynamic_reloc(...)` or analogous count-returning APIs",
+            "calls to `qsort` where the element count argument is a recently assigned signed integer"
+          ],
+          "data_flow_tracking": false,
+          "cross_file_analysis": false,
+          "suggestions": [
+            "首稿优先命中 patch-local 锚点：同一函数内，某个有错误语义的 signed 返回值在缺少负值检查时直接作为 `qsort` 第二参数使用。",
+            "不要一开始把新增的 `if (dynrelcount < 0)` 写成硬过滤条件；首稿先抓“返回值直接流入计数/长度 sink”的局部模式，再把缺少负值 barrier 作为收敛。",
+            "首稿可只做局部 AST/CFG：赋值语句、随后的比较缺失、以及对 `qsort(..., count, ...)` 的调用，通常无需复杂数据流。",
+            "辅助收敛条件可以是：变量名/来源函数带有 `count/reloc/canonicalize` 语义，或 sink 为排序/拷贝/分配等需要非负大小的参数，但这些不应成为首要命中条件。",
+            "不要把变量非零或已初始化当作安全证据；这里真正需要的是‘负值错误码已被屏蔽’这一 barrier。",
+            "当前补丁未体现跨文件依赖；检测器首稿可只盯住补丁涉及函数/文件中的局部模式。"
+          ]
+        }
+      },
+      {
+        "fact_type": "added_guards",
+        "label": "Patch introduces or strengthens guards",
+        "attributes": {
+          "guards": [
+            "if (dynrelcount < 0)"
+          ]
+        }
+      }
+    ],
+    "mechanism_graph": {
+      "summary": "Patch suggests unknown semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=0, metadata refs=0.",
+      "primary_patterns": [],
+      "nodes": [
+        {
+          "node_id": "patch",
+          "kind": "patch",
+          "label": "Security patch",
+          "attributes": {
+            "changed_files": [
+              "bfd/elf64-x86-64.c"
+            ]
+          }
+        },
+        {
+          "node_id": "file_0",
+          "kind": "file",
+          "label": "bfd/elf64-x86-64.c",
+          "attributes": {
+            "path": "bfd/elf64-x86-64.c",
+            "additions": 2,
+            "deletions": 0,
+            "hunks": 1
+          }
+        },
+        {
+          "node_id": "strategy",
+          "kind": "strategy",
+          "label": "unknown",
+          "attributes": {
+            "primary_pattern": "unknown",
+            "check_types": [
+              "local_ast_cfg_guard_absence",
+              "negative_return_as_size_count",
+              "error_code_used_in_library_length_parameter"
+            ],
+            "entry_points": [
+              "calls assigning from `bfd_canonicalize_dynamic_reloc(...)` or analogous count-returning APIs",
+              "calls to `qsort` where the element count argument is a recently assigned signed integer"
+            ],
+            "data_flow_tracking": false,
+            "cross_file_analysis": false,
+            "suggestions": [
+              "首稿优先命中 patch-local 锚点：同一函数内，某个有错误语义的 signed 返回值在缺少负值检查时直接作为 `qsort` 第二参数使用。",
+              "不要一开始把新增的 `if (dynrelcount < 0)` 写成硬过滤条件；首稿先抓“返回值直接流入计数/长度 sink”的局部模式，再把缺少负值 barrier 作为收敛。",
+              "首稿可只做局部 AST/CFG：赋值语句、随后的比较缺失、以及对 `qsort(..., count, ...)` 的调用，通常无需复杂数据流。",
+              "辅助收敛条件可以是：变量名/来源函数带有 `count/reloc/canonicalize` 语义，或 sink 为排序/拷贝/分配等需要非负大小的参数，但这些不应成为首要命中条件。",
+              "不要把变量非零或已初始化当作安全证据；这里真正需要的是‘负值错误码已被屏蔽’这一 barrier。",
+              "当前补丁未体现跨文件依赖；检测器首稿可只盯住补丁涉及函数/文件中的局部模式。"
+            ]
+          }
+        },
+        {
+          "node_id": "func_1",
+          "kind": "function",
+          "label": "elf_section_data",
+          "attributes": {
+            "function": "elf_section_data",
+            "source": "patch_fact"
+          }
+        },
+        {
+          "node_id": "guard_1",
+          "kind": "guard",
+          "label": "if (dynrelcount < 0)",
+          "attributes": {
+            "condition": "if (dynrelcount < 0)",
+            "source": "patch_fact"
+          }
+        }
+      ],
+      "edges": [
+        {
+          "source": "patch",
+          "target": "file_0",
+          "relation": "touches",
+          "confidence": 0.95
+        },
+        {
+          "source": "patch",
+          "target": "strategy",
+          "relation": "guides",
+          "confidence": 0.85
+        },
+        {
+          "source": "patch",
+          "target": "func_1",
+          "relation": "focuses_on",
+          "confidence": 0.82
+        },
+        {
+          "source": "patch",
+          "target": "guard_1",
+          "relation": "adds_guard",
+          "confidence": 0.84
+        }
+      ]
+    },
+    "evidence_plan": {
+      "primary_pattern": "unknown",
+      "hypotheses": [
+        "Patch likely encodes a reusable vulnerability mechanism but available metadata is weak; keep evidence collection broad."
+      ],
+      "requirements": [
+        {
+          "evidence_type": "patch_fact",
+          "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+          "priority": 100,
+          "preferred_analyzers": [],
+          "confidence": 1.0,
+          "mechanism_refs": [
+            "patch"
+          ]
+        }
+      ],
+      "recommended_analyzers": [
+        "csa",
+        "codeql"
+      ],
+      "planner_notes": [
+        "Added guards detected in patch diff; path-sensitive evidence should stay near top priority."
+      ],
+      "coverage_gaps": [],
+      "uncertainty_budget": "medium",
+      "escalation_triggers": [
+        "weak_primary_pattern"
+      ]
+    },
+    "refinement_targets": {
+      "codeql": {
+        "checker_name": "NegativeCountToSizeConsumer",
+        "artifact_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe190_binutils_cve201714745/primary/codeql/20260423_134322/codeql/NegativeCountToSizeConsumer.ql",
+        "artifact_kind": "query",
+        "validation_summary": "功能验证执行成功，但未命中验证目标",
+        "refinement_summary": "- validation_outcome @ semantic_validation: semantic_no_hits [coverage=empty]"
+      }
+    },
+    "validation_feedback_history": [
+      {
+        "analyzer": "codeql",
+        "phase": "initial_validation",
+        "summary": "- validation_outcome @ semantic_validation: semantic_no_hits [coverage=empty]"
+      }
+    ]
+  },
+  "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe190_binutils_cve201714745/patches/fix.patch",
+  "summary": "Patch suggests unknown semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=0, metadata refs=0.",
+  "patch_facts": [
+    {
+      "fact_type": "patch_overview",
+      "label": "Patch overview",
+      "attributes": {
+        "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe190_binutils_cve201714745/patches/fix.patch",
+        "changed_files": [
+          "bfd/elf64-x86-64.c"
+        ],
+        "changed_file_count": 1,
+        "added_line_count": 2,
+        "deleted_line_count": 0
+      }
+    },
+    {
+      "fact_type": "vulnerability_patterns",
+      "label": "Vulnerability patterns inferred from patch",
+      "attributes": {
+        "patterns": [
+          "unknown"
+        ],
+        "descriptions": []
+      }
+    },
+    {
+      "fact_type": "affected_functions",
+      "label": "Functions implicated by removed or fixed code",
+      "attributes": {
+        "functions": [
+          "elf_section_data"
+        ]
+      }
+    },
+    {
+      "fact_type": "detection_strategy",
+      "label": "Existing patch analysis detection strategy",
+      "attributes": {
+        "primary_pattern": "unknown",
+        "check_types": [
+          "local_ast_cfg_guard_absence",
+          "negative_return_as_size_count",
+          "error_code_used_in_library_length_parameter"
+        ],
+        "entry_points": [
+          "calls assigning from `bfd_canonicalize_dynamic_reloc(...)` or analogous count-returning APIs",
+          "calls to `qsort` where the element count argument is a recently assigned signed integer"
+        ],
+        "data_flow_tracking": false,
+        "cross_file_analysis": false,
+        "suggestions": [
+          "首稿优先命中 patch-local 锚点：同一函数内，某个有错误语义的 signed 返回值在缺少负值检查时直接作为 `qsort` 第二参数使用。",
+          "不要一开始把新增的 `if (dynrelcount < 0)` 写成硬过滤条件；首稿先抓“返回值直接流入计数/长度 sink”的局部模式，再把缺少负值 barrier 作为收敛。",
+          "首稿可只做局部 AST/CFG：赋值语句、随后的比较缺失、以及对 `qsort(..., count, ...)` 的调用，通常无需复杂数据流。",
+          "辅助收敛条件可以是：变量名/来源函数带有 `count/reloc/canonicalize` 语义，或 sink 为排序/拷贝/分配等需要非负大小的参数，但这些不应成为首要命中条件。",
+          "不要把变量非零或已初始化当作安全证据；这里真正需要的是‘负值错误码已被屏蔽’这一 barrier。",
+          "当前补丁未体现跨文件依赖；检测器首稿可只盯住补丁涉及函数/文件中的局部模式。"
+        ]
+      }
+    },
+    {
+      "fact_type": "added_guards",
+      "label": "Patch introduces or strengthens guards",
+      "attributes": {
+        "guards": [
+          "if (dynrelcount < 0)"
+        ]
+      }
+    }
+  ],
+  "mechanism_graph": {
+    "summary": "Patch suggests unknown semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=0, metadata refs=0.",
+    "primary_patterns": [],
+    "nodes": [
+      {
+        "node_id": "patch",
+        "kind": "patch",
+        "label": "Security patch",
+        "attributes": {
+          "changed_files": [
+            "bfd/elf64-x86-64.c"
+          ]
+        }
+      },
+      {
+        "node_id": "file_0",
+        "kind": "file",
+        "label": "bfd/elf64-x86-64.c",
+        "attributes": {
+          "path": "bfd/elf64-x86-64.c",
+          "additions": 2,
+          "deletions": 0,
+          "hunks": 1
+        }
+      },
+      {
+        "node_id": "strategy",
+        "kind": "strategy",
+        "label": "unknown",
+        "attributes": {
+          "primary_pattern": "unknown",
+          "check_types": [
+            "local_ast_cfg_guard_absence",
+            "negative_return_as_size_count",
+            "error_code_used_in_library_length_parameter"
+          ],
+          "entry_points": [
+            "calls assigning from `bfd_canonicalize_dynamic_reloc(...)` or analogous count-returning APIs",
+            "calls to `qsort` where the element count argument is a recently assigned signed integer"
+          ],
+          "data_flow_tracking": false,
+          "cross_file_analysis": false,
+          "suggestions": [
+            "首稿优先命中 patch-local 锚点：同一函数内，某个有错误语义的 signed 返回值在缺少负值检查时直接作为 `qsort` 第二参数使用。",
+            "不要一开始把新增的 `if (dynrelcount < 0)` 写成硬过滤条件；首稿先抓“返回值直接流入计数/长度 sink”的局部模式，再把缺少负值 barrier 作为收敛。",
+            "首稿可只做局部 AST/CFG：赋值语句、随后的比较缺失、以及对 `qsort(..., count, ...)` 的调用，通常无需复杂数据流。",
+            "辅助收敛条件可以是：变量名/来源函数带有 `count/reloc/canonicalize` 语义，或 sink 为排序/拷贝/分配等需要非负大小的参数，但这些不应成为首要命中条件。",
+            "不要把变量非零或已初始化当作安全证据；这里真正需要的是‘负值错误码已被屏蔽’这一 barrier。",
+            "当前补丁未体现跨文件依赖；检测器首稿可只盯住补丁涉及函数/文件中的局部模式。"
+          ]
+        }
+      },
+      {
+        "node_id": "func_1",
+        "kind": "function",
+        "label": "elf_section_data",
+        "attributes": {
+          "function": "elf_section_data",
+          "source": "patch_fact"
+        }
+      },
+      {
+        "node_id": "guard_1",
+        "kind": "guard",
+        "label": "if (dynrelcount < 0)",
+        "attributes": {
+          "condition": "if (dynrelcount < 0)",
+          "source": "patch_fact"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "patch",
+        "target": "file_0",
+        "relation": "touches",
+        "confidence": 0.95
+      },
+      {
+        "source": "patch",
+        "target": "strategy",
+        "relation": "guides",
+        "confidence": 0.85
+      },
+      {
+        "source": "patch",
+        "target": "func_1",
+        "relation": "focuses_on",
+        "confidence": 0.82
+      },
+      {
+        "source": "patch",
+        "target": "guard_1",
+        "relation": "adds_guard",
+        "confidence": 0.84
+      }
+    ]
+  },
+  "evidence_plan": {
+    "primary_pattern": "unknown",
+    "hypotheses": [
+      "Patch likely encodes a reusable vulnerability mechanism but available metadata is weak; keep evidence collection broad."
+    ],
+    "requirements": [
+      {
+        "evidence_type": "patch_fact",
+        "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+        "priority": 100,
+        "preferred_analyzers": [],
+        "confidence": 1.0,
+        "mechanism_refs": [
+          "patch"
+        ]
+      }
+    ],
+    "recommended_analyzers": [
+      "csa",
+      "codeql"
+    ],
+    "planner_notes": [
+      "Added guards detected in patch diff; path-sensitive evidence should stay near top priority."
+    ],
+    "coverage_gaps": [],
+    "uncertainty_budget": "medium",
+    "escalation_triggers": [
+      "weak_primary_pattern"
+    ]
+  }
+}

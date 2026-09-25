@@ -1,0 +1,11 @@
+--- /SoK-main/Vul4C-Benchmark/jhead/CVE-2020-28840/CVE-2020-28840_CWE-120_jpgfile.c_OLD.c	2025-10-13 01:36:55.790451023 +0000
++++ /SoK-main/Vul4C-Benchmark/jhead/CVE-2020-28840/CVE-2020-28840_CWE-120_jpgfile.c_NEW.c	2025-10-13 01:36:55.778451040 +0000
+@@ -48,7 +48,7 @@
+     for (a=2;a<length;a++){
+         ch = Data[a];
+ 
+-        if (ch == '\r' && Data[a+1] == '\n') continue; // Remove cr followed by lf.
++        if (ch == '\r' && a < length-1 && Data[a+1] == '\n') continue; // Remove cr followed by lf.
+ 
+         if (ch >= 32 || ch == '\n' || ch == '\t'){
+             Comment[nch++] = (char)ch;

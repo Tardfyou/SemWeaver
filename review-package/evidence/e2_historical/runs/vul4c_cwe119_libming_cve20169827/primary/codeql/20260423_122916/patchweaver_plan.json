@@ -1,0 +1,555 @@
+{
+  "files_changed": [
+    "util/parser.c"
+  ],
+  "file_details": [
+    {
+      "path": "util/parser.c",
+      "additions": 1,
+      "deletions": 1,
+      "hunks": 1
+    }
+  ],
+  "vulnerability_patterns": [],
+  "cross_file_dependencies": [],
+  "detection_strategy": {
+    "primary_pattern": "unknown",
+    "check_types": [
+      "api_replacement_from_raw_byte_reader_to_string_specific_reader",
+      "consumer_side_use_of_length_derived_buffers_as_strings",
+      "mismatches_between_explicit_length_fields_and_string_handling_expectations",
+      "patches_that_remove_manual_raw_reads_in_favor_of_safer_parsing_helpers"
+    ],
+    "entry_points": [
+      "readBytes",
+      "readString",
+      "readString consumers in `readString`-parsed fields",
+      "`SWF_PROTECT` parsing block in `util/parser.c`"
+    ],
+    "data_flow_tracking": true,
+    "cross_file_analysis": true,
+    "suggestions": [
+      "Prefer fix-shape reasoning: detect replacement of raw length-based reads with safer string parsing helpers rather than guessing a specific memory bug label.",
+      "Inspect whether `readBytes` can return non-NUL-terminated data that is later consumed as a C string.",
+      "Trace the `parserrec->Password` data flow to string consumers and length assumptions instead of relying on the presence of a null/non-null check.",
+      "Compare contracts of `readBytes(f, length)` and `readString(f)` for termination, allocation size, and bounds handling.",
+      "Prefer consumer-side misuse analysis over superficial API-name matching; the vulnerability may arise when raw bytes are later treated as strings.",
+      "Avoid treating the `if (length != 0)` guard as proof of safety; it only gates emptiness, not string validity or bounds correctness."
+    ]
+  },
+  "checker_name_suggestion": "RawBytesToStringMismatchChecker",
+  "affected_functions": [
+    "readBytes",
+    "readString"
+  ],
+  "key_functions": [
+    "readBytes",
+    "readString"
+  ],
+  "patch_semantics": {
+    "added_guards": [],
+    "added_api_calls": [
+      "readString"
+    ],
+    "removed_api_calls": [
+      "readBytes"
+    ],
+    "state_resets": [],
+    "lifecycle_changes": []
+  },
+  "analysis_backend": "llm",
+  "analysis_confidence": 0.31,
+  "analysis_rationale": "The patch changes `parserrec->Password = readBytes(f, length);` to `parserrec->Password = readString(f);` inside the `length != 0` branch in `util/parser.c`, but provides no implementation detail for either helper. This is enough to show a shift from explicit length-based raw byte reading to a string-specific API, but not enough to classify whether the bug was overflow, overread, missing termination, or another memory-safety issue with confidence.",
+  "llm_usage": {
+    "prompt_tokens": 5411,
+    "completion_tokens": 441,
+    "total_tokens": 5852,
+    "call_count": 1,
+    "available": true,
+    "model": "gpt-5.4"
+  },
+  "patchweaver": {
+    "summary": "Patch suggests unknown semantics across 1 file(s); added guards=0, removed risky operations=0, fix patterns=0, metadata refs=0.",
+    "patch_facts": [
+      {
+        "fact_type": "patch_overview",
+        "label": "Patch overview",
+        "attributes": {
+          "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe119_libming_cve20169827/patches/fix.patch",
+          "changed_files": [
+            "util/parser.c"
+          ],
+          "changed_file_count": 1,
+          "added_line_count": 1,
+          "deleted_line_count": 1
+        }
+      },
+      {
+        "fact_type": "vulnerability_patterns",
+        "label": "Vulnerability patterns inferred from patch",
+        "attributes": {
+          "patterns": [
+            "unknown"
+          ],
+          "descriptions": []
+        }
+      },
+      {
+        "fact_type": "affected_functions",
+        "label": "Functions implicated by removed or fixed code",
+        "attributes": {
+          "functions": [
+            "parseSWF_PROTECT"
+          ]
+        }
+      },
+      {
+        "fact_type": "detection_strategy",
+        "label": "Existing patch analysis detection strategy",
+        "attributes": {
+          "primary_pattern": "unknown",
+          "check_types": [
+            "api_replacement_from_raw_byte_reader_to_string_specific_reader",
+            "consumer_side_use_of_length_derived_buffers_as_strings",
+            "mismatches_between_explicit_length_fields_and_string_handling_expectations",
+            "patches_that_remove_manual_raw_reads_in_favor_of_safer_parsing_helpers"
+          ],
+          "entry_points": [
+            "readBytes",
+            "readString",
+            "readString consumers in `readString`-parsed fields",
+            "`SWF_PROTECT` parsing block in `util/parser.c`"
+          ],
+          "data_flow_tracking": true,
+          "cross_file_analysis": true,
+          "suggestions": [
+            "Prefer fix-shape reasoning: detect replacement of raw length-based reads with safer string parsing helpers rather than guessing a specific memory bug label.",
+            "Inspect whether `readBytes` can return non-NUL-terminated data that is later consumed as a C string.",
+            "Trace the `parserrec->Password` data flow to string consumers and length assumptions instead of relying on the presence of a null/non-null check.",
+            "Compare contracts of `readBytes(f, length)` and `readString(f)` for termination, allocation size, and bounds handling.",
+            "Prefer consumer-side misuse analysis over superficial API-name matching; the vulnerability may arise when raw bytes are later treated as strings.",
+            "Avoid treating the `if (length != 0)` guard as proof of safety; it only gates emptiness, not string validity or bounds correctness."
+          ]
+        }
+      },
+      {
+        "fact_type": "added_api_calls",
+        "label": "Patch introduces or highlights API usage",
+        "attributes": {
+          "apis": [
+            "readString"
+          ]
+        }
+      }
+    ],
+    "mechanism_graph": {
+      "summary": "Patch suggests unknown semantics across 1 file(s); added guards=0, removed risky operations=0, fix patterns=0, metadata refs=0.",
+      "primary_patterns": [],
+      "nodes": [
+        {
+          "node_id": "patch",
+          "kind": "patch",
+          "label": "Security patch",
+          "attributes": {
+            "changed_files": [
+              "util/parser.c"
+            ]
+          }
+        },
+        {
+          "node_id": "file_0",
+          "kind": "file",
+          "label": "util/parser.c",
+          "attributes": {
+            "path": "util/parser.c",
+            "additions": 1,
+            "deletions": 1,
+            "hunks": 1
+          }
+        },
+        {
+          "node_id": "strategy",
+          "kind": "strategy",
+          "label": "unknown",
+          "attributes": {
+            "primary_pattern": "unknown",
+            "check_types": [
+              "api_replacement_from_raw_byte_reader_to_string_specific_reader",
+              "consumer_side_use_of_length_derived_buffers_as_strings",
+              "mismatches_between_explicit_length_fields_and_string_handling_expectations",
+              "patches_that_remove_manual_raw_reads_in_favor_of_safer_parsing_helpers"
+            ],
+            "entry_points": [
+              "readBytes",
+              "readString",
+              "readString consumers in `readString`-parsed fields",
+              "`SWF_PROTECT` parsing block in `util/parser.c`"
+            ],
+            "data_flow_tracking": true,
+            "cross_file_analysis": true,
+            "suggestions": [
+              "Prefer fix-shape reasoning: detect replacement of raw length-based reads with safer string parsing helpers rather than guessing a specific memory bug label.",
+              "Inspect whether `readBytes` can return non-NUL-terminated data that is later consumed as a C string.",
+              "Trace the `parserrec->Password` data flow to string consumers and length assumptions instead of relying on the presence of a null/non-null check.",
+              "Compare contracts of `readBytes(f, length)` and `readString(f)` for termination, allocation size, and bounds handling.",
+              "Prefer consumer-side misuse analysis over superficial API-name matching; the vulnerability may arise when raw bytes are later treated as strings.",
+              "Avoid treating the `if (length != 0)` guard as proof of safety; it only gates emptiness, not string validity or bounds correctness."
+            ]
+          }
+        },
+        {
+          "node_id": "func_1",
+          "kind": "function",
+          "label": "parseSWF_PROTECT",
+          "attributes": {
+            "function": "parseSWF_PROTECT",
+            "source": "patch_fact"
+          }
+        },
+        {
+          "node_id": "fix_1",
+          "kind": "fix",
+          "label": "readString",
+          "attributes": {
+            "kind": "added_api_calls",
+            "value": "readString"
+          }
+        }
+      ],
+      "edges": [
+        {
+          "source": "patch",
+          "target": "file_0",
+          "relation": "touches",
+          "confidence": 0.95
+        },
+        {
+          "source": "patch",
+          "target": "strategy",
+          "relation": "guides",
+          "confidence": 0.85
+        },
+        {
+          "source": "patch",
+          "target": "func_1",
+          "relation": "focuses_on",
+          "confidence": 0.82
+        },
+        {
+          "source": "patch",
+          "target": "fix_1",
+          "relation": "introduces",
+          "confidence": 0.8
+        }
+      ]
+    },
+    "evidence_plan": {
+      "primary_pattern": "unknown",
+      "hypotheses": [
+        "The patch changes a data propagation condition that should generalize beyond the edited lines.",
+        "The vulnerability mechanism crosses file boundaries and should not be captured with local-only reasoning."
+      ],
+      "requirements": [
+        {
+          "evidence_type": "patch_fact",
+          "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+          "priority": 100,
+          "preferred_analyzers": [],
+          "confidence": 1.0,
+          "mechanism_refs": [
+            "patch"
+          ]
+        },
+        {
+          "evidence_type": "dataflow_candidate",
+          "reason": "Patch analysis requests data-flow tracking.",
+          "priority": 95,
+          "preferred_analyzers": [
+            "codeql"
+          ],
+          "confidence": 0.9,
+          "mechanism_refs": [
+            "strategy"
+          ]
+        },
+        {
+          "evidence_type": "semantic_slice",
+          "reason": "Cross-file patch suggests a verifier-backed semantic slice is needed, not just a project summary.",
+          "priority": 86,
+          "preferred_analyzers": [
+            "csa",
+            "codeql"
+          ],
+          "confidence": 0.83,
+          "mechanism_refs": [
+            "strategy"
+          ]
+        },
+        {
+          "evidence_type": "call_chain",
+          "reason": "Cross-file patch needs interprocedural call edges, not only local edited-line context.",
+          "priority": 82,
+          "preferred_analyzers": [
+            "codeql"
+          ],
+          "confidence": 0.78,
+          "mechanism_refs": [
+            "strategy"
+          ]
+        }
+      ],
+      "recommended_analyzers": [
+        "codeql",
+        "csa"
+      ],
+      "planner_notes": [],
+      "coverage_gaps": [],
+      "uncertainty_budget": "high",
+      "escalation_triggers": [
+        "weak_primary_pattern",
+        "cross_file_mechanism"
+      ]
+    }
+  },
+  "summary": "Patch suggests unknown semantics across 1 file(s); added guards=0, removed risky operations=0, fix patterns=0, metadata refs=0.",
+  "patch_facts": [
+    {
+      "fact_type": "patch_overview",
+      "label": "Patch overview",
+      "attributes": {
+        "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe119_libming_cve20169827/patches/fix.patch",
+        "changed_files": [
+          "util/parser.c"
+        ],
+        "changed_file_count": 1,
+        "added_line_count": 1,
+        "deleted_line_count": 1
+      }
+    },
+    {
+      "fact_type": "vulnerability_patterns",
+      "label": "Vulnerability patterns inferred from patch",
+      "attributes": {
+        "patterns": [
+          "unknown"
+        ],
+        "descriptions": []
+      }
+    },
+    {
+      "fact_type": "affected_functions",
+      "label": "Functions implicated by removed or fixed code",
+      "attributes": {
+        "functions": [
+          "parseSWF_PROTECT"
+        ]
+      }
+    },
+    {
+      "fact_type": "detection_strategy",
+      "label": "Existing patch analysis detection strategy",
+      "attributes": {
+        "primary_pattern": "unknown",
+        "check_types": [
+          "api_replacement_from_raw_byte_reader_to_string_specific_reader",
+          "consumer_side_use_of_length_derived_buffers_as_strings",
+          "mismatches_between_explicit_length_fields_and_string_handling_expectations",
+          "patches_that_remove_manual_raw_reads_in_favor_of_safer_parsing_helpers"
+        ],
+        "entry_points": [
+          "readBytes",
+          "readString",
+          "readString consumers in `readString`-parsed fields",
+          "`SWF_PROTECT` parsing block in `util/parser.c`"
+        ],
+        "data_flow_tracking": true,
+        "cross_file_analysis": true,
+        "suggestions": [
+          "Prefer fix-shape reasoning: detect replacement of raw length-based reads with safer string parsing helpers rather than guessing a specific memory bug label.",
+          "Inspect whether `readBytes` can return non-NUL-terminated data that is later consumed as a C string.",
+          "Trace the `parserrec->Password` data flow to string consumers and length assumptions instead of relying on the presence of a null/non-null check.",
+          "Compare contracts of `readBytes(f, length)` and `readString(f)` for termination, allocation size, and bounds handling.",
+          "Prefer consumer-side misuse analysis over superficial API-name matching; the vulnerability may arise when raw bytes are later treated as strings.",
+          "Avoid treating the `if (length != 0)` guard as proof of safety; it only gates emptiness, not string validity or bounds correctness."
+        ]
+      }
+    },
+    {
+      "fact_type": "added_api_calls",
+      "label": "Patch introduces or highlights API usage",
+      "attributes": {
+        "apis": [
+          "readString"
+        ]
+      }
+    }
+  ],
+  "mechanism_graph": {
+    "summary": "Patch suggests unknown semantics across 1 file(s); added guards=0, removed risky operations=0, fix patterns=0, metadata refs=0.",
+    "primary_patterns": [],
+    "nodes": [
+      {
+        "node_id": "patch",
+        "kind": "patch",
+        "label": "Security patch",
+        "attributes": {
+          "changed_files": [
+            "util/parser.c"
+          ]
+        }
+      },
+      {
+        "node_id": "file_0",
+        "kind": "file",
+        "label": "util/parser.c",
+        "attributes": {
+          "path": "util/parser.c",
+          "additions": 1,
+          "deletions": 1,
+          "hunks": 1
+        }
+      },
+      {
+        "node_id": "strategy",
+        "kind": "strategy",
+        "label": "unknown",
+        "attributes": {
+          "primary_pattern": "unknown",
+          "check_types": [
+            "api_replacement_from_raw_byte_reader_to_string_specific_reader",
+            "consumer_side_use_of_length_derived_buffers_as_strings",
+            "mismatches_between_explicit_length_fields_and_string_handling_expectations",
+            "patches_that_remove_manual_raw_reads_in_favor_of_safer_parsing_helpers"
+          ],
+          "entry_points": [
+            "readBytes",
+            "readString",
+            "readString consumers in `readString`-parsed fields",
+            "`SWF_PROTECT` parsing block in `util/parser.c`"
+          ],
+          "data_flow_tracking": true,
+          "cross_file_analysis": true,
+          "suggestions": [
+            "Prefer fix-shape reasoning: detect replacement of raw length-based reads with safer string parsing helpers rather than guessing a specific memory bug label.",
+            "Inspect whether `readBytes` can return non-NUL-terminated data that is later consumed as a C string.",
+            "Trace the `parserrec->Password` data flow to string consumers and length assumptions instead of relying on the presence of a null/non-null check.",
+            "Compare contracts of `readBytes(f, length)` and `readString(f)` for termination, allocation size, and bounds handling.",
+            "Prefer consumer-side misuse analysis over superficial API-name matching; the vulnerability may arise when raw bytes are later treated as strings.",
+            "Avoid treating the `if (length != 0)` guard as proof of safety; it only gates emptiness, not string validity or bounds correctness."
+          ]
+        }
+      },
+      {
+        "node_id": "func_1",
+        "kind": "function",
+        "label": "parseSWF_PROTECT",
+        "attributes": {
+          "function": "parseSWF_PROTECT",
+          "source": "patch_fact"
+        }
+      },
+      {
+        "node_id": "fix_1",
+        "kind": "fix",
+        "label": "readString",
+        "attributes": {
+          "kind": "added_api_calls",
+          "value": "readString"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "patch",
+        "target": "file_0",
+        "relation": "touches",
+        "confidence": 0.95
+      },
+      {
+        "source": "patch",
+        "target": "strategy",
+        "relation": "guides",
+        "confidence": 0.85
+      },
+      {
+        "source": "patch",
+        "target": "func_1",
+        "relation": "focuses_on",
+        "confidence": 0.82
+      },
+      {
+        "source": "patch",
+        "target": "fix_1",
+        "relation": "introduces",
+        "confidence": 0.8
+      }
+    ]
+  },
+  "evidence_plan": {
+    "primary_pattern": "unknown",
+    "hypotheses": [
+      "The patch changes a data propagation condition that should generalize beyond the edited lines.",
+      "The vulnerability mechanism crosses file boundaries and should not be captured with local-only reasoning."
+    ],
+    "requirements": [
+      {
+        "evidence_type": "patch_fact",
+        "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+        "priority": 100,
+        "preferred_analyzers": [],
+        "confidence": 1.0,
+        "mechanism_refs": [
+          "patch"
+        ]
+      },
+      {
+        "evidence_type": "dataflow_candidate",
+        "reason": "Patch analysis requests data-flow tracking.",
+        "priority": 95,
+        "preferred_analyzers": [
+          "codeql"
+        ],
+        "confidence": 0.9,
+        "mechanism_refs": [
+          "strategy"
+        ]
+      },
+      {
+        "evidence_type": "semantic_slice",
+        "reason": "Cross-file patch suggests a verifier-backed semantic slice is needed, not just a project summary.",
+        "priority": 86,
+        "preferred_analyzers": [
+          "csa",
+          "codeql"
+        ],
+        "confidence": 0.83,
+        "mechanism_refs": [
+          "strategy"
+        ]
+      },
+      {
+        "evidence_type": "call_chain",
+        "reason": "Cross-file patch needs interprocedural call edges, not only local edited-line context.",
+        "priority": 82,
+        "preferred_analyzers": [
+          "codeql"
+        ],
+        "confidence": 0.78,
+        "mechanism_refs": [
+          "strategy"
+        ]
+      }
+    ],
+    "recommended_analyzers": [
+      "codeql",
+      "csa"
+    ],
+    "planner_notes": [],
+    "coverage_gaps": [],
+    "uncertainty_budget": "high",
+    "escalation_triggers": [
+      "weak_primary_pattern",
+      "cross_file_mechanism"
+    ]
+  }
+}

@@ -1,0 +1,13 @@
+diff --git a/src/tuple.c b/src/tuple.c
+--- a/src/tuple.c
++++ b/src/tuple.c
+@@ -518,6 +518,9 @@
+ 	    // Add the first item to the tuple from "rettv"
+ 	    if (tuple_append_tv(tuple, rettv) == FAIL)
+ 		return FAIL;
++	    // The first item in "rettv" is added to the tuple.  Set the rettv
++	    // type to unknown, so that the caller doesn't free it.
++	    rettv->v_type = VAR_UNKNOWN;
+ 	}
+     }
+ 

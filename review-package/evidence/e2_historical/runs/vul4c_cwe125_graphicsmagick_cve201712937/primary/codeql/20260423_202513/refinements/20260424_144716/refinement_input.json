@@ -1,0 +1,1500 @@
+{
+  "schema_version": 1,
+  "workflow_mode": "refine",
+  "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe125_graphicsmagick_cve201712937/patches/fix.patch",
+  "validate_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe125_graphicsmagick_cve201712937/vulnerable",
+  "analyzer_choice": "codeql",
+  "shared_analysis_path": "patchweaver_plan.json",
+  "shared_analysis": {
+    "patchweaver": {
+      "summary": "Patch suggests out_of_bounds_read semantics across 1 file(s); added guards=0, removed risky operations=0, fix patterns=3, metadata refs=0.",
+      "patch_facts": [
+        {
+          "fact_type": "patch_overview",
+          "label": "Patch overview",
+          "attributes": {
+            "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe125_graphicsmagick_cve201712937/patches/fix.patch",
+            "changed_files": [
+              "coders/sun.c"
+            ],
+            "changed_file_count": 1,
+            "added_line_count": 2,
+            "deleted_line_count": 0
+          }
+        },
+        {
+          "fact_type": "vulnerability_patterns",
+          "label": "Vulnerability patterns inferred from patch",
+          "attributes": {
+            "patterns": [
+              "out_of_bounds_read"
+            ],
+            "descriptions": [
+              "Before the patch, index derived from ((*p) & (0x01 << bit)) was used directly to read image->colormap[index]. If the image colormap has fewer entries than the possible index value, the colormap access can read out of bounds. The patch blocks this by calling VerifyColormapIndex(image,index) before each colormap read."
+            ]
+          }
+        },
+        {
+          "fact_type": "affected_functions",
+          "label": "Functions implicated by removed or fixed code",
+          "attributes": {
+            "functions": [
+              "ThrowReaderException",
+              "VerifyColormapIndex"
+            ]
+          }
+        },
+        {
+          "fact_type": "detection_strategy",
+          "label": "Existing patch analysis detection strategy",
+          "attributes": {
+            "primary_pattern": "out_of_bounds_read",
+            "check_types": [
+              "patch_local_array_access_check",
+              "guarded_index_validation_check",
+              "local_cfg_dominance_check"
+            ],
+            "entry_points": [
+              "coders/sun.c",
+              "VerifyColormapIndex"
+            ],
+            "data_flow_tracking": false,
+            "cross_file_analysis": false,
+            "suggestions": [
+              "First-draft detector should anchor on q[...] = image->colormap[index] where index was recently assigned from ((*p) & (0x01 << bit) ? 0x01 : 0x00).",
+              "Require only local AST/CFG initially: index assignment, optional indexes[...] write, then image->colormap[index] read in the same loop body.",
+              "Do not make absence of VerifyColormapIndex(image,index) an overly broad global filter first; use it as a local non-dominance condition between index assignment and colormap read.",
+              "The strongest barrier is VerifyColormapIndex(image,index) immediately before image->colormap[index]; treat equivalent colormap-index validation as a secondary refinement.",
+              "The loop shape over bit and x+7-bit indexing is useful for precision but should be secondary; the primary sink is image->colormap[index].",
+              "Cross-file analysis is not needed for an initial detector because the patch-local mechanism is fully visible in coders/sun.c."
+            ]
+          }
+        },
+        {
+          "fact_type": "fix_patterns",
+          "label": "Patch introduces reusable fix patterns",
+          "attributes": {
+            "patterns": [
+              "Insert VerifyColormapIndex(image,index) after index computation and before image->colormap[index].",
+              "Apply the same validation in both the main 8-bit loop and the trailing partial-byte loop.",
+              "Treat the verifier call as a barrier protecting the subsequent colormap array read, not as a generic logging or formatting change."
+            ]
+          }
+        },
+        {
+          "fact_type": "added_api_calls",
+          "label": "Patch introduces or highlights API usage",
+          "attributes": {
+            "apis": [
+              "VerifyColormapIndex"
+            ]
+          }
+        }
+      ],
+      "mechanism_graph": {
+        "summary": "Patch suggests out_of_bounds_read semantics across 1 file(s); added guards=0, removed risky operations=0, fix patterns=3, metadata refs=0.",
+        "primary_patterns": [
+          "out_of_bounds_read"
+        ],
+        "nodes": [
+          {
+            "node_id": "patch",
+            "kind": "patch",
+            "label": "Security patch",
+            "attributes": {
+              "changed_files": [
+                "coders/sun.c"
+              ]
+            }
+          },
+          {
+            "node_id": "file_0",
+            "kind": "file",
+            "label": "coders/sun.c",
+            "attributes": {
+              "path": "coders/sun.c",
+              "additions": 2,
+              "deletions": 0,
+              "hunks": 2
+            }
+          },
+          {
+            "node_id": "pattern_0",
+            "kind": "pattern",
+            "label": "out_of_bounds_read",
+            "attributes": {
+              "type": "out_of_bounds_read",
+              "description": "Before the patch, index derived from ((*p) & (0x01 << bit)) was used directly to read image->colormap[index]. If the image colormap has fewer entries than the possible index value, the colormap access can read out of bounds. The patch blocks this by calling VerifyColormapIndex(image,index) before each colormap read.",
+              "trigger_conditions": [
+                "In VerifyColormapIndex-related SUN decoding logic, index is assigned from bit extraction: index=((*p) & (0x01 << bit) ? 0x01 : 0x00).",
+                "The computed index is written to indexes[x+7-bit] and then used as image->colormap[index].",
+                "No VerifyColormapIndex(image,index) or equivalent colormap bounds validation occurs between index assignment and image->colormap[index].",
+                "The image colormap may not contain the computed index value, especially index 1 for a too-small colormap."
+              ],
+              "fix_patterns": [
+                "Insert VerifyColormapIndex(image,index) after index computation and before image->colormap[index].",
+                "Apply the same validation in both the main 8-bit loop and the trailing partial-byte loop.",
+                "Treat the verifier call as a barrier protecting the subsequent colormap array read, not as a generic logging or formatting change."
+              ],
+              "affected_functions": [
+                "VerifyColormapIndex"
+              ],
+              "cross_file": false,
+              "source": "llm",
+              "confidence": 0.9,
+              "evidence_lines": [
+                "index=((*p) & (0x01 << bit) ? 0x01 : 0x00);",
+                "+              VerifyColormapIndex(image,index);",
+                "indexes[x+7-bit]=index;",
+                "q[x+7-bit]=image->colormap[index];",
+                "for (bit=7; bit >= (long) (8-(image->columns % 8)); bit--)"
+              ]
+            }
+          },
+          {
+            "node_id": "func_1",
+            "kind": "function",
+            "label": "VerifyColormapIndex",
+            "attributes": {
+              "function": "VerifyColormapIndex"
+            }
+          },
+          {
+            "node_id": "guard_1",
+            "kind": "guard",
+            "label": "In VerifyColormapIndex-related SUN decoding logic, index is assigned from bit extraction: index=((*p) & (0x01 << bit) ? 0x01 : 0x00).",
+            "attributes": {
+              "condition": "In VerifyColormapIndex-related SUN decoding logic, index is assigned from bit extraction: index=((*p) & (0x01 << bit) ? 0x01 : 0x00)."
+            }
+          },
+          {
+            "node_id": "guard_2",
+            "kind": "guard",
+            "label": "The computed index is written to indexes[x+7-bit] and then used as image->colormap[index].",
+            "attributes": {
+              "condition": "The computed index is written to indexes[x+7-bit] and then used as image->colormap[index]."
+            }
+          },
+          {
+            "node_id": "guard_3",
+            "kind": "guard",
+            "label": "No VerifyColormapIndex(image,index) or equivalent colormap bounds validation occurs between index assignment and image->colormap[index].",
+            "attributes": {
+              "condition": "No VerifyColormapIndex(image,index) or equivalent colormap bounds validation occurs between index assignment and image->colormap[index]."
+            }
+          },
+          {
+            "node_id": "guard_4",
+            "kind": "guard",
+            "label": "The image colormap may not contain the computed index value, especially index 1 for a too-small colormap.",
+            "attributes": {
+              "condition": "The image colormap may not contain the computed index value, especially index 1 for a too-small colormap."
+            }
+          },
+          {
+            "node_id": "strategy",
+            "kind": "strategy",
+            "label": "out_of_bounds_read",
+            "attributes": {
+              "primary_pattern": "out_of_bounds_read",
+              "check_types": [
+                "patch_local_array_access_check",
+                "guarded_index_validation_check",
+                "local_cfg_dominance_check"
+              ],
+              "entry_points": [
+                "coders/sun.c",
+                "VerifyColormapIndex"
+              ],
+              "data_flow_tracking": false,
+              "cross_file_analysis": false,
+              "suggestions": [
+                "First-draft detector should anchor on q[...] = image->colormap[index] where index was recently assigned from ((*p) & (0x01 << bit) ? 0x01 : 0x00).",
+                "Require only local AST/CFG initially: index assignment, optional indexes[...] write, then image->colormap[index] read in the same loop body.",
+                "Do not make absence of VerifyColormapIndex(image,index) an overly broad global filter first; use it as a local non-dominance condition between index assignment and colormap read.",
+                "The strongest barrier is VerifyColormapIndex(image,index) immediately before image->colormap[index]; treat equivalent colormap-index validation as a secondary refinement.",
+                "The loop shape over bit and x+7-bit indexing is useful for precision but should be secondary; the primary sink is image->colormap[index].",
+                "Cross-file analysis is not needed for an initial detector because the patch-local mechanism is fully visible in coders/sun.c."
+              ]
+            }
+          },
+          {
+            "node_id": "func_2",
+            "kind": "function",
+            "label": "ThrowReaderException",
+            "attributes": {
+              "function": "ThrowReaderException",
+              "source": "patch_fact"
+            }
+          },
+          {
+            "node_id": "fix_1",
+            "kind": "fix",
+            "label": "Insert VerifyColormapIndex(image,index) after index computation and before image->colormap[index].",
+            "attributes": {
+              "kind": "fix_patterns",
+              "value": "Insert VerifyColormapIndex(image,index) after index computation and before image->colormap[index]."
+            }
+          },
+          {
+            "node_id": "fix_2",
+            "kind": "fix",
+            "label": "Apply the same validation in both the main 8-bit loop and the trailing partial-byte loop.",
+            "attributes": {
+              "kind": "fix_patterns",
+              "value": "Apply the same validation in both the main 8-bit loop and the trailing partial-byte loop."
+            }
+          },
+          {
+            "node_id": "fix_3",
+            "kind": "fix",
+            "label": "Treat the verifier call as a barrier protecting the subsequent colormap array read, not as a generic logging or formatting change.",
+            "attributes": {
+              "kind": "fix_patterns",
+              "value": "Treat the verifier call as a barrier protecting the subsequent colormap array read, not as a generic logging or formatting change."
+            }
+          },
+          {
+            "node_id": "fix_4",
+            "kind": "fix",
+            "label": "VerifyColormapIndex",
+            "attributes": {
+              "kind": "added_api_calls",
+              "value": "VerifyColormapIndex"
+            }
+          }
+        ],
+        "edges": [
+          {
+            "source": "patch",
+            "target": "file_0",
+            "relation": "touches",
+            "confidence": 0.95
+          },
+          {
+            "source": "patch",
+            "target": "pattern_0",
+            "relation": "indicates",
+            "confidence": 0.9
+          },
+          {
+            "source": "pattern_0",
+            "target": "func_1",
+            "relation": "affects",
+            "confidence": 0.75
+          },
+          {
+            "source": "pattern_0",
+            "target": "guard_1",
+            "relation": "requires",
+            "confidence": 0.7
+          },
+          {
+            "source": "pattern_0",
+            "target": "guard_2",
+            "relation": "requires",
+            "confidence": 0.7
+          },
+          {
+            "source": "pattern_0",
+            "target": "guard_3",
+            "relation": "requires",
+            "confidence": 0.7
+          },
+          {
+            "source": "pattern_0",
+            "target": "guard_4",
+            "relation": "requires",
+            "confidence": 0.7
+          },
+          {
+            "source": "patch",
+            "target": "strategy",
+            "relation": "guides",
+            "confidence": 0.85
+          },
+          {
+            "source": "patch",
+            "target": "func_2",
+            "relation": "focuses_on",
+            "confidence": 0.82
+          },
+          {
+            "source": "patch",
+            "target": "fix_1",
+            "relation": "introduces",
+            "confidence": 0.8
+          },
+          {
+            "source": "patch",
+            "target": "fix_2",
+            "relation": "introduces",
+            "confidence": 0.8
+          },
+          {
+            "source": "patch",
+            "target": "fix_3",
+            "relation": "introduces",
+            "confidence": 0.8
+          },
+          {
+            "source": "patch",
+            "target": "fix_4",
+            "relation": "introduces",
+            "confidence": 0.8
+          }
+        ]
+      },
+      "evidence_plan": {
+        "primary_pattern": "out_of_bounds_read",
+        "hypotheses": [
+          "Patch likely encodes a reusable vulnerability mechanism but available metadata is weak; keep evidence collection broad."
+        ],
+        "requirements": [
+          {
+            "evidence_type": "patch_fact",
+            "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+            "priority": 100,
+            "preferred_analyzers": [],
+            "confidence": 1.0,
+            "mechanism_refs": [
+              "patch"
+            ]
+          }
+        ],
+        "recommended_analyzers": [
+          "csa",
+          "codeql"
+        ],
+        "planner_notes": [],
+        "coverage_gaps": [],
+        "uncertainty_budget": "low",
+        "escalation_triggers": []
+      },
+      "refinement_targets": {
+        "codeql": {
+          "checker_name": "SunColormapIndexUncheckedRead",
+          "artifact_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe125_graphicsmagick_cve201712937/primary/codeql/20260423_202513/codeql/SunColormapIndexUncheckedRead.ql",
+          "artifact_kind": "query",
+          "validation_summary": "命中验证目标并通过功能验证",
+          "refinement_summary": "- validation_outcome @ semantic_validation: semantic validation passed with 21 diagnostics [coverage=full]"
+        }
+      },
+      "validation_feedback_history": [
+        {
+          "analyzer": "codeql",
+          "phase": "initial_validation",
+          "summary": "- validation_outcome @ semantic_validation: semantic validation passed with 21 diagnostics [coverage=full]"
+        }
+      ]
+    },
+    "files_changed": [
+      "coders/sun.c"
+    ],
+    "file_details": [
+      {
+        "path": "coders/sun.c",
+        "additions": 2,
+        "deletions": 0,
+        "hunks": 2
+      }
+    ],
+    "vulnerability_patterns": [
+      {
+        "type": "out_of_bounds_read",
+        "description": "Before the patch, index derived from ((*p) & (0x01 << bit)) was used directly to read image->colormap[index]. If the image colormap has fewer entries than the possible index value, the colormap access can read out of bounds. The patch blocks this by calling VerifyColormapIndex(image,index) before each colormap read.",
+        "trigger_conditions": [
+          "In VerifyColormapIndex-related SUN decoding logic, index is assigned from bit extraction: index=((*p) & (0x01 << bit) ? 0x01 : 0x00).",
+          "The computed index is written to indexes[x+7-bit] and then used as image->colormap[index].",
+          "No VerifyColormapIndex(image,index) or equivalent colormap bounds validation occurs between index assignment and image->colormap[index].",
+          "The image colormap may not contain the computed index value, especially index 1 for a too-small colormap."
+        ],
+        "fix_patterns": [
+          "Insert VerifyColormapIndex(image,index) after index computation and before image->colormap[index].",
+          "Apply the same validation in both the main 8-bit loop and the trailing partial-byte loop.",
+          "Treat the verifier call as a barrier protecting the subsequent colormap array read, not as a generic logging or formatting change."
+        ],
+        "affected_functions": [
+          "VerifyColormapIndex"
+        ],
+        "cross_file": false,
+        "source": "llm",
+        "confidence": 0.9,
+        "evidence_lines": [
+          "index=((*p) & (0x01 << bit) ? 0x01 : 0x00);",
+          "+              VerifyColormapIndex(image,index);",
+          "indexes[x+7-bit]=index;",
+          "q[x+7-bit]=image->colormap[index];",
+          "for (bit=7; bit >= (long) (8-(image->columns % 8)); bit--)"
+        ]
+      }
+    ],
+    "cross_file_dependencies": [],
+    "detection_strategy": {
+      "primary_pattern": "out_of_bounds_read",
+      "check_types": [
+        "patch_local_array_access_check",
+        "guarded_index_validation_check",
+        "local_cfg_dominance_check"
+      ],
+      "entry_points": [
+        "coders/sun.c",
+        "VerifyColormapIndex"
+      ],
+      "data_flow_tracking": false,
+      "cross_file_analysis": false,
+      "suggestions": [
+        "First-draft detector should anchor on q[...] = image->colormap[index] where index was recently assigned from ((*p) & (0x01 << bit) ? 0x01 : 0x00).",
+        "Require only local AST/CFG initially: index assignment, optional indexes[...] write, then image->colormap[index] read in the same loop body.",
+        "Do not make absence of VerifyColormapIndex(image,index) an overly broad global filter first; use it as a local non-dominance condition between index assignment and colormap read.",
+        "The strongest barrier is VerifyColormapIndex(image,index) immediately before image->colormap[index]; treat equivalent colormap-index validation as a secondary refinement.",
+        "The loop shape over bit and x+7-bit indexing is useful for precision but should be secondary; the primary sink is image->colormap[index].",
+        "Cross-file analysis is not needed for an initial detector because the patch-local mechanism is fully visible in coders/sun.c."
+      ]
+    },
+    "checker_name_suggestion": "ColormapIndexOutOfBoundsReadChecker",
+    "affected_functions": [
+      "VerifyColormapIndex"
+    ],
+    "key_functions": [
+      "VerifyColormapIndex"
+    ],
+    "patch_semantics": {
+      "added_guards": [],
+      "added_api_calls": [
+        "VerifyColormapIndex"
+      ],
+      "removed_api_calls": [],
+      "state_resets": [],
+      "lifecycle_changes": []
+    },
+    "analysis_backend": "llm",
+    "analysis_confidence": 0.9,
+    "analysis_rationale": "The diff adds VerifyColormapIndex(image,index) immediately after index is computed from input byte bits and immediately before indexes[...] assignment and q[...] = image->colormap[index] in both full-byte and remainder-bit loops. The dangerous patch-local sink is the array read image->colormap[index]; before the patch, index values 0 or 1 were consumed without verifying that the image colormap actually contains that index.",
+    "llm_usage": {
+      "prompt_tokens": 6801,
+      "completion_tokens": 944,
+      "total_tokens": 7745,
+      "call_count": 1,
+      "available": true,
+      "model": "gpt-5.5"
+    },
+    "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe125_graphicsmagick_cve201712937/patches/fix.patch"
+  },
+  "artifacts": {
+    "codeql": {
+      "analyzer_id": "codeql",
+      "checker_name": "SunColormapIndexUncheckedRead",
+      "source_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe125_graphicsmagick_cve201712937/primary/codeql/20260423_202513/codeql/refinements/20260424_144716/codeql/SunColormapIndexUncheckedRead.ql",
+      "output_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe125_graphicsmagick_cve201712937/primary/codeql/20260423_202513/codeql/refinements/20260424_144716/codeql/SunColormapIndexUncheckedRead.ql",
+      "result_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe125_graphicsmagick_cve201712937/primary/codeql/20260423_202513/codeql/refinements/20260424_144716/codeql/result.json",
+      "report_entry": {
+        "success": true,
+        "validation_requested": true,
+        "functional_validation_passed": false,
+        "semantic_target_hit": false,
+        "validation_state": "executed_no_hit",
+        "semantic_acceptance": false,
+        "semantic_acceptance_summary": "功能验证执行成功，但未命中验证目标",
+        "checker_name": "SunColormapIndexUncheckedRead",
+        "artifact_display_name": "SunColormapIndexUncheckedRead",
+        "output_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe125_graphicsmagick_cve201712937/primary/codeql/20260423_202513/codeql/refinements/20260424_144716/codeql/SunColormapIndexUncheckedRead.ql",
+        "source_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe125_graphicsmagick_cve201712937/primary/codeql/20260423_202513/codeql/refinements/20260424_144716/codeql/SunColormapIndexUncheckedRead.ql",
+        "iterations": 6,
+        "compile_attempts": 0,
+        "error": "",
+        "validation": {
+          "stage": "semantic",
+          "analyzer": "codeql",
+          "success": true,
+          "execution_time": 71.674489736557,
+          "error_message": "",
+          "diagnostics": [],
+          "diagnostics_count": 0,
+          "all_diagnostics_count": 0,
+          "generated_diagnostics_count": 0,
+          "warnings_count": 0,
+          "errors_count": 0,
+          "environment_blocked": false,
+          "environment_block_reason": "",
+          "validation_target": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe125_graphicsmagick_cve201712937/vulnerable",
+          "diagnostics_filtered": false,
+          "patch_targets": [
+            "coders/sun.c"
+          ]
+        },
+        "llm_usage": {
+          "prompt_tokens": 60761,
+          "completion_tokens": 6356,
+          "total_tokens": 67117,
+          "call_count": 7,
+          "available": true,
+          "model": "gpt-5.5"
+        },
+        "artifact_metrics": {
+          "path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe125_graphicsmagick_cve201712937/primary/codeql/20260423_202513/codeql/refinements/20260424_144716/codeql/SunColormapIndexUncheckedRead.ql",
+          "total_lines": 101,
+          "nonempty_lines": 89,
+          "char_count": 3364,
+          "byte_count": 3482
+        },
+        "artifact_delta": {
+          "baseline_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe125_graphicsmagick_cve201712937/primary/codeql/20260423_202513/codeql/SunColormapIndexUncheckedRead.ql",
+          "current_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe125_graphicsmagick_cve201712937/primary/codeql/20260423_202513/codeql/refinements/20260424_144716/codeql/SunColormapIndexUncheckedRead.ql",
+          "baseline_total_lines": 76,
+          "current_total_lines": 101,
+          "baseline_nonempty_lines": 67,
+          "current_nonempty_lines": 89,
+          "delta_total_lines": 25,
+          "delta_nonempty_lines": 22,
+          "growth_ratio": 0.328358
+        },
+        "artifact_review": {
+          "success": true,
+          "error": "",
+          "findings": []
+        },
+        "evidence_records": 9,
+        "missing_evidence": [],
+        "evidence_degraded": false,
+        "semantic_slice_records": 3,
+        "context_summary_records": 0,
+        "slice_coverage": "partial",
+        "verifier_backed_slices": 3,
+        "slice_kinds": {
+          "semantic_slice": 1,
+          "flow_witness": 1,
+          "interprocedural_slice": 1
+        },
+        "evidence_escalation": {},
+        "validation_feedback_records": 1,
+        "validation_feedback_summary": "- validation_outcome @ semantic_validation: semantic_no_hits [coverage=empty]",
+        "validation_feedback_history": [
+          {
+            "analyzer": "codeql",
+            "phase": "baseline_reused_validation",
+            "summary": "- validation_outcome @ semantic_validation: semantic validation passed with 21 diagnostics [coverage=full]"
+          },
+          {
+            "analyzer": "codeql",
+            "phase": "refine_candidate",
+            "summary": "- validation_outcome @ semantic_validation: semantic validation passed with 21 diagnostics [coverage=full]"
+          },
+          {
+            "analyzer": "codeql",
+            "phase": "initial_validation",
+            "summary": "- validation_outcome @ semantic_validation: semantic_no_hits [coverage=empty]"
+          }
+        ],
+        "refinement_attempted": true,
+        "refinement_adopted": true,
+        "refinement_iterations_attempted": 1,
+        "refinement_skipped_reason": "",
+        "last_refinement_candidate_success": true,
+        "last_refinement_candidate_error": "",
+        "last_refinement_candidate_artifact_review": {
+          "success": true,
+          "error": "",
+          "findings": []
+        },
+        "last_refinement_candidate_output_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe125_graphicsmagick_cve201712937/primary/codeql/20260423_202513/codeql/refinements/20260424_144716/codeql/SunColormapIndexUncheckedRead.ql",
+        "post_validation_evidence_records": 10,
+        "post_validation_missing_evidence": [],
+        "post_validation_semantic_slice_records": 3,
+        "post_validation_context_summary_records": 0,
+        "post_validation_slice_coverage": "partial",
+        "synthesis_input": {
+          "analyzer_id": "codeql",
+          "detector_artifact": "ql_query",
+          "primary_pattern": "out_of_bounds_read",
+          "objective": "Synthesize a reusable out_of_bounds_read query that captures the same semantic mechanism, interprocedural flow, or API contract implied by the patch rather than a generic broad class proxy.",
+          "mechanism_contract": {
+            "mechanism_family": "memory_read_without_proven_bound",
+            "semantic_dimensions": [
+              "read or dereference sink",
+              "buffer or region identity",
+              "index/offset/end-pointer relation",
+              "guard or sentinel barrier"
+            ],
+            "trigger_invariants": [
+              "a read-like sink is reached",
+              "the path does not prove the read stays inside the intended region",
+              "Patch-backed trigger clue: added or highlighted APIs: VerifyColormapIndex",
+              "Patch-backed trigger clue: detection hints: First-draft detector should anchor on q[...] = image->colormap[index] where index was recently assigned from ((*p) & (0x01 << bit) ? 0x01 : 0x00)., Require only local AST/CFG initially: index assignment, optional indexes[...] write, then image->colormap[index] read in the same loop body., Do not make absence of VerifyColormapIndex(image,index) an overly broad global filter first; use it as a local non-dominance condition between index assignment and colormap read."
+            ],
+            "silence_invariants": [
+              "index, size, or end-pointer checks prove the read stays in bounds",
+              "patch-added sentinel or length validation blocks the unsafe read",
+              "patch-introduced barrier pattern: Insert VerifyColormapIndex(image,index) after index computation and before image->colormap[index].",
+              "patch-introduced barrier pattern: Apply the same validation in both the main 8-bit loop and the trailing partial-byte loop.",
+              "patch-introduced barrier pattern: Treat the verifier call as a barrier protecting the subsequent colormap array read, not as a generic logging or formatting change.",
+              "a dominating length/index/end-pointer guard proves the read stays inside the intended region"
+            ],
+            "transfer_axes": [
+              "equivalent index-to-buffer relations across sibling readers",
+              "equivalent end-pointer or length guards for the same data role",
+              "equivalent interprocedural propagation across adjacent helpers or wrappers"
+            ],
+            "forbidden_shortcuts": [
+              "bind the detector to fixed file paths, line numbers, or exact patch strings",
+              "broaden into unrelated bug families just to improve hit count",
+              "flag every array access without modeling index and region semantics",
+              "infer safe bounds from unrelated null or type checks",
+              "callee-only matching or stringified guard inference instead of structured predicates"
+            ],
+            "evidence_backed_axes": [
+              "source-to-sink flow",
+              "semantic trigger slice",
+              "interprocedural flow"
+            ]
+          },
+          "detector_name_hint": "ColormapIndexOutOfBoundsRead",
+          "focus_files": [
+            "coders/sun.c"
+          ],
+          "focus_functions": [
+            "VerifyColormapIndex"
+          ],
+          "hypotheses": [
+            "Patch likely encodes a reusable vulnerability mechanism but available metadata is weak; keep evidence collection broad."
+          ],
+          "required_evidence_types": [
+            "patch_fact"
+          ],
+          "missing_evidence_types": [],
+          "evidence_degraded": false,
+          "patch_mechanism_signals": [
+            "added or highlighted APIs: VerifyColormapIndex",
+            "detection hints: First-draft detector should anchor on q[...] = image->colormap[index] where index was recently assigned from ((*p) & (0x01 << bit) ? 0x01 : 0x00)., Require only local AST/CFG initially: index assignment, optional indexes[...] write, then image->colormap[index] read in the same loop body., Do not make absence of VerifyColormapIndex(image,index) an overly broad global filter first; use it as a local non-dominance condition between index assignment and colormap read."
+          ],
+          "silencing_conditions": [
+            "patch-introduced barrier pattern: Insert VerifyColormapIndex(image,index) after index computation and before image->colormap[index].",
+            "patch-introduced barrier pattern: Apply the same validation in both the main 8-bit loop and the trailing partial-byte loop.",
+            "patch-introduced barrier pattern: Treat the verifier call as a barrier protecting the subsequent colormap array read, not as a generic logging or formatting change.",
+            "a dominating length/index/end-pointer guard proves the read stays inside the intended region"
+          ],
+          "retry_guidance": [],
+          "selected_evidence_ids": [
+            "codeql_flow_0",
+            "codeql_semantic_slice_0",
+            "codeql_chain_0",
+            "pf_004",
+            "pf_005",
+            "pf_003",
+            "pf_002",
+            "pf_001",
+            "pf_000"
+          ],
+          "selected_evidence": [
+            {
+              "evidence_id": "codeql_flow_0",
+              "type": "dataflow_candidate",
+              "analyzer": "codeql",
+              "scope": {
+                "repo": "fix.patch",
+                "file": "coders/sun.c",
+                "function": "ThrowReaderException"
+              },
+              "semantic_payload": {
+                "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+                "entry_points": [
+                  "CoderError",
+                  "ColormapTypeNotSupported",
+                  "image",
+                  "image->colormap",
+                  "colormap",
+                  "image->columns"
+                ],
+                "summary": "ThrowReaderException reaches VerifyColormapIndex, MagickMonitorFormatted, or after guard (((image->columns/8)+(image->columns % 8 ? 1 : 0)) % 2) != 0",
+                "coverage_status": "full",
+                "call_targets": [
+                  "VerifyColormapIndex",
+                  "MagickMonitorFormatted",
+                  "or",
+                  "SetImagePixels",
+                  "ScaleCharToQuantum"
+                ],
+                "database_status": "missing",
+                "database_create_message": "CodeQL 数据库创建失败: Initializing database at /anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe125_graphicsmagick_cve201712937/evidence/20260424_143500/codeql/codeql/database.\nRunning build command: [/bin/sh, /anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe125_graphicsmagick_cve201712937/evidence/20260424_143500/codeql/codeql/codeql_build_f50oiois.sh]\nRunning command in /anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe125_graphicsmagick_cve201712937/vulnerable: [/bin/sh, /anonymous/home/LLM-Native/v2_exper",
+                "live_query_status": "database_missing"
+              },
+              "evidence_slice": {
+                "kind": "flow_witness",
+                "anchor": {
+                  "patch_file": "coders/sun.c",
+                  "hunk_index": 0,
+                  "source_line": 626
+                },
+                "summary": "ThrowReaderException reaches VerifyColormapIndex, MagickMonitorFormatted, or after guard (((image->columns/8)+(image->columns % 8 ? 1 : 0)) % 2) != 0",
+                "statements": [
+                  "594:                 index=((*p) & (0x01 << bit) ? 0x01 : 0x00);",
+                  "595:                 indexes[x+7-bit]=index;",
+                  "596:                 q[x+7-bit]=image->colormap[index];",
+                  "597:               }",
+                  "598:             p++;",
+                  "599:           }"
+                ],
+                "guards": [],
+                "call_boundary": [
+                  "MagickMonitorFormatted",
+                  "SetImagePixels",
+                  "AccessMutableIndexes",
+                  "VerifyColormapIndex",
+                  "or",
+                  "ScaleCharToQuantum"
+                ],
+                "call_edges": [
+                  "function:ThrowReaderException",
+                  "ThrowReaderException -> VerifyColormapIndex",
+                  "ThrowReaderException -> MagickMonitorFormatted"
+                ],
+                "state_transitions": [],
+                "api_terms": [
+                  "VerifyColormapIndex",
+                  "MagickMonitorFormatted",
+                  "or",
+                  "SetImagePixels",
+                  "ScaleCharToQuantum"
+                ],
+                "related_symbols": [
+                  "CoderError",
+                  "ColormapTypeNotSupported",
+                  "image",
+                  "image->colormap",
+                  "colormap",
+                  "image->columns"
+                ],
+                "verifier": "source-window",
+                "extraction_method": "source_window",
+                "coverage_status": "full"
+              },
+              "confidence": 0.84
+            },
+            {
+              "evidence_id": "codeql_semantic_slice_0",
+              "type": "semantic_slice",
+              "analyzer": "codeql",
+              "scope": {
+                "repo": "fix.patch",
+                "file": "coders/sun.c",
+                "function": "ThrowReaderException"
+              },
+              "semantic_payload": {
+                "entry_points": [
+                  "CoderError",
+                  "ColormapTypeNotSupported",
+                  "image",
+                  "image->colormap",
+                  "colormap",
+                  "image->columns"
+                ],
+                "summary": "focus=ThrowReaderException | call_edges=ThrowReaderException -> VerifyColormapIndex; ThrowReaderException -> MagickMonitorFormatted; ThrowReaderException -> or | targets=VerifyColormapIndex, MagickMonitorFormatted, or, SetImagePixels | patched_apis=VerifyColormapIndex | guards=(((image->columns/8)+(image->columns % 8 ? 1 : 0)) % 2) != 0; !SyncImagePixels(image) | symbols=CoderError, ColormapTypeNotSupported, image, image->colormap | deps=magick/colormap.h, magick/utility.h, magick/magick.h | apis=VerifyColormapIndex, MagickMonitorFormatted, or, SetImagePixels",
+                "tracked_symbols": [
+                  "CoderError",
+                  "ColormapTypeNotSupported",
+                  "image",
+                  "image->colormap",
+                  "colormap",
+                  "image->columns"
+                ],
+                "coverage_status": "partial",
+                "apis": [
+                  "VerifyColormapIndex",
+                  "MagickMonitorFormatted",
+                  "or",
+                  "SetImagePixels",
+                  "AccessMutableIndexes",
+                  "ScaleCharToQuantum"
+                ],
+                "call_targets": [
+                  "VerifyColormapIndex",
+                  "MagickMonitorFormatted",
+                  "or",
+                  "SetImagePixels",
+                  "ScaleCharToQuantum"
+                ],
+                "call_edges": [
+                  "ThrowReaderException -> VerifyColormapIndex",
+                  "ThrowReaderException -> MagickMonitorFormatted",
+                  "ThrowReaderException -> or",
+                  "ThrowReaderException -> SetImagePixels",
+                  "ThrowReaderException -> ScaleCharToQuantum"
+                ]
+              },
+              "evidence_slice": {
+                "kind": "semantic_slice",
+                "anchor": {
+                  "patch_file": "coders/sun.c",
+                  "hunk_index": 0,
+                  "source_line": 626
+                },
+                "summary": "focus=ThrowReaderException | call_edges=ThrowReaderException -> VerifyColormapIndex; ThrowReaderException -> MagickMonitorFormatted; ThrowReaderException -> or | targets=VerifyColormapIndex, MagickMonitorFormatted, or, SetImagePixels | patched_apis=VerifyColormapIndex | guards=(((image->columns/8)+(image->columns % 8 ? 1 : 0)) % 2) != 0; !SyncImagePixels(image) | symbols=CoderError, ColormapTypeNotSupported, image, image->colormap | deps=magick/colormap.h, magick/utility.h, magick/magick.h | apis=VerifyColormapIndex, MagickMonitorFormatted, or, SetImagePixels",
+                "statements": [
+                  "594:                 index=((*p) & (0x01 << bit) ? 0x01 : 0x00);",
+                  "595:                 indexes[x+7-bit]=index;",
+                  "596:                 q[x+7-bit]=image->colormap[index];",
+                  "597:               }",
+                  "598:             p++;",
+                  "599:           }"
+                ],
+                "guards": [],
+                "call_boundary": [
+                  "VerifyColormapIndex",
+                  "MagickMonitorFormatted",
+                  "or",
+                  "SetImagePixels",
+                  "ScaleCharToQuantum"
+                ],
+                "call_edges": [
+                  "ThrowReaderException -> VerifyColormapIndex",
+                  "ThrowReaderException -> MagickMonitorFormatted",
+                  "ThrowReaderException -> or",
+                  "ThrowReaderException -> SetImagePixels",
+                  "ThrowReaderException -> ScaleCharToQuantum"
+                ],
+                "state_transitions": [],
+                "api_terms": [
+                  "VerifyColormapIndex",
+                  "MagickMonitorFormatted",
+                  "or",
+                  "SetImagePixels",
+                  "AccessMutableIndexes",
+                  "ScaleCharToQuantum"
+                ],
+                "related_symbols": [
+                  "CoderError",
+                  "ColormapTypeNotSupported",
+                  "image",
+                  "image->colormap",
+                  "colormap",
+                  "image->columns"
+                ],
+                "verifier": "source-window",
+                "extraction_method": "source_window",
+                "coverage_status": "partial"
+              },
+              "confidence": 0.8
+            },
+            {
+              "evidence_id": "codeql_chain_0",
+              "type": "call_chain",
+              "analyzer": "codeql",
+              "scope": {
+                "repo": "fix.patch",
+                "file": "coders/sun.c",
+                "function": "ThrowReaderException"
+              },
+              "semantic_payload": {
+                "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+                "summary": [
+                  "ThrowReaderException -> VerifyColormapIndex",
+                  "ThrowReaderException -> MagickMonitorFormatted",
+                  "ThrowReaderException -> or",
+                  "ThrowReaderException -> SetImagePixels",
+                  "ThrowReaderException -> ScaleCharToQuantum"
+                ],
+                "coverage_status": "full",
+                "call_edges": [
+                  "ThrowReaderException -> VerifyColormapIndex",
+                  "ThrowReaderException -> MagickMonitorFormatted",
+                  "ThrowReaderException -> or",
+                  "ThrowReaderException -> SetImagePixels",
+                  "ThrowReaderException -> ScaleCharToQuantum"
+                ],
+                "database_status": "missing",
+                "database_create_message": "CodeQL 数据库创建失败: Initializing database at /anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe125_graphicsmagick_cve201712937/evidence/20260424_143500/codeql/codeql/database.\nRunning build command: [/bin/sh, /anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe125_graphicsmagick_cve201712937/evidence/20260424_143500/codeql/codeql/codeql_build_f50oiois.sh]\nRunning command in /anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe125_graphicsmagick_cve201712937/vulnerable: [/bin/sh, /anonymous/home/LLM-Native/v2_exper",
+                "live_query_status": "database_missing"
+              },
+              "evidence_slice": {
+                "kind": "interprocedural_slice",
+                "anchor": {
+                  "patch_file": "coders/sun.c",
+                  "hunk_index": 0,
+                  "source_line": 626
+                },
+                "summary": "ThrowReaderException -> VerifyColormapIndex, ThrowReaderException -> MagickMonitorFormatted, ThrowReaderException -> or, ThrowReaderException -> SetImagePixels",
+                "statements": [
+                  "594:                 index=((*p) & (0x01 << bit) ? 0x01 : 0x00);",
+                  "595:                 indexes[x+7-bit]=index;",
+                  "596:                 q[x+7-bit]=image->colormap[index];",
+                  "597:               }",
+                  "598:             p++;",
+                  "599:           }"
+                ],
+                "guards": [],
+                "call_boundary": [
+                  "VerifyColormapIndex",
+                  "MagickMonitorFormatted",
+                  "or",
+                  "SetImagePixels",
+                  "ScaleCharToQuantum"
+                ],
+                "call_edges": [
+                  "ThrowReaderException -> VerifyColormapIndex",
+                  "ThrowReaderException -> MagickMonitorFormatted",
+                  "ThrowReaderException -> or",
+                  "ThrowReaderException -> SetImagePixels",
+                  "ThrowReaderException -> ScaleCharToQuantum"
+                ],
+                "state_transitions": [],
+                "api_terms": [
+                  "MagickMonitorFormatted",
+                  "SetImagePixels",
+                  "AccessMutableIndexes",
+                  "VerifyColormapIndex",
+                  "or",
+                  "ScaleCharToQuantum"
+                ],
+                "related_symbols": [
+                  "CoderError",
+                  "ColormapTypeNotSupported",
+                  "image",
+                  "image->colormap",
+                  "colormap",
+                  "image->columns"
+                ],
+                "verifier": "source-window",
+                "extraction_method": "source_window",
+                "coverage_status": "full"
+              },
+              "confidence": 0.78
+            },
+            {
+              "evidence_id": "pf_004",
+              "type": "patch_fact",
+              "analyzer": "patch",
+              "scope": {
+                "repo": "fix.patch",
+                "file": "coders/sun.c",
+                "function": "ThrowReaderException"
+              },
+              "semantic_payload": {
+                "label": "Patch introduces reusable fix patterns"
+              },
+              "evidence_slice": {},
+              "confidence": 0.95
+            },
+            {
+              "evidence_id": "pf_005",
+              "type": "patch_fact",
+              "analyzer": "patch",
+              "scope": {
+                "repo": "fix.patch",
+                "file": "coders/sun.c",
+                "function": "ThrowReaderException"
+              },
+              "semantic_payload": {
+                "label": "Patch introduces or highlights API usage"
+              },
+              "evidence_slice": {},
+              "confidence": 0.95
+            },
+            {
+              "evidence_id": "pf_003",
+              "type": "patch_fact",
+              "analyzer": "patch",
+              "scope": {
+                "repo": "fix.patch",
+                "file": "coders/sun.c",
+                "function": "ThrowReaderException"
+              },
+              "semantic_payload": {
+                "label": "Existing patch analysis detection strategy"
+              },
+              "evidence_slice": {},
+              "confidence": 0.95
+            },
+            {
+              "evidence_id": "pf_002",
+              "type": "patch_fact",
+              "analyzer": "patch",
+              "scope": {
+                "repo": "fix.patch",
+                "file": "coders/sun.c",
+                "function": "ThrowReaderException"
+              },
+              "semantic_payload": {
+                "label": "Functions implicated by removed or fixed code"
+              },
+              "evidence_slice": {},
+              "confidence": 0.95
+            },
+            {
+              "evidence_id": "pf_001",
+              "type": "patch_fact",
+              "analyzer": "patch",
+              "scope": {
+                "repo": "fix.patch",
+                "file": "coders/sun.c",
+                "function": "ThrowReaderException"
+              },
+              "semantic_payload": {
+                "label": "Vulnerability patterns inferred from patch"
+              },
+              "evidence_slice": {},
+              "confidence": 0.95
+            },
+            {
+              "evidence_id": "pf_000",
+              "type": "patch_fact",
+              "analyzer": "patch",
+              "scope": {
+                "repo": "fix.patch",
+                "file": "coders/sun.c",
+                "function": "ThrowReaderException"
+              },
+              "semantic_payload": {
+                "label": "Patch overview"
+              },
+              "evidence_slice": {},
+              "confidence": 0.95
+            }
+          ],
+          "semantic_slice_count": 3,
+          "context_summary_count": 0,
+          "semantic_slice_coverage": "partial",
+          "selected_semantic_slice_ids": [
+            "codeql_flow_0",
+            "codeql_semantic_slice_0",
+            "codeql_chain_0"
+          ],
+          "selected_context_summary_ids": [],
+          "selected_semantic_slices": [
+            {
+              "evidence_id": "codeql_flow_0",
+              "type": "dataflow_candidate",
+              "analyzer": "codeql",
+              "scope": {
+                "repo": "fix.patch",
+                "file": "coders/sun.c",
+                "function": "ThrowReaderException"
+              },
+              "semantic_payload": {
+                "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+                "entry_points": [
+                  "CoderError",
+                  "ColormapTypeNotSupported",
+                  "image",
+                  "image->colormap",
+                  "colormap",
+                  "image->columns"
+                ],
+                "summary": "ThrowReaderException reaches VerifyColormapIndex, MagickMonitorFormatted, or after guard (((image->columns/8)+(image->columns % 8 ? 1 : 0)) % 2) != 0",
+                "coverage_status": "full",
+                "call_targets": [
+                  "VerifyColormapIndex",
+                  "MagickMonitorFormatted",
+                  "or",
+                  "SetImagePixels",
+                  "ScaleCharToQuantum"
+                ],
+                "database_status": "missing",
+                "database_create_message": "CodeQL 数据库创建失败: Initializing database at /anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe125_graphicsmagick_cve201712937/evidence/20260424_143500/codeql/codeql/database.\nRunning build command: [/bin/sh, /anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe125_graphicsmagick_cve201712937/evidence/20260424_143500/codeql/codeql/codeql_build_f50oiois.sh]\nRunning command in /anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe125_graphicsmagick_cve201712937/vulnerable: [/bin/sh, /anonymous/home/LLM-Native/v2_exper",
+                "live_query_status": "database_missing"
+              },
+              "evidence_slice": {
+                "kind": "flow_witness",
+                "anchor": {
+                  "patch_file": "coders/sun.c",
+                  "hunk_index": 0,
+                  "source_line": 626
+                },
+                "summary": "ThrowReaderException reaches VerifyColormapIndex, MagickMonitorFormatted, or after guard (((image->columns/8)+(image->columns % 8 ? 1 : 0)) % 2) != 0",
+                "statements": [
+                  "594:                 index=((*p) & (0x01 << bit) ? 0x01 : 0x00);",
+                  "595:                 indexes[x+7-bit]=index;",
+                  "596:                 q[x+7-bit]=image->colormap[index];",
+                  "597:               }",
+                  "598:             p++;",
+                  "599:           }"
+                ],
+                "guards": [],
+                "call_boundary": [
+                  "MagickMonitorFormatted",
+                  "SetImagePixels",
+                  "AccessMutableIndexes",
+                  "VerifyColormapIndex",
+                  "or",
+                  "ScaleCharToQuantum"
+                ],
+                "call_edges": [
+                  "function:ThrowReaderException",
+                  "ThrowReaderException -> VerifyColormapIndex",
+                  "ThrowReaderException -> MagickMonitorFormatted"
+                ],
+                "state_transitions": [],
+                "api_terms": [
+                  "VerifyColormapIndex",
+                  "MagickMonitorFormatted",
+                  "or",
+                  "SetImagePixels",
+                  "ScaleCharToQuantum"
+                ],
+                "related_symbols": [
+                  "CoderError",
+                  "ColormapTypeNotSupported",
+                  "image",
+                  "image->colormap",
+                  "colormap",
+                  "image->columns"
+                ],
+                "verifier": "source-window",
+                "extraction_method": "source_window",
+                "coverage_status": "full"
+              },
+              "confidence": 0.84
+            },
+            {
+              "evidence_id": "codeql_semantic_slice_0",
+              "type": "semantic_slice",
+              "analyzer": "codeql",
+              "scope": {
+                "repo": "fix.patch",
+                "file": "coders/sun.c",
+                "function": "ThrowReaderException"
+              },
+              "semantic_payload": {
+                "entry_points": [
+                  "CoderError",
+                  "ColormapTypeNotSupported",
+                  "image",
+                  "image->colormap",
+                  "colormap",
+                  "image->columns"
+                ],
+                "summary": "focus=ThrowReaderException | call_edges=ThrowReaderException -> VerifyColormapIndex; ThrowReaderException -> MagickMonitorFormatted; ThrowReaderException -> or | targets=VerifyColormapIndex, MagickMonitorFormatted, or, SetImagePixels | patched_apis=VerifyColormapIndex | guards=(((image->columns/8)+(image->columns % 8 ? 1 : 0)) % 2) != 0; !SyncImagePixels(image) | symbols=CoderError, ColormapTypeNotSupported, image, image->colormap | deps=magick/colormap.h, magick/utility.h, magick/magick.h | apis=VerifyColormapIndex, MagickMonitorFormatted, or, SetImagePixels",
+                "tracked_symbols": [
+                  "CoderError",
+                  "ColormapTypeNotSupported",
+                  "image",
+                  "image->colormap",
+                  "colormap",
+                  "image->columns"
+                ],
+                "coverage_status": "partial",
+                "apis": [
+                  "VerifyColormapIndex",
+                  "MagickMonitorFormatted",
+                  "or",
+                  "SetImagePixels",
+                  "AccessMutableIndexes",
+                  "ScaleCharToQuantum"
+                ],
+                "call_targets": [
+                  "VerifyColormapIndex",
+                  "MagickMonitorFormatted",
+                  "or",
+                  "SetImagePixels",
+                  "ScaleCharToQuantum"
+                ],
+                "call_edges": [
+                  "ThrowReaderException -> VerifyColormapIndex",
+                  "ThrowReaderException -> MagickMonitorFormatted",
+                  "ThrowReaderException -> or",
+                  "ThrowReaderException -> SetImagePixels",
+                  "ThrowReaderException -> ScaleCharToQuantum"
+                ]
+              },
+              "evidence_slice": {
+                "kind": "semantic_slice",
+                "anchor": {
+                  "patch_file": "coders/sun.c",
+                  "hunk_index": 0,
+                  "source_line": 626
+                },
+                "summary": "focus=ThrowReaderException | call_edges=ThrowReaderException -> VerifyColormapIndex; ThrowReaderException -> MagickMonitorFormatted; ThrowReaderException -> or | targets=VerifyColormapIndex, MagickMonitorFormatted, or, SetImagePixels | patched_apis=VerifyColormapIndex | guards=(((image->columns/8)+(image->columns % 8 ? 1 : 0)) % 2) != 0; !SyncImagePixels(image) | symbols=CoderError, ColormapTypeNotSupported, image, image->colormap | deps=magick/colormap.h, magick/utility.h, magick/magick.h | apis=VerifyColormapIndex, MagickMonitorFormatted, or, SetImagePixels",
+                "statements": [
+                  "594:                 index=((*p) & (0x01 << bit) ? 0x01 : 0x00);",
+                  "595:                 indexes[x+7-bit]=index;",
+                  "596:                 q[x+7-bit]=image->colormap[index];",
+                  "597:               }",
+                  "598:             p++;",
+                  "599:           }"
+                ],
+                "guards": [],
+                "call_boundary": [
+                  "VerifyColormapIndex",
+                  "MagickMonitorFormatted",
+                  "or",
+                  "SetImagePixels",
+                  "ScaleCharToQuantum"
+                ],
+                "call_edges": [
+                  "ThrowReaderException -> VerifyColormapIndex",
+                  "ThrowReaderException -> MagickMonitorFormatted",
+                  "ThrowReaderException -> or",
+                  "ThrowReaderException -> SetImagePixels",
+                  "ThrowReaderException -> ScaleCharToQuantum"
+                ],
+                "state_transitions": [],
+                "api_terms": [
+                  "VerifyColormapIndex",
+                  "MagickMonitorFormatted",
+                  "or",
+                  "SetImagePixels",
+                  "AccessMutableIndexes",
+                  "ScaleCharToQuantum"
+                ],
+                "related_symbols": [
+                  "CoderError",
+                  "ColormapTypeNotSupported",
+                  "image",
+                  "image->colormap",
+                  "colormap",
+                  "image->columns"
+                ],
+                "verifier": "source-window",
+                "extraction_method": "source_window",
+                "coverage_status": "partial"
+              },
+              "confidence": 0.8
+            },
+            {
+              "evidence_id": "codeql_chain_0",
+              "type": "call_chain",
+              "analyzer": "codeql",
+              "scope": {
+                "repo": "fix.patch",
+                "file": "coders/sun.c",
+                "function": "ThrowReaderException"
+              },
+              "semantic_payload": {
+                "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+                "summary": [
+                  "ThrowReaderException -> VerifyColormapIndex",
+                  "ThrowReaderException -> MagickMonitorFormatted",
+                  "ThrowReaderException -> or",
+                  "ThrowReaderException -> SetImagePixels",
+                  "ThrowReaderException -> ScaleCharToQuantum"
+                ],
+                "coverage_status": "full",
+                "call_edges": [
+                  "ThrowReaderException -> VerifyColormapIndex",
+                  "ThrowReaderException -> MagickMonitorFormatted",
+                  "ThrowReaderException -> or",
+                  "ThrowReaderException -> SetImagePixels",
+                  "ThrowReaderException -> ScaleCharToQuantum"
+                ],
+                "database_status": "missing",
+                "database_create_message": "CodeQL 数据库创建失败: Initializing database at /anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe125_graphicsmagick_cve201712937/evidence/20260424_143500/codeql/codeql/database.\nRunning build command: [/bin/sh, /anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe125_graphicsmagick_cve201712937/evidence/20260424_143500/codeql/codeql/codeql_build_f50oiois.sh]\nRunning command in /anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe125_graphicsmagick_cve201712937/vulnerable: [/bin/sh, /anonymous/home/LLM-Native/v2_exper",
+                "live_query_status": "database_missing"
+              },
+              "evidence_slice": {
+                "kind": "interprocedural_slice",
+                "anchor": {
+                  "patch_file": "coders/sun.c",
+                  "hunk_index": 0,
+                  "source_line": 626
+                },
+                "summary": "ThrowReaderException -> VerifyColormapIndex, ThrowReaderException -> MagickMonitorFormatted, ThrowReaderException -> or, ThrowReaderException -> SetImagePixels",
+                "statements": [
+                  "594:                 index=((*p) & (0x01 << bit) ? 0x01 : 0x00);",
+                  "595:                 indexes[x+7-bit]=index;",
+                  "596:                 q[x+7-bit]=image->colormap[index];",
+                  "597:               }",
+                  "598:             p++;",
+                  "599:           }"
+                ],
+                "guards": [],
+                "call_boundary": [
+                  "VerifyColormapIndex",
+                  "MagickMonitorFormatted",
+                  "or",
+                  "SetImagePixels",
+                  "ScaleCharToQuantum"
+                ],
+                "call_edges": [
+                  "ThrowReaderException -> VerifyColormapIndex",
+                  "ThrowReaderException -> MagickMonitorFormatted",
+                  "ThrowReaderException -> or",
+                  "ThrowReaderException -> SetImagePixels",
+                  "ThrowReaderException -> ScaleCharToQuantum"
+                ],
+                "state_transitions": [],
+                "api_terms": [
+                  "MagickMonitorFormatted",
+                  "SetImagePixels",
+                  "AccessMutableIndexes",
+                  "VerifyColormapIndex",
+                  "or",
+                  "ScaleCharToQuantum"
+                ],
+                "related_symbols": [
+                  "CoderError",
+                  "ColormapTypeNotSupported",
+                  "image",
+                  "image->colormap",
+                  "colormap",
+                  "image->columns"
+                ],
+                "verifier": "source-window",
+                "extraction_method": "source_window",
+                "coverage_status": "full"
+              },
+              "confidence": 0.78
+            }
+          ],
+          "selected_context_summaries": [],
+          "semantic_clause_plan": [
+            {
+              "clause_id": "vulnerable_trigger_clause",
+              "intent": "Trigger on the vulnerable out_of_bounds_read mechanism using evidence-backed path/flow semantics.",
+              "supporting_evidence_ids": [
+                "codeql_flow_0",
+                "codeql_semantic_slice_0",
+                "codeql_chain_0"
+              ],
+              "repair_when": [
+                "semantic_no_hits"
+              ],
+              "focus_functions": [
+                "VerifyColormapIndex"
+              ]
+            },
+            {
+              "clause_id": "patched_silence_clause",
+              "intent": "Stay silent on patched code when patch-added guards, barriers, or safe APIs prove the mechanism is blocked.",
+              "supporting_evidence_ids": [
+                "codeql_semantic_slice_0",
+                "pf_004",
+                "pf_005",
+                "pf_003",
+                "pf_002",
+                "pf_001",
+                "pf_000"
+              ],
+              "repair_when": [],
+              "silencing_conditions": [
+                "patch-introduced barrier pattern: Insert VerifyColormapIndex(image,index) after index computation and before image->colormap[index].",
+                "patch-introduced barrier pattern: Apply the same validation in both the main 8-bit loop and the trailing partial-byte loop.",
+                "patch-introduced barrier pattern: Treat the verifier call as a barrier protecting the subsequent colormap array read, not as a generic logging or formatting change.",
+                "a dominating length/index/end-pointer guard proves the read stays inside the intended region"
+              ]
+            },
+            {
+              "clause_id": "semantic_transfer_clause",
+              "intent": "Generalize along semantic slices and call-chain evidence rather than patch-local syntax.",
+              "supporting_evidence_ids": [
+                "codeql_flow_0",
+                "codeql_semantic_slice_0",
+                "codeql_chain_0"
+              ],
+              "repair_when": [],
+              "analyzer_id": "codeql"
+            },
+            {
+              "clause_id": "analyzer_interface_clause",
+              "intent": "Preserve valid analyzer-facing syntax and interfaces while keeping semantics unchanged.",
+              "supporting_evidence_ids": [
+                "codeql_chain_0",
+                "pf_004",
+                "pf_005",
+                "pf_003",
+                "pf_002",
+                "pf_001"
+              ],
+              "repair_when": [
+                "semantic_execution_error"
+              ],
+              "analyzer_id": "codeql"
+            }
+          ],
+          "repair_directives": [],
+          "constraints": [
+            {
+              "title": "Generalize beyond patch site",
+              "description": "Do not bind the detector to fixed file paths, line numbers, or exact patch strings.",
+              "priority": "high"
+            },
+            {
+              "title": "Preserve vulnerability semantics",
+              "description": "Keep the detector focused on the vulnerability family implied by the patch and evidence.",
+              "priority": "high"
+            },
+            {
+              "title": "Respect analyzer-native form",
+              "description": "Output must be a valid ql_query for codeql.",
+              "priority": "high"
+            },
+            {
+              "title": "Stay within proven mechanism scope",
+              "description": "Generalize only along evidence-supported semantic dimensions. Do not broaden the detector into unrelated globals, APIs, or bug families.",
+              "priority": "high"
+            },
+            {
+              "title": "Honor mechanism contract",
+              "description": "Preserve the mechanism family `memory_read_without_proven_bound` by keeping trigger invariants a read-like sink is reached; the path does not prove the read stays inside the intended region; Patch-backed trigger clue: added or highlighted APIs: VerifyColormapIndex.",
+              "priority": "high"
+            },
+            {
+              "title": "Generalize only on contract axes",
+              "description": "Reuse semantics only along these transfer axes: equivalent index-to-buffer relations across sibling readers; equivalent end-pointer or length guards for the same data role; equivalent interprocedural propagation across adjacent helpers or wrappers.",
+              "priority": "high"
+            },
+            {
+              "title": "Anchor on patch-touched scope",
+              "description": "Use patch-touched files/functions as the semantic anchor for synthesis. Only extend beyond them when the same mechanism is explicitly supported by evidence.",
+              "priority": "high"
+            },
+            {
+              "title": "Encode the patch-added barrier",
+              "description": "model the absence of barriers like Insert VerifyColormapIndex(image,index) after index computation and before image->colormap[index]., Apply the same validation in both the main 8-bit loop and the trailing partial-byte loop., Treat the verifier call as a barrier protecting the subsequent colormap array read, not as a generic logging or formatting change.; use APIs such as VerifyColormapIndex as semantic clues, not string matches.",
+              "priority": "high"
+            },
+            {
+              "title": "Respect patched silence",
+              "description": "Use these no-report conditions when they are semantically proven: patch-introduced barrier pattern: Insert VerifyColormapIndex(image,index) after index computation and before image->colormap[index].; patch-introduced barrier pattern: Apply the same validation in both the main 8-bit loop and the trailing partial-byte loop.; patch-introduced barrier pattern: Treat the verifier call as a barrier protecting the subsequent colormap array read, not as a generic logging or formatting change..",
+              "priority": "high"
+            },
+            {
+              "title": "Model read bounds, not generic indexing",
+              "description": "Require a read-like sink plus missing proof that index, offset, or end pointer stays inside the intended region.",
+              "priority": "high"
+            },
+            {
+              "title": "Prefer semantic predicates",
+              "description": "Prefer reusable predicates, flow steps, and API modeling over patch-location matching.",
+              "priority": "high"
+            },
+            {
+              "title": "No callee-only matching",
+              "description": "Do not report every call to risky APIs by name alone; require an unchecked write/copy condition and absence of a patch-style barrier.",
+              "priority": "high"
+            }
+          ],
+          "implementation_hints": [
+            "Mechanism family: memory_read_without_proven_bound",
+            "Mechanism dimensions: read or dereference sink, buffer or region identity, index/offset/end-pointer relation, guard or sentinel barrier",
+            "Trigger invariants: a read-like sink is reached, the path does not prove the read stays inside the intended region, Patch-backed trigger clue: added or highlighted APIs: VerifyColormapIndex",
+            "Silence invariants: index, size, or end-pointer checks prove the read stays in bounds, patch-added sentinel or length validation blocks the unsafe read, patch-introduced barrier pattern: Insert VerifyColormapIndex(image,index) after index computation and before image->colormap[index].",
+            "Transfer axes: equivalent index-to-buffer relations across sibling readers, equivalent end-pointer or length guards for the same data role, equivalent interprocedural propagation across adjacent helpers or wrappers",
+            "Focus files: coders/sun.c",
+            "Priority functions: VerifyColormapIndex",
+            "Patch-added barriers: Insert VerifyColormapIndex(image,index) after index computation and before image->colormap[index]., Apply the same validation in both the main 8-bit loop and the trailing partial-byte loop., Treat the verifier call as a barrier protecting the subsequent colormap array read, not as a generic logging or formatting change."
+          ],
+          "validation_expectations": [
+            "Vulnerable version should trigger a out_of_bounds_read finding.",
+            "Patched version should stay silent for the same mechanism.",
+            "Semantic validation that executes but returns zero hits is not acceptable; recover coverage with evidence-backed semantics.",
+            "Repair phase may fix syntax/interfaces only; it must not simplify away the core detection logic.",
+            "Generalization must stay inside the mechanism contract transfer axes instead of widening to adjacent bug families.",
+            "Trigger invariant: a read-like sink is reached.",
+            "Trigger invariant: the path does not prove the read stays inside the intended region.",
+            "Patched silence depends on: patch-introduced barrier pattern: Insert VerifyColormapIndex(image,index) after index computation and before image->colormap[index]..",
+            "Patched silence depends on: patch-introduced barrier pattern: Apply the same validation in both the main 8-bit loop and the trailing partial-byte loop.."
+          ]
+        },
+        "evidence_effectiveness": {
+          "baseline_records": 9,
+          "post_validation_records": 10,
+          "new_records": 1,
+          "baseline_missing": [],
+          "post_validation_missing": [],
+          "resolved_missing": [],
+          "improved": true,
+          "summary": "新增 1 条反馈后证据"
+        }
+      }
+    }
+  }
+}

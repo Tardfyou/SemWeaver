@@ -1,0 +1,543 @@
+{
+  "records": [
+    {
+      "evidence_id": "pf_000",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "coders/mat.c",
+        "function": "DestroyImageInfo"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "patch_overview",
+        "label": "Patch overview",
+        "attributes": {
+          "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe416_imagemagick_cve201712877/patches/fix.patch",
+          "changed_files": [
+            "coders/mat.c"
+          ],
+          "changed_file_count": 1,
+          "added_line_count": 2,
+          "deleted_line_count": 2
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "patch_overview",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_001",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "coders/mat.c",
+        "function": "DestroyImageInfo"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "vulnerability_patterns",
+        "label": "Vulnerability patterns inferred from patch",
+        "attributes": {
+          "patterns": [
+            "use_after_free"
+          ],
+          "descriptions": [
+            "补丁前，链表节点 `tmp` 在 `DeleteImageFromList(&tmp)` 后进入失效态，但同一对象可能仍被别名 `image2` 持有；补丁通过在删除前检测 `tmp == image2` 并将 `image2` 置空来阻断后续经 `image2` 的继续访问。"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "vulnerability_patterns",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_002",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "coders/mat.c",
+        "function": "DestroyImageInfo"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "affected_functions",
+        "label": "Functions implicated by removed or fixed code",
+        "attributes": {
+          "functions": [
+            "DestroyImageInfo",
+            "DisableMSCWarning"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "affected_functions",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_003",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "coders/mat.c",
+        "function": "DestroyImageInfo"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "detection_strategy",
+        "label": "Existing patch analysis detection strategy",
+        "attributes": {
+          "primary_pattern": "use_after_free",
+          "check_types": [
+            "local_lifetime_analysis",
+            "alias_invalidation_check",
+            "post_free_use_candidate",
+            "cleanup_path_misuse"
+          ],
+          "entry_points": [
+            "`coders/mat.c` 中包含 `DeleteImageFromList(&tmp)` 的分支",
+            "`coders/mat.c` 中原先调用 `DestroyImageInfo(clone_info)` 的清理路径"
+          ],
+          "data_flow_tracking": false,
+          "cross_file_analysis": false,
+          "suggestions": [
+            "首稿优先命中最小 patch-local 锚点：`DeleteImageFromList(&tmp)` 前是否存在与其他在作用域内图像指针（此处是 `image2`）的别名同一性检查与失效化。",
+            "首稿可直接检测模式：对象 `tmp` 即将被 `DeleteImageFromList` 删除，但同作用域内另一个 `Image *` 变量在删除前未被置空/重绑定，且名字或后续使用显示其仍可能被消费。",
+            "不要一开始把新增 guard `if (tmp == image2)` 写成硬过滤；应先围绕“删除节点后旧别名仍存活”这个 source/sink 关系命中，再把同一性检查/置空作为修复特征或二次收敛。",
+            "针对 `clone_info`，首稿优先匹配 cleanup/error path 上的显式 `Destroy*` 调用被删除这一 fix-shape，查找‘释放后仍继续执行并可能继续传递/返回/间接使用该对象’的局部模式。",
+            "不要把‘旧指针非空’当作对象仍有效的证明；此补丁表明关键在于 freshness/ownership，而不是空值检查。",
+            "当前补丁证据主要是函数内局部生命周期与别名失效，局部 AST/CFG 足够；首稿无需跨文件分析，也不必强依赖复杂数据流。",
+            "二次收敛可加入：删除发生在条件分支中、对象来自链表节点变量赋值（如 `Image *tmp=p;`）、以及同函数后续是否存在对别名变量的访问。"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "detection_strategy",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_004",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "coders/mat.c",
+        "function": "DestroyImageInfo"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "added_guards",
+        "label": "Patch introduces or strengthens guards",
+        "attributes": {
+          "guards": [
+            "if (tmp == image2)"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "added_guards",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_005",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "coders/mat.c",
+        "function": "DestroyImageInfo"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "fix_patterns",
+        "label": "Patch introduces reusable fix patterns",
+        "attributes": {
+          "patterns": [
+            "在销毁/删除对象前，对可能持有同一对象的别名做同一性检查：`if (tmp == image2)`",
+            "若别名命中即先失效化该别名：`image2=(Image *) NULL;`",
+            "随后再执行删除：`DeleteImageFromList(&tmp)`"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "fix_patterns",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "codeql_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "codeql",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "coders/mat.c",
+        "function": "DisableMSCWarning"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "summary": "focus=DisableMSCWarning | state=guard(tmp == image2) | call_edges=DisableMSCWarning -> DestroyQuantumInfo; DisableMSCWarning -> DestroyImageInfo; DisableMSCWarning -> CloseBlob | targets=DestroyQuantumInfo, DestroyImageInfo, CloseBlob, DeleteImageFromList | patch_contracts=DisableMSCWarning: barrier `tmp == image2` around remove_utf8, DestroyQuantumInfo | guards=quantum_info != (QuantumInfo *) NULL; clone_info | symbols=clone_info->file, file, clone_info->filename, filename | deps=MagickCore/pixel-accessor.h, MagickCore/utility-private.h, MagickCore/studio.h | apis=remove_utf8, DestroyQuantumInfo, DestroyImageInfo, RelinquishMagickMemory",
+        "focus_function": "DisableMSCWarning",
+        "call_edges": [
+          "DisableMSCWarning -> DestroyQuantumInfo",
+          "DisableMSCWarning -> DestroyImageInfo",
+          "DisableMSCWarning -> CloseBlob",
+          "DisableMSCWarning -> DeleteImageFromList",
+          "DisableMSCWarning -> fclose",
+          "DisableMSCWarning -> remove_utf8",
+          "DisableMSCWarning -> LogMagickEvent",
+          "DisableMSCWarning -> GetMagickModule"
+        ],
+        "call_targets": [
+          "remove_utf8",
+          "DestroyQuantumInfo",
+          "DestroyImageInfo",
+          "RelinquishMagickMemory"
+        ],
+        "entry_points": [
+          "clone_info->file",
+          "file",
+          "clone_info->filename",
+          "filename",
+          "p->rows",
+          "rows"
+        ],
+        "tracked_symbols": [
+          "tmp",
+          "image2",
+          "Image",
+          "NULL"
+        ],
+        "sink_calls": [],
+        "state_transitions": [
+          "guard(tmp == image2)"
+        ],
+        "statements": [
+          "if (tmp == image2)",
+          "image2=(Image *) NULL;"
+        ],
+        "apis": [
+          "remove_utf8",
+          "DestroyQuantumInfo",
+          "DestroyImageInfo",
+          "RelinquishMagickMemory",
+          "CloseBlob",
+          "DeleteImageFromList"
+        ],
+        "dependencies": [
+          "MagickCore/pixel-accessor.h",
+          "MagickCore/utility-private.h",
+          "MagickCore/studio.h"
+        ],
+        "source_excerpt": "1312:             clone_info->file = NULL;\n1313:             (void) remove_utf8(clone_info->filename);\n1314:           }\n1315:         }\n1316:         }\n1317: \n1318:     if (quantum_info != (QuantumInfo *) NULL)\n1319:       quantum_info=DestroyQuantumInfo(quantum_info);\n1320:     if (clone_info)\n1321:       clone_info=DestroyImageInfo(clone_info);\n1322:   }\n1323: \n1324:   RelinquishMagickMemory(BImgBuff);\n1325:   if (quantum_info != (QuantumInfo *) NULL)\n1326:     quantum_info=DestroyQuantumInfo(quantum_info);\n1327: END_OF_READING:\n1328:   if (clone_info)\n1329:     clone_info=DestroyImageInfo(clone_info);\n1330:   CloseBlob(image);\n1331: \n1332: \n1333:   {\n1334:     Image *p;\n1335:     ssize_t scene=0;\n1336: \n1337:     /*\n1338:       Rewind list, removing any empty images while rewinding.\n1339:     */\n1340:     p=image;\n1341:     image=NULL;\n1342:     while (p != (Image *) NULL)\n1343:       {\n1344:         Image *tmp=p;\n1345:         if ((p->rows == 0) || (p->columns == 0)) {\n1346:           p=p->previous;\n1347:           DeleteImageFromList(&tmp);\n1348:         } else {\n1349:           image=p;\n1350:           p=p->previous;\n1351:         }\n1352:       }\n1353: \n1354:     /*\n1355:       Fix scene numbers\n1356:     */\n1357:     for (p=image; p != (Image *) NULL; p=p->next)\n1358:       p->scene=scene++;\n1359:   }\n1360: \n1361:   if(clone_info != NULL)  /* cleanup garbage file from compression */\n1362:   {\n1363:     if(clone_info->file)\n1364:     {\n1365:       fclose(clone_info->file);\n1366:       clone_info->file = NULL;\n1367:       (void) remove_utf8(clone_info->filename);\n1368:     }\n1369:     DestroyImageInfo(clone_info);\n1370:     clone_info = NULL;\n1371:   }\n1372:   if (logging) (void)LogMagickEvent(CoderEvent,GetMagickModule(),\"return\");\n1373:   if (image==NULL)\n1374:     ThrowReaderException(CorruptImageError,\"ImproperImageHeader\")\n1375:   else\n1376:     if ((image != image2) && (image2 != (Image *) NULL))",
+        "coverage_status": "partial"
+      },
+      "provenance": {
+        "tool": "codeql",
+        "artifact": "source-window:semantic-slice",
+        "confidence": 0.8
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "coders/mat.c",
+          "hunk_index": 0,
+          "source_line": 1325
+        },
+        "summary": "focus=DisableMSCWarning | state=guard(tmp == image2) | call_edges=DisableMSCWarning -> DestroyQuantumInfo; DisableMSCWarning -> DestroyImageInfo; DisableMSCWarning -> CloseBlob | targets=DestroyQuantumInfo, DestroyImageInfo, CloseBlob, DeleteImageFromList | patch_contracts=DisableMSCWarning: barrier `tmp == image2` around remove_utf8, DestroyQuantumInfo | guards=quantum_info != (QuantumInfo *) NULL; clone_info | symbols=clone_info->file, file, clone_info->filename, filename | deps=MagickCore/pixel-accessor.h, MagickCore/utility-private.h, MagickCore/studio.h | apis=remove_utf8, DestroyQuantumInfo, DestroyImageInfo, RelinquishMagickMemory",
+        "statements": [
+          "if (tmp == image2)",
+          "image2=(Image *) NULL;"
+        ],
+        "guards": [],
+        "call_boundary": [
+          "remove_utf8",
+          "DestroyQuantumInfo",
+          "DestroyImageInfo",
+          "RelinquishMagickMemory"
+        ],
+        "call_edges": [
+          "DisableMSCWarning -> DestroyQuantumInfo",
+          "DisableMSCWarning -> DestroyImageInfo",
+          "DisableMSCWarning -> CloseBlob",
+          "DisableMSCWarning -> DeleteImageFromList",
+          "DisableMSCWarning -> fclose",
+          "DisableMSCWarning -> remove_utf8",
+          "DisableMSCWarning -> LogMagickEvent",
+          "DisableMSCWarning -> GetMagickModule"
+        ],
+        "state_transitions": [
+          "guard(tmp == image2)"
+        ],
+        "api_terms": [
+          "remove_utf8",
+          "DestroyQuantumInfo",
+          "DestroyImageInfo",
+          "RelinquishMagickMemory",
+          "CloseBlob",
+          "DeleteImageFromList"
+        ],
+        "related_symbols": [
+          "tmp",
+          "image2",
+          "Image",
+          "NULL"
+        ],
+        "verifier": "source-window",
+        "extraction_method": "source_window",
+        "coverage_status": "partial"
+      }
+    },
+    {
+      "evidence_id": "codeql_flow_0",
+      "type": "dataflow_candidate",
+      "analyzer": "codeql",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "coders/mat.c",
+        "function": "DisableMSCWarning"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "source": "tmp, image2, Image, NULL",
+        "sink": "remove_utf8, DestroyQuantumInfo",
+        "path": [
+          "function:DisableMSCWarning",
+          "guard:tmp == image2",
+          "api:remove_utf8",
+          "api:DestroyQuantumInfo",
+          "DisableMSCWarning -> remove_utf8",
+          "DisableMSCWarning -> DestroyImageInfo"
+        ],
+        "summary": "DisableMSCWarning: barrier `tmp == image2` around remove_utf8, DestroyQuantumInfo",
+        "focus_function": "DisableMSCWarning",
+        "entry_points": [
+          "tmp",
+          "image2",
+          "Image",
+          "NULL",
+          "clone_info->file",
+          "file"
+        ],
+        "call_targets": [
+          "remove_utf8",
+          "DestroyQuantumInfo",
+          "DestroyImageInfo",
+          "RelinquishMagickMemory"
+        ],
+        "state_transitions": [
+          "guard(tmp == image2)"
+        ],
+        "source_excerpt": "1312:             clone_info->file = NULL;\n1313:             (void) remove_utf8(clone_info->filename);\n1314:           }\n1315:         }\n1316:         }\n1317: \n1318:     if (quantum_info != (QuantumInfo *) NULL)\n1319:       quantum_info=DestroyQuantumInfo(quantum_info);\n1320:     if (clone_info)\n1321:       clone_info=DestroyImageInfo(clone_info);\n1322:   }\n1323: \n1324:   RelinquishMagickMemory(BImgBuff);\n1325:   if (quantum_info != (QuantumInfo *) NULL)\n1326:     quantum_info=DestroyQuantumInfo(quantum_info);\n1327: END_OF_READING:\n1328:   if (clone_info)\n1329:     clone_info=DestroyImageInfo(clone_info);\n1330:   CloseBlob(image);\n1331: \n1332: \n1333:   {\n1334:     Image *p;\n1335:     ssize_t scene=0;\n1336: \n1337:     /*\n1338:       Rewind list, removing any empty images while rewinding.\n1339:     */\n1340:     p=image;\n1341:     image=NULL;\n1342:     while (p != (Image *) NULL)\n1343:       {\n1344:         Image *tmp=p;\n1345:         if ((p->rows == 0) || (p->columns == 0)) {\n1346:           p=p->previous;\n1347:           DeleteImageFromList(&tmp);\n1348:         } else {\n1349:           image=p;\n1350:           p=p->previous;\n1351:         }\n1352:       }\n1353: \n1354:     /*\n1355:       Fix scene numbers\n1356:     */\n1357:     for (p=image; p != (Image *) NULL; p=p->next)\n1358:       p->scene=scene++;\n1359:   }\n1360: \n1361:   if(clone_info != NULL)  /* cleanup garbage file from compression */\n1362:   {\n1363:     if(clone_info->file)\n1364:     {\n1365:       fclose(clone_info->file);\n1366:       clone_info->file = NULL;\n1367:       (void) remove_utf8(clone_info->filename);\n1368:     }\n1369:     DestroyImageInfo(clone_info);\n1370:     clone_info = NULL;\n1371:   }\n1372:   if (logging) (void)LogMagickEvent(CoderEvent,GetMagickModule(),\"return\");\n1373:   if (image==NULL)\n1374:     ThrowReaderException(CorruptImageError,\"ImproperImageHeader\")\n1375:   else\n1376:     if ((image != image2) && (image2 != (Image *) NULL))",
+        "live_query_status": "database_missing",
+        "database_status": "missing",
+        "database_create_message": "CodeQL 数据库创建失败: Initializing database at /anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe416_imagemagick_cve201712877/primary/codeql/20260423_151031/codeql/codeql/database.\nRunning build command: [/bin/sh, /anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe416_imagemagick_cve201712877/primary/codeql/20260423_151031/codeql/codeql/codeql_build_7anhryod.sh]\nRunning command in /anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe416_imagemagick_cve201712877/vulnerable: [/bin/sh, /anonymous/home/LLM-Native/v2_ex",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "codeql",
+        "artifact": "source-window:data-flow-seed",
+        "confidence": 0.84
+      },
+      "evidence_slice": {
+        "kind": "flow_witness",
+        "anchor": {
+          "patch_file": "coders/mat.c",
+          "hunk_index": 0,
+          "source_line": 1325
+        },
+        "summary": "DisableMSCWarning: barrier `tmp == image2` around remove_utf8, DestroyQuantumInfo",
+        "statements": [
+          "1293:       /* row scan buffer is no longer needed */",
+          "1294:     RelinquishMagickMemory(BImgBuff);",
+          "1295:     BImgBuff = NULL;",
+          "1296:",
+          "1297:     if(--Frames>0)",
+          "1298:     {"
+        ],
+        "guards": [],
+        "call_boundary": [
+          "remove_utf8, DestroyQuantumInfo"
+        ],
+        "call_edges": [
+          "function:DisableMSCWarning",
+          "guard:tmp == image2",
+          "api:remove_utf8",
+          "api:DestroyQuantumInfo",
+          "DisableMSCWarning -> remove_utf8",
+          "DisableMSCWarning -> DestroyImageInfo"
+        ],
+        "state_transitions": [
+          "guard(tmp == image2)"
+        ],
+        "api_terms": [
+          "remove_utf8",
+          "DestroyQuantumInfo",
+          "DestroyImageInfo",
+          "RelinquishMagickMemory"
+        ],
+        "related_symbols": [
+          "tmp",
+          "image2",
+          "Image",
+          "NULL",
+          "clone_info->file",
+          "file"
+        ],
+        "verifier": "source-window",
+        "extraction_method": "source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "codeql_chain_0",
+      "type": "call_chain",
+      "analyzer": "codeql",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "coders/mat.c",
+        "function": "DisableMSCWarning"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": [
+          "DisableMSCWarning -> DestroyQuantumInfo",
+          "DisableMSCWarning -> DestroyImageInfo",
+          "DisableMSCWarning -> CloseBlob",
+          "DisableMSCWarning -> DeleteImageFromList",
+          "DisableMSCWarning -> fclose",
+          "DisableMSCWarning -> remove_utf8"
+        ],
+        "call_edges": [
+          "DisableMSCWarning -> DestroyQuantumInfo",
+          "DisableMSCWarning -> DestroyImageInfo",
+          "DisableMSCWarning -> CloseBlob",
+          "DisableMSCWarning -> DeleteImageFromList",
+          "DisableMSCWarning -> fclose",
+          "DisableMSCWarning -> remove_utf8",
+          "DisableMSCWarning -> LogMagickEvent",
+          "DisableMSCWarning -> GetMagickModule"
+        ],
+        "live_query_status": "database_missing",
+        "database_status": "missing",
+        "database_create_message": "CodeQL 数据库创建失败: Initializing database at /anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe416_imagemagick_cve201712877/primary/codeql/20260423_151031/codeql/codeql/database.\nRunning build command: [/bin/sh, /anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe416_imagemagick_cve201712877/primary/codeql/20260423_151031/codeql/codeql/codeql_build_7anhryod.sh]\nRunning command in /anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe416_imagemagick_cve201712877/vulnerable: [/bin/sh, /anonymous/home/LLM-Native/v2_ex",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "codeql",
+        "artifact": "source-window:interprocedural-summary",
+        "confidence": 0.78
+      },
+      "evidence_slice": {
+        "kind": "interprocedural_slice",
+        "anchor": {
+          "patch_file": "coders/mat.c",
+          "hunk_index": 0,
+          "source_line": 1325
+        },
+        "summary": "DisableMSCWarning -> DestroyQuantumInfo, DisableMSCWarning -> DestroyImageInfo, DisableMSCWarning -> CloseBlob, DisableMSCWarning -> DeleteImageFromList",
+        "statements": [
+          "1293:       /* row scan buffer is no longer needed */",
+          "1294:     RelinquishMagickMemory(BImgBuff);",
+          "1295:     BImgBuff = NULL;",
+          "1296:",
+          "1297:     if(--Frames>0)",
+          "1298:     {"
+        ],
+        "guards": [],
+        "call_boundary": [
+          "DestroyQuantumInfo",
+          "DestroyImageInfo",
+          "CloseBlob",
+          "DeleteImageFromList",
+          "fclose",
+          "remove_utf8"
+        ],
+        "call_edges": [
+          "DisableMSCWarning -> DestroyQuantumInfo",
+          "DisableMSCWarning -> DestroyImageInfo",
+          "DisableMSCWarning -> CloseBlob",
+          "DisableMSCWarning -> DeleteImageFromList",
+          "DisableMSCWarning -> fclose",
+          "DisableMSCWarning -> remove_utf8",
+          "DisableMSCWarning -> LogMagickEvent",
+          "DisableMSCWarning -> GetMagickModule"
+        ],
+        "state_transitions": [],
+        "api_terms": [
+          "RelinquishMagickMemory",
+          "DeleteImageFromList",
+          "fclose",
+          "remove_utf8",
+          "DestroyQuantumInfo",
+          "DestroyImageInfo"
+        ],
+        "related_symbols": [
+          "clone_info->file",
+          "file",
+          "clone_info->filename",
+          "filename",
+          "p->rows",
+          "rows"
+        ],
+        "verifier": "source-window",
+        "extraction_method": "source_window",
+        "coverage_status": "full"
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "collected_analyzers": [
+    "codeql",
+    "patch"
+  ]
+}

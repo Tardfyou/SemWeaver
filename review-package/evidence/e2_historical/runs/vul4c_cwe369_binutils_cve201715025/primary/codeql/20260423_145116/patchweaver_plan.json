@@ -1,0 +1,788 @@
+{
+  "files_changed": [
+    "bfd/dwarf2.c"
+  ],
+  "file_details": [
+    {
+      "path": "bfd/dwarf2.c",
+      "additions": 2,
+      "deletions": 0,
+      "hunks": 1
+    }
+  ],
+  "vulnerability_patterns": [
+    {
+      "type": "divide_by_zero",
+      "description": "DWARF line program processing used `lh.line_range` as a divisor without validating it was nonzero.",
+      "trigger_conditions": [
+        "A parsed line header sets `lh.line_range` to 0",
+        "Execution reaches opcode handler `DW_LNS_const_add_pc`",
+        "The code evaluates `(255 - lh.opcode_base) / lh.line_range`"
+      ],
+      "fix_patterns": [
+        "Add explicit zero-divisor validation before arithmetic",
+        "Abort current line parsing path via `goto line_fail` on invalid header state"
+      ],
+      "affected_functions": [
+        "unknown"
+      ],
+      "cross_file": false,
+      "source": "llm",
+      "confidence": 0.99,
+      "evidence_lines": [
+        "Added guard: `if (lh.line_range == 0) goto line_fail;`",
+        "Existing risky operation remains after the guard: `((255 - lh.opcode_base) / lh.line_range)` in `DW_LNS_const_add_pc` handling"
+      ]
+    }
+  ],
+  "cross_file_dependencies": [],
+  "detection_strategy": {
+    "primary_pattern": "divide_by_zero",
+    "check_types": [
+      "divisor_zero_guard_analysis",
+      "parser_field_validation_before_arithmetic",
+      "opcode_path_sensitive_arithmetic_checks"
+    ],
+    "entry_points": [
+      "DWARF line program opcode handling in `bfd/dwarf2.c`",
+      "`DW_LNS_const_add_pc` case in the line-state interpreter"
+    ],
+    "data_flow_tracking": true,
+    "cross_file_analysis": false,
+    "suggestions": [
+      "Track parser-derived numeric fields such as `line_range` from header decoding into arithmetic uses.",
+      "Flag divisions where the divisor originates from untrusted object metadata and no dominating nonzero check exists on that path.",
+      "Prefer path-sensitive reasoning around opcode cases rather than generic null/non-null heuristics.",
+      "Model error-path transfers like `goto line_fail` as intended invalid-input rejection semantics."
+    ]
+  },
+  "checker_name_suggestion": "DivideByZeroChecker",
+  "affected_functions": [
+    "unknown"
+  ],
+  "key_functions": [
+    "unknown"
+  ],
+  "patch_semantics": {
+    "added_guards": [
+      "if (lh.line_range == 0)"
+    ],
+    "added_api_calls": [],
+    "removed_api_calls": [],
+    "state_resets": [],
+    "lifecycle_changes": []
+  },
+  "analysis_backend": "llm",
+  "analysis_confidence": 0.99,
+  "analysis_rationale": "The patch adds an explicit guard `if (lh.line_range == 0) goto line_fail;` immediately before arithmetic that divides by `lh.line_range` in the `DW_LNS_const_add_pc` case inside `bfd/dwarf2.c`. This is concrete evidence that malformed DWARF line header data could set `line_range` to zero and trigger division by zero during line program parsing.",
+  "llm_usage": {
+    "prompt_tokens": 5423,
+    "completion_tokens": 487,
+    "total_tokens": 5910,
+    "call_count": 1,
+    "available": true,
+    "model": "gpt-5.4-high"
+  },
+  "patchweaver": {
+    "summary": "Patch suggests divide_by_zero semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=2, metadata refs=0.",
+    "patch_facts": [
+      {
+        "fact_type": "patch_overview",
+        "label": "Patch overview",
+        "attributes": {
+          "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe369_binutils_cve201715025/patches/fix.patch",
+          "changed_files": [
+            "bfd/dwarf2.c"
+          ],
+          "changed_file_count": 1,
+          "added_line_count": 2,
+          "deleted_line_count": 0
+        }
+      },
+      {
+        "fact_type": "vulnerability_patterns",
+        "label": "Vulnerability patterns inferred from patch",
+        "attributes": {
+          "patterns": [
+            "divide_by_zero"
+          ],
+          "descriptions": [
+            "DWARF line program processing used `lh.line_range` as a divisor without validating it was nonzero."
+          ]
+        }
+      },
+      {
+        "fact_type": "affected_functions",
+        "label": "Functions implicated by removed or fixed code",
+        "attributes": {
+          "functions": [
+            "decode_line_info",
+            "unknown"
+          ]
+        }
+      },
+      {
+        "fact_type": "detection_strategy",
+        "label": "Existing patch analysis detection strategy",
+        "attributes": {
+          "primary_pattern": "divide_by_zero",
+          "check_types": [
+            "divisor_zero_guard_analysis",
+            "parser_field_validation_before_arithmetic",
+            "opcode_path_sensitive_arithmetic_checks"
+          ],
+          "entry_points": [
+            "DWARF line program opcode handling in `bfd/dwarf2.c`",
+            "`DW_LNS_const_add_pc` case in the line-state interpreter"
+          ],
+          "data_flow_tracking": true,
+          "cross_file_analysis": false,
+          "suggestions": [
+            "Track parser-derived numeric fields such as `line_range` from header decoding into arithmetic uses.",
+            "Flag divisions where the divisor originates from untrusted object metadata and no dominating nonzero check exists on that path.",
+            "Prefer path-sensitive reasoning around opcode cases rather than generic null/non-null heuristics.",
+            "Model error-path transfers like `goto line_fail` as intended invalid-input rejection semantics."
+          ]
+        }
+      },
+      {
+        "fact_type": "added_guards",
+        "label": "Patch introduces or strengthens guards",
+        "attributes": {
+          "guards": [
+            "if (lh.line_range == 0)"
+          ]
+        }
+      },
+      {
+        "fact_type": "fix_patterns",
+        "label": "Patch introduces reusable fix patterns",
+        "attributes": {
+          "patterns": [
+            "Add explicit zero-divisor validation before arithmetic",
+            "Abort current line parsing path via `goto line_fail` on invalid header state"
+          ]
+        }
+      }
+    ],
+    "mechanism_graph": {
+      "summary": "Patch suggests divide_by_zero semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=2, metadata refs=0.",
+      "primary_patterns": [
+        "divide_by_zero"
+      ],
+      "nodes": [
+        {
+          "node_id": "patch",
+          "kind": "patch",
+          "label": "Security patch",
+          "attributes": {
+            "changed_files": [
+              "bfd/dwarf2.c"
+            ]
+          }
+        },
+        {
+          "node_id": "file_0",
+          "kind": "file",
+          "label": "bfd/dwarf2.c",
+          "attributes": {
+            "path": "bfd/dwarf2.c",
+            "additions": 2,
+            "deletions": 0,
+            "hunks": 1
+          }
+        },
+        {
+          "node_id": "pattern_0",
+          "kind": "pattern",
+          "label": "divide_by_zero",
+          "attributes": {
+            "type": "divide_by_zero",
+            "description": "DWARF line program processing used `lh.line_range` as a divisor without validating it was nonzero.",
+            "trigger_conditions": [
+              "A parsed line header sets `lh.line_range` to 0",
+              "Execution reaches opcode handler `DW_LNS_const_add_pc`",
+              "The code evaluates `(255 - lh.opcode_base) / lh.line_range`"
+            ],
+            "fix_patterns": [
+              "Add explicit zero-divisor validation before arithmetic",
+              "Abort current line parsing path via `goto line_fail` on invalid header state"
+            ],
+            "affected_functions": [
+              "unknown"
+            ],
+            "cross_file": false,
+            "source": "llm",
+            "confidence": 0.99,
+            "evidence_lines": [
+              "Added guard: `if (lh.line_range == 0) goto line_fail;`",
+              "Existing risky operation remains after the guard: `((255 - lh.opcode_base) / lh.line_range)` in `DW_LNS_const_add_pc` handling"
+            ]
+          }
+        },
+        {
+          "node_id": "func_1",
+          "kind": "function",
+          "label": "unknown",
+          "attributes": {
+            "function": "unknown"
+          }
+        },
+        {
+          "node_id": "guard_1",
+          "kind": "guard",
+          "label": "A parsed line header sets `lh.line_range` to 0",
+          "attributes": {
+            "condition": "A parsed line header sets `lh.line_range` to 0"
+          }
+        },
+        {
+          "node_id": "guard_2",
+          "kind": "guard",
+          "label": "Execution reaches opcode handler `DW_LNS_const_add_pc`",
+          "attributes": {
+            "condition": "Execution reaches opcode handler `DW_LNS_const_add_pc`"
+          }
+        },
+        {
+          "node_id": "guard_3",
+          "kind": "guard",
+          "label": "The code evaluates `(255 - lh.opcode_base) / lh.line_range`",
+          "attributes": {
+            "condition": "The code evaluates `(255 - lh.opcode_base) / lh.line_range`"
+          }
+        },
+        {
+          "node_id": "strategy",
+          "kind": "strategy",
+          "label": "divide_by_zero",
+          "attributes": {
+            "primary_pattern": "divide_by_zero",
+            "check_types": [
+              "divisor_zero_guard_analysis",
+              "parser_field_validation_before_arithmetic",
+              "opcode_path_sensitive_arithmetic_checks"
+            ],
+            "entry_points": [
+              "DWARF line program opcode handling in `bfd/dwarf2.c`",
+              "`DW_LNS_const_add_pc` case in the line-state interpreter"
+            ],
+            "data_flow_tracking": true,
+            "cross_file_analysis": false,
+            "suggestions": [
+              "Track parser-derived numeric fields such as `line_range` from header decoding into arithmetic uses.",
+              "Flag divisions where the divisor originates from untrusted object metadata and no dominating nonzero check exists on that path.",
+              "Prefer path-sensitive reasoning around opcode cases rather than generic null/non-null heuristics.",
+              "Model error-path transfers like `goto line_fail` as intended invalid-input rejection semantics."
+            ]
+          }
+        },
+        {
+          "node_id": "func_2",
+          "kind": "function",
+          "label": "decode_line_info",
+          "attributes": {
+            "function": "decode_line_info",
+            "source": "patch_fact"
+          }
+        },
+        {
+          "node_id": "guard_4",
+          "kind": "guard",
+          "label": "if (lh.line_range == 0)",
+          "attributes": {
+            "condition": "if (lh.line_range == 0)",
+            "source": "patch_fact"
+          }
+        },
+        {
+          "node_id": "fix_1",
+          "kind": "fix",
+          "label": "Add explicit zero-divisor validation before arithmetic",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "Add explicit zero-divisor validation before arithmetic"
+          }
+        },
+        {
+          "node_id": "fix_2",
+          "kind": "fix",
+          "label": "Abort current line parsing path via `goto line_fail` on invalid header state",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "Abort current line parsing path via `goto line_fail` on invalid header state"
+          }
+        }
+      ],
+      "edges": [
+        {
+          "source": "patch",
+          "target": "file_0",
+          "relation": "touches",
+          "confidence": 0.95
+        },
+        {
+          "source": "patch",
+          "target": "pattern_0",
+          "relation": "indicates",
+          "confidence": 0.9
+        },
+        {
+          "source": "pattern_0",
+          "target": "func_1",
+          "relation": "affects",
+          "confidence": 0.75
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_1",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_2",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_3",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "patch",
+          "target": "strategy",
+          "relation": "guides",
+          "confidence": 0.85
+        },
+        {
+          "source": "patch",
+          "target": "func_2",
+          "relation": "focuses_on",
+          "confidence": 0.82
+        },
+        {
+          "source": "patch",
+          "target": "guard_4",
+          "relation": "adds_guard",
+          "confidence": 0.84
+        },
+        {
+          "source": "patch",
+          "target": "fix_1",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_2",
+          "relation": "introduces",
+          "confidence": 0.8
+        }
+      ]
+    },
+    "evidence_plan": {
+      "primary_pattern": "divide_by_zero",
+      "hypotheses": [
+        "The patch changes a data propagation condition that should generalize beyond the edited lines."
+      ],
+      "requirements": [
+        {
+          "evidence_type": "patch_fact",
+          "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+          "priority": 100,
+          "preferred_analyzers": [],
+          "confidence": 1.0,
+          "mechanism_refs": [
+            "patch"
+          ]
+        },
+        {
+          "evidence_type": "dataflow_candidate",
+          "reason": "Patch analysis requests data-flow tracking.",
+          "priority": 95,
+          "preferred_analyzers": [
+            "codeql"
+          ],
+          "confidence": 0.9,
+          "mechanism_refs": [
+            "strategy"
+          ]
+        },
+        {
+          "evidence_type": "call_chain",
+          "reason": "Interprocedural call-chain context is needed to generalize the fix pattern.",
+          "priority": 78,
+          "preferred_analyzers": [
+            "codeql"
+          ],
+          "confidence": 0.78,
+          "mechanism_refs": [
+            "strategy"
+          ]
+        }
+      ],
+      "recommended_analyzers": [
+        "codeql"
+      ],
+      "planner_notes": [
+        "Added guards detected in patch diff; path-sensitive evidence should stay near top priority."
+      ],
+      "coverage_gaps": [],
+      "uncertainty_budget": "low",
+      "escalation_triggers": []
+    }
+  },
+  "summary": "Patch suggests divide_by_zero semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=2, metadata refs=0.",
+  "patch_facts": [
+    {
+      "fact_type": "patch_overview",
+      "label": "Patch overview",
+      "attributes": {
+        "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe369_binutils_cve201715025/patches/fix.patch",
+        "changed_files": [
+          "bfd/dwarf2.c"
+        ],
+        "changed_file_count": 1,
+        "added_line_count": 2,
+        "deleted_line_count": 0
+      }
+    },
+    {
+      "fact_type": "vulnerability_patterns",
+      "label": "Vulnerability patterns inferred from patch",
+      "attributes": {
+        "patterns": [
+          "divide_by_zero"
+        ],
+        "descriptions": [
+          "DWARF line program processing used `lh.line_range` as a divisor without validating it was nonzero."
+        ]
+      }
+    },
+    {
+      "fact_type": "affected_functions",
+      "label": "Functions implicated by removed or fixed code",
+      "attributes": {
+        "functions": [
+          "decode_line_info",
+          "unknown"
+        ]
+      }
+    },
+    {
+      "fact_type": "detection_strategy",
+      "label": "Existing patch analysis detection strategy",
+      "attributes": {
+        "primary_pattern": "divide_by_zero",
+        "check_types": [
+          "divisor_zero_guard_analysis",
+          "parser_field_validation_before_arithmetic",
+          "opcode_path_sensitive_arithmetic_checks"
+        ],
+        "entry_points": [
+          "DWARF line program opcode handling in `bfd/dwarf2.c`",
+          "`DW_LNS_const_add_pc` case in the line-state interpreter"
+        ],
+        "data_flow_tracking": true,
+        "cross_file_analysis": false,
+        "suggestions": [
+          "Track parser-derived numeric fields such as `line_range` from header decoding into arithmetic uses.",
+          "Flag divisions where the divisor originates from untrusted object metadata and no dominating nonzero check exists on that path.",
+          "Prefer path-sensitive reasoning around opcode cases rather than generic null/non-null heuristics.",
+          "Model error-path transfers like `goto line_fail` as intended invalid-input rejection semantics."
+        ]
+      }
+    },
+    {
+      "fact_type": "added_guards",
+      "label": "Patch introduces or strengthens guards",
+      "attributes": {
+        "guards": [
+          "if (lh.line_range == 0)"
+        ]
+      }
+    },
+    {
+      "fact_type": "fix_patterns",
+      "label": "Patch introduces reusable fix patterns",
+      "attributes": {
+        "patterns": [
+          "Add explicit zero-divisor validation before arithmetic",
+          "Abort current line parsing path via `goto line_fail` on invalid header state"
+        ]
+      }
+    }
+  ],
+  "mechanism_graph": {
+    "summary": "Patch suggests divide_by_zero semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=2, metadata refs=0.",
+    "primary_patterns": [
+      "divide_by_zero"
+    ],
+    "nodes": [
+      {
+        "node_id": "patch",
+        "kind": "patch",
+        "label": "Security patch",
+        "attributes": {
+          "changed_files": [
+            "bfd/dwarf2.c"
+          ]
+        }
+      },
+      {
+        "node_id": "file_0",
+        "kind": "file",
+        "label": "bfd/dwarf2.c",
+        "attributes": {
+          "path": "bfd/dwarf2.c",
+          "additions": 2,
+          "deletions": 0,
+          "hunks": 1
+        }
+      },
+      {
+        "node_id": "pattern_0",
+        "kind": "pattern",
+        "label": "divide_by_zero",
+        "attributes": {
+          "type": "divide_by_zero",
+          "description": "DWARF line program processing used `lh.line_range` as a divisor without validating it was nonzero.",
+          "trigger_conditions": [
+            "A parsed line header sets `lh.line_range` to 0",
+            "Execution reaches opcode handler `DW_LNS_const_add_pc`",
+            "The code evaluates `(255 - lh.opcode_base) / lh.line_range`"
+          ],
+          "fix_patterns": [
+            "Add explicit zero-divisor validation before arithmetic",
+            "Abort current line parsing path via `goto line_fail` on invalid header state"
+          ],
+          "affected_functions": [
+            "unknown"
+          ],
+          "cross_file": false,
+          "source": "llm",
+          "confidence": 0.99,
+          "evidence_lines": [
+            "Added guard: `if (lh.line_range == 0) goto line_fail;`",
+            "Existing risky operation remains after the guard: `((255 - lh.opcode_base) / lh.line_range)` in `DW_LNS_const_add_pc` handling"
+          ]
+        }
+      },
+      {
+        "node_id": "func_1",
+        "kind": "function",
+        "label": "unknown",
+        "attributes": {
+          "function": "unknown"
+        }
+      },
+      {
+        "node_id": "guard_1",
+        "kind": "guard",
+        "label": "A parsed line header sets `lh.line_range` to 0",
+        "attributes": {
+          "condition": "A parsed line header sets `lh.line_range` to 0"
+        }
+      },
+      {
+        "node_id": "guard_2",
+        "kind": "guard",
+        "label": "Execution reaches opcode handler `DW_LNS_const_add_pc`",
+        "attributes": {
+          "condition": "Execution reaches opcode handler `DW_LNS_const_add_pc`"
+        }
+      },
+      {
+        "node_id": "guard_3",
+        "kind": "guard",
+        "label": "The code evaluates `(255 - lh.opcode_base) / lh.line_range`",
+        "attributes": {
+          "condition": "The code evaluates `(255 - lh.opcode_base) / lh.line_range`"
+        }
+      },
+      {
+        "node_id": "strategy",
+        "kind": "strategy",
+        "label": "divide_by_zero",
+        "attributes": {
+          "primary_pattern": "divide_by_zero",
+          "check_types": [
+            "divisor_zero_guard_analysis",
+            "parser_field_validation_before_arithmetic",
+            "opcode_path_sensitive_arithmetic_checks"
+          ],
+          "entry_points": [
+            "DWARF line program opcode handling in `bfd/dwarf2.c`",
+            "`DW_LNS_const_add_pc` case in the line-state interpreter"
+          ],
+          "data_flow_tracking": true,
+          "cross_file_analysis": false,
+          "suggestions": [
+            "Track parser-derived numeric fields such as `line_range` from header decoding into arithmetic uses.",
+            "Flag divisions where the divisor originates from untrusted object metadata and no dominating nonzero check exists on that path.",
+            "Prefer path-sensitive reasoning around opcode cases rather than generic null/non-null heuristics.",
+            "Model error-path transfers like `goto line_fail` as intended invalid-input rejection semantics."
+          ]
+        }
+      },
+      {
+        "node_id": "func_2",
+        "kind": "function",
+        "label": "decode_line_info",
+        "attributes": {
+          "function": "decode_line_info",
+          "source": "patch_fact"
+        }
+      },
+      {
+        "node_id": "guard_4",
+        "kind": "guard",
+        "label": "if (lh.line_range == 0)",
+        "attributes": {
+          "condition": "if (lh.line_range == 0)",
+          "source": "patch_fact"
+        }
+      },
+      {
+        "node_id": "fix_1",
+        "kind": "fix",
+        "label": "Add explicit zero-divisor validation before arithmetic",
+        "attributes": {
+          "kind": "fix_patterns",
+          "value": "Add explicit zero-divisor validation before arithmetic"
+        }
+      },
+      {
+        "node_id": "fix_2",
+        "kind": "fix",
+        "label": "Abort current line parsing path via `goto line_fail` on invalid header state",
+        "attributes": {
+          "kind": "fix_patterns",
+          "value": "Abort current line parsing path via `goto line_fail` on invalid header state"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "patch",
+        "target": "file_0",
+        "relation": "touches",
+        "confidence": 0.95
+      },
+      {
+        "source": "patch",
+        "target": "pattern_0",
+        "relation": "indicates",
+        "confidence": 0.9
+      },
+      {
+        "source": "pattern_0",
+        "target": "func_1",
+        "relation": "affects",
+        "confidence": 0.75
+      },
+      {
+        "source": "pattern_0",
+        "target": "guard_1",
+        "relation": "requires",
+        "confidence": 0.7
+      },
+      {
+        "source": "pattern_0",
+        "target": "guard_2",
+        "relation": "requires",
+        "confidence": 0.7
+      },
+      {
+        "source": "pattern_0",
+        "target": "guard_3",
+        "relation": "requires",
+        "confidence": 0.7
+      },
+      {
+        "source": "patch",
+        "target": "strategy",
+        "relation": "guides",
+        "confidence": 0.85
+      },
+      {
+        "source": "patch",
+        "target": "func_2",
+        "relation": "focuses_on",
+        "confidence": 0.82
+      },
+      {
+        "source": "patch",
+        "target": "guard_4",
+        "relation": "adds_guard",
+        "confidence": 0.84
+      },
+      {
+        "source": "patch",
+        "target": "fix_1",
+        "relation": "introduces",
+        "confidence": 0.8
+      },
+      {
+        "source": "patch",
+        "target": "fix_2",
+        "relation": "introduces",
+        "confidence": 0.8
+      }
+    ]
+  },
+  "evidence_plan": {
+    "primary_pattern": "divide_by_zero",
+    "hypotheses": [
+      "The patch changes a data propagation condition that should generalize beyond the edited lines."
+    ],
+    "requirements": [
+      {
+        "evidence_type": "patch_fact",
+        "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+        "priority": 100,
+        "preferred_analyzers": [],
+        "confidence": 1.0,
+        "mechanism_refs": [
+          "patch"
+        ]
+      },
+      {
+        "evidence_type": "dataflow_candidate",
+        "reason": "Patch analysis requests data-flow tracking.",
+        "priority": 95,
+        "preferred_analyzers": [
+          "codeql"
+        ],
+        "confidence": 0.9,
+        "mechanism_refs": [
+          "strategy"
+        ]
+      },
+      {
+        "evidence_type": "call_chain",
+        "reason": "Interprocedural call-chain context is needed to generalize the fix pattern.",
+        "priority": 78,
+        "preferred_analyzers": [
+          "codeql"
+        ],
+        "confidence": 0.78,
+        "mechanism_refs": [
+          "strategy"
+        ]
+      }
+    ],
+    "recommended_analyzers": [
+      "codeql"
+    ],
+    "planner_notes": [
+      "Added guards detected in patch diff; path-sensitive evidence should stay near top priority."
+    ],
+    "coverage_gaps": [],
+    "uncertainty_budget": "low",
+    "escalation_triggers": []
+  }
+}

@@ -1,0 +1,325 @@
+{
+  "success": true,
+  "validation_requested": true,
+  "functional_validation_passed": true,
+  "semantic_target_hit": true,
+  "validation_state": "passed",
+  "semantic_acceptance": true,
+  "semantic_acceptance_summary": "漏洞版 patch 文件至少命中 1 条",
+  "checker_name": "NegativeCountToSizeConsumer",
+  "artifact_display_name": "NegativeCountToSizeConsumer",
+  "output_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe190_binutils_cve201714745/primary/codeql/20260423_134322/codeql/NegativeCountToSizeConsumer.ql",
+  "source_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe190_binutils_cve201714745/primary/codeql/20260423_134322/codeql/NegativeCountToSizeConsumer.ql",
+  "iterations": 4,
+  "compile_attempts": 0,
+  "error": "",
+  "validation": {
+    "stage": "semantic",
+    "analyzer": "codeql",
+    "success": true,
+    "execution_time": 19.521595239639282,
+    "error_message": "",
+    "diagnostics": [
+      {
+        "file_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe190_binutils_cve201714745/vulnerable/bfd/elf64-x86-64.c",
+        "line": 6722,
+        "column": 3,
+        "severity": "warning",
+        "message": "custom.NegativeCountToSizeConsumer: a signed count/error-code flows into a non-negative element-count consumer without a dominating negative-value guard.",
+        "source": "codeql",
+        "code": "#select",
+        "suggestion": ""
+      }
+    ],
+    "diagnostics_count": 1,
+    "warnings_count": 1,
+    "errors_count": 0,
+    "environment_blocked": false,
+    "environment_block_reason": "",
+    "validation_target": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe190_binutils_cve201714745/vulnerable",
+    "all_diagnostics_count": 1,
+    "generated_diagnostics_count": 1,
+    "patch_targets": [
+      "bfd/elf64-x86-64.c"
+    ]
+  },
+  "llm_usage": {
+    "prompt_tokens": 31785,
+    "completion_tokens": 1811,
+    "total_tokens": 33596,
+    "call_count": 4,
+    "available": true,
+    "model": "gpt-5.4-high"
+  },
+  "artifact_metrics": {
+    "path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe190_binutils_cve201714745/primary/codeql/20260423_134322/codeql/NegativeCountToSizeConsumer.ql",
+    "total_lines": 103,
+    "nonempty_lines": 91,
+    "char_count": 2963,
+    "byte_count": 3091
+  },
+  "artifact_delta": {},
+  "artifact_review": {
+    "success": true,
+    "error": "",
+    "findings": []
+  },
+  "evidence_records": 0,
+  "missing_evidence": [],
+  "evidence_degraded": false,
+  "semantic_slice_records": 0,
+  "context_summary_records": 0,
+  "slice_coverage": "missing",
+  "verifier_backed_slices": 0,
+  "slice_kinds": {},
+  "evidence_escalation": {},
+  "validation_feedback_records": 1,
+  "validation_feedback_summary": "- validation_outcome @ semantic_validation: semantic_no_hits [coverage=empty]",
+  "validation_feedback_history": [
+    {
+      "analyzer": "codeql",
+      "phase": "initial_validation",
+      "summary": "- validation_outcome @ semantic_validation: semantic_no_hits [coverage=empty]"
+    }
+  ],
+  "refinement_attempted": false,
+  "refinement_adopted": false,
+  "refinement_iterations_attempted": 0,
+  "refinement_skipped_reason": "",
+  "last_refinement_candidate_success": false,
+  "last_refinement_candidate_error": "",
+  "last_refinement_candidate_artifact_review": {},
+  "last_refinement_candidate_output_path": "",
+  "post_validation_evidence_records": 1,
+  "post_validation_missing_evidence": [],
+  "post_validation_semantic_slice_records": 0,
+  "post_validation_context_summary_records": 0,
+  "post_validation_slice_coverage": "missing",
+  "synthesis_input": {
+    "analyzer_id": "codeql",
+    "detector_artifact": "ql_query",
+    "primary_pattern": "unknown",
+    "objective": "Synthesize a reusable query centered on the patch-evidenced semantic mechanism, interprocedural flow, and API or state contract, without hard-coding an uncertain vulnerability label.",
+    "mechanism_contract": {
+      "mechanism_family": "generic_vulnerability_mechanism",
+      "semantic_dimensions": [
+        "vulnerability trigger",
+        "patch-introduced barrier",
+        "local state or flow relation"
+      ],
+      "trigger_invariants": [
+        "the vulnerable mechanism is reachable on a feasible path",
+        "the path lacks the barrier introduced by the patch",
+        "Patch-backed trigger clue: added guard: if (dynrelcount < 0)",
+        "Patch-backed trigger clue: detection hints: Track functions that return counts with negative values as error sentinels and flag uses that pass them unchanged into allocation, copy, iteration, or sort APIs., Prefer reasoning about missing range validation on count/length values over keyword matching on `qsort` alone., Model library calls like `qsort` as requiring a nonnegative, trusted element count; negative signed values may be implicitly converted to large unsigned sizes."
+      ],
+      "silence_invariants": [
+        "patch-introduced guards, barriers, or safe APIs must suppress findings",
+        "length/capacity guard present: if (dynrelcount < 0)"
+      ],
+      "transfer_axes": [
+        "only generalize along evidence-backed state, guard, flow, or API-role equivalence"
+      ],
+      "forbidden_shortcuts": [
+        "bind the detector to fixed file paths, line numbers, or exact patch strings",
+        "broaden into unrelated bug families just to improve hit count",
+        "use the patch text itself as the matching rule",
+        "widen to unrelated bug families without evidence",
+        "callee-only matching or stringified guard inference instead of structured predicates"
+      ],
+      "evidence_backed_axes": []
+    },
+    "detector_name_hint": "NegativeCountToSizeConsumer",
+    "focus_files": [
+      "bfd/elf64-x86-64.c"
+    ],
+    "focus_functions": [
+      "elf_section_data"
+    ],
+    "hypotheses": [
+      "The patch changes a data propagation condition that should generalize beyond the edited lines.",
+      "The vulnerability mechanism crosses file boundaries and should not be captured with local-only reasoning."
+    ],
+    "required_evidence_types": [
+      "patch_fact",
+      "dataflow_candidate",
+      "semantic_slice",
+      "call_chain"
+    ],
+    "missing_evidence_types": [],
+    "evidence_degraded": false,
+    "patch_mechanism_signals": [
+      "added guard: if (dynrelcount < 0)",
+      "detection hints: Track functions that return counts with negative values as error sentinels and flag uses that pass them unchanged into allocation, copy, iteration, or sort APIs., Prefer reasoning about missing range validation on count/length values over keyword matching on `qsort` alone., Model library calls like `qsort` as requiring a nonnegative, trusted element count; negative signed values may be implicitly converted to large unsigned sizes."
+    ],
+    "silencing_conditions": [
+      "length/capacity guard present: if (dynrelcount < 0)"
+    ],
+    "retry_guidance": [],
+    "selected_evidence_ids": [],
+    "selected_evidence": [],
+    "semantic_slice_count": 0,
+    "context_summary_count": 0,
+    "semantic_slice_coverage": "missing",
+    "selected_semantic_slice_ids": [],
+    "selected_context_summary_ids": [],
+    "selected_semantic_slices": [],
+    "selected_context_summaries": [],
+    "semantic_clause_plan": [
+      {
+        "clause_id": "vulnerable_trigger_clause",
+        "intent": "Trigger on the vulnerable unknown mechanism using evidence-backed path/flow semantics.",
+        "supporting_evidence_ids": [],
+        "repair_when": [
+          "semantic_no_hits"
+        ],
+        "focus_functions": [
+          "elf_section_data"
+        ]
+      },
+      {
+        "clause_id": "patched_silence_clause",
+        "intent": "Stay silent on patched code when patch-added guards, barriers, or safe APIs prove the mechanism is blocked.",
+        "supporting_evidence_ids": [],
+        "repair_when": [],
+        "silencing_conditions": [
+          "length/capacity guard present: if (dynrelcount < 0)"
+        ]
+      },
+      {
+        "clause_id": "semantic_transfer_clause",
+        "intent": "Generalize along semantic slices and call-chain evidence rather than patch-local syntax.",
+        "supporting_evidence_ids": [],
+        "repair_when": [],
+        "analyzer_id": "codeql"
+      },
+      {
+        "clause_id": "analyzer_interface_clause",
+        "intent": "Preserve valid analyzer-facing syntax and interfaces while keeping semantics unchanged.",
+        "supporting_evidence_ids": [],
+        "repair_when": [
+          "semantic_execution_error"
+        ],
+        "analyzer_id": "codeql"
+      }
+    ],
+    "repair_directives": [],
+    "constraints": [
+      {
+        "title": "Generalize beyond patch site",
+        "description": "Do not bind the detector to fixed file paths, line numbers, or exact patch strings.",
+        "priority": "high"
+      },
+      {
+        "title": "Preserve vulnerability semantics",
+        "description": "Keep the detector focused on the vulnerability family implied by the patch and evidence.",
+        "priority": "high"
+      },
+      {
+        "title": "Respect analyzer-native form",
+        "description": "Output must be a valid ql_query for codeql.",
+        "priority": "high"
+      },
+      {
+        "title": "Stay within proven mechanism scope",
+        "description": "Generalize only along evidence-supported semantic dimensions. Do not broaden the detector into unrelated globals, APIs, or bug families.",
+        "priority": "high"
+      },
+      {
+        "title": "Honor mechanism contract",
+        "description": "Preserve the mechanism family `generic_vulnerability_mechanism` by keeping trigger invariants the vulnerable mechanism is reachable on a feasible path; the path lacks the barrier introduced by the patch; Patch-backed trigger clue: added guard: if (dynrelcount < 0).",
+        "priority": "high"
+      },
+      {
+        "title": "Generalize only on contract axes",
+        "description": "Reuse semantics only along these transfer axes: only generalize along evidence-backed state, guard, flow, or API-role equivalence.",
+        "priority": "high"
+      },
+      {
+        "title": "Anchor on patch-touched scope",
+        "description": "Use patch-touched files/functions as the semantic anchor for synthesis. Only extend beyond them when the same mechanism is explicitly supported by evidence.",
+        "priority": "high"
+      },
+      {
+        "title": "Encode the patch-added barrier",
+        "description": "treat guards such as if (dynrelcount < 0) as semantic barriers.",
+        "priority": "high"
+      },
+      {
+        "title": "Respect patched silence",
+        "description": "Use these no-report conditions when they are semantically proven: length/capacity guard present: if (dynrelcount < 0).",
+        "priority": "high"
+      },
+      {
+        "title": "Prefer semantic predicates",
+        "description": "Prefer reusable predicates, flow steps, and API modeling over patch-location matching.",
+        "priority": "high"
+      },
+      {
+        "title": "No callee-only matching",
+        "description": "Do not report every call to risky APIs by name alone; require an unchecked write/copy condition and absence of a patch-style barrier.",
+        "priority": "high"
+      }
+    ],
+    "implementation_hints": [
+      "Mechanism family: generic_vulnerability_mechanism",
+      "Mechanism dimensions: vulnerability trigger, patch-introduced barrier, local state or flow relation",
+      "Trigger invariants: the vulnerable mechanism is reachable on a feasible path, the path lacks the barrier introduced by the patch, Patch-backed trigger clue: added guard: if (dynrelcount < 0)",
+      "Silence invariants: patch-introduced guards, barriers, or safe APIs must suppress findings, length/capacity guard present: if (dynrelcount < 0)",
+      "Transfer axes: only generalize along evidence-backed state, guard, flow, or API-role equivalence",
+      "Focus files: bfd/elf64-x86-64.c",
+      "Priority functions: elf_section_data",
+      "Silence condition: length/capacity guard present: if (dynrelcount < 0)"
+    ],
+    "validation_expectations": [
+      "Vulnerable version should trigger a unknown finding.",
+      "Patched version should stay silent for the same mechanism.",
+      "Semantic validation that executes but returns zero hits is not acceptable; recover coverage with evidence-backed semantics.",
+      "Repair phase may fix syntax/interfaces only; it must not simplify away the core detection logic.",
+      "Generalization must stay inside the mechanism contract transfer axes instead of widening to adjacent bug families.",
+      "Trigger invariant: the vulnerable mechanism is reachable on a feasible path.",
+      "Trigger invariant: the path lacks the barrier introduced by the patch.",
+      "Patched silence depends on: length/capacity guard present: if (dynrelcount < 0)."
+    ]
+  },
+  "evidence_effectiveness": {
+    "baseline_records": 0,
+    "post_validation_records": 1,
+    "new_records": 1,
+    "baseline_missing": [],
+    "post_validation_missing": [],
+    "resolved_missing": [],
+    "improved": true,
+    "summary": "新增 1 条反馈后证据"
+  },
+  "fixed_validation": {
+    "stage": "semantic",
+    "analyzer": "codeql",
+    "success": true,
+    "execution_time": 6.8531248569488525,
+    "error_message": "",
+    "diagnostics": [
+      {
+        "file_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe190_binutils_cve201714745/fixed/bfd/elf64-x86-64.c",
+        "line": 6724,
+        "column": 3,
+        "severity": "warning",
+        "message": "custom.NegativeCountToSizeConsumer: a signed count/error-code flows into a non-negative element-count consumer without a dominating negative-value guard.",
+        "source": "codeql",
+        "code": "#select",
+        "suggestion": ""
+      }
+    ],
+    "diagnostics_count": 1,
+    "warnings_count": 1,
+    "errors_count": 0,
+    "environment_blocked": false,
+    "environment_block_reason": "",
+    "validation_target": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe190_binutils_cve201714745/fixed",
+    "all_diagnostics_count": 1,
+    "generated_diagnostics_count": 1,
+    "patch_targets": [
+      "bfd/elf64-x86-64.c"
+    ]
+  }
+}

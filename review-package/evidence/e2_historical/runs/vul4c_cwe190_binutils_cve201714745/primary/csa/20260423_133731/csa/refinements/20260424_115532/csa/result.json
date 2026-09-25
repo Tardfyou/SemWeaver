@@ -1,0 +1,311 @@
+{
+  "success": true,
+  "validation_requested": true,
+  "functional_validation_passed": true,
+  "semantic_target_hit": true,
+  "validation_state": "passed",
+  "semantic_acceptance": true,
+  "semantic_acceptance_summary": "功能验证执行成功：漏洞版本补丁目标命中 1 次，修复版本补丁目标静默",
+  "checker_name": "UncheckedNegativeCountToSizeChecker",
+  "artifact_display_name": "UncheckedNegativeCountToSizeChecker",
+  "output_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe190_binutils_cve201714745/primary/csa/20260423_133731/csa/refinements/20260424_115532/csa/UncheckedNegativeCountToSizeChecker.so",
+  "source_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe190_binutils_cve201714745/primary/csa/20260423_133731/csa/refinements/20260424_115532/csa/UncheckedNegativeCountToSizeChecker.cpp",
+  "iterations": 0,
+  "compile_attempts": 0,
+  "error": "",
+  "validation": {
+    "stage": "semantic",
+    "analyzer": "csa",
+    "success": true,
+    "execution_time": 8.806431,
+    "error_message": "",
+    "diagnostics": [
+      {
+        "file_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe190_binutils_cve201714745/vulnerable/bfd/elf64-x86-64.c",
+        "line": 6669,
+        "column": 1,
+        "severity": "warning",
+        "message": "custom.UncheckedNegativeCountToSizeChecker: a signed count/error value reaches qsort as the element count without a preceding non-negative guard (count=dynrelcount) [custom.UncheckedNegativeCountToSizeChecker]",
+        "source": "csa",
+        "code": "",
+        "suggestion": ""
+      }
+    ],
+    "diagnostics_count": 1,
+    "all_diagnostics_count": 1,
+    "generated_diagnostics_count": 1,
+    "warnings_count": 1,
+    "errors_count": 0,
+    "environment_blocked": false,
+    "environment_block_reason": "",
+    "validation_target": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe190_binutils_cve201714745/vulnerable/bfd/elf64-x86-64.c",
+    "diagnostics_filtered": true,
+    "patch_targets": [
+      "bfd/elf64-x86-64.c"
+    ]
+  },
+  "llm_usage": {
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+    "total_tokens": 0,
+    "call_count": 0,
+    "available": false,
+    "model": ""
+  },
+  "artifact_metrics": {
+    "path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe190_binutils_cve201714745/primary/csa/20260423_133731/csa/refinements/20260424_115532/csa/UncheckedNegativeCountToSizeChecker.cpp",
+    "total_lines": 613,
+    "nonempty_lines": 520,
+    "char_count": 18252,
+    "byte_count": 18252
+  },
+  "artifact_delta": {
+    "delta_total_lines": 168,
+    "delta_nonempty_lines": 142,
+    "delta_char_count": 9565,
+    "delta_byte_count": 9565,
+    "growth_ratio": 1.375661
+  },
+  "artifact_review": {},
+  "evidence_records": 0,
+  "missing_evidence": [],
+  "evidence_degraded": false,
+  "semantic_slice_records": 0,
+  "context_summary_records": 0,
+  "slice_coverage": "missing",
+  "verifier_backed_slices": 0,
+  "slice_kinds": {},
+  "evidence_escalation": {},
+  "validation_feedback_records": 1,
+  "validation_feedback_summary": "- validation_outcome @ semantic_validation: patch-target validation hit 1 generated diagnostic on vulnerable target and 0 on fixed target [coverage=patch_target_only]",
+  "validation_feedback_history": [
+    {
+      "analyzer": "csa",
+      "phase": "manual_patch_target_validation",
+      "summary": "- validation_outcome @ semantic_validation: patch-target validation hit 1 generated diagnostic on vulnerable target and 0 on fixed target [coverage=patch_target_only]"
+    }
+  ],
+  "refinement_attempted": true,
+  "refinement_adopted": true,
+  "refinement_iterations_attempted": 1,
+  "refinement_skipped_reason": "",
+  "last_refinement_candidate_success": true,
+  "last_refinement_candidate_error": "",
+  "last_refinement_candidate_artifact_review": {
+    "success": true,
+    "error": "",
+    "findings": []
+  },
+  "last_refinement_candidate_output_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe190_binutils_cve201714745/primary/csa/20260423_133731/csa/refinements/20260424_115532/csa/UncheckedNegativeCountToSizeChecker.so",
+  "post_validation_evidence_records": 1,
+  "post_validation_missing_evidence": [],
+  "post_validation_semantic_slice_records": 0,
+  "post_validation_context_summary_records": 0,
+  "post_validation_slice_coverage": "missing",
+  "synthesis_input": {
+    "analyzer_id": "csa",
+    "detector_artifact": "checker_plugin",
+    "primary_pattern": "unknown",
+    "objective": "Synthesize a path-sensitive detector that encodes the patch-evidenced local state, guards, and lifecycle mechanism, while remaining open to the true vulnerability family being uncertain.",
+    "mechanism_contract": {
+      "mechanism_family": "generic_vulnerability_mechanism",
+      "semantic_dimensions": [
+        "vulnerability trigger",
+        "patch-introduced barrier",
+        "local state or flow relation"
+      ],
+      "trigger_invariants": [
+        "the vulnerable mechanism is reachable on a feasible path",
+        "the path lacks the barrier introduced by the patch",
+        "Patch-backed trigger clue: added guard: if (dynrelcount < 0)",
+        "Patch-backed trigger clue: detection hints: Track integer results from producer APIs that can return negative error codes and verify they are range-checked before use as `size_t`-like counts, Prefer reasoning about missing validation of authoritative return values over keyword matching on allocation or sorting APIs, Flag paths where a signed count flows into `qsort`, loops, allocations, or memcpy-like APIs without a non-negative guard"
+      ],
+      "silence_invariants": [
+        "patch-introduced guards, barriers, or safe APIs must suppress findings",
+        "length/capacity guard present: if (dynrelcount < 0)",
+        "patch-introduced barrier pattern: Validate signed count/error returns before using them as collection sizes",
+        "patch-introduced barrier pattern: Early-return on invalid negative counts before sort or iteration"
+      ],
+      "transfer_axes": [
+        "only generalize along evidence-backed state, guard, flow, or API-role equivalence"
+      ],
+      "forbidden_shortcuts": [
+        "bind the detector to fixed file paths, line numbers, or exact patch strings",
+        "broaden into unrelated bug families just to improve hit count",
+        "use the patch text itself as the matching rule",
+        "widen to unrelated bug families without evidence",
+        "placeholder helper logic or empty ProgramState modeling"
+      ],
+      "evidence_backed_axes": []
+    },
+    "detector_name_hint": "NegativeCountValidationChecker",
+    "focus_files": [
+      "bfd/elf64-x86-64.c"
+    ],
+    "focus_functions": [
+      "unknown"
+    ],
+    "hypotheses": [
+      "The patch changes a data propagation condition that should generalize beyond the edited lines.",
+      "The vulnerability mechanism crosses file boundaries and should not be captured with local-only reasoning.",
+      "The fix widens arithmetic carriers or restores a wider numeric domain before a size-related sink."
+    ],
+    "required_evidence_types": [
+      "patch_fact",
+      "dataflow_candidate",
+      "semantic_slice",
+      "state_transition",
+      "call_chain"
+    ],
+    "missing_evidence_types": [],
+    "evidence_degraded": false,
+    "patch_mechanism_signals": [
+      "added guard: if (dynrelcount < 0)",
+      "detection hints: Track integer results from producer APIs that can return negative error codes and verify they are range-checked before use as `size_t`-like counts, Prefer reasoning about missing validation of authoritative return values over keyword matching on allocation or sorting APIs, Flag paths where a signed count flows into `qsort`, loops, allocations, or memcpy-like APIs without a non-negative guard"
+    ],
+    "silencing_conditions": [
+      "length/capacity guard present: if (dynrelcount < 0)",
+      "patch-introduced barrier pattern: Validate signed count/error returns before using them as collection sizes",
+      "patch-introduced barrier pattern: Early-return on invalid negative counts before sort or iteration"
+    ],
+    "retry_guidance": [],
+    "selected_evidence_ids": [],
+    "selected_evidence": [],
+    "semantic_slice_count": 0,
+    "context_summary_count": 0,
+    "semantic_slice_coverage": "missing",
+    "selected_semantic_slice_ids": [],
+    "selected_context_summary_ids": [],
+    "selected_semantic_slices": [],
+    "selected_context_summaries": [],
+    "semantic_clause_plan": [
+      {
+        "clause_id": "vulnerable_trigger_clause",
+        "intent": "Trigger on the vulnerable unknown mechanism using evidence-backed path/flow semantics.",
+        "supporting_evidence_ids": [],
+        "repair_when": [
+          "semantic_no_hits"
+        ],
+        "focus_functions": [
+          "unknown"
+        ]
+      },
+      {
+        "clause_id": "patched_silence_clause",
+        "intent": "Stay silent on patched code when patch-added guards, barriers, or safe APIs prove the mechanism is blocked.",
+        "supporting_evidence_ids": [],
+        "repair_when": [],
+        "silencing_conditions": [
+          "length/capacity guard present: if (dynrelcount < 0)",
+          "patch-introduced barrier pattern: Validate signed count/error returns before using them as collection sizes",
+          "patch-introduced barrier pattern: Early-return on invalid negative counts before sort or iteration"
+        ]
+      },
+      {
+        "clause_id": "semantic_transfer_clause",
+        "intent": "Generalize along semantic slices and call-chain evidence rather than patch-local syntax.",
+        "supporting_evidence_ids": [],
+        "repair_when": [],
+        "analyzer_id": "csa"
+      },
+      {
+        "clause_id": "analyzer_interface_clause",
+        "intent": "Preserve valid analyzer-facing syntax and interfaces while keeping semantics unchanged.",
+        "supporting_evidence_ids": [],
+        "repair_when": [
+          "semantic_execution_error"
+        ],
+        "analyzer_id": "csa"
+      }
+    ],
+    "repair_directives": [],
+    "constraints": [
+      {
+        "title": "Generalize beyond patch site",
+        "description": "Do not bind the detector to fixed file paths, line numbers, or exact patch strings.",
+        "priority": "high"
+      },
+      {
+        "title": "Preserve vulnerability semantics",
+        "description": "Keep the detector focused on the vulnerability family implied by the patch and evidence.",
+        "priority": "high"
+      },
+      {
+        "title": "Respect analyzer-native form",
+        "description": "Output must be a valid checker_plugin for csa.",
+        "priority": "high"
+      },
+      {
+        "title": "Stay within proven mechanism scope",
+        "description": "Generalize only along evidence-supported semantic dimensions. Do not broaden the detector into unrelated globals, APIs, or bug families.",
+        "priority": "high"
+      },
+      {
+        "title": "Honor mechanism contract",
+        "description": "Preserve the mechanism family `generic_vulnerability_mechanism` by keeping trigger invariants the vulnerable mechanism is reachable on a feasible path; the path lacks the barrier introduced by the patch; Patch-backed trigger clue: added guard: if (dynrelcount < 0).",
+        "priority": "high"
+      },
+      {
+        "title": "Generalize only on contract axes",
+        "description": "Reuse semantics only along these transfer axes: only generalize along evidence-backed state, guard, flow, or API-role equivalence.",
+        "priority": "high"
+      },
+      {
+        "title": "Anchor on patch-touched scope",
+        "description": "Use patch-touched files/functions as the semantic anchor for synthesis. Only extend beyond them when the same mechanism is explicitly supported by evidence.",
+        "priority": "high"
+      },
+      {
+        "title": "Encode the patch-added barrier",
+        "description": "model the absence of barriers like Validate signed count/error returns before using them as collection sizes, Early-return on invalid negative counts before sort or iteration; treat guards such as if (dynrelcount < 0) as semantic barriers.",
+        "priority": "high"
+      },
+      {
+        "title": "Respect patched silence",
+        "description": "Use these no-report conditions when they are semantically proven: length/capacity guard present: if (dynrelcount < 0); patch-introduced barrier pattern: Validate signed count/error returns before using them as collection sizes; patch-introduced barrier pattern: Early-return on invalid negative counts before sort or iteration.",
+        "priority": "high"
+      },
+      {
+        "title": "Use path-sensitive evidence",
+        "description": "Prefer guards, state transitions, and lifecycle facts over broad textual matching.",
+        "priority": "high"
+      },
+      {
+        "title": "No placeholder helper logic",
+        "description": "Helper predicates must inspect AST/program state and must not be unconditional return-true/return-false stubs.",
+        "priority": "high"
+      }
+    ],
+    "implementation_hints": [
+      "Mechanism family: generic_vulnerability_mechanism",
+      "Mechanism dimensions: vulnerability trigger, patch-introduced barrier, local state or flow relation",
+      "Trigger invariants: the vulnerable mechanism is reachable on a feasible path, the path lacks the barrier introduced by the patch, Patch-backed trigger clue: added guard: if (dynrelcount < 0)",
+      "Silence invariants: patch-introduced guards, barriers, or safe APIs must suppress findings, length/capacity guard present: if (dynrelcount < 0), patch-introduced barrier pattern: Validate signed count/error returns before using them as collection sizes",
+      "Transfer axes: only generalize along evidence-backed state, guard, flow, or API-role equivalence",
+      "Focus files: bfd/elf64-x86-64.c",
+      "Priority functions: unknown",
+      "Patch-added barriers: Validate signed count/error returns before using them as collection sizes, Early-return on invalid negative counts before sort or iteration"
+    ],
+    "validation_expectations": [
+      "Vulnerable version should trigger a unknown finding.",
+      "Patched version should stay silent for the same mechanism.",
+      "Semantic validation that executes but returns zero hits is not acceptable; recover coverage with evidence-backed semantics.",
+      "Repair phase may fix syntax/interfaces only; it must not simplify away the core detection logic.",
+      "Generalization must stay inside the mechanism contract transfer axes instead of widening to adjacent bug families.",
+      "Trigger invariant: the vulnerable mechanism is reachable on a feasible path.",
+      "Trigger invariant: the path lacks the barrier introduced by the patch.",
+      "Patched silence depends on: length/capacity guard present: if (dynrelcount < 0).",
+      "Patched silence depends on: patch-introduced barrier pattern: Validate signed count/error returns before using them as collection sizes."
+    ]
+  },
+  "evidence_effectiveness": {
+    "baseline_records": 0,
+    "post_validation_records": 1,
+    "new_records": 1,
+    "baseline_missing": [],
+    "post_validation_missing": [],
+    "resolved_missing": [],
+    "improved": true,
+    "summary": "新增 1 条反馈后证据"
+  }
+}

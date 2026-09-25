@@ -1,0 +1,927 @@
+{
+  "meta": {
+    "generated_at": "20260423_141618",
+    "analyzer_type": "codeql",
+    "workflow_mode": "generate",
+    "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe190_jasper_cve20169387/patches/fix.patch",
+    "validate_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe190_jasper_cve20169387/vulnerable",
+    "success": false,
+    "generation_success": true,
+    "semantic_success": false,
+    "error_message": "检测器已生成，但未通过功能验证",
+    "preferred_analyzer": "",
+    "run_metrics_summary": "preflight=37.0s | codeql=180.6s(agent) | tokens=75539"
+  },
+  "csa": {},
+  "codeql": {
+    "success": false,
+    "validation_requested": true,
+    "functional_validation_passed": false,
+    "semantic_target_hit": false,
+    "validation_state": "failed",
+    "semantic_acceptance": false,
+    "semantic_acceptance_summary": "漏洞版 patch 文件未命中",
+    "checker_name": "IntegerOverflowInTileCountComputation",
+    "artifact_display_name": "IntegerOverflowInTileCountComputation",
+    "output_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe190_jasper_cve20169387/primary/codeql/20260423_141240/codeql/IntegerOverflowInTileCountComputation.ql",
+    "source_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe190_jasper_cve20169387/primary/codeql/20260423_141240/codeql/IntegerOverflowInTileCountComputation.ql",
+    "iterations": 4,
+    "compile_attempts": 0,
+    "error": "检测器已生成，但未通过功能验证",
+    "validation": {
+      "stage": "semantic",
+      "analyzer": "codeql",
+      "success": true,
+      "execution_time": 10.539665460586548,
+      "error_message": "",
+      "diagnostics": [],
+      "diagnostics_count": 0,
+      "warnings_count": 0,
+      "errors_count": 0,
+      "environment_blocked": false,
+      "environment_block_reason": "",
+      "validation_target": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe190_jasper_cve20169387/vulnerable",
+      "all_diagnostics_count": 0,
+      "generated_diagnostics_count": 0,
+      "patch_targets": [
+        "src/libjasper/jpc/jpc_dec.c"
+      ]
+    },
+    "llm_usage": {
+      "prompt_tokens": 32520,
+      "completion_tokens": 2027,
+      "total_tokens": 34547,
+      "call_count": 4,
+      "available": true,
+      "model": "gpt-5.4-high"
+    },
+    "artifact_metrics": {
+      "path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe190_jasper_cve20169387/primary/codeql/20260423_141240/codeql/IntegerOverflowInTileCountComputation.ql",
+      "total_lines": 97,
+      "nonempty_lines": 90,
+      "char_count": 2972,
+      "byte_count": 3132
+    },
+    "artifact_delta": {},
+    "artifact_review": {
+      "success": true,
+      "error": "",
+      "findings": []
+    },
+    "evidence_records": 0,
+    "missing_evidence": [],
+    "evidence_degraded": false,
+    "semantic_slice_records": 0,
+    "context_summary_records": 0,
+    "slice_coverage": "missing",
+    "verifier_backed_slices": 0,
+    "slice_kinds": {},
+    "evidence_escalation": {},
+    "validation_feedback_records": 1,
+    "validation_feedback_summary": "- validation_outcome @ semantic_validation: semantic_no_hits [coverage=empty]",
+    "validation_feedback_history": [
+      {
+        "analyzer": "codeql",
+        "phase": "initial_validation",
+        "summary": "- validation_outcome @ semantic_validation: semantic_no_hits [coverage=empty]"
+      }
+    ],
+    "refinement_attempted": false,
+    "refinement_adopted": false,
+    "refinement_iterations_attempted": 0,
+    "refinement_skipped_reason": "",
+    "last_refinement_candidate_success": false,
+    "last_refinement_candidate_error": "",
+    "last_refinement_candidate_artifact_review": {},
+    "last_refinement_candidate_output_path": "",
+    "post_validation_evidence_records": 1,
+    "post_validation_missing_evidence": [],
+    "post_validation_semantic_slice_records": 0,
+    "post_validation_context_summary_records": 0,
+    "post_validation_slice_coverage": "missing",
+    "synthesis_input": {
+      "analyzer_id": "codeql",
+      "detector_artifact": "ql_query",
+      "primary_pattern": "integer_overflow",
+      "objective": "Synthesize a reusable integer_overflow query that captures the same semantic mechanism, interprocedural flow, or API contract implied by the patch rather than a generic broad class proxy.",
+      "mechanism_contract": {
+        "mechanism_family": "arithmetic_bound_violation",
+        "semantic_dimensions": [
+          "arithmetic operands",
+          "range or width constraint",
+          "downstream allocation/index/write sink"
+        ],
+        "trigger_invariants": [
+          "size/count arithmetic feeds a sensitive sink such as allocation, indexing, or copy length",
+          "the path lacks a proof that the arithmetic stays within the intended range",
+          "Patch-backed trigger clue: added guard: if (!jas_safe_size_mul(dec->numhtiles, dec->numvtiles, &size)) {",
+          "Patch-backed trigger clue: added or highlighted APIs: jas_safe_size_mul",
+          "Patch-backed trigger clue: detection hints: Prioritize products of independently derived dimensions (`count_a * count_b`) that later feed allocation or loop bounds, Prefer missing checked-arithmetic detection over generic allocation-API matching, Track values from image/header fields through `CEILDIV`-style dimension calculations into total-count variables"
+        ],
+        "silence_invariants": [
+          "overflow checks, clamps, widened types, or guard predicates prove safe range",
+          "patch-added validation blocks out-of-range arithmetic before the sink",
+          "length/capacity guard present: if (!jas_safe_size_mul(dec->numhtiles, dec->numvtiles, &size)) {",
+          "patch-introduced barrier pattern: safe API replacement for arithmetic with `jas_safe_size_mul`",
+          "patch-introduced barrier pattern: explicit overflow guard with early return on failure",
+          "patch-introduced barrier pattern: compute into `size_t` temporary before assigning the derived count"
+        ],
+        "transfer_axes": [
+          "equivalent arithmetic-to-sink relationships on sibling code paths",
+          "equivalent range guards for the same size/count role"
+        ],
+        "forbidden_shortcuts": [
+          "bind the detector to fixed file paths, line numbers, or exact patch strings",
+          "broaden into unrelated bug families just to improve hit count",
+          "flag every large integer expression without sink semantics",
+          "ignore the relation between arithmetic result and the downstream sink",
+          "callee-only matching or stringified guard inference instead of structured predicates"
+        ],
+        "evidence_backed_axes": []
+      },
+      "detector_name_hint": "CheckedSizeMultiplicationOverflow",
+      "focus_files": [
+        "src/libjasper/jpc/jpc_dec.c"
+      ],
+      "focus_functions": [
+        "jas_safe_size_mul"
+      ],
+      "hypotheses": [
+        "The patch changes a data propagation condition that should generalize beyond the edited lines.",
+        "The fix widens arithmetic carriers or restores a wider numeric domain before a size-related sink."
+      ],
+      "required_evidence_types": [
+        "patch_fact",
+        "dataflow_candidate",
+        "semantic_slice",
+        "state_transition",
+        "call_chain"
+      ],
+      "missing_evidence_types": [],
+      "evidence_degraded": false,
+      "patch_mechanism_signals": [
+        "added guard: if (!jas_safe_size_mul(dec->numhtiles, dec->numvtiles, &size)) {",
+        "added or highlighted APIs: jas_safe_size_mul",
+        "detection hints: Prioritize products of independently derived dimensions (`count_a * count_b`) that later feed allocation or loop bounds, Prefer missing checked-arithmetic detection over generic allocation-API matching, Track values from image/header fields through `CEILDIV`-style dimension calculations into total-count variables"
+      ],
+      "silencing_conditions": [
+        "length/capacity guard present: if (!jas_safe_size_mul(dec->numhtiles, dec->numvtiles, &size)) {",
+        "patch-introduced barrier pattern: safe API replacement for arithmetic with `jas_safe_size_mul`",
+        "patch-introduced barrier pattern: explicit overflow guard with early return on failure",
+        "patch-introduced barrier pattern: compute into `size_t` temporary before assigning the derived count"
+      ],
+      "retry_guidance": [],
+      "selected_evidence_ids": [],
+      "selected_evidence": [],
+      "semantic_slice_count": 0,
+      "context_summary_count": 0,
+      "semantic_slice_coverage": "missing",
+      "selected_semantic_slice_ids": [],
+      "selected_context_summary_ids": [],
+      "selected_semantic_slices": [],
+      "selected_context_summaries": [],
+      "semantic_clause_plan": [
+        {
+          "clause_id": "vulnerable_trigger_clause",
+          "intent": "Trigger on the vulnerable integer_overflow mechanism using evidence-backed path/flow semantics.",
+          "supporting_evidence_ids": [],
+          "repair_when": [
+            "semantic_no_hits"
+          ],
+          "focus_functions": [
+            "jas_safe_size_mul"
+          ]
+        },
+        {
+          "clause_id": "patched_silence_clause",
+          "intent": "Stay silent on patched code when patch-added guards, barriers, or safe APIs prove the mechanism is blocked.",
+          "supporting_evidence_ids": [],
+          "repair_when": [],
+          "silencing_conditions": [
+            "length/capacity guard present: if (!jas_safe_size_mul(dec->numhtiles, dec->numvtiles, &size)) {",
+            "patch-introduced barrier pattern: safe API replacement for arithmetic with `jas_safe_size_mul`",
+            "patch-introduced barrier pattern: explicit overflow guard with early return on failure",
+            "patch-introduced barrier pattern: compute into `size_t` temporary before assigning the derived count"
+          ]
+        },
+        {
+          "clause_id": "semantic_transfer_clause",
+          "intent": "Generalize along semantic slices and call-chain evidence rather than patch-local syntax.",
+          "supporting_evidence_ids": [],
+          "repair_when": [],
+          "analyzer_id": "codeql"
+        },
+        {
+          "clause_id": "analyzer_interface_clause",
+          "intent": "Preserve valid analyzer-facing syntax and interfaces while keeping semantics unchanged.",
+          "supporting_evidence_ids": [],
+          "repair_when": [
+            "semantic_execution_error"
+          ],
+          "analyzer_id": "codeql"
+        }
+      ],
+      "repair_directives": [],
+      "constraints": [
+        {
+          "title": "Generalize beyond patch site",
+          "description": "Do not bind the detector to fixed file paths, line numbers, or exact patch strings.",
+          "priority": "high"
+        },
+        {
+          "title": "Preserve vulnerability semantics",
+          "description": "Keep the detector focused on the vulnerability family implied by the patch and evidence.",
+          "priority": "high"
+        },
+        {
+          "title": "Respect analyzer-native form",
+          "description": "Output must be a valid ql_query for codeql.",
+          "priority": "high"
+        },
+        {
+          "title": "Stay within proven mechanism scope",
+          "description": "Generalize only along evidence-supported semantic dimensions. Do not broaden the detector into unrelated globals, APIs, or bug families.",
+          "priority": "high"
+        },
+        {
+          "title": "Honor mechanism contract",
+          "description": "Preserve the mechanism family `arithmetic_bound_violation` by keeping trigger invariants size/count arithmetic feeds a sensitive sink such as allocation, indexing, or copy length; the path lacks a proof that the arithmetic stays within the intended range; Patch-backed trigger clue: added guard: if (!jas_safe_size_mul(dec->numhtiles, dec->numvtiles, &size)) {.",
+          "priority": "high"
+        },
+        {
+          "title": "Generalize only on contract axes",
+          "description": "Reuse semantics only along these transfer axes: equivalent arithmetic-to-sink relationships on sibling code paths; equivalent range guards for the same size/count role.",
+          "priority": "high"
+        },
+        {
+          "title": "Anchor on patch-touched scope",
+          "description": "Use patch-touched files/functions as the semantic anchor for synthesis. Only extend beyond them when the same mechanism is explicitly supported by evidence.",
+          "priority": "high"
+        },
+        {
+          "title": "Encode the patch-added barrier",
+          "description": "model the absence of barriers like safe API replacement for arithmetic with `jas_safe_size_mul`, explicit overflow guard with early return on failure, compute into `size_t` temporary before assigning the derived count, overflow-safe accumulator; treat guards such as if (!jas_safe_size_mul(dec->numhtiles, dec->numvtiles, &size)) { as semantic barriers; use APIs such as jas_safe_size_mul as semantic clues, not string matches.",
+          "priority": "high"
+        },
+        {
+          "title": "Respect patched silence",
+          "description": "Use these no-report conditions when they are semantically proven: length/capacity guard present: if (!jas_safe_size_mul(dec->numhtiles, dec->numvtiles, &size)) {; patch-introduced barrier pattern: safe API replacement for arithmetic with `jas_safe_size_mul`; patch-introduced barrier pattern: explicit overflow guard with early return on failure.",
+          "priority": "high"
+        },
+        {
+          "title": "Tie arithmetic to the sensitive sink",
+          "description": "Do not flag standalone arithmetic; require a range-unsafe expression to feed allocation, indexing, copy length, or an equivalent sensitive sink.",
+          "priority": "high"
+        },
+        {
+          "title": "Prefer semantic predicates",
+          "description": "Prefer reusable predicates, flow steps, and API modeling over patch-location matching.",
+          "priority": "high"
+        },
+        {
+          "title": "No callee-only matching",
+          "description": "Do not report every call to risky APIs by name alone; require an unchecked write/copy condition and absence of a patch-style barrier.",
+          "priority": "high"
+        }
+      ],
+      "implementation_hints": [
+        "Mechanism family: arithmetic_bound_violation",
+        "Mechanism dimensions: arithmetic operands, range or width constraint, downstream allocation/index/write sink",
+        "Trigger invariants: size/count arithmetic feeds a sensitive sink such as allocation, indexing, or copy length, the path lacks a proof that the arithmetic stays within the intended range, Patch-backed trigger clue: added guard: if (!jas_safe_size_mul(dec->numhtiles, dec->numvtiles, &size)) {",
+        "Silence invariants: overflow checks, clamps, widened types, or guard predicates prove safe range, patch-added validation blocks out-of-range arithmetic before the sink, length/capacity guard present: if (!jas_safe_size_mul(dec->numhtiles, dec->numvtiles, &size)) {",
+        "Transfer axes: equivalent arithmetic-to-sink relationships on sibling code paths, equivalent range guards for the same size/count role",
+        "Focus files: src/libjasper/jpc/jpc_dec.c",
+        "Priority functions: jas_safe_size_mul",
+        "Patch-added barriers: safe API replacement for arithmetic with `jas_safe_size_mul`, explicit overflow guard with early return on failure, compute into `size_t` temporary before assigning the derived count, overflow-safe accumulator"
+      ],
+      "validation_expectations": [
+        "Vulnerable version should trigger a integer_overflow finding.",
+        "Patched version should stay silent for the same mechanism.",
+        "Semantic validation that executes but returns zero hits is not acceptable; recover coverage with evidence-backed semantics.",
+        "Repair phase may fix syntax/interfaces only; it must not simplify away the core detection logic.",
+        "Generalization must stay inside the mechanism contract transfer axes instead of widening to adjacent bug families.",
+        "Trigger invariant: size/count arithmetic feeds a sensitive sink such as allocation, indexing, or copy length.",
+        "Trigger invariant: the path lacks a proof that the arithmetic stays within the intended range.",
+        "Patched silence depends on: length/capacity guard present: if (!jas_safe_size_mul(dec->numhtiles, dec->numvtiles, &size)) {.",
+        "Patched silence depends on: patch-introduced barrier pattern: safe API replacement for arithmetic with `jas_safe_size_mul`."
+      ]
+    },
+    "evidence_effectiveness": {
+      "baseline_records": 0,
+      "post_validation_records": 1,
+      "new_records": 1,
+      "baseline_missing": [],
+      "post_validation_missing": [],
+      "resolved_missing": [],
+      "improved": true,
+      "summary": "新增 1 条反馈后证据"
+    },
+    "fixed_validation": {
+      "success": true,
+      "error_message": "",
+      "diagnostics_count": 0,
+      "generated_diagnostics_count": 0,
+      "all_diagnostics_count": 0,
+      "execution_time": 10.494672060012817,
+      "environment_blocked": false,
+      "environment_block_reason": "",
+      "validation_target": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe190_jasper_cve20169387/fixed",
+      "patch_targets": [
+        "src/libjasper/jpc/jpc_dec.c"
+      ]
+    }
+  },
+  "patchweaver": {
+    "summary": "Patch suggests integer_overflow semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=4, metadata refs=0.",
+    "patch_facts": [
+      {
+        "fact_type": "patch_overview",
+        "label": "Patch overview",
+        "attributes": {
+          "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe190_jasper_cve20169387/patches/fix.patch",
+          "changed_files": [
+            "src/libjasper/jpc/jpc_dec.c"
+          ],
+          "changed_file_count": 1,
+          "added_line_count": 5,
+          "deleted_line_count": 1
+        }
+      },
+      {
+        "fact_type": "vulnerability_patterns",
+        "label": "Vulnerability patterns inferred from patch",
+        "attributes": {
+          "patterns": [
+            "integer_overflow"
+          ],
+          "descriptions": [
+            "Unchecked multiplication of horizontal and vertical tile counts could overflow when deriving the total tile count, producing a truncated `dec->numtiles` value that is later used for allocation and indexing logic."
+          ]
+        }
+      },
+      {
+        "fact_type": "affected_functions",
+        "label": "Functions implicated by removed or fixed code",
+        "attributes": {
+          "functions": [
+            "jas_safe_size_mul",
+            "jpc_dec_process_siz"
+          ]
+        }
+      },
+      {
+        "fact_type": "detection_strategy",
+        "label": "Existing patch analysis detection strategy",
+        "attributes": {
+          "primary_pattern": "integer_overflow",
+          "check_types": [
+            "unchecked_multiplicative_size_computation",
+            "derived_count_overflow_before_allocation",
+            "allocation_size_provenance_from_parsed_image_metadata",
+            "narrowing_or_unchecked_assignment_from_computed_container_counts"
+          ],
+          "entry_points": [
+            "decoder setup code in `src/libjasper/jpc/jpc_dec.c` that derives tile grid dimensions",
+            "any path computing total element counts from image-controlled width/height/tile geometry",
+            "allocation callsites that consume products of dimension/count fields"
+          ],
+          "data_flow_tracking": true,
+          "cross_file_analysis": false,
+          "suggestions": [
+            "Prioritize products of independently derived dimensions (`count_a * count_b`) that later feed allocation or loop bounds",
+            "Prefer missing checked-arithmetic detection over generic allocation-API matching",
+            "Track values from image/header fields through `CEILDIV`-style dimension calculations into total-count variables",
+            "Flag direct multiplication used as authoritative element count when sibling codebases use helpers like `jas_safe_size_mul`",
+            "Look for fix-shape semantics: replacement of raw arithmetic with checked helper plus fail-fast return"
+          ]
+        }
+      },
+      {
+        "fact_type": "added_guards",
+        "label": "Patch introduces or strengthens guards",
+        "attributes": {
+          "guards": [
+            "if (!jas_safe_size_mul(dec->numhtiles, dec->numvtiles, &size)) {"
+          ]
+        }
+      },
+      {
+        "fact_type": "fix_patterns",
+        "label": "Patch introduces reusable fix patterns",
+        "attributes": {
+          "patterns": [
+            "safe API replacement for arithmetic with `jas_safe_size_mul`",
+            "explicit overflow guard with early return on failure",
+            "compute into `size_t` temporary before assigning the derived count",
+            "overflow-safe accumulator"
+          ]
+        }
+      },
+      {
+        "fact_type": "added_api_calls",
+        "label": "Patch introduces or highlights API usage",
+        "attributes": {
+          "apis": [
+            "jas_safe_size_mul"
+          ]
+        }
+      }
+    ],
+    "mechanism_graph": {
+      "summary": "Patch suggests integer_overflow semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=4, metadata refs=0.",
+      "primary_patterns": [
+        "integer_overflow"
+      ],
+      "nodes": [
+        {
+          "node_id": "patch",
+          "kind": "patch",
+          "label": "Security patch",
+          "attributes": {
+            "changed_files": [
+              "src/libjasper/jpc/jpc_dec.c"
+            ]
+          }
+        },
+        {
+          "node_id": "file_0",
+          "kind": "file",
+          "label": "src/libjasper/jpc/jpc_dec.c",
+          "attributes": {
+            "path": "src/libjasper/jpc/jpc_dec.c",
+            "additions": 5,
+            "deletions": 1,
+            "hunks": 2
+          }
+        },
+        {
+          "node_id": "pattern_0",
+          "kind": "pattern",
+          "label": "integer_overflow",
+          "attributes": {
+            "type": "integer_overflow",
+            "description": "Unchecked multiplication of horizontal and vertical tile counts could overflow when deriving the total tile count, producing a truncated `dec->numtiles` value that is later used for allocation and indexing logic.",
+            "trigger_conditions": [
+              "Large or malformed image parameters make `dec->numhtiles` and `dec->numvtiles` sufficiently large",
+              "The decoder computes `dec->numtiles` via direct multiplication without overflow validation",
+              "The resulting `dec->numtiles` is used to size `dec->tiles` or drive subsequent tile-processing loops"
+            ],
+            "fix_patterns": [
+              "safe API replacement for arithmetic with `jas_safe_size_mul`",
+              "explicit overflow guard with early return on failure",
+              "compute into `size_t` temporary before assigning the derived count"
+            ],
+            "affected_functions": [
+              "jas_safe_size_mul"
+            ],
+            "cross_file": false,
+            "source": "llm",
+            "confidence": 0.98,
+            "evidence_lines": [
+              "Added local `size_t size;`",
+              "Removed `dec->numtiles = dec->numhtiles * dec->numvtiles;`",
+              "Added `if (!jas_safe_size_mul(dec->numhtiles, dec->numvtiles, &size)) { return -1; }`",
+              "Added `dec->numtiles = size;`",
+              "Allocation remains `jas_alloc2(dec->numtiles, sizeof(jpc_dec_tile_t))`, showing the checked product feeds allocation sizing"
+            ]
+          }
+        },
+        {
+          "node_id": "func_1",
+          "kind": "function",
+          "label": "jas_safe_size_mul",
+          "attributes": {
+            "function": "jas_safe_size_mul"
+          }
+        },
+        {
+          "node_id": "guard_1",
+          "kind": "guard",
+          "label": "Large or malformed image parameters make `dec->numhtiles` and `dec->numvtiles` sufficiently large",
+          "attributes": {
+            "condition": "Large or malformed image parameters make `dec->numhtiles` and `dec->numvtiles` sufficiently large"
+          }
+        },
+        {
+          "node_id": "guard_2",
+          "kind": "guard",
+          "label": "The decoder computes `dec->numtiles` via direct multiplication without overflow validation",
+          "attributes": {
+            "condition": "The decoder computes `dec->numtiles` via direct multiplication without overflow validation"
+          }
+        },
+        {
+          "node_id": "guard_3",
+          "kind": "guard",
+          "label": "The resulting `dec->numtiles` is used to size `dec->tiles` or drive subsequent tile-processing loops",
+          "attributes": {
+            "condition": "The resulting `dec->numtiles` is used to size `dec->tiles` or drive subsequent tile-processing loops"
+          }
+        },
+        {
+          "node_id": "strategy",
+          "kind": "strategy",
+          "label": "integer_overflow",
+          "attributes": {
+            "primary_pattern": "integer_overflow",
+            "check_types": [
+              "unchecked_multiplicative_size_computation",
+              "derived_count_overflow_before_allocation",
+              "allocation_size_provenance_from_parsed_image_metadata",
+              "narrowing_or_unchecked_assignment_from_computed_container_counts"
+            ],
+            "entry_points": [
+              "decoder setup code in `src/libjasper/jpc/jpc_dec.c` that derives tile grid dimensions",
+              "any path computing total element counts from image-controlled width/height/tile geometry",
+              "allocation callsites that consume products of dimension/count fields"
+            ],
+            "data_flow_tracking": true,
+            "cross_file_analysis": false,
+            "suggestions": [
+              "Prioritize products of independently derived dimensions (`count_a * count_b`) that later feed allocation or loop bounds",
+              "Prefer missing checked-arithmetic detection over generic allocation-API matching",
+              "Track values from image/header fields through `CEILDIV`-style dimension calculations into total-count variables",
+              "Flag direct multiplication used as authoritative element count when sibling codebases use helpers like `jas_safe_size_mul`",
+              "Look for fix-shape semantics: replacement of raw arithmetic with checked helper plus fail-fast return"
+            ]
+          }
+        },
+        {
+          "node_id": "func_2",
+          "kind": "function",
+          "label": "jpc_dec_process_siz",
+          "attributes": {
+            "function": "jpc_dec_process_siz",
+            "source": "patch_fact"
+          }
+        },
+        {
+          "node_id": "guard_4",
+          "kind": "guard",
+          "label": "if (!jas_safe_size_mul(dec->numhtiles, dec->numvtiles, &size)) {",
+          "attributes": {
+            "condition": "if (!jas_safe_size_mul(dec->numhtiles, dec->numvtiles, &size)) {",
+            "source": "patch_fact"
+          }
+        },
+        {
+          "node_id": "fix_1",
+          "kind": "fix",
+          "label": "safe API replacement for arithmetic with `jas_safe_size_mul`",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "safe API replacement for arithmetic with `jas_safe_size_mul`"
+          }
+        },
+        {
+          "node_id": "fix_2",
+          "kind": "fix",
+          "label": "explicit overflow guard with early return on failure",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "explicit overflow guard with early return on failure"
+          }
+        },
+        {
+          "node_id": "fix_3",
+          "kind": "fix",
+          "label": "compute into `size_t` temporary before assigning the derived count",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "compute into `size_t` temporary before assigning the derived count"
+          }
+        },
+        {
+          "node_id": "fix_4",
+          "kind": "fix",
+          "label": "overflow-safe accumulator",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "overflow-safe accumulator"
+          }
+        },
+        {
+          "node_id": "fix_5",
+          "kind": "fix",
+          "label": "jas_safe_size_mul",
+          "attributes": {
+            "kind": "added_api_calls",
+            "value": "jas_safe_size_mul"
+          }
+        }
+      ],
+      "edges": [
+        {
+          "source": "patch",
+          "target": "file_0",
+          "relation": "touches",
+          "confidence": 0.95
+        },
+        {
+          "source": "patch",
+          "target": "pattern_0",
+          "relation": "indicates",
+          "confidence": 0.9
+        },
+        {
+          "source": "pattern_0",
+          "target": "func_1",
+          "relation": "affects",
+          "confidence": 0.75
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_1",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_2",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_3",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "patch",
+          "target": "strategy",
+          "relation": "guides",
+          "confidence": 0.85
+        },
+        {
+          "source": "patch",
+          "target": "func_2",
+          "relation": "focuses_on",
+          "confidence": 0.82
+        },
+        {
+          "source": "patch",
+          "target": "guard_4",
+          "relation": "adds_guard",
+          "confidence": 0.84
+        },
+        {
+          "source": "patch",
+          "target": "fix_1",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_2",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_3",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_4",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_5",
+          "relation": "introduces",
+          "confidence": 0.8
+        }
+      ]
+    },
+    "evidence_plan": {
+      "primary_pattern": "integer_overflow",
+      "hypotheses": [
+        "The patch changes a data propagation condition that should generalize beyond the edited lines.",
+        "The fix widens arithmetic carriers or restores a wider numeric domain before a size-related sink."
+      ],
+      "requirements": [
+        {
+          "evidence_type": "patch_fact",
+          "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+          "priority": 100,
+          "preferred_analyzers": [],
+          "confidence": 1.0,
+          "mechanism_refs": [
+            "patch"
+          ]
+        },
+        {
+          "evidence_type": "dataflow_candidate",
+          "reason": "Patch analysis requests data-flow tracking.",
+          "priority": 95,
+          "preferred_analyzers": [
+            "codeql"
+          ],
+          "confidence": 0.9,
+          "mechanism_refs": [
+            "strategy"
+          ]
+        },
+        {
+          "evidence_type": "semantic_slice",
+          "reason": "Arithmetic-overflow fixes need the concrete accumulator/sink slice, not a patch headline.",
+          "priority": 90,
+          "preferred_analyzers": [
+            "csa",
+            "codeql"
+          ],
+          "confidence": 0.9,
+          "mechanism_refs": [
+            "pattern_0"
+          ]
+        },
+        {
+          "evidence_type": "state_transition",
+          "reason": "Need local numeric-domain transitions such as int32 accumulator to i64 accumulator before the sink.",
+          "priority": 84,
+          "preferred_analyzers": [
+            "csa"
+          ],
+          "confidence": 0.82,
+          "mechanism_refs": [
+            "pattern_0"
+          ]
+        },
+        {
+          "evidence_type": "call_chain",
+          "reason": "Interprocedural call-chain context is needed to generalize the fix pattern.",
+          "priority": 78,
+          "preferred_analyzers": [
+            "codeql"
+          ],
+          "confidence": 0.78,
+          "mechanism_refs": [
+            "strategy"
+          ]
+        }
+      ],
+      "recommended_analyzers": [
+        "codeql",
+        "csa"
+      ],
+      "planner_notes": [
+        "Added guards detected in patch diff; path-sensitive evidence should stay near top priority.",
+        "Selected analyzers do not cover every planned evidence primitive."
+      ],
+      "coverage_gaps": [
+        "state_transition is not covered by selected analyzers ['codeql']"
+      ],
+      "uncertainty_budget": "low",
+      "escalation_triggers": [
+        "selected_coverage_gap"
+      ]
+    },
+    "validation_feedback_history": [
+      {
+        "analyzer": "codeql",
+        "phase": "initial_validation",
+        "summary": "- validation_outcome @ semantic_validation: semantic_no_hits [coverage=empty]"
+      }
+    ]
+  },
+  "validation_feedback": {
+    "csa": {
+      "success": false,
+      "validation_requested": false,
+      "functional_validation_passed": false,
+      "semantic_target_hit": false,
+      "validation_state": "",
+      "semantic_acceptance": false,
+      "semantic_acceptance_summary": "",
+      "missing_evidence": [],
+      "evidence_degraded": false,
+      "semantic_slice_records": 0,
+      "context_summary_records": 0,
+      "slice_coverage": "",
+      "evidence_escalation": {},
+      "validation_feedback_records": 0,
+      "validation_feedback_summary": "",
+      "validation_feedback_history": [],
+      "post_validation_evidence_records": 0,
+      "post_validation_missing_evidence": [],
+      "post_validation_semantic_slice_records": 0,
+      "post_validation_context_summary_records": 0,
+      "post_validation_slice_coverage": ""
+    },
+    "codeql": {
+      "success": true,
+      "validation_requested": true,
+      "functional_validation_passed": false,
+      "semantic_target_hit": false,
+      "validation_state": "executed_no_hit",
+      "semantic_acceptance": false,
+      "semantic_acceptance_summary": "功能验证执行成功，但未命中验证目标",
+      "missing_evidence": [],
+      "evidence_degraded": false,
+      "semantic_slice_records": 0,
+      "context_summary_records": 0,
+      "slice_coverage": "missing",
+      "evidence_escalation": {},
+      "validation_feedback_records": 1,
+      "validation_feedback_summary": "- validation_outcome @ semantic_validation: semantic_no_hits [coverage=empty]",
+      "validation_feedback_history": [
+        {
+          "analyzer": "codeql",
+          "phase": "initial_validation",
+          "summary": "- validation_outcome @ semantic_validation: semantic_no_hits [coverage=empty]"
+        }
+      ],
+      "post_validation_evidence_records": 1,
+      "post_validation_missing_evidence": [],
+      "post_validation_semantic_slice_records": 0,
+      "post_validation_context_summary_records": 0,
+      "post_validation_slice_coverage": "missing"
+    }
+  },
+  "portfolio": {
+    "preferred_analyzer": "",
+    "preferred_score": 0.0,
+    "preferred_reason": "没有检测器通过功能验证",
+    "preferred_checker_name": "",
+    "preferred_output_path": "",
+    "confidence": "low",
+    "recommended_bundle": [],
+    "complementary_usage": [
+      "当前没有检测器通过功能验证。",
+      "CodeQL 适合跨函数、跨文件的数据流和 API 语义扩展。"
+    ],
+    "summary": "没有检测器通过功能验证",
+    "candidates": [
+      {
+        "analyzer_id": "codeql",
+        "display_name": "CodeQL",
+        "score": 17.0,
+        "generation_success": true,
+        "semantic_success": false,
+        "accepted": false,
+        "evidence_records": 0,
+        "missing_evidence": 0,
+        "evidence_degraded": false,
+        "semantic_slice_records": 0,
+        "verifier_backed_slices": 0,
+        "slice_coverage": "missing",
+        "output_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe190_jasper_cve20169387/primary/codeql/20260423_141240/codeql/IntegerOverflowInTileCountComputation.ql",
+        "checker_name": "IntegerOverflowInTileCountComputation",
+        "pattern_fit": false,
+        "planner_recommended": true,
+        "reasons": [
+          "生成成功",
+          "命中证据规划推荐"
+        ],
+        "warnings": [
+          "语义验证未通过",
+          "缺少可用语义切片"
+        ],
+        "strengths": [
+          "interprocedural",
+          "global_semantics",
+          "api_modeling"
+        ]
+      }
+    ]
+  },
+  "run_metrics": {
+    "event_count": 62,
+    "total_seconds": 217.596,
+    "preflight_seconds": 37.04,
+    "analyzers": {
+      "codeql": {
+        "total_seconds": 180.552,
+        "agent_seconds": 169.995,
+        "validation_seconds": 10.54,
+        "agent_tool_seconds": 65.958,
+        "early_search_knowledge_calls": 1,
+        "deferred_patch_reads": 0,
+        "deferred_knowledge_searches": 0,
+        "first_material_action_seconds": 112.344,
+        "bottleneck": "agent"
+      }
+    },
+    "llm_usage": {
+      "prompt_tokens": 70709,
+      "completion_tokens": 4830,
+      "total_tokens": 75539,
+      "call_count": 9,
+      "available": true,
+      "model": "gpt-5.4-high"
+    },
+    "summary": "preflight=37.0s | codeql=180.6s(agent) | tokens=75539"
+  },
+  "artifacts": {
+    "csa_dir": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe190_jasper_cve20169387/primary/codeql/20260423_141240/csa",
+    "codeql_dir": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe190_jasper_cve20169387/primary/codeql/20260423_141240/codeql",
+    "patchweaver_plan": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe190_jasper_cve20169387/primary/codeql/20260423_141240/patchweaver_plan.json",
+    "validation_feedback": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe190_jasper_cve20169387/primary/codeql/20260423_141240/validation_feedback.json",
+    "final_report": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe190_jasper_cve20169387/primary/codeql/20260423_141240/final_report.json",
+    "refinement_input": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe190_jasper_cve20169387/primary/codeql/20260423_141240/refinement_input.json"
+  }
+}

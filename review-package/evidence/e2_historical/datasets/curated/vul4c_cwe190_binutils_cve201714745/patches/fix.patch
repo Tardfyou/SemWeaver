@@ -1,0 +1,12 @@
+diff --git a/bfd/elf64-x86-64.c b/bfd/elf64-x86-64.c
+--- a/bfd/elf64-x86-64.c
++++ b/bfd/elf64-x86-64.c
+@@ -6719,6 +6719,8 @@
+ 
+   dynrelcount = bfd_canonicalize_dynamic_reloc (abfd, dynrelbuf,
+ 						dynsyms);
++  if (dynrelcount < 0)
++    return -1;
+ 
+   /* Sort the relocs by address.  */
+   qsort (dynrelbuf, dynrelcount, sizeof (arelent *), compare_relocs);

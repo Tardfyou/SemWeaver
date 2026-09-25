@@ -1,0 +1,13 @@
+--- /SoK-main/Vul4C-Benchmark/jasper/CVE-2016-9390/CVE-2016-9390_CWE-20_jpc_cs.c_OLD.c	2025-10-13 01:36:55.062452023 +0000
++++ /SoK-main/Vul4C-Benchmark/jasper/CVE-2016-9390/CVE-2016-9390_CWE-20_jpc_cs.c_NEW.c	2025-10-13 01:36:55.062452023 +0000
+@@ -508,6 +508,10 @@
+ 	  !siz->tileheight || !siz->numcomps || siz->numcomps > 16384) {
+ 		return -1;
+ 	}
++		if (siz->tilexoff >= siz->width || siz->tileyoff >= siz->height) {
++		jas_eprintf("all tiles are outside the image area\n");
++		return -1;
++	}
+ 	if (!(siz->comps = jas_alloc2(siz->numcomps, sizeof(jpc_sizcomp_t)))) {
+ 		return -1;
+ 	}

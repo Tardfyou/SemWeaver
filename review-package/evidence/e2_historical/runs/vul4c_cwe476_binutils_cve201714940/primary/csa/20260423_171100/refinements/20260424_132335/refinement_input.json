@@ -1,0 +1,1438 @@
+{
+  "schema_version": 1,
+  "workflow_mode": "refine",
+  "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe476_binutils_cve201714940/patches/fix.patch",
+  "validate_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe476_binutils_cve201714940/vulnerable",
+  "analyzer_choice": "csa",
+  "shared_analysis_path": "patchweaver_plan.json",
+  "shared_analysis": {
+    "files_changed": [
+      "bfd/dwarf2.c"
+    ],
+    "file_details": [
+      {
+        "path": "bfd/dwarf2.c",
+        "additions": 2,
+        "deletions": 1,
+        "hunks": 1
+      }
+    ],
+    "vulnerability_patterns": [],
+    "cross_file_dependencies": [],
+    "detection_strategy": {
+      "primary_pattern": "unknown",
+      "check_types": [],
+      "entry_points": [],
+      "data_flow_tracking": false,
+      "cross_file_analysis": false,
+      "suggestions": []
+    },
+    "checker_name_suggestion": "PatchFocusedChecker",
+    "affected_functions": [
+      "scan_unit_for_symbols"
+    ],
+    "key_functions": [
+      "scan_unit_for_symbols"
+    ],
+    "patch_semantics": {
+      "added_guards": [
+        "if (attr.u.blk->data != NULL"
+      ],
+      "added_api_calls": [],
+      "removed_api_calls": [],
+      "state_resets": [],
+      "lifecycle_changes": []
+    },
+    "analysis_backend": "structural",
+    "analysis_confidence": 0.0,
+    "patchweaver": {
+      "summary": "Patch suggests unknown semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=1, metadata refs=0.",
+      "patch_facts": [
+        {
+          "fact_type": "patch_overview",
+          "label": "Patch overview",
+          "attributes": {
+            "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe476_binutils_cve201714940/patches/fix.patch",
+            "changed_files": [
+              "bfd/dwarf2.c"
+            ],
+            "changed_file_count": 1,
+            "added_line_count": 2,
+            "deleted_line_count": 1
+          }
+        },
+        {
+          "fact_type": "vulnerability_patterns",
+          "label": "Vulnerability patterns inferred from patch",
+          "attributes": {
+            "patterns": [
+              "unknown"
+            ],
+            "descriptions": []
+          }
+        },
+        {
+          "fact_type": "affected_functions",
+          "label": "Functions implicated by removed or fixed code",
+          "attributes": {
+            "functions": [
+              "scan_unit_for_symbols"
+            ]
+          }
+        },
+        {
+          "fact_type": "detection_strategy",
+          "label": "Existing patch analysis detection strategy",
+          "attributes": {
+            "primary_pattern": "unknown",
+            "check_types": [],
+            "entry_points": [],
+            "data_flow_tracking": false,
+            "cross_file_analysis": false,
+            "suggestions": []
+          }
+        },
+        {
+          "fact_type": "added_guards",
+          "label": "Patch introduces or strengthens guards",
+          "attributes": {
+            "guards": [
+              "if (attr.u.blk->data != NULL"
+            ]
+          }
+        },
+        {
+          "fact_type": "fix_patterns",
+          "label": "Patch introduces reusable fix patterns",
+          "attributes": {
+            "patterns": [
+              "null check"
+            ]
+          }
+        }
+      ],
+      "mechanism_graph": {
+        "summary": "Patch suggests unknown semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=1, metadata refs=0.",
+        "primary_patterns": [],
+        "nodes": [
+          {
+            "node_id": "patch",
+            "kind": "patch",
+            "label": "Security patch",
+            "attributes": {
+              "changed_files": [
+                "bfd/dwarf2.c"
+              ]
+            }
+          },
+          {
+            "node_id": "file_0",
+            "kind": "file",
+            "label": "bfd/dwarf2.c",
+            "attributes": {
+              "path": "bfd/dwarf2.c",
+              "additions": 2,
+              "deletions": 1,
+              "hunks": 1
+            }
+          },
+          {
+            "node_id": "strategy",
+            "kind": "strategy",
+            "label": "unknown",
+            "attributes": {
+              "primary_pattern": "unknown",
+              "check_types": [],
+              "entry_points": [],
+              "data_flow_tracking": false,
+              "cross_file_analysis": false,
+              "suggestions": []
+            }
+          },
+          {
+            "node_id": "func_1",
+            "kind": "function",
+            "label": "scan_unit_for_symbols",
+            "attributes": {
+              "function": "scan_unit_for_symbols",
+              "source": "patch_fact"
+            }
+          },
+          {
+            "node_id": "guard_1",
+            "kind": "guard",
+            "label": "if (attr.u.blk->data != NULL",
+            "attributes": {
+              "condition": "if (attr.u.blk->data != NULL",
+              "source": "patch_fact"
+            }
+          },
+          {
+            "node_id": "fix_1",
+            "kind": "fix",
+            "label": "null check",
+            "attributes": {
+              "kind": "fix_patterns",
+              "value": "null check"
+            }
+          }
+        ],
+        "edges": [
+          {
+            "source": "patch",
+            "target": "file_0",
+            "relation": "touches",
+            "confidence": 0.95
+          },
+          {
+            "source": "patch",
+            "target": "strategy",
+            "relation": "guides",
+            "confidence": 0.85
+          },
+          {
+            "source": "patch",
+            "target": "func_1",
+            "relation": "focuses_on",
+            "confidence": 0.82
+          },
+          {
+            "source": "patch",
+            "target": "guard_1",
+            "relation": "adds_guard",
+            "confidence": 0.84
+          },
+          {
+            "source": "patch",
+            "target": "fix_1",
+            "relation": "introduces",
+            "confidence": 0.8
+          }
+        ]
+      },
+      "evidence_plan": {
+        "primary_pattern": "unknown",
+        "hypotheses": [
+          "Patch likely encodes a reusable vulnerability mechanism but available metadata is weak; keep evidence collection broad."
+        ],
+        "requirements": [
+          {
+            "evidence_type": "patch_fact",
+            "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+            "priority": 100,
+            "preferred_analyzers": [],
+            "confidence": 1.0,
+            "mechanism_refs": [
+              "patch"
+            ]
+          }
+        ],
+        "recommended_analyzers": [
+          "csa",
+          "codeql"
+        ],
+        "planner_notes": [
+          "Added guards detected in patch diff; path-sensitive evidence should stay near top priority."
+        ],
+        "coverage_gaps": [],
+        "uncertainty_budget": "medium",
+        "escalation_triggers": [
+          "weak_primary_pattern"
+        ]
+      },
+      "refinement_targets": {
+        "csa": {
+          "checker_name": "NullDerefChecker",
+          "artifact_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe476_binutils_cve201714940/primary/csa/20260423_171100/csa/NullDerefChecker.cpp",
+          "artifact_kind": "checker_source",
+          "validation_summary": "命中验证目标并通过功能验证",
+          "refinement_summary": "- validation_outcome @ semantic_validation: semantic validation passed with 132 diagnostics [coverage=full]"
+        }
+      },
+      "validation_feedback_history": [
+        {
+          "analyzer": "csa",
+          "phase": "manual_fix_validation",
+          "summary": "- validation_outcome @ semantic_validation: semantic validation passed with 132 diagnostics [coverage=full]"
+        }
+      ]
+    },
+    "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe476_binutils_cve201714940/patches/fix.patch"
+  },
+  "artifacts": {
+    "csa": {
+      "analyzer_id": "csa",
+      "checker_name": "NullDerefChecker",
+      "source_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe476_binutils_cve201714940/primary/csa/20260423_171100/csa/refinements/20260424_132335/csa/NullDerefChecker.cpp",
+      "output_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe476_binutils_cve201714940/primary/csa/20260423_171100/csa/refinements/20260424_132335/csa/NullDerefChecker.so",
+      "result_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe476_binutils_cve201714940/primary/csa/20260423_171100/csa/refinements/20260424_132335/csa/result.json",
+      "report_entry": {
+        "success": true,
+        "validation_requested": true,
+        "functional_validation_passed": true,
+        "semantic_target_hit": true,
+        "validation_state": "target_hit",
+        "semantic_acceptance": true,
+        "semantic_acceptance_summary": "命中验证目标并通过功能验证",
+        "checker_name": "NullDerefChecker",
+        "artifact_display_name": "NullDerefChecker",
+        "output_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe476_binutils_cve201714940/primary/csa/20260423_171100/csa/refinements/20260424_132335/csa/NullDerefChecker.so",
+        "source_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe476_binutils_cve201714940/primary/csa/20260423_171100/csa/refinements/20260424_132335/csa/NullDerefChecker.cpp",
+        "iterations": 4,
+        "compile_attempts": 1,
+        "error": "",
+        "validation": {
+          "stage": "semantic",
+          "analyzer": "csa",
+          "success": true,
+          "execution_time": 54.284451723098755,
+          "error_message": "",
+          "diagnostics": [
+            {
+              "file_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe476_binutils_cve201714940/vulnerable/bfd/dwarf2.c",
+              "line": 3213,
+              "column": 13,
+              "severity": "warning",
+              "message": "DW_AT_location block-form attribute data is dereferenced before the DWARF block payload pointer is proven non-null [custom.NullDerefChecker]",
+              "source": "csa",
+              "code": "",
+              "suggestion": ""
+            }
+          ],
+          "diagnostics_count": 1,
+          "all_diagnostics_count": 1,
+          "generated_diagnostics_count": 1,
+          "warnings_count": 1,
+          "errors_count": 0,
+          "environment_blocked": false,
+          "environment_block_reason": "",
+          "validation_target": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe476_binutils_cve201714940/vulnerable",
+          "diagnostics_filtered": true,
+          "patch_targets": [
+            "bfd/dwarf2.c"
+          ]
+        },
+        "llm_usage": {
+          "prompt_tokens": 46296,
+          "completion_tokens": 3592,
+          "total_tokens": 49888,
+          "call_count": 4,
+          "available": true,
+          "model": "gpt-5.5"
+        },
+        "artifact_metrics": {
+          "path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe476_binutils_cve201714940/primary/csa/20260423_171100/csa/refinements/20260424_132335/csa/NullDerefChecker.cpp",
+          "total_lines": 215,
+          "nonempty_lines": 182,
+          "char_count": 7692,
+          "byte_count": 7692
+        },
+        "artifact_delta": {
+          "baseline_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe476_binutils_cve201714940/primary/csa/20260423_171100/csa/NullDerefChecker.cpp",
+          "current_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe476_binutils_cve201714940/primary/csa/20260423_171100/csa/refinements/20260424_132335/csa/NullDerefChecker.cpp",
+          "baseline_total_lines": 164,
+          "current_total_lines": 215,
+          "baseline_nonempty_lines": 138,
+          "current_nonempty_lines": 182,
+          "delta_total_lines": 51,
+          "delta_nonempty_lines": 44,
+          "growth_ratio": 0.318841
+        },
+        "artifact_review": {
+          "success": true,
+          "error": "",
+          "findings": []
+        },
+        "evidence_records": 10,
+        "missing_evidence": [],
+        "evidence_degraded": false,
+        "semantic_slice_records": 4,
+        "context_summary_records": 0,
+        "slice_coverage": "full",
+        "verifier_backed_slices": 4,
+        "slice_kinds": {
+          "semantic_slice": 1,
+          "path_witness": 1,
+          "state_witness": 1,
+          "lifecycle_witness": 1
+        },
+        "evidence_escalation": {},
+        "validation_feedback_records": 1,
+        "validation_feedback_summary": "- validation_outcome @ semantic_validation: semantic validation passed with 1 diagnostics [coverage=full]",
+        "validation_feedback_history": [
+          {
+            "analyzer": "csa",
+            "phase": "baseline_reused_validation",
+            "summary": "- validation_outcome @ semantic_validation: semantic validation passed with 132 diagnostics [coverage=full]"
+          },
+          {
+            "analyzer": "csa",
+            "phase": "refine_candidate",
+            "summary": "- validation_outcome @ semantic_validation: semantic validation passed with 132 diagnostics [coverage=full]"
+          },
+          {
+            "analyzer": "csa",
+            "phase": "initial_validation",
+            "summary": "- validation_outcome @ semantic_validation: semantic validation passed with 1 diagnostics [coverage=full]"
+          }
+        ],
+        "refinement_attempted": true,
+        "refinement_adopted": true,
+        "refinement_iterations_attempted": 1,
+        "refinement_skipped_reason": "",
+        "last_refinement_candidate_success": true,
+        "last_refinement_candidate_error": "",
+        "last_refinement_candidate_artifact_review": {
+          "success": true,
+          "error": "",
+          "findings": []
+        },
+        "last_refinement_candidate_output_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe476_binutils_cve201714940/primary/csa/20260423_171100/csa/refinements/20260424_132335/csa/NullDerefChecker.so",
+        "post_validation_evidence_records": 11,
+        "post_validation_missing_evidence": [],
+        "post_validation_semantic_slice_records": 4,
+        "post_validation_context_summary_records": 0,
+        "post_validation_slice_coverage": "full",
+        "synthesis_input": {
+          "analyzer_id": "csa",
+          "detector_artifact": "checker_plugin",
+          "primary_pattern": "unknown",
+          "objective": "Synthesize a path-sensitive detector that encodes the patch-evidenced local state, guards, and lifecycle mechanism, while remaining open to the true vulnerability family being uncertain.",
+          "mechanism_contract": {
+            "mechanism_family": "generic_vulnerability_mechanism",
+            "semantic_dimensions": [
+              "vulnerability trigger",
+              "patch-introduced barrier",
+              "local state or flow relation"
+            ],
+            "trigger_invariants": [
+              "the vulnerable mechanism is reachable on a feasible path",
+              "the path lacks the barrier introduced by the patch",
+              "Patch-backed trigger clue: added guard: if (attr.u.blk->data != NULL"
+            ],
+            "silence_invariants": [
+              "patch-introduced guards, barriers, or safe APIs must suppress findings",
+              "length/capacity guard present: if (attr.u.blk->data != NULL",
+              "patch-introduced barrier pattern: null check"
+            ],
+            "transfer_axes": [
+              "only generalize along evidence-backed state, guard, flow, or API-role equivalence",
+              "equivalent guard or barrier predicates on sibling paths",
+              "equivalent local state transitions around the same sink or dereference",
+              "equivalent ownership or release/reinit lifecycle on the same symbolic resource"
+            ],
+            "forbidden_shortcuts": [
+              "bind the detector to fixed file paths, line numbers, or exact patch strings",
+              "broaden into unrelated bug families just to improve hit count",
+              "use the patch text itself as the matching rule",
+              "widen to unrelated bug families without evidence",
+              "placeholder helper logic or empty ProgramState modeling"
+            ],
+            "evidence_backed_axes": [
+              "resource lifecycle",
+              "path guards and barrier conditions",
+              "semantic trigger slice",
+              "state transitions"
+            ]
+          },
+          "detector_name_hint": "PatchFocusedChecker",
+          "focus_files": [
+            "bfd/dwarf2.c"
+          ],
+          "focus_functions": [
+            "scan_unit_for_symbols"
+          ],
+          "hypotheses": [
+            "Patch likely encodes a reusable vulnerability mechanism but available metadata is weak; keep evidence collection broad."
+          ],
+          "required_evidence_types": [
+            "patch_fact"
+          ],
+          "missing_evidence_types": [],
+          "evidence_degraded": false,
+          "patch_mechanism_signals": [
+            "added guard: if (attr.u.blk->data != NULL"
+          ],
+          "silencing_conditions": [
+            "length/capacity guard present: if (attr.u.blk->data != NULL",
+            "patch-introduced barrier pattern: null check"
+          ],
+          "retry_guidance": [],
+          "selected_evidence_ids": [
+            "csa_validation_allocation_lifecycle_3",
+            "csa_validation_path_guard_1",
+            "csa_validation_semantic_slice_0",
+            "csa_validation_state_transition_2",
+            "pf_004",
+            "pf_005",
+            "pf_003",
+            "pf_002",
+            "pf_001"
+          ],
+          "selected_evidence": [
+            {
+              "evidence_id": "csa_validation_allocation_lifecycle_3",
+              "type": "allocation_lifecycle",
+              "analyzer": "csa",
+              "scope": {
+                "repo": "fix.patch",
+                "file": "bfd/dwarf2.c",
+                "function": "scan_unit_for_symbols"
+              },
+              "semantic_payload": {
+                "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+                "summary": "scan_unit_for_symbols in bfd/dwarf2.c provides CSA-backed pointer/resource lifecycle context near line 3213",
+                "state_before": [
+                  "input(unit)",
+                  "buffer(var->name)",
+                  "buffer(var->file)",
+                  "sinks(concat_filename, bfd_get)"
+                ],
+                "state_after": [
+                  "diagnostic(Patch-scoped match: dereference of attr.u.blk->data without a proven attr.u.blk->data != NULL guard [custom.NullDerefChecker])"
+                ],
+                "tracked_symbols": [
+                  "unit"
+                ],
+                "buffer_fields": [
+                  "var->name",
+                  "var->file",
+                  "unit->line_table",
+                  "var->line",
+                  "var->stack",
+                  "blk->data"
+                ],
+                "coverage_status": "full",
+                "functions": [
+                  "scan_unit_for_symbols"
+                ],
+                "call_targets": [
+                  "concat_filename",
+                  "bfd_get"
+                ],
+                "source_file": "bfd/dwarf2.c"
+              },
+              "evidence_slice": {
+                "kind": "lifecycle_witness",
+                "anchor": {
+                  "patch_file": "bfd/dwarf2.c",
+                  "hunk_index": 0,
+                  "source_line": 3213
+                },
+                "summary": "scan_unit_for_symbols in bfd/dwarf2.c provides CSA-backed pointer/resource lifecycle context near line 3213",
+                "statements": [
+                  "3181: \t\t}",
+                  "3182: \t    }",
+                  "3183: \t  else if (var)",
+                  "3184: \t    {",
+                  "3185: \t      switch (attr.name)",
+                  "3186: \t\t{"
+                ],
+                "guards": [
+                  "var",
+                  "attr.u.val != 0",
+                  "*attr.u.blk->data == DW_OP_addr",
+                  "attr.u.blk->size == unit->addr_size + 1U"
+                ],
+                "call_boundary": [
+                  "concat_filename",
+                  "bfd_get"
+                ],
+                "call_edges": [],
+                "state_transitions": [
+                  "diagnostic(Patch-scoped match: dereference of attr.u.blk->data without a proven attr.u.blk->data != NULL guard [custom.NullDerefChecker])"
+                ],
+                "api_terms": [
+                  "concat_filename",
+                  "bfd_get"
+                ],
+                "related_symbols": [
+                  "unit"
+                ],
+                "verifier": "csa-validation",
+                "extraction_method": "existing_result_json+source_window",
+                "coverage_status": "full"
+              },
+              "confidence": 0.86
+            },
+            {
+              "evidence_id": "csa_validation_path_guard_1",
+              "type": "path_guard",
+              "analyzer": "csa",
+              "scope": {
+                "repo": "fix.patch",
+                "file": "bfd/dwarf2.c",
+                "function": "scan_unit_for_symbols"
+              },
+              "semantic_payload": {
+                "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+                "guard_expr": "var",
+                "summary": "CSA validation reaches bfd/dwarf2.c:3213 in scan_unit_for_symbols with guards var, attr.u.val != 0",
+                "state_before": [
+                  "input(unit)",
+                  "buffer(var->name)",
+                  "buffer(var->file)",
+                  "sinks(concat_filename, bfd_get)"
+                ],
+                "state_after": [
+                  "guard(var)",
+                  "guard(attr.u.val != 0)",
+                  "diagnostic(Patch-scoped match: dereference of attr.u.blk->data without a proven attr.u.blk->data != NULL guard [custom.NullDerefChecker])"
+                ],
+                "tracked_symbols": [
+                  "unit"
+                ],
+                "buffer_fields": [
+                  "var->name",
+                  "var->file",
+                  "unit->line_table",
+                  "var->line",
+                  "var->stack",
+                  "blk->data"
+                ],
+                "coverage_status": "full",
+                "functions": [
+                  "scan_unit_for_symbols"
+                ],
+                "call_targets": [
+                  "concat_filename",
+                  "bfd_get"
+                ],
+                "branch_conditions": [
+                  "var",
+                  "attr.u.val != 0",
+                  "*attr.u.blk->data == DW_OP_addr",
+                  "attr.u.blk->size == unit->addr_size + 1U"
+                ],
+                "source_file": "bfd/dwarf2.c"
+              },
+              "evidence_slice": {
+                "kind": "path_witness",
+                "anchor": {
+                  "patch_file": "bfd/dwarf2.c",
+                  "hunk_index": 0,
+                  "source_line": 3213
+                },
+                "summary": "CSA validation reaches bfd/dwarf2.c:3213 in scan_unit_for_symbols with guards var, attr.u.val != 0",
+                "statements": [
+                  "3181: \t\t}",
+                  "3182: \t    }",
+                  "3183: \t  else if (var)",
+                  "3184: \t    {",
+                  "3185: \t      switch (attr.name)",
+                  "3186: \t\t{"
+                ],
+                "guards": [
+                  "var",
+                  "attr.u.val != 0",
+                  "*attr.u.blk->data == DW_OP_addr",
+                  "attr.u.blk->size == unit->addr_size + 1U"
+                ],
+                "call_boundary": [
+                  "concat_filename",
+                  "bfd_get"
+                ],
+                "call_edges": [],
+                "state_transitions": [
+                  "guard(var)",
+                  "guard(attr.u.val != 0)",
+                  "diagnostic(Patch-scoped match: dereference of attr.u.blk->data without a proven attr.u.blk->data != NULL guard [custom.NullDerefChecker])"
+                ],
+                "api_terms": [
+                  "concat_filename",
+                  "bfd_get"
+                ],
+                "related_symbols": [
+                  "unit"
+                ],
+                "verifier": "csa-validation",
+                "extraction_method": "existing_result_json+source_window",
+                "coverage_status": "full"
+              },
+              "confidence": 0.86
+            },
+            {
+              "evidence_id": "csa_validation_semantic_slice_0",
+              "type": "semantic_slice",
+              "analyzer": "csa",
+              "scope": {
+                "repo": "fix.patch",
+                "file": "bfd/dwarf2.c",
+                "function": "scan_unit_for_symbols"
+              },
+              "semantic_payload": {
+                "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+                "summary": "CSA validation diagnostic anchors the patch-local semantic slice at bfd/dwarf2.c:3213",
+                "state_before": [
+                  "input(unit)",
+                  "buffer(var->name)",
+                  "buffer(var->file)",
+                  "sinks(concat_filename, bfd_get)"
+                ],
+                "state_after": [
+                  "diagnostic(Patch-scoped match: dereference of attr.u.blk->data without a proven attr.u.blk->data != NULL guard [custom.NullDerefChecker])"
+                ],
+                "tracked_symbols": [
+                  "unit"
+                ],
+                "buffer_fields": [
+                  "var->name",
+                  "var->file",
+                  "unit->line_table",
+                  "var->line",
+                  "var->stack",
+                  "blk->data"
+                ],
+                "coverage_status": "full",
+                "functions": [
+                  "scan_unit_for_symbols"
+                ],
+                "call_targets": [
+                  "concat_filename",
+                  "bfd_get"
+                ],
+                "source_file": "bfd/dwarf2.c"
+              },
+              "evidence_slice": {
+                "kind": "semantic_slice",
+                "anchor": {
+                  "patch_file": "bfd/dwarf2.c",
+                  "hunk_index": 0,
+                  "source_line": 3213
+                },
+                "summary": "CSA validation diagnostic anchors the patch-local semantic slice at bfd/dwarf2.c:3213",
+                "statements": [
+                  "3181: \t\t}",
+                  "3182: \t    }",
+                  "3183: \t  else if (var)",
+                  "3184: \t    {",
+                  "3185: \t      switch (attr.name)",
+                  "3186: \t\t{"
+                ],
+                "guards": [
+                  "var",
+                  "attr.u.val != 0",
+                  "*attr.u.blk->data == DW_OP_addr",
+                  "attr.u.blk->size == unit->addr_size + 1U"
+                ],
+                "call_boundary": [
+                  "concat_filename",
+                  "bfd_get"
+                ],
+                "call_edges": [],
+                "state_transitions": [
+                  "diagnostic(Patch-scoped match: dereference of attr.u.blk->data without a proven attr.u.blk->data != NULL guard [custom.NullDerefChecker])"
+                ],
+                "api_terms": [
+                  "concat_filename",
+                  "bfd_get"
+                ],
+                "related_symbols": [
+                  "unit"
+                ],
+                "verifier": "csa-validation",
+                "extraction_method": "existing_result_json+source_window",
+                "coverage_status": "full"
+              },
+              "confidence": 0.86
+            },
+            {
+              "evidence_id": "csa_validation_state_transition_2",
+              "type": "state_transition",
+              "analyzer": "csa",
+              "scope": {
+                "repo": "fix.patch",
+                "file": "bfd/dwarf2.c",
+                "function": "scan_unit_for_symbols"
+              },
+              "semantic_payload": {
+                "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+                "summary": "scan_unit_for_symbols in bfd/dwarf2.c has CSA-observed state near line 3213",
+                "state_before": [
+                  "input(unit)",
+                  "buffer(var->name)",
+                  "buffer(var->file)",
+                  "sinks(concat_filename, bfd_get)"
+                ],
+                "state_after": [
+                  "call(concat_filename)",
+                  "call(bfd_get)",
+                  "diagnostic(Patch-scoped match: dereference of attr.u.blk->data without a proven attr.u.blk->data != NULL guard [custom.NullDerefChecker])"
+                ],
+                "tracked_symbols": [
+                  "unit"
+                ],
+                "buffer_fields": [
+                  "var->name",
+                  "var->file",
+                  "unit->line_table",
+                  "var->line",
+                  "var->stack",
+                  "blk->data"
+                ],
+                "coverage_status": "full",
+                "functions": [
+                  "scan_unit_for_symbols"
+                ],
+                "call_targets": [
+                  "concat_filename",
+                  "bfd_get"
+                ],
+                "branch_conditions": [
+                  "var",
+                  "attr.u.val != 0",
+                  "*attr.u.blk->data == DW_OP_addr",
+                  "attr.u.blk->size == unit->addr_size + 1U"
+                ],
+                "source_file": "bfd/dwarf2.c"
+              },
+              "evidence_slice": {
+                "kind": "state_witness",
+                "anchor": {
+                  "patch_file": "bfd/dwarf2.c",
+                  "hunk_index": 0,
+                  "source_line": 3213
+                },
+                "summary": "scan_unit_for_symbols in bfd/dwarf2.c has CSA-observed state near line 3213",
+                "statements": [
+                  "3181: \t\t}",
+                  "3182: \t    }",
+                  "3183: \t  else if (var)",
+                  "3184: \t    {",
+                  "3185: \t      switch (attr.name)",
+                  "3186: \t\t{"
+                ],
+                "guards": [
+                  "var",
+                  "attr.u.val != 0",
+                  "*attr.u.blk->data == DW_OP_addr",
+                  "attr.u.blk->size == unit->addr_size + 1U"
+                ],
+                "call_boundary": [
+                  "concat_filename",
+                  "bfd_get"
+                ],
+                "call_edges": [],
+                "state_transitions": [
+                  "call(concat_filename)",
+                  "call(bfd_get)",
+                  "diagnostic(Patch-scoped match: dereference of attr.u.blk->data without a proven attr.u.blk->data != NULL guard [custom.NullDerefChecker])"
+                ],
+                "api_terms": [
+                  "concat_filename",
+                  "bfd_get"
+                ],
+                "related_symbols": [
+                  "unit"
+                ],
+                "verifier": "csa-validation",
+                "extraction_method": "existing_result_json+source_window",
+                "coverage_status": "full"
+              },
+              "confidence": 0.86
+            },
+            {
+              "evidence_id": "pf_004",
+              "type": "patch_fact",
+              "analyzer": "patch",
+              "scope": {
+                "repo": "fix.patch",
+                "file": "bfd/dwarf2.c",
+                "function": "scan_unit_for_symbols"
+              },
+              "semantic_payload": {
+                "label": "Patch introduces or strengthens guards"
+              },
+              "evidence_slice": {},
+              "confidence": 0.95
+            },
+            {
+              "evidence_id": "pf_005",
+              "type": "patch_fact",
+              "analyzer": "patch",
+              "scope": {
+                "repo": "fix.patch",
+                "file": "bfd/dwarf2.c",
+                "function": "scan_unit_for_symbols"
+              },
+              "semantic_payload": {
+                "label": "Patch introduces reusable fix patterns"
+              },
+              "evidence_slice": {},
+              "confidence": 0.95
+            },
+            {
+              "evidence_id": "pf_003",
+              "type": "patch_fact",
+              "analyzer": "patch",
+              "scope": {
+                "repo": "fix.patch",
+                "file": "bfd/dwarf2.c",
+                "function": "scan_unit_for_symbols"
+              },
+              "semantic_payload": {
+                "label": "Existing patch analysis detection strategy"
+              },
+              "evidence_slice": {},
+              "confidence": 0.95
+            },
+            {
+              "evidence_id": "pf_002",
+              "type": "patch_fact",
+              "analyzer": "patch",
+              "scope": {
+                "repo": "fix.patch",
+                "file": "bfd/dwarf2.c",
+                "function": "scan_unit_for_symbols"
+              },
+              "semantic_payload": {
+                "label": "Functions implicated by removed or fixed code"
+              },
+              "evidence_slice": {},
+              "confidence": 0.95
+            },
+            {
+              "evidence_id": "pf_001",
+              "type": "patch_fact",
+              "analyzer": "patch",
+              "scope": {
+                "repo": "fix.patch",
+                "file": "bfd/dwarf2.c",
+                "function": "scan_unit_for_symbols"
+              },
+              "semantic_payload": {
+                "label": "Vulnerability patterns inferred from patch"
+              },
+              "evidence_slice": {},
+              "confidence": 0.95
+            }
+          ],
+          "semantic_slice_count": 4,
+          "context_summary_count": 0,
+          "semantic_slice_coverage": "full",
+          "selected_semantic_slice_ids": [
+            "csa_validation_allocation_lifecycle_3",
+            "csa_validation_path_guard_1",
+            "csa_validation_semantic_slice_0",
+            "csa_validation_state_transition_2"
+          ],
+          "selected_context_summary_ids": [],
+          "selected_semantic_slices": [
+            {
+              "evidence_id": "csa_validation_allocation_lifecycle_3",
+              "type": "allocation_lifecycle",
+              "analyzer": "csa",
+              "scope": {
+                "repo": "fix.patch",
+                "file": "bfd/dwarf2.c",
+                "function": "scan_unit_for_symbols"
+              },
+              "semantic_payload": {
+                "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+                "summary": "scan_unit_for_symbols in bfd/dwarf2.c provides CSA-backed pointer/resource lifecycle context near line 3213",
+                "state_before": [
+                  "input(unit)",
+                  "buffer(var->name)",
+                  "buffer(var->file)",
+                  "sinks(concat_filename, bfd_get)"
+                ],
+                "state_after": [
+                  "diagnostic(Patch-scoped match: dereference of attr.u.blk->data without a proven attr.u.blk->data != NULL guard [custom.NullDerefChecker])"
+                ],
+                "tracked_symbols": [
+                  "unit"
+                ],
+                "buffer_fields": [
+                  "var->name",
+                  "var->file",
+                  "unit->line_table",
+                  "var->line",
+                  "var->stack",
+                  "blk->data"
+                ],
+                "coverage_status": "full",
+                "functions": [
+                  "scan_unit_for_symbols"
+                ],
+                "call_targets": [
+                  "concat_filename",
+                  "bfd_get"
+                ],
+                "source_file": "bfd/dwarf2.c"
+              },
+              "evidence_slice": {
+                "kind": "lifecycle_witness",
+                "anchor": {
+                  "patch_file": "bfd/dwarf2.c",
+                  "hunk_index": 0,
+                  "source_line": 3213
+                },
+                "summary": "scan_unit_for_symbols in bfd/dwarf2.c provides CSA-backed pointer/resource lifecycle context near line 3213",
+                "statements": [
+                  "3181: \t\t}",
+                  "3182: \t    }",
+                  "3183: \t  else if (var)",
+                  "3184: \t    {",
+                  "3185: \t      switch (attr.name)",
+                  "3186: \t\t{"
+                ],
+                "guards": [
+                  "var",
+                  "attr.u.val != 0",
+                  "*attr.u.blk->data == DW_OP_addr",
+                  "attr.u.blk->size == unit->addr_size + 1U"
+                ],
+                "call_boundary": [
+                  "concat_filename",
+                  "bfd_get"
+                ],
+                "call_edges": [],
+                "state_transitions": [
+                  "diagnostic(Patch-scoped match: dereference of attr.u.blk->data without a proven attr.u.blk->data != NULL guard [custom.NullDerefChecker])"
+                ],
+                "api_terms": [
+                  "concat_filename",
+                  "bfd_get"
+                ],
+                "related_symbols": [
+                  "unit"
+                ],
+                "verifier": "csa-validation",
+                "extraction_method": "existing_result_json+source_window",
+                "coverage_status": "full"
+              },
+              "confidence": 0.86
+            },
+            {
+              "evidence_id": "csa_validation_path_guard_1",
+              "type": "path_guard",
+              "analyzer": "csa",
+              "scope": {
+                "repo": "fix.patch",
+                "file": "bfd/dwarf2.c",
+                "function": "scan_unit_for_symbols"
+              },
+              "semantic_payload": {
+                "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+                "guard_expr": "var",
+                "summary": "CSA validation reaches bfd/dwarf2.c:3213 in scan_unit_for_symbols with guards var, attr.u.val != 0",
+                "state_before": [
+                  "input(unit)",
+                  "buffer(var->name)",
+                  "buffer(var->file)",
+                  "sinks(concat_filename, bfd_get)"
+                ],
+                "state_after": [
+                  "guard(var)",
+                  "guard(attr.u.val != 0)",
+                  "diagnostic(Patch-scoped match: dereference of attr.u.blk->data without a proven attr.u.blk->data != NULL guard [custom.NullDerefChecker])"
+                ],
+                "tracked_symbols": [
+                  "unit"
+                ],
+                "buffer_fields": [
+                  "var->name",
+                  "var->file",
+                  "unit->line_table",
+                  "var->line",
+                  "var->stack",
+                  "blk->data"
+                ],
+                "coverage_status": "full",
+                "functions": [
+                  "scan_unit_for_symbols"
+                ],
+                "call_targets": [
+                  "concat_filename",
+                  "bfd_get"
+                ],
+                "branch_conditions": [
+                  "var",
+                  "attr.u.val != 0",
+                  "*attr.u.blk->data == DW_OP_addr",
+                  "attr.u.blk->size == unit->addr_size + 1U"
+                ],
+                "source_file": "bfd/dwarf2.c"
+              },
+              "evidence_slice": {
+                "kind": "path_witness",
+                "anchor": {
+                  "patch_file": "bfd/dwarf2.c",
+                  "hunk_index": 0,
+                  "source_line": 3213
+                },
+                "summary": "CSA validation reaches bfd/dwarf2.c:3213 in scan_unit_for_symbols with guards var, attr.u.val != 0",
+                "statements": [
+                  "3181: \t\t}",
+                  "3182: \t    }",
+                  "3183: \t  else if (var)",
+                  "3184: \t    {",
+                  "3185: \t      switch (attr.name)",
+                  "3186: \t\t{"
+                ],
+                "guards": [
+                  "var",
+                  "attr.u.val != 0",
+                  "*attr.u.blk->data == DW_OP_addr",
+                  "attr.u.blk->size == unit->addr_size + 1U"
+                ],
+                "call_boundary": [
+                  "concat_filename",
+                  "bfd_get"
+                ],
+                "call_edges": [],
+                "state_transitions": [
+                  "guard(var)",
+                  "guard(attr.u.val != 0)",
+                  "diagnostic(Patch-scoped match: dereference of attr.u.blk->data without a proven attr.u.blk->data != NULL guard [custom.NullDerefChecker])"
+                ],
+                "api_terms": [
+                  "concat_filename",
+                  "bfd_get"
+                ],
+                "related_symbols": [
+                  "unit"
+                ],
+                "verifier": "csa-validation",
+                "extraction_method": "existing_result_json+source_window",
+                "coverage_status": "full"
+              },
+              "confidence": 0.86
+            },
+            {
+              "evidence_id": "csa_validation_semantic_slice_0",
+              "type": "semantic_slice",
+              "analyzer": "csa",
+              "scope": {
+                "repo": "fix.patch",
+                "file": "bfd/dwarf2.c",
+                "function": "scan_unit_for_symbols"
+              },
+              "semantic_payload": {
+                "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+                "summary": "CSA validation diagnostic anchors the patch-local semantic slice at bfd/dwarf2.c:3213",
+                "state_before": [
+                  "input(unit)",
+                  "buffer(var->name)",
+                  "buffer(var->file)",
+                  "sinks(concat_filename, bfd_get)"
+                ],
+                "state_after": [
+                  "diagnostic(Patch-scoped match: dereference of attr.u.blk->data without a proven attr.u.blk->data != NULL guard [custom.NullDerefChecker])"
+                ],
+                "tracked_symbols": [
+                  "unit"
+                ],
+                "buffer_fields": [
+                  "var->name",
+                  "var->file",
+                  "unit->line_table",
+                  "var->line",
+                  "var->stack",
+                  "blk->data"
+                ],
+                "coverage_status": "full",
+                "functions": [
+                  "scan_unit_for_symbols"
+                ],
+                "call_targets": [
+                  "concat_filename",
+                  "bfd_get"
+                ],
+                "source_file": "bfd/dwarf2.c"
+              },
+              "evidence_slice": {
+                "kind": "semantic_slice",
+                "anchor": {
+                  "patch_file": "bfd/dwarf2.c",
+                  "hunk_index": 0,
+                  "source_line": 3213
+                },
+                "summary": "CSA validation diagnostic anchors the patch-local semantic slice at bfd/dwarf2.c:3213",
+                "statements": [
+                  "3181: \t\t}",
+                  "3182: \t    }",
+                  "3183: \t  else if (var)",
+                  "3184: \t    {",
+                  "3185: \t      switch (attr.name)",
+                  "3186: \t\t{"
+                ],
+                "guards": [
+                  "var",
+                  "attr.u.val != 0",
+                  "*attr.u.blk->data == DW_OP_addr",
+                  "attr.u.blk->size == unit->addr_size + 1U"
+                ],
+                "call_boundary": [
+                  "concat_filename",
+                  "bfd_get"
+                ],
+                "call_edges": [],
+                "state_transitions": [
+                  "diagnostic(Patch-scoped match: dereference of attr.u.blk->data without a proven attr.u.blk->data != NULL guard [custom.NullDerefChecker])"
+                ],
+                "api_terms": [
+                  "concat_filename",
+                  "bfd_get"
+                ],
+                "related_symbols": [
+                  "unit"
+                ],
+                "verifier": "csa-validation",
+                "extraction_method": "existing_result_json+source_window",
+                "coverage_status": "full"
+              },
+              "confidence": 0.86
+            },
+            {
+              "evidence_id": "csa_validation_state_transition_2",
+              "type": "state_transition",
+              "analyzer": "csa",
+              "scope": {
+                "repo": "fix.patch",
+                "file": "bfd/dwarf2.c",
+                "function": "scan_unit_for_symbols"
+              },
+              "semantic_payload": {
+                "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+                "summary": "scan_unit_for_symbols in bfd/dwarf2.c has CSA-observed state near line 3213",
+                "state_before": [
+                  "input(unit)",
+                  "buffer(var->name)",
+                  "buffer(var->file)",
+                  "sinks(concat_filename, bfd_get)"
+                ],
+                "state_after": [
+                  "call(concat_filename)",
+                  "call(bfd_get)",
+                  "diagnostic(Patch-scoped match: dereference of attr.u.blk->data without a proven attr.u.blk->data != NULL guard [custom.NullDerefChecker])"
+                ],
+                "tracked_symbols": [
+                  "unit"
+                ],
+                "buffer_fields": [
+                  "var->name",
+                  "var->file",
+                  "unit->line_table",
+                  "var->line",
+                  "var->stack",
+                  "blk->data"
+                ],
+                "coverage_status": "full",
+                "functions": [
+                  "scan_unit_for_symbols"
+                ],
+                "call_targets": [
+                  "concat_filename",
+                  "bfd_get"
+                ],
+                "branch_conditions": [
+                  "var",
+                  "attr.u.val != 0",
+                  "*attr.u.blk->data == DW_OP_addr",
+                  "attr.u.blk->size == unit->addr_size + 1U"
+                ],
+                "source_file": "bfd/dwarf2.c"
+              },
+              "evidence_slice": {
+                "kind": "state_witness",
+                "anchor": {
+                  "patch_file": "bfd/dwarf2.c",
+                  "hunk_index": 0,
+                  "source_line": 3213
+                },
+                "summary": "scan_unit_for_symbols in bfd/dwarf2.c has CSA-observed state near line 3213",
+                "statements": [
+                  "3181: \t\t}",
+                  "3182: \t    }",
+                  "3183: \t  else if (var)",
+                  "3184: \t    {",
+                  "3185: \t      switch (attr.name)",
+                  "3186: \t\t{"
+                ],
+                "guards": [
+                  "var",
+                  "attr.u.val != 0",
+                  "*attr.u.blk->data == DW_OP_addr",
+                  "attr.u.blk->size == unit->addr_size + 1U"
+                ],
+                "call_boundary": [
+                  "concat_filename",
+                  "bfd_get"
+                ],
+                "call_edges": [],
+                "state_transitions": [
+                  "call(concat_filename)",
+                  "call(bfd_get)",
+                  "diagnostic(Patch-scoped match: dereference of attr.u.blk->data without a proven attr.u.blk->data != NULL guard [custom.NullDerefChecker])"
+                ],
+                "api_terms": [
+                  "concat_filename",
+                  "bfd_get"
+                ],
+                "related_symbols": [
+                  "unit"
+                ],
+                "verifier": "csa-validation",
+                "extraction_method": "existing_result_json+source_window",
+                "coverage_status": "full"
+              },
+              "confidence": 0.86
+            }
+          ],
+          "selected_context_summaries": [],
+          "semantic_clause_plan": [
+            {
+              "clause_id": "vulnerable_trigger_clause",
+              "intent": "Trigger on the vulnerable unknown mechanism using evidence-backed path/flow semantics.",
+              "supporting_evidence_ids": [
+                "csa_validation_allocation_lifecycle_3",
+                "csa_validation_path_guard_1",
+                "csa_validation_semantic_slice_0",
+                "csa_validation_state_transition_2"
+              ],
+              "repair_when": [
+                "semantic_no_hits"
+              ],
+              "focus_functions": [
+                "scan_unit_for_symbols"
+              ]
+            },
+            {
+              "clause_id": "patched_silence_clause",
+              "intent": "Stay silent on patched code when patch-added guards, barriers, or safe APIs prove the mechanism is blocked.",
+              "supporting_evidence_ids": [
+                "csa_validation_path_guard_1",
+                "csa_validation_semantic_slice_0",
+                "csa_validation_state_transition_2",
+                "pf_004",
+                "pf_005",
+                "pf_003",
+                "pf_002",
+                "pf_001"
+              ],
+              "repair_when": [],
+              "silencing_conditions": [
+                "length/capacity guard present: if (attr.u.blk->data != NULL",
+                "patch-introduced barrier pattern: null check"
+              ]
+            },
+            {
+              "clause_id": "semantic_transfer_clause",
+              "intent": "Generalize along semantic slices and call-chain evidence rather than patch-local syntax.",
+              "supporting_evidence_ids": [
+                "csa_validation_semantic_slice_0"
+              ],
+              "repair_when": [],
+              "analyzer_id": "csa"
+            },
+            {
+              "clause_id": "analyzer_interface_clause",
+              "intent": "Preserve valid analyzer-facing syntax and interfaces while keeping semantics unchanged.",
+              "supporting_evidence_ids": [
+                "pf_004",
+                "pf_005",
+                "pf_003",
+                "pf_002",
+                "pf_001"
+              ],
+              "repair_when": [
+                "semantic_execution_error"
+              ],
+              "analyzer_id": "csa"
+            }
+          ],
+          "repair_directives": [],
+          "constraints": [
+            {
+              "title": "Generalize beyond patch site",
+              "description": "Do not bind the detector to fixed file paths, line numbers, or exact patch strings.",
+              "priority": "high"
+            },
+            {
+              "title": "Preserve vulnerability semantics",
+              "description": "Keep the detector focused on the vulnerability family implied by the patch and evidence.",
+              "priority": "high"
+            },
+            {
+              "title": "Respect analyzer-native form",
+              "description": "Output must be a valid checker_plugin for csa.",
+              "priority": "high"
+            },
+            {
+              "title": "Stay within proven mechanism scope",
+              "description": "Generalize only along evidence-supported semantic dimensions. Do not broaden the detector into unrelated globals, APIs, or bug families.",
+              "priority": "high"
+            },
+            {
+              "title": "Honor mechanism contract",
+              "description": "Preserve the mechanism family `generic_vulnerability_mechanism` by keeping trigger invariants the vulnerable mechanism is reachable on a feasible path; the path lacks the barrier introduced by the patch; Patch-backed trigger clue: added guard: if (attr.u.blk->data != NULL.",
+              "priority": "high"
+            },
+            {
+              "title": "Generalize only on contract axes",
+              "description": "Reuse semantics only along these transfer axes: only generalize along evidence-backed state, guard, flow, or API-role equivalence; equivalent guard or barrier predicates on sibling paths; equivalent local state transitions around the same sink or dereference.",
+              "priority": "high"
+            },
+            {
+              "title": "Anchor on patch-touched scope",
+              "description": "Use patch-touched files/functions as the semantic anchor for synthesis. Only extend beyond them when the same mechanism is explicitly supported by evidence.",
+              "priority": "high"
+            },
+            {
+              "title": "Encode the patch-added barrier",
+              "description": "model the absence of barriers like null check; treat guards such as if (attr.u.blk->data != NULL as semantic barriers.",
+              "priority": "high"
+            },
+            {
+              "title": "Respect patched silence",
+              "description": "Use these no-report conditions when they are semantically proven: length/capacity guard present: if (attr.u.blk->data != NULL; patch-introduced barrier pattern: null check.",
+              "priority": "high"
+            },
+            {
+              "title": "Use path-sensitive evidence",
+              "description": "Prefer guards, state transitions, and lifecycle facts over broad textual matching.",
+              "priority": "high"
+            },
+            {
+              "title": "No placeholder helper logic",
+              "description": "Helper predicates must inspect AST/program state and must not be unconditional return-true/return-false stubs.",
+              "priority": "high"
+            }
+          ],
+          "implementation_hints": [
+            "Mechanism family: generic_vulnerability_mechanism",
+            "Mechanism dimensions: vulnerability trigger, patch-introduced barrier, local state or flow relation",
+            "Trigger invariants: the vulnerable mechanism is reachable on a feasible path, the path lacks the barrier introduced by the patch, Patch-backed trigger clue: added guard: if (attr.u.blk->data != NULL",
+            "Silence invariants: patch-introduced guards, barriers, or safe APIs must suppress findings, length/capacity guard present: if (attr.u.blk->data != NULL, patch-introduced barrier pattern: null check",
+            "Transfer axes: only generalize along evidence-backed state, guard, flow, or API-role equivalence, equivalent guard or barrier predicates on sibling paths, equivalent local state transitions around the same sink or dereference",
+            "Focus files: bfd/dwarf2.c",
+            "Priority functions: scan_unit_for_symbols",
+            "Patch-added barriers: null check"
+          ],
+          "validation_expectations": [
+            "Vulnerable version should trigger a unknown finding.",
+            "Patched version should stay silent for the same mechanism.",
+            "Semantic validation that executes but returns zero hits is not acceptable; recover coverage with evidence-backed semantics.",
+            "Repair phase may fix syntax/interfaces only; it must not simplify away the core detection logic.",
+            "Generalization must stay inside the mechanism contract transfer axes instead of widening to adjacent bug families.",
+            "Trigger invariant: the vulnerable mechanism is reachable on a feasible path.",
+            "Trigger invariant: the path lacks the barrier introduced by the patch.",
+            "Patched silence depends on: length/capacity guard present: if (attr.u.blk->data != NULL.",
+            "Patched silence depends on: patch-introduced barrier pattern: null check."
+          ]
+        },
+        "evidence_effectiveness": {
+          "baseline_records": 10,
+          "post_validation_records": 11,
+          "new_records": 1,
+          "baseline_missing": [],
+          "post_validation_missing": [],
+          "resolved_missing": [],
+          "improved": true,
+          "summary": "新增 1 条反馈后证据"
+        }
+      }
+    }
+  }
+}

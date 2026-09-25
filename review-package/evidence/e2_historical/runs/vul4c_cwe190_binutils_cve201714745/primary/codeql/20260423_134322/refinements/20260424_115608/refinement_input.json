@@ -1,0 +1,1198 @@
+{
+  "schema_version": 1,
+  "workflow_mode": "refine",
+  "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe190_binutils_cve201714745/patches/fix.patch",
+  "validate_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe190_binutils_cve201714745/vulnerable",
+  "analyzer_choice": "codeql",
+  "shared_analysis_path": "patchweaver_plan.json",
+  "shared_analysis": {
+    "files_changed": [
+      "bfd/elf64-x86-64.c"
+    ],
+    "file_details": [
+      {
+        "path": "bfd/elf64-x86-64.c",
+        "additions": 2,
+        "deletions": 0,
+        "hunks": 1
+      }
+    ],
+    "vulnerability_patterns": [],
+    "cross_file_dependencies": [],
+    "detection_strategy": {
+      "primary_pattern": "unknown",
+      "check_types": [
+        "local_ast_cfg_guard_absence",
+        "negative_return_as_size_count",
+        "error_code_used_in_library_length_parameter"
+      ],
+      "entry_points": [
+        "calls assigning from `bfd_canonicalize_dynamic_reloc(...)` or analogous count-returning APIs",
+        "calls to `qsort` where the element count argument is a recently assigned signed integer"
+      ],
+      "data_flow_tracking": false,
+      "cross_file_analysis": false,
+      "suggestions": [
+        "首稿优先命中 patch-local 锚点：同一函数内，某个有错误语义的 signed 返回值在缺少负值检查时直接作为 `qsort` 第二参数使用。",
+        "不要一开始把新增的 `if (dynrelcount < 0)` 写成硬过滤条件；首稿先抓“返回值直接流入计数/长度 sink”的局部模式，再把缺少负值 barrier 作为收敛。",
+        "首稿可只做局部 AST/CFG：赋值语句、随后的比较缺失、以及对 `qsort(..., count, ...)` 的调用，通常无需复杂数据流。",
+        "辅助收敛条件可以是：变量名/来源函数带有 `count/reloc/canonicalize` 语义，或 sink 为排序/拷贝/分配等需要非负大小的参数，但这些不应成为首要命中条件。",
+        "不要把变量非零或已初始化当作安全证据；这里真正需要的是‘负值错误码已被屏蔽’这一 barrier。",
+        "当前补丁未体现跨文件依赖；检测器首稿可只盯住补丁涉及函数/文件中的局部模式。"
+      ]
+    },
+    "checker_name_suggestion": "NegativeCountPassedToQsortChecker",
+    "affected_functions": [
+      "unknown"
+    ],
+    "key_functions": [
+      "unknown"
+    ],
+    "patch_semantics": {
+      "added_guards": [
+        "if (dynrelcount < 0)"
+      ],
+      "added_api_calls": [],
+      "removed_api_calls": [],
+      "state_resets": [],
+      "lifecycle_changes": []
+    },
+    "analysis_backend": "llm",
+    "analysis_confidence": 0.93,
+    "analysis_rationale": "补丁只在 `bfd/elf64-x86-64.c` 的同一函数内新增了对 `dynrelcount` 的负值检查。具体证据是：`dynrelcount = bfd_canonicalize_dynamic_reloc(abfd, dynrelbuf, dynsyms);` 之后新增 `if (dynrelcount < 0) return -1;`，而紧随其后的原有代码继续把 `dynrelcount` 作为 `qsort(dynrelbuf, dynrelcount, sizeof (arelent *), compare_relocs);` 的元素个数使用。补丁形状明确表明：修复前，来自 `bfd_canonicalize_dynamic_reloc` 的错误返回值会被当作计数继续消费；修复后，通过提前返回阻断该错误值流入 `qsort` 的长度参数。仅凭该 diff 能稳健确认的是“错误码/负值被当作长度或计数继续使用”的局部机制；是否最终归类为整数溢出、越界、内存破坏等，补丁本身证据不足，因此主模式保留为 `unknown`。",
+    "llm_usage": {
+      "prompt_tokens": 6724,
+      "completion_tokens": 1015,
+      "total_tokens": 7739,
+      "call_count": 1,
+      "available": true,
+      "model": "gpt-5.4"
+    },
+    "patchweaver": {
+      "summary": "Patch suggests unknown semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=0, metadata refs=0.",
+      "patch_facts": [
+        {
+          "fact_type": "patch_overview",
+          "label": "Patch overview",
+          "attributes": {
+            "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe190_binutils_cve201714745/patches/fix.patch",
+            "changed_files": [
+              "bfd/elf64-x86-64.c"
+            ],
+            "changed_file_count": 1,
+            "added_line_count": 2,
+            "deleted_line_count": 0
+          }
+        },
+        {
+          "fact_type": "vulnerability_patterns",
+          "label": "Vulnerability patterns inferred from patch",
+          "attributes": {
+            "patterns": [
+              "unknown"
+            ],
+            "descriptions": []
+          }
+        },
+        {
+          "fact_type": "affected_functions",
+          "label": "Functions implicated by removed or fixed code",
+          "attributes": {
+            "functions": [
+              "elf_section_data"
+            ]
+          }
+        },
+        {
+          "fact_type": "detection_strategy",
+          "label": "Existing patch analysis detection strategy",
+          "attributes": {
+            "primary_pattern": "unknown",
+            "check_types": [
+              "local_ast_cfg_guard_absence",
+              "negative_return_as_size_count",
+              "error_code_used_in_library_length_parameter"
+            ],
+            "entry_points": [
+              "calls assigning from `bfd_canonicalize_dynamic_reloc(...)` or analogous count-returning APIs",
+              "calls to `qsort` where the element count argument is a recently assigned signed integer"
+            ],
+            "data_flow_tracking": false,
+            "cross_file_analysis": false,
+            "suggestions": [
+              "首稿优先命中 patch-local 锚点：同一函数内，某个有错误语义的 signed 返回值在缺少负值检查时直接作为 `qsort` 第二参数使用。",
+              "不要一开始把新增的 `if (dynrelcount < 0)` 写成硬过滤条件；首稿先抓“返回值直接流入计数/长度 sink”的局部模式，再把缺少负值 barrier 作为收敛。",
+              "首稿可只做局部 AST/CFG：赋值语句、随后的比较缺失、以及对 `qsort(..., count, ...)` 的调用，通常无需复杂数据流。",
+              "辅助收敛条件可以是：变量名/来源函数带有 `count/reloc/canonicalize` 语义，或 sink 为排序/拷贝/分配等需要非负大小的参数，但这些不应成为首要命中条件。",
+              "不要把变量非零或已初始化当作安全证据；这里真正需要的是‘负值错误码已被屏蔽’这一 barrier。",
+              "当前补丁未体现跨文件依赖；检测器首稿可只盯住补丁涉及函数/文件中的局部模式。"
+            ]
+          }
+        },
+        {
+          "fact_type": "added_guards",
+          "label": "Patch introduces or strengthens guards",
+          "attributes": {
+            "guards": [
+              "if (dynrelcount < 0)"
+            ]
+          }
+        }
+      ],
+      "mechanism_graph": {
+        "summary": "Patch suggests unknown semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=0, metadata refs=0.",
+        "primary_patterns": [],
+        "nodes": [
+          {
+            "node_id": "patch",
+            "kind": "patch",
+            "label": "Security patch",
+            "attributes": {
+              "changed_files": [
+                "bfd/elf64-x86-64.c"
+              ]
+            }
+          },
+          {
+            "node_id": "file_0",
+            "kind": "file",
+            "label": "bfd/elf64-x86-64.c",
+            "attributes": {
+              "path": "bfd/elf64-x86-64.c",
+              "additions": 2,
+              "deletions": 0,
+              "hunks": 1
+            }
+          },
+          {
+            "node_id": "strategy",
+            "kind": "strategy",
+            "label": "unknown",
+            "attributes": {
+              "primary_pattern": "unknown",
+              "check_types": [
+                "local_ast_cfg_guard_absence",
+                "negative_return_as_size_count",
+                "error_code_used_in_library_length_parameter"
+              ],
+              "entry_points": [
+                "calls assigning from `bfd_canonicalize_dynamic_reloc(...)` or analogous count-returning APIs",
+                "calls to `qsort` where the element count argument is a recently assigned signed integer"
+              ],
+              "data_flow_tracking": false,
+              "cross_file_analysis": false,
+              "suggestions": [
+                "首稿优先命中 patch-local 锚点：同一函数内，某个有错误语义的 signed 返回值在缺少负值检查时直接作为 `qsort` 第二参数使用。",
+                "不要一开始把新增的 `if (dynrelcount < 0)` 写成硬过滤条件；首稿先抓“返回值直接流入计数/长度 sink”的局部模式，再把缺少负值 barrier 作为收敛。",
+                "首稿可只做局部 AST/CFG：赋值语句、随后的比较缺失、以及对 `qsort(..., count, ...)` 的调用，通常无需复杂数据流。",
+                "辅助收敛条件可以是：变量名/来源函数带有 `count/reloc/canonicalize` 语义，或 sink 为排序/拷贝/分配等需要非负大小的参数，但这些不应成为首要命中条件。",
+                "不要把变量非零或已初始化当作安全证据；这里真正需要的是‘负值错误码已被屏蔽’这一 barrier。",
+                "当前补丁未体现跨文件依赖；检测器首稿可只盯住补丁涉及函数/文件中的局部模式。"
+              ]
+            }
+          },
+          {
+            "node_id": "func_1",
+            "kind": "function",
+            "label": "elf_section_data",
+            "attributes": {
+              "function": "elf_section_data",
+              "source": "patch_fact"
+            }
+          },
+          {
+            "node_id": "guard_1",
+            "kind": "guard",
+            "label": "if (dynrelcount < 0)",
+            "attributes": {
+              "condition": "if (dynrelcount < 0)",
+              "source": "patch_fact"
+            }
+          }
+        ],
+        "edges": [
+          {
+            "source": "patch",
+            "target": "file_0",
+            "relation": "touches",
+            "confidence": 0.95
+          },
+          {
+            "source": "patch",
+            "target": "strategy",
+            "relation": "guides",
+            "confidence": 0.85
+          },
+          {
+            "source": "patch",
+            "target": "func_1",
+            "relation": "focuses_on",
+            "confidence": 0.82
+          },
+          {
+            "source": "patch",
+            "target": "guard_1",
+            "relation": "adds_guard",
+            "confidence": 0.84
+          }
+        ]
+      },
+      "evidence_plan": {
+        "primary_pattern": "unknown",
+        "hypotheses": [
+          "Patch likely encodes a reusable vulnerability mechanism but available metadata is weak; keep evidence collection broad."
+        ],
+        "requirements": [
+          {
+            "evidence_type": "patch_fact",
+            "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+            "priority": 100,
+            "preferred_analyzers": [],
+            "confidence": 1.0,
+            "mechanism_refs": [
+              "patch"
+            ]
+          }
+        ],
+        "recommended_analyzers": [
+          "csa",
+          "codeql"
+        ],
+        "planner_notes": [
+          "Added guards detected in patch diff; path-sensitive evidence should stay near top priority."
+        ],
+        "coverage_gaps": [],
+        "uncertainty_budget": "medium",
+        "escalation_triggers": [
+          "weak_primary_pattern"
+        ]
+      },
+      "refinement_targets": {
+        "codeql": {
+          "checker_name": "NegativeCountToSizeConsumer",
+          "artifact_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe190_binutils_cve201714745/primary/codeql/20260423_134322/codeql/NegativeCountToSizeConsumer.ql",
+          "artifact_kind": "query",
+          "validation_summary": "功能验证执行成功，但未命中验证目标",
+          "refinement_summary": "- validation_outcome @ semantic_validation: semantic_no_hits [coverage=empty]"
+        }
+      },
+      "validation_feedback_history": [
+        {
+          "analyzer": "codeql",
+          "phase": "initial_validation",
+          "summary": "- validation_outcome @ semantic_validation: semantic_no_hits [coverage=empty]"
+        }
+      ]
+    },
+    "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe190_binutils_cve201714745/patches/fix.patch"
+  },
+  "artifacts": {
+    "codeql": {
+      "analyzer_id": "codeql",
+      "checker_name": "NegativeCountToSizeConsumer",
+      "source_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe190_binutils_cve201714745/primary/codeql/20260423_134322/codeql/refinements/20260424_115608/codeql/NegativeCountToSizeConsumer.ql",
+      "output_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe190_binutils_cve201714745/primary/codeql/20260423_134322/codeql/refinements/20260424_115608/codeql/NegativeCountToSizeConsumer.ql",
+      "result_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe190_binutils_cve201714745/primary/codeql/20260423_134322/codeql/refinements/20260424_115608/codeql/result.json",
+      "report_entry": {
+        "success": true,
+        "validation_requested": true,
+        "functional_validation_passed": false,
+        "semantic_target_hit": false,
+        "validation_state": "execution_failed",
+        "semantic_acceptance": false,
+        "semantic_acceptance_summary": "功能验证执行失败",
+        "checker_name": "NegativeCountToSizeConsumer",
+        "artifact_display_name": "NegativeCountToSizeConsumer",
+        "output_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe190_binutils_cve201714745/primary/codeql/20260423_134322/codeql/refinements/20260424_115608/codeql/NegativeCountToSizeConsumer.ql",
+        "source_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe190_binutils_cve201714745/primary/codeql/20260423_134322/codeql/refinements/20260424_115608/codeql/NegativeCountToSizeConsumer.ql",
+        "iterations": 4,
+        "compile_attempts": 0,
+        "error": "",
+        "validation": {
+          "stage": "semantic",
+          "analyzer": "codeql",
+          "success": false,
+          "execution_time": 3.049450397491455,
+          "error_message": "CodeQL 数据库创建失败: Initializing database at /anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe190_binutils_cve201714745/primary/codeql/20260423_134322/codeql/refinements/20260424_115608/codeql/codeql/database/vulnerable_cpp.\nRunning build command: [/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe190_binutils_cve201714745/vulnerable/.patchweaver_env/codeql_build.sh]\nRunning command in /anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe190_binutils_cve201714745/vulnerable: [/anonymous/home/LLM-Nat",
+          "diagnostics": [],
+          "diagnostics_count": 0,
+          "all_diagnostics_count": 0,
+          "generated_diagnostics_count": 0,
+          "warnings_count": 0,
+          "errors_count": 0,
+          "environment_blocked": false,
+          "environment_block_reason": "",
+          "validation_target": "",
+          "diagnostics_filtered": false,
+          "patch_targets": [
+            "bfd/elf64-x86-64.c"
+          ]
+        },
+        "llm_usage": {
+          "prompt_tokens": 35207,
+          "completion_tokens": 1913,
+          "total_tokens": 37120,
+          "call_count": 4,
+          "available": true,
+          "model": "gpt-5.4"
+        },
+        "artifact_metrics": {
+          "path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe190_binutils_cve201714745/primary/codeql/20260423_134322/codeql/refinements/20260424_115608/codeql/NegativeCountToSizeConsumer.ql",
+          "total_lines": 109,
+          "nonempty_lines": 96,
+          "char_count": 3573,
+          "byte_count": 3701
+        },
+        "artifact_delta": {
+          "baseline_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe190_binutils_cve201714745/primary/codeql/20260423_134322/codeql/refinements/20260424_115608/codeql/NegativeCountToSizeConsumer.ql",
+          "current_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe190_binutils_cve201714745/primary/codeql/20260423_134322/codeql/refinements/20260424_115608/codeql/NegativeCountToSizeConsumer.ql",
+          "baseline_total_lines": 109,
+          "current_total_lines": 109,
+          "baseline_nonempty_lines": 96,
+          "current_nonempty_lines": 96,
+          "delta_total_lines": 0,
+          "delta_nonempty_lines": 0,
+          "growth_ratio": 0.0
+        },
+        "artifact_review": {
+          "success": true,
+          "error": "",
+          "findings": []
+        },
+        "evidence_records": 8,
+        "missing_evidence": [],
+        "evidence_degraded": false,
+        "semantic_slice_records": 3,
+        "context_summary_records": 0,
+        "slice_coverage": "partial",
+        "verifier_backed_slices": 3,
+        "slice_kinds": {
+          "semantic_slice": 1,
+          "flow_witness": 1,
+          "interprocedural_slice": 1
+        },
+        "evidence_escalation": {},
+        "validation_feedback_records": 1,
+        "validation_feedback_summary": "- validation_outcome @ semantic_validation: semantic_execution_error [coverage=failed]",
+        "validation_feedback_history": [
+          {
+            "analyzer": "codeql",
+            "phase": "initial_validation",
+            "summary": "- validation_outcome @ semantic_validation: semantic_execution_error [coverage=failed]"
+          },
+          {
+            "analyzer": "codeql",
+            "phase": "refine_candidate",
+            "summary": "- validation_outcome @ semantic_validation: semantic_execution_error [coverage=failed]"
+          },
+          {
+            "analyzer": "codeql",
+            "phase": "initial_validation",
+            "summary": "- validation_outcome @ semantic_validation: semantic_execution_error [coverage=failed]"
+          }
+        ],
+        "refinement_attempted": true,
+        "refinement_adopted": true,
+        "refinement_iterations_attempted": 3,
+        "refinement_skipped_reason": "",
+        "last_refinement_candidate_success": true,
+        "last_refinement_candidate_error": "",
+        "last_refinement_candidate_artifact_review": {
+          "success": true,
+          "error": "",
+          "findings": []
+        },
+        "last_refinement_candidate_output_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe190_binutils_cve201714745/primary/codeql/20260423_134322/codeql/refinements/20260424_115608/codeql/NegativeCountToSizeConsumer.ql",
+        "post_validation_evidence_records": 9,
+        "post_validation_missing_evidence": [],
+        "post_validation_semantic_slice_records": 3,
+        "post_validation_context_summary_records": 0,
+        "post_validation_slice_coverage": "partial",
+        "synthesis_input": {
+          "analyzer_id": "codeql",
+          "detector_artifact": "ql_query",
+          "primary_pattern": "unknown",
+          "objective": "Synthesize a reusable query centered on the patch-evidenced semantic mechanism, interprocedural flow, and API or state contract, without hard-coding an uncertain vulnerability label.",
+          "mechanism_contract": {
+            "mechanism_family": "generic_vulnerability_mechanism",
+            "semantic_dimensions": [
+              "vulnerability trigger",
+              "patch-introduced barrier",
+              "local state or flow relation"
+            ],
+            "trigger_invariants": [
+              "the vulnerable mechanism is reachable on a feasible path",
+              "the path lacks the barrier introduced by the patch",
+              "Patch-backed trigger clue: added guard: if (dynrelcount < 0)",
+              "Patch-backed trigger clue: detection hints: 首稿优先命中 patch-local 锚点：同一函数内，某个有错误语义的 signed 返回值在缺少负值检查时直接作为 `qsort` 第二参数使用。, 不要一开始把新增的 `if (dynrelcount < 0)` 写成硬过滤条件；首稿先抓“返回值直接流入计数/长度 sink”的局部模式，再把缺少负值 barrier 作为收敛。, 首稿可只做局部 AST/CFG：赋值语句、随后的比较缺失、以及对 `qsort(..., count, ...)` 的调用，通常无需复杂数据流。"
+            ],
+            "silence_invariants": [
+              "patch-introduced guards, barriers, or safe APIs must suppress findings",
+              "length/capacity guard present: if (dynrelcount < 0)"
+            ],
+            "transfer_axes": [
+              "only generalize along evidence-backed state, guard, flow, or API-role equivalence",
+              "equivalent interprocedural propagation across adjacent helpers or wrappers"
+            ],
+            "forbidden_shortcuts": [
+              "bind the detector to fixed file paths, line numbers, or exact patch strings",
+              "broaden into unrelated bug families just to improve hit count",
+              "use the patch text itself as the matching rule",
+              "widen to unrelated bug families without evidence",
+              "callee-only matching or stringified guard inference instead of structured predicates"
+            ],
+            "evidence_backed_axes": [
+              "source-to-sink flow",
+              "semantic trigger slice",
+              "interprocedural flow"
+            ]
+          },
+          "detector_name_hint": "NegativeCountPassedToQsort",
+          "focus_files": [
+            "bfd/elf64-x86-64.c"
+          ],
+          "focus_functions": [
+            "unknown"
+          ],
+          "hypotheses": [
+            "Patch likely encodes a reusable vulnerability mechanism but available metadata is weak; keep evidence collection broad."
+          ],
+          "required_evidence_types": [
+            "patch_fact"
+          ],
+          "missing_evidence_types": [],
+          "evidence_degraded": false,
+          "patch_mechanism_signals": [
+            "added guard: if (dynrelcount < 0)",
+            "detection hints: 首稿优先命中 patch-local 锚点：同一函数内，某个有错误语义的 signed 返回值在缺少负值检查时直接作为 `qsort` 第二参数使用。, 不要一开始把新增的 `if (dynrelcount < 0)` 写成硬过滤条件；首稿先抓“返回值直接流入计数/长度 sink”的局部模式，再把缺少负值 barrier 作为收敛。, 首稿可只做局部 AST/CFG：赋值语句、随后的比较缺失、以及对 `qsort(..., count, ...)` 的调用，通常无需复杂数据流。"
+          ],
+          "silencing_conditions": [
+            "length/capacity guard present: if (dynrelcount < 0)"
+          ],
+          "retry_guidance": [
+            "analyzer_interface_clause: Fix analyzer-facing interfaces, imports, helper signatures, or query/checker structure before changing semantics.",
+            "Fix analyzer-facing syntax, interface, or environment issues before changing detection semantics."
+          ],
+          "selected_evidence_ids": [
+            "codeql_flow_0",
+            "codeql_semantic_slice_0",
+            "codeql_chain_0",
+            "pf_004",
+            "pf_003",
+            "pf_002",
+            "pf_001",
+            "pf_000"
+          ],
+          "selected_evidence": [
+            {
+              "evidence_id": "codeql_flow_0",
+              "type": "dataflow_candidate",
+              "analyzer": "codeql",
+              "scope": {
+                "repo": "fix.patch",
+                "file": "bfd/elf64-x86-64.c",
+                "function": "elf_section_data"
+              },
+              "semantic_payload": {
+                "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+                "entry_points": [
+                  "dynrelcount",
+                  "output_section",
+                  "abfd->flags",
+                  "flags"
+                ],
+                "summary": "elf_section_data: barrier `dynrelcount < 0` around bfd_get_dynamic_reloc_upper_bound, bfd_malloc",
+                "coverage_status": "full",
+                "call_targets": [
+                  "bfd_get_dynamic_reloc_upper_bound",
+                  "bfd_malloc",
+                  "bfd_canonicalize_dynamic_reloc",
+                  "qsort"
+                ],
+                "database_status": "missing",
+                "database_create_message": "CodeQL 数据库创建失败: Initializing database at /anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe190_binutils_cve201714745/primary/codeql/20260423_134322/codeql/codeql/database.\nRunning build command: [/bin/sh, /anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe190_binutils_cve201714745/primary/codeql/20260423_134322/codeql/codeql/codeql_build_28rxi4wa.sh]\nRunning command in /anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe190_binutils_cve201714745/vulnerable: [/bin/sh, /anonymous/home/LLM-Native/v2_experiments",
+                "live_query_status": "database_missing"
+              },
+              "evidence_slice": {
+                "kind": "flow_witness",
+                "anchor": {
+                  "patch_file": "bfd/elf64-x86-64.c",
+                  "hunk_index": 0,
+                  "source_line": 6719
+                },
+                "summary": "elf_section_data: barrier `dynrelcount < 0` around bfd_get_dynamic_reloc_upper_bound, bfd_malloc",
+                "statements": [
+                  "6687:   const struct elf_x86_64_non_lazy_plt_layout *non_lazy_plt;",
+                  "6688:   const struct elf_x86_64_lazy_plt_layout *lazy_bnd_plt;",
+                  "6689:   const struct elf_x86_64_non_lazy_plt_layout *non_lazy_bnd_plt;",
+                  "6690:   const struct elf_x86_64_lazy_plt_layout *lazy_ibt_plt;",
+                  "6691:   const struct elf_x86_64_non_lazy_plt_layout *non_lazy_ibt_plt;",
+                  "6692:   asection *plt;"
+                ],
+                "guards": [],
+                "call_boundary": [
+                  "bfd_get_dynamic_reloc_upper_bound, bfd_malloc"
+                ],
+                "call_edges": [
+                  "function:elf_section_data",
+                  "guard:dynrelcount < 0",
+                  "api:bfd_get_dynamic_reloc_upper_bound",
+                  "api:bfd_malloc",
+                  "elf_section_data -> bfd_canonicalize_dynamic_reloc",
+                  "elf_section_data -> qsort"
+                ],
+                "state_transitions": [
+                  "guard(dynrelcount < 0)"
+                ],
+                "api_terms": [
+                  "bfd_get_dynamic_reloc_upper_bound",
+                  "bfd_malloc",
+                  "bfd_canonicalize_dynamic_reloc",
+                  "qsort"
+                ],
+                "related_symbols": [
+                  "dynrelcount",
+                  "output_section",
+                  "abfd->flags",
+                  "flags"
+                ],
+                "verifier": "source-window",
+                "extraction_method": "source_window",
+                "coverage_status": "full"
+              },
+              "confidence": 0.84
+            },
+            {
+              "evidence_id": "codeql_semantic_slice_0",
+              "type": "semantic_slice",
+              "analyzer": "codeql",
+              "scope": {
+                "repo": "fix.patch",
+                "file": "bfd/elf64-x86-64.c",
+                "function": "elf_section_data"
+              },
+              "semantic_payload": {
+                "entry_points": [
+                  "output_section",
+                  "abfd->flags",
+                  "flags"
+                ],
+                "summary": "focus=elf_section_data | state=guard(dynrelcount < 0) | call_edges=elf_section_data -> bfd_canonicalize_dynamic_reloc; elf_section_data -> qsort | targets=bfd_canonicalize_dynamic_reloc, qsort | patch_contracts=elf_section_data: barrier `dynrelcount < 0` around bfd_get_dynamic_reloc_upper_bound, bfd_malloc | guards=(abfd->flags & (DYNAMIC | EXEC_P)) == 0; dynsymcount <= 0 | symbols=output_section, abfd->flags, flags | deps=libbfd.h, sysdep.h, stdarg.h | apis=bfd_get_dynamic_reloc_upper_bound, bfd_malloc, bfd_canonicalize_dynamic_reloc, qsort",
+                "tracked_symbols": [
+                  "dynrelcount"
+                ],
+                "coverage_status": "partial",
+                "apis": [
+                  "bfd_get_dynamic_reloc_upper_bound",
+                  "bfd_malloc",
+                  "bfd_canonicalize_dynamic_reloc",
+                  "qsort"
+                ],
+                "call_targets": [
+                  "bfd_get_dynamic_reloc_upper_bound",
+                  "bfd_malloc",
+                  "bfd_canonicalize_dynamic_reloc",
+                  "qsort"
+                ],
+                "call_edges": [
+                  "elf_section_data -> bfd_canonicalize_dynamic_reloc",
+                  "elf_section_data -> qsort"
+                ]
+              },
+              "evidence_slice": {
+                "kind": "semantic_slice",
+                "anchor": {
+                  "patch_file": "bfd/elf64-x86-64.c",
+                  "hunk_index": 0,
+                  "source_line": 6719
+                },
+                "summary": "focus=elf_section_data | state=guard(dynrelcount < 0) | call_edges=elf_section_data -> bfd_canonicalize_dynamic_reloc; elf_section_data -> qsort | targets=bfd_canonicalize_dynamic_reloc, qsort | patch_contracts=elf_section_data: barrier `dynrelcount < 0` around bfd_get_dynamic_reloc_upper_bound, bfd_malloc | guards=(abfd->flags & (DYNAMIC | EXEC_P)) == 0; dynsymcount <= 0 | symbols=output_section, abfd->flags, flags | deps=libbfd.h, sysdep.h, stdarg.h | apis=bfd_get_dynamic_reloc_upper_bound, bfd_malloc, bfd_canonicalize_dynamic_reloc, qsort",
+                "statements": [
+                  "if (dynrelcount < 0)",
+                  "return -1;"
+                ],
+                "guards": [],
+                "call_boundary": [
+                  "bfd_get_dynamic_reloc_upper_bound",
+                  "bfd_malloc",
+                  "bfd_canonicalize_dynamic_reloc",
+                  "qsort"
+                ],
+                "call_edges": [
+                  "elf_section_data -> bfd_canonicalize_dynamic_reloc",
+                  "elf_section_data -> qsort"
+                ],
+                "state_transitions": [
+                  "guard(dynrelcount < 0)"
+                ],
+                "api_terms": [
+                  "bfd_get_dynamic_reloc_upper_bound",
+                  "bfd_malloc",
+                  "bfd_canonicalize_dynamic_reloc",
+                  "qsort"
+                ],
+                "related_symbols": [
+                  "dynrelcount"
+                ],
+                "verifier": "source-window",
+                "extraction_method": "source_window",
+                "coverage_status": "partial"
+              },
+              "confidence": 0.8
+            },
+            {
+              "evidence_id": "codeql_chain_0",
+              "type": "call_chain",
+              "analyzer": "codeql",
+              "scope": {
+                "repo": "fix.patch",
+                "file": "bfd/elf64-x86-64.c",
+                "function": "elf_section_data"
+              },
+              "semantic_payload": {
+                "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+                "summary": [
+                  "elf_section_data -> bfd_canonicalize_dynamic_reloc",
+                  "elf_section_data -> qsort"
+                ],
+                "coverage_status": "full",
+                "call_edges": [
+                  "elf_section_data -> bfd_canonicalize_dynamic_reloc",
+                  "elf_section_data -> qsort"
+                ],
+                "database_status": "missing",
+                "database_create_message": "CodeQL 数据库创建失败: Initializing database at /anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe190_binutils_cve201714745/primary/codeql/20260423_134322/codeql/codeql/database.\nRunning build command: [/bin/sh, /anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe190_binutils_cve201714745/primary/codeql/20260423_134322/codeql/codeql/codeql_build_28rxi4wa.sh]\nRunning command in /anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe190_binutils_cve201714745/vulnerable: [/bin/sh, /anonymous/home/LLM-Native/v2_experiments",
+                "live_query_status": "database_missing"
+              },
+              "evidence_slice": {
+                "kind": "interprocedural_slice",
+                "anchor": {
+                  "patch_file": "bfd/elf64-x86-64.c",
+                  "hunk_index": 0,
+                  "source_line": 6719
+                },
+                "summary": "elf_section_data -> bfd_canonicalize_dynamic_reloc, elf_section_data -> qsort",
+                "statements": [
+                  "6687:   const struct elf_x86_64_non_lazy_plt_layout *non_lazy_plt;",
+                  "6688:   const struct elf_x86_64_lazy_plt_layout *lazy_bnd_plt;",
+                  "6689:   const struct elf_x86_64_non_lazy_plt_layout *non_lazy_bnd_plt;",
+                  "6690:   const struct elf_x86_64_lazy_plt_layout *lazy_ibt_plt;",
+                  "6691:   const struct elf_x86_64_non_lazy_plt_layout *non_lazy_ibt_plt;",
+                  "6692:   asection *plt;"
+                ],
+                "guards": [],
+                "call_boundary": [
+                  "bfd_canonicalize_dynamic_reloc",
+                  "qsort"
+                ],
+                "call_edges": [
+                  "elf_section_data -> bfd_canonicalize_dynamic_reloc",
+                  "elf_section_data -> qsort"
+                ],
+                "state_transitions": [],
+                "api_terms": [
+                  "bfd_get_dynamic_reloc_upper_bound",
+                  "bfd_malloc",
+                  "bfd_canonicalize_dynamic_reloc",
+                  "qsort"
+                ],
+                "related_symbols": [
+                  "output_section",
+                  "abfd->flags",
+                  "flags"
+                ],
+                "verifier": "source-window",
+                "extraction_method": "source_window",
+                "coverage_status": "full"
+              },
+              "confidence": 0.78
+            },
+            {
+              "evidence_id": "pf_004",
+              "type": "patch_fact",
+              "analyzer": "patch",
+              "scope": {
+                "repo": "fix.patch",
+                "file": "bfd/elf64-x86-64.c",
+                "function": "elf_section_data"
+              },
+              "semantic_payload": {
+                "label": "Patch introduces or strengthens guards"
+              },
+              "evidence_slice": {},
+              "confidence": 0.95
+            },
+            {
+              "evidence_id": "pf_003",
+              "type": "patch_fact",
+              "analyzer": "patch",
+              "scope": {
+                "repo": "fix.patch",
+                "file": "bfd/elf64-x86-64.c",
+                "function": "elf_section_data"
+              },
+              "semantic_payload": {
+                "label": "Existing patch analysis detection strategy"
+              },
+              "evidence_slice": {},
+              "confidence": 0.95
+            },
+            {
+              "evidence_id": "pf_002",
+              "type": "patch_fact",
+              "analyzer": "patch",
+              "scope": {
+                "repo": "fix.patch",
+                "file": "bfd/elf64-x86-64.c",
+                "function": "elf_section_data"
+              },
+              "semantic_payload": {
+                "label": "Functions implicated by removed or fixed code"
+              },
+              "evidence_slice": {},
+              "confidence": 0.95
+            },
+            {
+              "evidence_id": "pf_001",
+              "type": "patch_fact",
+              "analyzer": "patch",
+              "scope": {
+                "repo": "fix.patch",
+                "file": "bfd/elf64-x86-64.c",
+                "function": "elf_section_data"
+              },
+              "semantic_payload": {
+                "label": "Vulnerability patterns inferred from patch"
+              },
+              "evidence_slice": {},
+              "confidence": 0.95
+            },
+            {
+              "evidence_id": "pf_000",
+              "type": "patch_fact",
+              "analyzer": "patch",
+              "scope": {
+                "repo": "fix.patch",
+                "file": "bfd/elf64-x86-64.c",
+                "function": "elf_section_data"
+              },
+              "semantic_payload": {
+                "label": "Patch overview"
+              },
+              "evidence_slice": {},
+              "confidence": 0.95
+            }
+          ],
+          "semantic_slice_count": 3,
+          "context_summary_count": 0,
+          "semantic_slice_coverage": "partial",
+          "selected_semantic_slice_ids": [
+            "codeql_flow_0",
+            "codeql_semantic_slice_0",
+            "codeql_chain_0"
+          ],
+          "selected_context_summary_ids": [],
+          "selected_semantic_slices": [
+            {
+              "evidence_id": "codeql_flow_0",
+              "type": "dataflow_candidate",
+              "analyzer": "codeql",
+              "scope": {
+                "repo": "fix.patch",
+                "file": "bfd/elf64-x86-64.c",
+                "function": "elf_section_data"
+              },
+              "semantic_payload": {
+                "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+                "entry_points": [
+                  "dynrelcount",
+                  "output_section",
+                  "abfd->flags",
+                  "flags"
+                ],
+                "summary": "elf_section_data: barrier `dynrelcount < 0` around bfd_get_dynamic_reloc_upper_bound, bfd_malloc",
+                "coverage_status": "full",
+                "call_targets": [
+                  "bfd_get_dynamic_reloc_upper_bound",
+                  "bfd_malloc",
+                  "bfd_canonicalize_dynamic_reloc",
+                  "qsort"
+                ],
+                "database_status": "missing",
+                "database_create_message": "CodeQL 数据库创建失败: Initializing database at /anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe190_binutils_cve201714745/primary/codeql/20260423_134322/codeql/codeql/database.\nRunning build command: [/bin/sh, /anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe190_binutils_cve201714745/primary/codeql/20260423_134322/codeql/codeql/codeql_build_28rxi4wa.sh]\nRunning command in /anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe190_binutils_cve201714745/vulnerable: [/bin/sh, /anonymous/home/LLM-Native/v2_experiments",
+                "live_query_status": "database_missing"
+              },
+              "evidence_slice": {
+                "kind": "flow_witness",
+                "anchor": {
+                  "patch_file": "bfd/elf64-x86-64.c",
+                  "hunk_index": 0,
+                  "source_line": 6719
+                },
+                "summary": "elf_section_data: barrier `dynrelcount < 0` around bfd_get_dynamic_reloc_upper_bound, bfd_malloc",
+                "statements": [
+                  "6687:   const struct elf_x86_64_non_lazy_plt_layout *non_lazy_plt;",
+                  "6688:   const struct elf_x86_64_lazy_plt_layout *lazy_bnd_plt;",
+                  "6689:   const struct elf_x86_64_non_lazy_plt_layout *non_lazy_bnd_plt;",
+                  "6690:   const struct elf_x86_64_lazy_plt_layout *lazy_ibt_plt;",
+                  "6691:   const struct elf_x86_64_non_lazy_plt_layout *non_lazy_ibt_plt;",
+                  "6692:   asection *plt;"
+                ],
+                "guards": [],
+                "call_boundary": [
+                  "bfd_get_dynamic_reloc_upper_bound, bfd_malloc"
+                ],
+                "call_edges": [
+                  "function:elf_section_data",
+                  "guard:dynrelcount < 0",
+                  "api:bfd_get_dynamic_reloc_upper_bound",
+                  "api:bfd_malloc",
+                  "elf_section_data -> bfd_canonicalize_dynamic_reloc",
+                  "elf_section_data -> qsort"
+                ],
+                "state_transitions": [
+                  "guard(dynrelcount < 0)"
+                ],
+                "api_terms": [
+                  "bfd_get_dynamic_reloc_upper_bound",
+                  "bfd_malloc",
+                  "bfd_canonicalize_dynamic_reloc",
+                  "qsort"
+                ],
+                "related_symbols": [
+                  "dynrelcount",
+                  "output_section",
+                  "abfd->flags",
+                  "flags"
+                ],
+                "verifier": "source-window",
+                "extraction_method": "source_window",
+                "coverage_status": "full"
+              },
+              "confidence": 0.84
+            },
+            {
+              "evidence_id": "codeql_semantic_slice_0",
+              "type": "semantic_slice",
+              "analyzer": "codeql",
+              "scope": {
+                "repo": "fix.patch",
+                "file": "bfd/elf64-x86-64.c",
+                "function": "elf_section_data"
+              },
+              "semantic_payload": {
+                "entry_points": [
+                  "output_section",
+                  "abfd->flags",
+                  "flags"
+                ],
+                "summary": "focus=elf_section_data | state=guard(dynrelcount < 0) | call_edges=elf_section_data -> bfd_canonicalize_dynamic_reloc; elf_section_data -> qsort | targets=bfd_canonicalize_dynamic_reloc, qsort | patch_contracts=elf_section_data: barrier `dynrelcount < 0` around bfd_get_dynamic_reloc_upper_bound, bfd_malloc | guards=(abfd->flags & (DYNAMIC | EXEC_P)) == 0; dynsymcount <= 0 | symbols=output_section, abfd->flags, flags | deps=libbfd.h, sysdep.h, stdarg.h | apis=bfd_get_dynamic_reloc_upper_bound, bfd_malloc, bfd_canonicalize_dynamic_reloc, qsort",
+                "tracked_symbols": [
+                  "dynrelcount"
+                ],
+                "coverage_status": "partial",
+                "apis": [
+                  "bfd_get_dynamic_reloc_upper_bound",
+                  "bfd_malloc",
+                  "bfd_canonicalize_dynamic_reloc",
+                  "qsort"
+                ],
+                "call_targets": [
+                  "bfd_get_dynamic_reloc_upper_bound",
+                  "bfd_malloc",
+                  "bfd_canonicalize_dynamic_reloc",
+                  "qsort"
+                ],
+                "call_edges": [
+                  "elf_section_data -> bfd_canonicalize_dynamic_reloc",
+                  "elf_section_data -> qsort"
+                ]
+              },
+              "evidence_slice": {
+                "kind": "semantic_slice",
+                "anchor": {
+                  "patch_file": "bfd/elf64-x86-64.c",
+                  "hunk_index": 0,
+                  "source_line": 6719
+                },
+                "summary": "focus=elf_section_data | state=guard(dynrelcount < 0) | call_edges=elf_section_data -> bfd_canonicalize_dynamic_reloc; elf_section_data -> qsort | targets=bfd_canonicalize_dynamic_reloc, qsort | patch_contracts=elf_section_data: barrier `dynrelcount < 0` around bfd_get_dynamic_reloc_upper_bound, bfd_malloc | guards=(abfd->flags & (DYNAMIC | EXEC_P)) == 0; dynsymcount <= 0 | symbols=output_section, abfd->flags, flags | deps=libbfd.h, sysdep.h, stdarg.h | apis=bfd_get_dynamic_reloc_upper_bound, bfd_malloc, bfd_canonicalize_dynamic_reloc, qsort",
+                "statements": [
+                  "if (dynrelcount < 0)",
+                  "return -1;"
+                ],
+                "guards": [],
+                "call_boundary": [
+                  "bfd_get_dynamic_reloc_upper_bound",
+                  "bfd_malloc",
+                  "bfd_canonicalize_dynamic_reloc",
+                  "qsort"
+                ],
+                "call_edges": [
+                  "elf_section_data -> bfd_canonicalize_dynamic_reloc",
+                  "elf_section_data -> qsort"
+                ],
+                "state_transitions": [
+                  "guard(dynrelcount < 0)"
+                ],
+                "api_terms": [
+                  "bfd_get_dynamic_reloc_upper_bound",
+                  "bfd_malloc",
+                  "bfd_canonicalize_dynamic_reloc",
+                  "qsort"
+                ],
+                "related_symbols": [
+                  "dynrelcount"
+                ],
+                "verifier": "source-window",
+                "extraction_method": "source_window",
+                "coverage_status": "partial"
+              },
+              "confidence": 0.8
+            },
+            {
+              "evidence_id": "codeql_chain_0",
+              "type": "call_chain",
+              "analyzer": "codeql",
+              "scope": {
+                "repo": "fix.patch",
+                "file": "bfd/elf64-x86-64.c",
+                "function": "elf_section_data"
+              },
+              "semantic_payload": {
+                "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+                "summary": [
+                  "elf_section_data -> bfd_canonicalize_dynamic_reloc",
+                  "elf_section_data -> qsort"
+                ],
+                "coverage_status": "full",
+                "call_edges": [
+                  "elf_section_data -> bfd_canonicalize_dynamic_reloc",
+                  "elf_section_data -> qsort"
+                ],
+                "database_status": "missing",
+                "database_create_message": "CodeQL 数据库创建失败: Initializing database at /anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe190_binutils_cve201714745/primary/codeql/20260423_134322/codeql/codeql/database.\nRunning build command: [/bin/sh, /anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe190_binutils_cve201714745/primary/codeql/20260423_134322/codeql/codeql/codeql_build_28rxi4wa.sh]\nRunning command in /anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe190_binutils_cve201714745/vulnerable: [/bin/sh, /anonymous/home/LLM-Native/v2_experiments",
+                "live_query_status": "database_missing"
+              },
+              "evidence_slice": {
+                "kind": "interprocedural_slice",
+                "anchor": {
+                  "patch_file": "bfd/elf64-x86-64.c",
+                  "hunk_index": 0,
+                  "source_line": 6719
+                },
+                "summary": "elf_section_data -> bfd_canonicalize_dynamic_reloc, elf_section_data -> qsort",
+                "statements": [
+                  "6687:   const struct elf_x86_64_non_lazy_plt_layout *non_lazy_plt;",
+                  "6688:   const struct elf_x86_64_lazy_plt_layout *lazy_bnd_plt;",
+                  "6689:   const struct elf_x86_64_non_lazy_plt_layout *non_lazy_bnd_plt;",
+                  "6690:   const struct elf_x86_64_lazy_plt_layout *lazy_ibt_plt;",
+                  "6691:   const struct elf_x86_64_non_lazy_plt_layout *non_lazy_ibt_plt;",
+                  "6692:   asection *plt;"
+                ],
+                "guards": [],
+                "call_boundary": [
+                  "bfd_canonicalize_dynamic_reloc",
+                  "qsort"
+                ],
+                "call_edges": [
+                  "elf_section_data -> bfd_canonicalize_dynamic_reloc",
+                  "elf_section_data -> qsort"
+                ],
+                "state_transitions": [],
+                "api_terms": [
+                  "bfd_get_dynamic_reloc_upper_bound",
+                  "bfd_malloc",
+                  "bfd_canonicalize_dynamic_reloc",
+                  "qsort"
+                ],
+                "related_symbols": [
+                  "output_section",
+                  "abfd->flags",
+                  "flags"
+                ],
+                "verifier": "source-window",
+                "extraction_method": "source_window",
+                "coverage_status": "full"
+              },
+              "confidence": 0.78
+            }
+          ],
+          "selected_context_summaries": [],
+          "semantic_clause_plan": [
+            {
+              "clause_id": "vulnerable_trigger_clause",
+              "intent": "Trigger on the vulnerable unknown mechanism using evidence-backed path/flow semantics.",
+              "supporting_evidence_ids": [
+                "codeql_flow_0",
+                "codeql_semantic_slice_0",
+                "codeql_chain_0"
+              ],
+              "repair_when": [
+                "semantic_no_hits"
+              ],
+              "focus_functions": [
+                "unknown"
+              ]
+            },
+            {
+              "clause_id": "patched_silence_clause",
+              "intent": "Stay silent on patched code when patch-added guards, barriers, or safe APIs prove the mechanism is blocked.",
+              "supporting_evidence_ids": [
+                "codeql_semantic_slice_0",
+                "pf_004",
+                "pf_003",
+                "pf_002",
+                "pf_001",
+                "pf_000"
+              ],
+              "repair_when": [],
+              "silencing_conditions": [
+                "length/capacity guard present: if (dynrelcount < 0)"
+              ]
+            },
+            {
+              "clause_id": "semantic_transfer_clause",
+              "intent": "Generalize along semantic slices and call-chain evidence rather than patch-local syntax.",
+              "supporting_evidence_ids": [
+                "codeql_flow_0",
+                "codeql_semantic_slice_0",
+                "codeql_chain_0"
+              ],
+              "repair_when": [],
+              "analyzer_id": "codeql"
+            },
+            {
+              "clause_id": "analyzer_interface_clause",
+              "intent": "Preserve valid analyzer-facing syntax and interfaces while keeping semantics unchanged.",
+              "supporting_evidence_ids": [
+                "codeql_chain_0",
+                "pf_004",
+                "pf_003",
+                "pf_002",
+                "pf_001",
+                "pf_000"
+              ],
+              "repair_when": [
+                "semantic_execution_error"
+              ],
+              "analyzer_id": "codeql"
+            }
+          ],
+          "repair_directives": [
+            {
+              "failure_mode": "semantic_execution_error",
+              "target_clause": "analyzer_interface_clause",
+              "priority": "high",
+              "action": "Fix analyzer-facing interfaces, imports, helper signatures, or query/checker structure before changing semantics.",
+              "supporting_evidence_ids": [
+                "codeql_chain_0",
+                "pf_004",
+                "pf_003",
+                "pf_002",
+                "pf_001",
+                "pf_000"
+              ],
+              "counterexample_scope": "semantic_overall",
+              "counterexample_location": {},
+              "feedback_hint": "Fix analyzer-facing syntax, interface, or environment issues before changing detection semantics."
+            }
+          ],
+          "constraints": [
+            {
+              "title": "Generalize beyond patch site",
+              "description": "Do not bind the detector to fixed file paths, line numbers, or exact patch strings.",
+              "priority": "high"
+            },
+            {
+              "title": "Preserve vulnerability semantics",
+              "description": "Keep the detector focused on the vulnerability family implied by the patch and evidence.",
+              "priority": "high"
+            },
+            {
+              "title": "Respect analyzer-native form",
+              "description": "Output must be a valid ql_query for codeql.",
+              "priority": "high"
+            },
+            {
+              "title": "Stay within proven mechanism scope",
+              "description": "Generalize only along evidence-supported semantic dimensions. Do not broaden the detector into unrelated globals, APIs, or bug families.",
+              "priority": "high"
+            },
+            {
+              "title": "Honor mechanism contract",
+              "description": "Preserve the mechanism family `generic_vulnerability_mechanism` by keeping trigger invariants the vulnerable mechanism is reachable on a feasible path; the path lacks the barrier introduced by the patch; Patch-backed trigger clue: added guard: if (dynrelcount < 0).",
+              "priority": "high"
+            },
+            {
+              "title": "Generalize only on contract axes",
+              "description": "Reuse semantics only along these transfer axes: only generalize along evidence-backed state, guard, flow, or API-role equivalence; equivalent interprocedural propagation across adjacent helpers or wrappers.",
+              "priority": "high"
+            },
+            {
+              "title": "Anchor on patch-touched scope",
+              "description": "Use patch-touched files/functions as the semantic anchor for synthesis. Only extend beyond them when the same mechanism is explicitly supported by evidence.",
+              "priority": "high"
+            },
+            {
+              "title": "Encode the patch-added barrier",
+              "description": "treat guards such as if (dynrelcount < 0) as semantic barriers.",
+              "priority": "high"
+            },
+            {
+              "title": "Respect patched silence",
+              "description": "Use these no-report conditions when they are semantically proven: length/capacity guard present: if (dynrelcount < 0).",
+              "priority": "high"
+            },
+            {
+              "title": "Counterexample-guided repair",
+              "description": "Fix prior validation failures first: analyzer_interface_clause: Fix analyzer-facing interfaces, imports, helper signatures, or query/checker structure before changing semantics.; Fix analyzer-facing syntax, interface, or environment issues before changing detection semantics..",
+              "priority": "high"
+            },
+            {
+              "title": "Prefer semantic predicates",
+              "description": "Prefer reusable predicates, flow steps, and API modeling over patch-location matching.",
+              "priority": "high"
+            },
+            {
+              "title": "No callee-only matching",
+              "description": "Do not report every call to risky APIs by name alone; require an unchecked write/copy condition and absence of a patch-style barrier.",
+              "priority": "high"
+            }
+          ],
+          "implementation_hints": [
+            "Mechanism family: generic_vulnerability_mechanism",
+            "Mechanism dimensions: vulnerability trigger, patch-introduced barrier, local state or flow relation",
+            "Trigger invariants: the vulnerable mechanism is reachable on a feasible path, the path lacks the barrier introduced by the patch, Patch-backed trigger clue: added guard: if (dynrelcount < 0)",
+            "Silence invariants: patch-introduced guards, barriers, or safe APIs must suppress findings, length/capacity guard present: if (dynrelcount < 0)",
+            "Transfer axes: only generalize along evidence-backed state, guard, flow, or API-role equivalence, equivalent interprocedural propagation across adjacent helpers or wrappers",
+            "Focus files: bfd/elf64-x86-64.c",
+            "Priority functions: unknown",
+            "Silence condition: length/capacity guard present: if (dynrelcount < 0)"
+          ],
+          "validation_expectations": [
+            "Vulnerable version should trigger a unknown finding.",
+            "Patched version should stay silent for the same mechanism.",
+            "Semantic validation that executes but returns zero hits is not acceptable; recover coverage with evidence-backed semantics.",
+            "Repair phase may fix syntax/interfaces only; it must not simplify away the core detection logic.",
+            "Generalization must stay inside the mechanism contract transfer axes instead of widening to adjacent bug families.",
+            "Trigger invariant: the vulnerable mechanism is reachable on a feasible path.",
+            "Trigger invariant: the path lacks the barrier introduced by the patch.",
+            "Patched silence depends on: length/capacity guard present: if (dynrelcount < 0).",
+            "Fix counterexample: analyzer_interface_clause: Fix analyzer-facing interfaces, imports, helper signatures, or query/checker structure before changing semantics..",
+            "Fix counterexample: Fix analyzer-facing syntax, interface, or environment issues before changing detection semantics.."
+          ]
+        },
+        "evidence_effectiveness": {
+          "baseline_records": 8,
+          "post_validation_records": 9,
+          "new_records": 1,
+          "baseline_missing": [],
+          "post_validation_missing": [],
+          "resolved_missing": [],
+          "improved": true,
+          "summary": "新增 1 条反馈后证据"
+        }
+      }
+    }
+  }
+}

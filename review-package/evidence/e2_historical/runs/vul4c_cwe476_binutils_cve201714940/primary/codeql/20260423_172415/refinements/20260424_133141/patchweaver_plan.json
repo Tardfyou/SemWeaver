@@ -1,0 +1,869 @@
+{
+  "files_changed": [
+    "bfd/dwarf2.c"
+  ],
+  "file_details": [
+    {
+      "path": "bfd/dwarf2.c",
+      "additions": 2,
+      "deletions": 1,
+      "hunks": 1
+    }
+  ],
+  "vulnerability_patterns": [
+    {
+      "type": "null_dereference",
+      "description": "Before the patch, block-like DWARF attribute forms consumed `attr.u.blk->data` by dereferencing it to compare the first byte with `DW_OP_addr` without checking whether the data pointer was NULL. After the patch, the dereference is only reached when `attr.u.blk->data != NULL` is true.",
+      "trigger_conditions": [
+        "Execution reaches one of the handled forms: `DW_FORM_block`, `DW_FORM_block1`, `DW_FORM_block2`, `DW_FORM_block4`, or `DW_FORM_exprloc`.",
+        "`attr.u.blk->data` may be NULL for the parsed attribute block.",
+        "The code evaluates `*attr.u.blk->data == DW_OP_addr` before any local non-null guard on `attr.u.blk->data`."
+      ],
+      "fix_patterns": [
+        "Add a local guard `attr.u.blk->data != NULL` directly dominating the dereference.",
+        "Keep the sink expression `*attr.u.blk->data == DW_OP_addr` but make it the right-hand side of a short-circuit `&&` condition.",
+        "Prevent the `var->stack = 0` path from depending on a dereference of a NULL block-data pointer."
+      ],
+      "affected_functions": [
+        "unknown"
+      ],
+      "cross_file": false,
+      "source": "llm",
+      "confidence": 0.92,
+      "evidence_lines": [
+        "bfd/dwarf2.c:3210: `if (*attr.u.blk->data == DW_OP_addr)`",
+        "bfd/dwarf2.c:3210: `if (attr.u.blk->data != NULL`",
+        "bfd/dwarf2.c:3211: `&& *attr.u.blk->data == DW_OP_addr)`",
+        "bfd/dwarf2.c:3205: `case DW_FORM_exprloc:`"
+      ]
+    }
+  ],
+  "cross_file_dependencies": [],
+  "detection_strategy": {
+    "primary_pattern": "null_dereference",
+    "check_types": [
+      "local_ast",
+      "intra_procedural_cfg",
+      "nullability_guard_dominance"
+    ],
+    "entry_points": [
+      "bfd/dwarf2.c around the DW_FORM_block/DW_FORM_exprloc case handling",
+      "conditions that dereference `attr.u.blk->data`"
+    ],
+    "data_flow_tracking": false,
+    "cross_file_analysis": false,
+    "suggestions": [
+      "First-draft checker should anchor on the patch-local sink `*attr.u.blk->data` in a condition.",
+      "Require that the dereference is not dominated by a local `attr.u.blk->data != NULL` guard or equivalent short-circuit check.",
+      "Do not make the specific constant `DW_OP_addr` the only hard filter; it is useful for precision but the core sink is dereferencing a possibly NULL `blk->data` pointer.",
+      "The surrounding `DW_FORM_block*` and `DW_FORM_exprloc` cases are good secondary filters for convergence.",
+      "Local AST plus intra-procedural CFG dominance is sufficient for an initial detector; cross-file analysis is not indicated by this patch."
+    ]
+  },
+  "checker_name_suggestion": "NullBlockDataDereferenceChecker",
+  "affected_functions": [
+    "unknown"
+  ],
+  "key_functions": [
+    "unknown"
+  ],
+  "patch_semantics": {
+    "added_guards": [
+      "if (attr.u.blk->data != NULL"
+    ],
+    "added_api_calls": [],
+    "removed_api_calls": [],
+    "state_resets": [],
+    "lifecycle_changes": []
+  },
+  "analysis_backend": "llm",
+  "analysis_confidence": 0.92,
+  "analysis_rationale": "The patch changes a direct dereference of attr.u.blk->data in bfd/dwarf2.c from `if (*attr.u.blk->data == DW_OP_addr)` to a guarded form `if (attr.u.blk->data != NULL && *attr.u.blk->data == DW_OP_addr)`. The dangerous operation is the dereference of `attr.u.blk->data` before proving the pointer is non-null; the fix blocks that consumption with an explicit NULL guard immediately before the dereference.",
+  "llm_usage": {
+    "prompt_tokens": 6702,
+    "completion_tokens": 985,
+    "total_tokens": 7687,
+    "call_count": 1,
+    "available": true,
+    "model": "gpt-5.5"
+  },
+  "patchweaver": {
+    "summary": "Patch suggests null_dereference semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=4, metadata refs=0.",
+    "patch_facts": [
+      {
+        "fact_type": "patch_overview",
+        "label": "Patch overview",
+        "attributes": {
+          "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe476_binutils_cve201714940/patches/fix.patch",
+          "changed_files": [
+            "bfd/dwarf2.c"
+          ],
+          "changed_file_count": 1,
+          "added_line_count": 2,
+          "deleted_line_count": 1
+        }
+      },
+      {
+        "fact_type": "vulnerability_patterns",
+        "label": "Vulnerability patterns inferred from patch",
+        "attributes": {
+          "patterns": [
+            "null_dereference"
+          ],
+          "descriptions": [
+            "Before the patch, block-like DWARF attribute forms consumed `attr.u.blk->data` by dereferencing it to compare the first byte with `DW_OP_addr` without checking whether the data pointer was NULL. After the patch, the dereference is only reached when `attr.u.blk->data != NULL` is true."
+          ]
+        }
+      },
+      {
+        "fact_type": "affected_functions",
+        "label": "Functions implicated by removed or fixed code",
+        "attributes": {
+          "functions": [
+            "scan_unit_for_symbols",
+            "unknown"
+          ]
+        }
+      },
+      {
+        "fact_type": "detection_strategy",
+        "label": "Existing patch analysis detection strategy",
+        "attributes": {
+          "primary_pattern": "null_dereference",
+          "check_types": [
+            "local_ast",
+            "intra_procedural_cfg",
+            "nullability_guard_dominance"
+          ],
+          "entry_points": [
+            "bfd/dwarf2.c around the DW_FORM_block/DW_FORM_exprloc case handling",
+            "conditions that dereference `attr.u.blk->data`"
+          ],
+          "data_flow_tracking": false,
+          "cross_file_analysis": false,
+          "suggestions": [
+            "First-draft checker should anchor on the patch-local sink `*attr.u.blk->data` in a condition.",
+            "Require that the dereference is not dominated by a local `attr.u.blk->data != NULL` guard or equivalent short-circuit check.",
+            "Do not make the specific constant `DW_OP_addr` the only hard filter; it is useful for precision but the core sink is dereferencing a possibly NULL `blk->data` pointer.",
+            "The surrounding `DW_FORM_block*` and `DW_FORM_exprloc` cases are good secondary filters for convergence.",
+            "Local AST plus intra-procedural CFG dominance is sufficient for an initial detector; cross-file analysis is not indicated by this patch."
+          ]
+        }
+      },
+      {
+        "fact_type": "added_guards",
+        "label": "Patch introduces or strengthens guards",
+        "attributes": {
+          "guards": [
+            "if (attr.u.blk->data != NULL"
+          ]
+        }
+      },
+      {
+        "fact_type": "fix_patterns",
+        "label": "Patch introduces reusable fix patterns",
+        "attributes": {
+          "patterns": [
+            "Add a local guard `attr.u.blk->data != NULL` directly dominating the dereference.",
+            "Keep the sink expression `*attr.u.blk->data == DW_OP_addr` but make it the right-hand side of a short-circuit `&&` condition.",
+            "Prevent the `var->stack = 0` path from depending on a dereference of a NULL block-data pointer.",
+            "null check"
+          ]
+        }
+      }
+    ],
+    "mechanism_graph": {
+      "summary": "Patch suggests null_dereference semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=4, metadata refs=0.",
+      "primary_patterns": [
+        "null_dereference"
+      ],
+      "nodes": [
+        {
+          "node_id": "patch",
+          "kind": "patch",
+          "label": "Security patch",
+          "attributes": {
+            "changed_files": [
+              "bfd/dwarf2.c"
+            ]
+          }
+        },
+        {
+          "node_id": "file_0",
+          "kind": "file",
+          "label": "bfd/dwarf2.c",
+          "attributes": {
+            "path": "bfd/dwarf2.c",
+            "additions": 2,
+            "deletions": 1,
+            "hunks": 1
+          }
+        },
+        {
+          "node_id": "pattern_0",
+          "kind": "pattern",
+          "label": "null_dereference",
+          "attributes": {
+            "type": "null_dereference",
+            "description": "Before the patch, block-like DWARF attribute forms consumed `attr.u.blk->data` by dereferencing it to compare the first byte with `DW_OP_addr` without checking whether the data pointer was NULL. After the patch, the dereference is only reached when `attr.u.blk->data != NULL` is true.",
+            "trigger_conditions": [
+              "Execution reaches one of the handled forms: `DW_FORM_block`, `DW_FORM_block1`, `DW_FORM_block2`, `DW_FORM_block4`, or `DW_FORM_exprloc`.",
+              "`attr.u.blk->data` may be NULL for the parsed attribute block.",
+              "The code evaluates `*attr.u.blk->data == DW_OP_addr` before any local non-null guard on `attr.u.blk->data`."
+            ],
+            "fix_patterns": [
+              "Add a local guard `attr.u.blk->data != NULL` directly dominating the dereference.",
+              "Keep the sink expression `*attr.u.blk->data == DW_OP_addr` but make it the right-hand side of a short-circuit `&&` condition.",
+              "Prevent the `var->stack = 0` path from depending on a dereference of a NULL block-data pointer."
+            ],
+            "affected_functions": [
+              "unknown"
+            ],
+            "cross_file": false,
+            "source": "llm",
+            "confidence": 0.92,
+            "evidence_lines": [
+              "bfd/dwarf2.c:3210: `if (*attr.u.blk->data == DW_OP_addr)`",
+              "bfd/dwarf2.c:3210: `if (attr.u.blk->data != NULL`",
+              "bfd/dwarf2.c:3211: `&& *attr.u.blk->data == DW_OP_addr)`",
+              "bfd/dwarf2.c:3205: `case DW_FORM_exprloc:`"
+            ]
+          }
+        },
+        {
+          "node_id": "func_1",
+          "kind": "function",
+          "label": "unknown",
+          "attributes": {
+            "function": "unknown"
+          }
+        },
+        {
+          "node_id": "guard_1",
+          "kind": "guard",
+          "label": "Execution reaches one of the handled forms: `DW_FORM_block`, `DW_FORM_block1`, `DW_FORM_block2`, `DW_FORM_block4`, or `DW_FORM_exprloc`.",
+          "attributes": {
+            "condition": "Execution reaches one of the handled forms: `DW_FORM_block`, `DW_FORM_block1`, `DW_FORM_block2`, `DW_FORM_block4`, or `DW_FORM_exprloc`."
+          }
+        },
+        {
+          "node_id": "guard_2",
+          "kind": "guard",
+          "label": "`attr.u.blk->data` may be NULL for the parsed attribute block.",
+          "attributes": {
+            "condition": "`attr.u.blk->data` may be NULL for the parsed attribute block."
+          }
+        },
+        {
+          "node_id": "guard_3",
+          "kind": "guard",
+          "label": "The code evaluates `*attr.u.blk->data == DW_OP_addr` before any local non-null guard on `attr.u.blk->data`.",
+          "attributes": {
+            "condition": "The code evaluates `*attr.u.blk->data == DW_OP_addr` before any local non-null guard on `attr.u.blk->data`."
+          }
+        },
+        {
+          "node_id": "strategy",
+          "kind": "strategy",
+          "label": "null_dereference",
+          "attributes": {
+            "primary_pattern": "null_dereference",
+            "check_types": [
+              "local_ast",
+              "intra_procedural_cfg",
+              "nullability_guard_dominance"
+            ],
+            "entry_points": [
+              "bfd/dwarf2.c around the DW_FORM_block/DW_FORM_exprloc case handling",
+              "conditions that dereference `attr.u.blk->data`"
+            ],
+            "data_flow_tracking": false,
+            "cross_file_analysis": false,
+            "suggestions": [
+              "First-draft checker should anchor on the patch-local sink `*attr.u.blk->data` in a condition.",
+              "Require that the dereference is not dominated by a local `attr.u.blk->data != NULL` guard or equivalent short-circuit check.",
+              "Do not make the specific constant `DW_OP_addr` the only hard filter; it is useful for precision but the core sink is dereferencing a possibly NULL `blk->data` pointer.",
+              "The surrounding `DW_FORM_block*` and `DW_FORM_exprloc` cases are good secondary filters for convergence.",
+              "Local AST plus intra-procedural CFG dominance is sufficient for an initial detector; cross-file analysis is not indicated by this patch."
+            ]
+          }
+        },
+        {
+          "node_id": "func_2",
+          "kind": "function",
+          "label": "scan_unit_for_symbols",
+          "attributes": {
+            "function": "scan_unit_for_symbols",
+            "source": "patch_fact"
+          }
+        },
+        {
+          "node_id": "guard_4",
+          "kind": "guard",
+          "label": "if (attr.u.blk->data != NULL",
+          "attributes": {
+            "condition": "if (attr.u.blk->data != NULL",
+            "source": "patch_fact"
+          }
+        },
+        {
+          "node_id": "fix_1",
+          "kind": "fix",
+          "label": "Add a local guard `attr.u.blk->data != NULL` directly dominating the dereference.",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "Add a local guard `attr.u.blk->data != NULL` directly dominating the dereference."
+          }
+        },
+        {
+          "node_id": "fix_2",
+          "kind": "fix",
+          "label": "Keep the sink expression `*attr.u.blk->data == DW_OP_addr` but make it the right-hand side of a short-circuit `&&` condition.",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "Keep the sink expression `*attr.u.blk->data == DW_OP_addr` but make it the right-hand side of a short-circuit `&&` condition."
+          }
+        },
+        {
+          "node_id": "fix_3",
+          "kind": "fix",
+          "label": "Prevent the `var->stack = 0` path from depending on a dereference of a NULL block-data pointer.",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "Prevent the `var->stack = 0` path from depending on a dereference of a NULL block-data pointer."
+          }
+        },
+        {
+          "node_id": "fix_4",
+          "kind": "fix",
+          "label": "null check",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "null check"
+          }
+        }
+      ],
+      "edges": [
+        {
+          "source": "patch",
+          "target": "file_0",
+          "relation": "touches",
+          "confidence": 0.95
+        },
+        {
+          "source": "patch",
+          "target": "pattern_0",
+          "relation": "indicates",
+          "confidence": 0.9
+        },
+        {
+          "source": "pattern_0",
+          "target": "func_1",
+          "relation": "affects",
+          "confidence": 0.75
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_1",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_2",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_3",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "patch",
+          "target": "strategy",
+          "relation": "guides",
+          "confidence": 0.85
+        },
+        {
+          "source": "patch",
+          "target": "func_2",
+          "relation": "focuses_on",
+          "confidence": 0.82
+        },
+        {
+          "source": "patch",
+          "target": "guard_4",
+          "relation": "adds_guard",
+          "confidence": 0.84
+        },
+        {
+          "source": "patch",
+          "target": "fix_1",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_2",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_3",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_4",
+          "relation": "introduces",
+          "confidence": 0.8
+        }
+      ]
+    },
+    "evidence_plan": {
+      "primary_pattern": "null_dereference",
+      "hypotheses": [
+        "The fix strengthens a guard or bound that should be captured as a reusable precondition."
+      ],
+      "requirements": [
+        {
+          "evidence_type": "patch_fact",
+          "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+          "priority": 100,
+          "preferred_analyzers": [],
+          "confidence": 1.0,
+          "mechanism_refs": [
+            "patch"
+          ]
+        },
+        {
+          "evidence_type": "path_guard",
+          "reason": "Patch likely adds a guard or bound check before a dangerous operation.",
+          "priority": 90,
+          "preferred_analyzers": [
+            "csa"
+          ],
+          "confidence": 0.87,
+          "mechanism_refs": [
+            "pattern_0"
+          ]
+        }
+      ],
+      "recommended_analyzers": [
+        "csa"
+      ],
+      "planner_notes": [
+        "Added guards detected in patch diff; path-sensitive evidence should stay near top priority.",
+        "Selected analyzers do not cover every planned evidence primitive."
+      ],
+      "coverage_gaps": [
+        "path_guard is not covered by selected analyzers ['codeql']"
+      ],
+      "uncertainty_budget": "low",
+      "escalation_triggers": [
+        "selected_coverage_gap"
+      ]
+    },
+    "refinement_targets": {
+      "codeql": {
+        "checker_name": "BfdDwarfBlockDataNullDeref",
+        "artifact_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe476_binutils_cve201714940/primary/codeql/20260423_172415/codeql/BfdDwarfBlockDataNullDeref.ql",
+        "artifact_kind": "query",
+        "validation_summary": "命中验证目标并通过功能验证",
+        "refinement_summary": "- validation_outcome @ semantic_validation: semantic validation passed with 1 diagnostics [coverage=full]"
+      }
+    },
+    "validation_feedback_history": [
+      {
+        "analyzer": "codeql",
+        "phase": "manual_fix_validation",
+        "summary": "- validation_outcome @ semantic_validation: semantic validation passed with 1 diagnostics [coverage=full]"
+      }
+    ]
+  },
+  "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe476_binutils_cve201714940/patches/fix.patch",
+  "summary": "Patch suggests null_dereference semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=4, metadata refs=0.",
+  "patch_facts": [
+    {
+      "fact_type": "patch_overview",
+      "label": "Patch overview",
+      "attributes": {
+        "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe476_binutils_cve201714940/patches/fix.patch",
+        "changed_files": [
+          "bfd/dwarf2.c"
+        ],
+        "changed_file_count": 1,
+        "added_line_count": 2,
+        "deleted_line_count": 1
+      }
+    },
+    {
+      "fact_type": "vulnerability_patterns",
+      "label": "Vulnerability patterns inferred from patch",
+      "attributes": {
+        "patterns": [
+          "null_dereference"
+        ],
+        "descriptions": [
+          "Before the patch, block-like DWARF attribute forms consumed `attr.u.blk->data` by dereferencing it to compare the first byte with `DW_OP_addr` without checking whether the data pointer was NULL. After the patch, the dereference is only reached when `attr.u.blk->data != NULL` is true."
+        ]
+      }
+    },
+    {
+      "fact_type": "affected_functions",
+      "label": "Functions implicated by removed or fixed code",
+      "attributes": {
+        "functions": [
+          "scan_unit_for_symbols",
+          "unknown"
+        ]
+      }
+    },
+    {
+      "fact_type": "detection_strategy",
+      "label": "Existing patch analysis detection strategy",
+      "attributes": {
+        "primary_pattern": "null_dereference",
+        "check_types": [
+          "local_ast",
+          "intra_procedural_cfg",
+          "nullability_guard_dominance"
+        ],
+        "entry_points": [
+          "bfd/dwarf2.c around the DW_FORM_block/DW_FORM_exprloc case handling",
+          "conditions that dereference `attr.u.blk->data`"
+        ],
+        "data_flow_tracking": false,
+        "cross_file_analysis": false,
+        "suggestions": [
+          "First-draft checker should anchor on the patch-local sink `*attr.u.blk->data` in a condition.",
+          "Require that the dereference is not dominated by a local `attr.u.blk->data != NULL` guard or equivalent short-circuit check.",
+          "Do not make the specific constant `DW_OP_addr` the only hard filter; it is useful for precision but the core sink is dereferencing a possibly NULL `blk->data` pointer.",
+          "The surrounding `DW_FORM_block*` and `DW_FORM_exprloc` cases are good secondary filters for convergence.",
+          "Local AST plus intra-procedural CFG dominance is sufficient for an initial detector; cross-file analysis is not indicated by this patch."
+        ]
+      }
+    },
+    {
+      "fact_type": "added_guards",
+      "label": "Patch introduces or strengthens guards",
+      "attributes": {
+        "guards": [
+          "if (attr.u.blk->data != NULL"
+        ]
+      }
+    },
+    {
+      "fact_type": "fix_patterns",
+      "label": "Patch introduces reusable fix patterns",
+      "attributes": {
+        "patterns": [
+          "Add a local guard `attr.u.blk->data != NULL` directly dominating the dereference.",
+          "Keep the sink expression `*attr.u.blk->data == DW_OP_addr` but make it the right-hand side of a short-circuit `&&` condition.",
+          "Prevent the `var->stack = 0` path from depending on a dereference of a NULL block-data pointer.",
+          "null check"
+        ]
+      }
+    }
+  ],
+  "mechanism_graph": {
+    "summary": "Patch suggests null_dereference semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=4, metadata refs=0.",
+    "primary_patterns": [
+      "null_dereference"
+    ],
+    "nodes": [
+      {
+        "node_id": "patch",
+        "kind": "patch",
+        "label": "Security patch",
+        "attributes": {
+          "changed_files": [
+            "bfd/dwarf2.c"
+          ]
+        }
+      },
+      {
+        "node_id": "file_0",
+        "kind": "file",
+        "label": "bfd/dwarf2.c",
+        "attributes": {
+          "path": "bfd/dwarf2.c",
+          "additions": 2,
+          "deletions": 1,
+          "hunks": 1
+        }
+      },
+      {
+        "node_id": "pattern_0",
+        "kind": "pattern",
+        "label": "null_dereference",
+        "attributes": {
+          "type": "null_dereference",
+          "description": "Before the patch, block-like DWARF attribute forms consumed `attr.u.blk->data` by dereferencing it to compare the first byte with `DW_OP_addr` without checking whether the data pointer was NULL. After the patch, the dereference is only reached when `attr.u.blk->data != NULL` is true.",
+          "trigger_conditions": [
+            "Execution reaches one of the handled forms: `DW_FORM_block`, `DW_FORM_block1`, `DW_FORM_block2`, `DW_FORM_block4`, or `DW_FORM_exprloc`.",
+            "`attr.u.blk->data` may be NULL for the parsed attribute block.",
+            "The code evaluates `*attr.u.blk->data == DW_OP_addr` before any local non-null guard on `attr.u.blk->data`."
+          ],
+          "fix_patterns": [
+            "Add a local guard `attr.u.blk->data != NULL` directly dominating the dereference.",
+            "Keep the sink expression `*attr.u.blk->data == DW_OP_addr` but make it the right-hand side of a short-circuit `&&` condition.",
+            "Prevent the `var->stack = 0` path from depending on a dereference of a NULL block-data pointer."
+          ],
+          "affected_functions": [
+            "unknown"
+          ],
+          "cross_file": false,
+          "source": "llm",
+          "confidence": 0.92,
+          "evidence_lines": [
+            "bfd/dwarf2.c:3210: `if (*attr.u.blk->data == DW_OP_addr)`",
+            "bfd/dwarf2.c:3210: `if (attr.u.blk->data != NULL`",
+            "bfd/dwarf2.c:3211: `&& *attr.u.blk->data == DW_OP_addr)`",
+            "bfd/dwarf2.c:3205: `case DW_FORM_exprloc:`"
+          ]
+        }
+      },
+      {
+        "node_id": "func_1",
+        "kind": "function",
+        "label": "unknown",
+        "attributes": {
+          "function": "unknown"
+        }
+      },
+      {
+        "node_id": "guard_1",
+        "kind": "guard",
+        "label": "Execution reaches one of the handled forms: `DW_FORM_block`, `DW_FORM_block1`, `DW_FORM_block2`, `DW_FORM_block4`, or `DW_FORM_exprloc`.",
+        "attributes": {
+          "condition": "Execution reaches one of the handled forms: `DW_FORM_block`, `DW_FORM_block1`, `DW_FORM_block2`, `DW_FORM_block4`, or `DW_FORM_exprloc`."
+        }
+      },
+      {
+        "node_id": "guard_2",
+        "kind": "guard",
+        "label": "`attr.u.blk->data` may be NULL for the parsed attribute block.",
+        "attributes": {
+          "condition": "`attr.u.blk->data` may be NULL for the parsed attribute block."
+        }
+      },
+      {
+        "node_id": "guard_3",
+        "kind": "guard",
+        "label": "The code evaluates `*attr.u.blk->data == DW_OP_addr` before any local non-null guard on `attr.u.blk->data`.",
+        "attributes": {
+          "condition": "The code evaluates `*attr.u.blk->data == DW_OP_addr` before any local non-null guard on `attr.u.blk->data`."
+        }
+      },
+      {
+        "node_id": "strategy",
+        "kind": "strategy",
+        "label": "null_dereference",
+        "attributes": {
+          "primary_pattern": "null_dereference",
+          "check_types": [
+            "local_ast",
+            "intra_procedural_cfg",
+            "nullability_guard_dominance"
+          ],
+          "entry_points": [
+            "bfd/dwarf2.c around the DW_FORM_block/DW_FORM_exprloc case handling",
+            "conditions that dereference `attr.u.blk->data`"
+          ],
+          "data_flow_tracking": false,
+          "cross_file_analysis": false,
+          "suggestions": [
+            "First-draft checker should anchor on the patch-local sink `*attr.u.blk->data` in a condition.",
+            "Require that the dereference is not dominated by a local `attr.u.blk->data != NULL` guard or equivalent short-circuit check.",
+            "Do not make the specific constant `DW_OP_addr` the only hard filter; it is useful for precision but the core sink is dereferencing a possibly NULL `blk->data` pointer.",
+            "The surrounding `DW_FORM_block*` and `DW_FORM_exprloc` cases are good secondary filters for convergence.",
+            "Local AST plus intra-procedural CFG dominance is sufficient for an initial detector; cross-file analysis is not indicated by this patch."
+          ]
+        }
+      },
+      {
+        "node_id": "func_2",
+        "kind": "function",
+        "label": "scan_unit_for_symbols",
+        "attributes": {
+          "function": "scan_unit_for_symbols",
+          "source": "patch_fact"
+        }
+      },
+      {
+        "node_id": "guard_4",
+        "kind": "guard",
+        "label": "if (attr.u.blk->data != NULL",
+        "attributes": {
+          "condition": "if (attr.u.blk->data != NULL",
+          "source": "patch_fact"
+        }
+      },
+      {
+        "node_id": "fix_1",
+        "kind": "fix",
+        "label": "Add a local guard `attr.u.blk->data != NULL` directly dominating the dereference.",
+        "attributes": {
+          "kind": "fix_patterns",
+          "value": "Add a local guard `attr.u.blk->data != NULL` directly dominating the dereference."
+        }
+      },
+      {
+        "node_id": "fix_2",
+        "kind": "fix",
+        "label": "Keep the sink expression `*attr.u.blk->data == DW_OP_addr` but make it the right-hand side of a short-circuit `&&` condition.",
+        "attributes": {
+          "kind": "fix_patterns",
+          "value": "Keep the sink expression `*attr.u.blk->data == DW_OP_addr` but make it the right-hand side of a short-circuit `&&` condition."
+        }
+      },
+      {
+        "node_id": "fix_3",
+        "kind": "fix",
+        "label": "Prevent the `var->stack = 0` path from depending on a dereference of a NULL block-data pointer.",
+        "attributes": {
+          "kind": "fix_patterns",
+          "value": "Prevent the `var->stack = 0` path from depending on a dereference of a NULL block-data pointer."
+        }
+      },
+      {
+        "node_id": "fix_4",
+        "kind": "fix",
+        "label": "null check",
+        "attributes": {
+          "kind": "fix_patterns",
+          "value": "null check"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "patch",
+        "target": "file_0",
+        "relation": "touches",
+        "confidence": 0.95
+      },
+      {
+        "source": "patch",
+        "target": "pattern_0",
+        "relation": "indicates",
+        "confidence": 0.9
+      },
+      {
+        "source": "pattern_0",
+        "target": "func_1",
+        "relation": "affects",
+        "confidence": 0.75
+      },
+      {
+        "source": "pattern_0",
+        "target": "guard_1",
+        "relation": "requires",
+        "confidence": 0.7
+      },
+      {
+        "source": "pattern_0",
+        "target": "guard_2",
+        "relation": "requires",
+        "confidence": 0.7
+      },
+      {
+        "source": "pattern_0",
+        "target": "guard_3",
+        "relation": "requires",
+        "confidence": 0.7
+      },
+      {
+        "source": "patch",
+        "target": "strategy",
+        "relation": "guides",
+        "confidence": 0.85
+      },
+      {
+        "source": "patch",
+        "target": "func_2",
+        "relation": "focuses_on",
+        "confidence": 0.82
+      },
+      {
+        "source": "patch",
+        "target": "guard_4",
+        "relation": "adds_guard",
+        "confidence": 0.84
+      },
+      {
+        "source": "patch",
+        "target": "fix_1",
+        "relation": "introduces",
+        "confidence": 0.8
+      },
+      {
+        "source": "patch",
+        "target": "fix_2",
+        "relation": "introduces",
+        "confidence": 0.8
+      },
+      {
+        "source": "patch",
+        "target": "fix_3",
+        "relation": "introduces",
+        "confidence": 0.8
+      },
+      {
+        "source": "patch",
+        "target": "fix_4",
+        "relation": "introduces",
+        "confidence": 0.8
+      }
+    ]
+  },
+  "evidence_plan": {
+    "primary_pattern": "null_dereference",
+    "hypotheses": [
+      "The fix strengthens a guard or bound that should be captured as a reusable precondition."
+    ],
+    "requirements": [
+      {
+        "evidence_type": "patch_fact",
+        "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+        "priority": 100,
+        "preferred_analyzers": [],
+        "confidence": 1.0,
+        "mechanism_refs": [
+          "patch"
+        ]
+      },
+      {
+        "evidence_type": "path_guard",
+        "reason": "Patch likely adds a guard or bound check before a dangerous operation.",
+        "priority": 90,
+        "preferred_analyzers": [
+          "csa"
+        ],
+        "confidence": 0.87,
+        "mechanism_refs": [
+          "pattern_0"
+        ]
+      }
+    ],
+    "recommended_analyzers": [
+      "csa"
+    ],
+    "planner_notes": [
+      "Added guards detected in patch diff; path-sensitive evidence should stay near top priority.",
+      "Selected analyzers do not cover every planned evidence primitive."
+    ],
+    "coverage_gaps": [
+      "path_guard is not covered by selected analyzers ['codeql']"
+    ],
+    "uncertainty_budget": "low",
+    "escalation_triggers": [
+      "selected_coverage_gap"
+    ]
+  }
+}

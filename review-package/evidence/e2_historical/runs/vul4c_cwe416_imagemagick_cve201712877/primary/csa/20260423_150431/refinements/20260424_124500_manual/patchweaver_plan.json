@@ -1,0 +1,680 @@
+{
+  "files_changed": [
+    "coders/mat.c"
+  ],
+  "file_details": [
+    {
+      "path": "coders/mat.c",
+      "additions": 2,
+      "deletions": 2,
+      "hunks": 2
+    }
+  ],
+  "vulnerability_patterns": [
+    {
+      "type": "use_after_free",
+      "description": "补丁前，局部变量在对象被销毁/从链表删除后仍保留旧别名，后续代码可能继续通过该别名访问失效对象；补丁通过删除销毁点和在删除前将别名置空来阻断该机制。",
+      "trigger_conditions": [
+        "在 `DeleteImageFromList(&tmp)` 或等价删除/销毁调用前，存在其他本地指针别名指向同一对象，如 `tmp == image2`",
+        "删除/销毁后旧别名未被清空、重绑或权威重查，后续仍可能被返回、解引用、传递或作为链表节点继续使用",
+        "错误路径或清理路径中执行 `DestroyImageInfo(clone_info)`，但后续控制流仍可能继续依赖 `clone_info` 或其内部资源"
+      ],
+      "fix_patterns": [
+        "在对象删除前检查别名关系并执行 `if (tmp == image2) image2=(Image *) NULL;`，使后续无法继续通过 `image2` 使用已删除对象",
+        "删除危险销毁调用 `clone_info=DestroyImageInfo(clone_info);`，避免该对象在当前路径过早进入失效态",
+        "对将被删除/释放的对象，优先阻断旧句柄继续存活，而不是仅依赖非空性判断"
+      ],
+      "affected_functions": [
+        "DestroyImageInfo"
+      ],
+      "cross_file": false,
+      "source": "llm",
+      "confidence": 0.94,
+      "evidence_lines": [
+        "删除清理调用: `if (clone_info) clone_info=DestroyImageInfo(clone_info);`",
+        "新增别名失效屏障: `if (tmp == image2)`",
+        "新增置空动作: `image2=(Image *) NULL;`",
+        "危险删除点仍在: `DeleteImageFromList(&tmp);`"
+      ]
+    }
+  ],
+  "cross_file_dependencies": [],
+  "detection_strategy": {
+    "primary_pattern": "use_after_free",
+    "check_types": [
+      "local_alias_invalidation_after_free_delete",
+      "use_after_free_on_container_list_element_removal",
+      "premature_cleanup_on_error_exit_path"
+    ],
+    "entry_points": [
+      "`coders/mat.c` 中包含 `DeleteImageFromList(&...)` 的循环/清理逻辑",
+      "`coders/mat.c` 中对 `DestroyImageInfo(...)` 的错误路径或收尾路径调用"
+    ],
+    "data_flow_tracking": false,
+    "cross_file_analysis": false,
+    "suggestions": [
+      "首稿优先命中补丁里的最小锚点：`DeleteImageFromList(&tmp)` 前存在同作用域别名比较/更新需求，旧逻辑缺少对 `image2` 这类别名的失效处理。",
+      "首稿不要把新增 guard `if (tmp == image2)` 写成硬过滤；应先找“对象被 `DeleteImageFromList` 删除，但同函数内其他指针变量继续保留该对象”的模式，guard 只作为修复形态参考。",
+      "可用局部 AST/CFG 即可：识别删除/销毁调用、同一基本块或相邻路径中的别名变量、以及删除后未置空/未重绑的继续使用。",
+      "对 `DestroyImageInfo(clone_info)` 相关规则，首稿应关注‘清理路径中过早销毁后继续执行’这一形态；若补丁未给出明确后续 sink，不要把所有 `DestroyImageInfo` 都报出，可作为二次收敛条件结合后续访问/传递。",
+      "辅助收敛条件可以是：变量位于同一函数、删除前后控制流连续、别名来自直接赋值或比较；这些适合二次过滤，不应作为首要命中前提。",
+      "不要把旧指针非空当作仍然有效的证明；此补丁明确说明即使 `image2` 非空，只要其目标对象刚被 `DeleteImageFromList` 删除，就必须失效化。"
+    ]
+  },
+  "checker_name_suggestion": "UseAfterFreeChecker",
+  "affected_functions": [
+    "DestroyImageInfo"
+  ],
+  "key_functions": [
+    "DestroyImageInfo"
+  ],
+  "patch_semantics": {
+    "added_guards": [
+      "if (tmp == image2)"
+    ],
+    "added_api_calls": [],
+    "removed_api_calls": [
+      "DestroyImageInfo"
+    ],
+    "state_resets": [],
+    "lifecycle_changes": []
+  },
+  "analysis_backend": "llm",
+  "analysis_confidence": 0.94,
+  "analysis_rationale": "补丁只改动 `coders/mat.c` 的同一段读取/清理逻辑，核心证据是：一处删除了 `clone_info=DestroyImageInfo(clone_info);`，另一处在 `DeleteImageFromList(&tmp);` 前新增 `if (tmp == image2) image2=(Image *) NULL;`。这两个改动都在阻断“对象进入销毁/删除后，后续仍通过旧变量继续持有或消费该对象”的局部机制。尤其第二处直接体现：`tmp` 将被 `DeleteImageFromList` 删除，若它恰好等于 `image2`，则旧逻辑会让 `image2` 继续指向已删除节点；补丁通过提前置空打断后续对该失效 `Image *` 的使用。第一处删除 `DestroyImageInfo(clone_info)` 也表明旧路径中该释放动作会导致后续仍可能消费 `clone_info` 或其关联状态，因此修复选择移除该销毁点而非保留它。",
+  "llm_usage": {
+    "prompt_tokens": 6776,
+    "completion_tokens": 1139,
+    "total_tokens": 7915,
+    "call_count": 1,
+    "available": true,
+    "model": "gpt-5.4"
+  },
+  "patchweaver": {
+    "summary": "Patch suggests use_after_free semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=3, metadata refs=0.",
+    "patch_facts": [
+      {
+        "fact_type": "patch_overview",
+        "label": "Patch overview",
+        "attributes": {
+          "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe416_imagemagick_cve201712877/patches/fix.patch",
+          "changed_files": [
+            "coders/mat.c"
+          ],
+          "changed_file_count": 1,
+          "added_line_count": 2,
+          "deleted_line_count": 2
+        }
+      },
+      {
+        "fact_type": "vulnerability_patterns",
+        "label": "Vulnerability patterns inferred from patch",
+        "attributes": {
+          "patterns": [
+            "use_after_free"
+          ],
+          "descriptions": [
+            "补丁前，局部变量在对象被销毁/从链表删除后仍保留旧别名，后续代码可能继续通过该别名访问失效对象；补丁通过删除销毁点和在删除前将别名置空来阻断该机制。"
+          ]
+        }
+      },
+      {
+        "fact_type": "affected_functions",
+        "label": "Functions implicated by removed or fixed code",
+        "attributes": {
+          "functions": [
+            "DestroyImageInfo",
+            "DisableMSCWarning"
+          ]
+        }
+      },
+      {
+        "fact_type": "detection_strategy",
+        "label": "Existing patch analysis detection strategy",
+        "attributes": {
+          "primary_pattern": "use_after_free",
+          "check_types": [
+            "local_alias_invalidation_after_free_delete",
+            "use_after_free_on_container_list_element_removal",
+            "premature_cleanup_on_error_exit_path"
+          ],
+          "entry_points": [
+            "`coders/mat.c` 中包含 `DeleteImageFromList(&...)` 的循环/清理逻辑",
+            "`coders/mat.c` 中对 `DestroyImageInfo(...)` 的错误路径或收尾路径调用"
+          ],
+          "data_flow_tracking": false,
+          "cross_file_analysis": false,
+          "suggestions": [
+            "首稿优先命中补丁里的最小锚点：`DeleteImageFromList(&tmp)` 前存在同作用域别名比较/更新需求，旧逻辑缺少对 `image2` 这类别名的失效处理。",
+            "首稿不要把新增 guard `if (tmp == image2)` 写成硬过滤；应先找“对象被 `DeleteImageFromList` 删除，但同函数内其他指针变量继续保留该对象”的模式，guard 只作为修复形态参考。",
+            "可用局部 AST/CFG 即可：识别删除/销毁调用、同一基本块或相邻路径中的别名变量、以及删除后未置空/未重绑的继续使用。",
+            "对 `DestroyImageInfo(clone_info)` 相关规则，首稿应关注‘清理路径中过早销毁后继续执行’这一形态；若补丁未给出明确后续 sink，不要把所有 `DestroyImageInfo` 都报出，可作为二次收敛条件结合后续访问/传递。",
+            "辅助收敛条件可以是：变量位于同一函数、删除前后控制流连续、别名来自直接赋值或比较；这些适合二次过滤，不应作为首要命中前提。",
+            "不要把旧指针非空当作仍然有效的证明；此补丁明确说明即使 `image2` 非空，只要其目标对象刚被 `DeleteImageFromList` 删除，就必须失效化。"
+          ]
+        }
+      },
+      {
+        "fact_type": "added_guards",
+        "label": "Patch introduces or strengthens guards",
+        "attributes": {
+          "guards": [
+            "if (tmp == image2)"
+          ]
+        }
+      },
+      {
+        "fact_type": "fix_patterns",
+        "label": "Patch introduces reusable fix patterns",
+        "attributes": {
+          "patterns": [
+            "在对象删除前检查别名关系并执行 `if (tmp == image2) image2=(Image *) NULL;`，使后续无法继续通过 `image2` 使用已删除对象",
+            "删除危险销毁调用 `clone_info=DestroyImageInfo(clone_info);`，避免该对象在当前路径过早进入失效态",
+            "对将被删除/释放的对象，优先阻断旧句柄继续存活，而不是仅依赖非空性判断"
+          ]
+        }
+      }
+    ],
+    "mechanism_graph": {
+      "summary": "Patch suggests use_after_free semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=3, metadata refs=0.",
+      "primary_patterns": [
+        "use_after_free"
+      ],
+      "nodes": [
+        {
+          "node_id": "patch",
+          "kind": "patch",
+          "label": "Security patch",
+          "attributes": {
+            "changed_files": [
+              "coders/mat.c"
+            ]
+          }
+        },
+        {
+          "node_id": "file_0",
+          "kind": "file",
+          "label": "coders/mat.c",
+          "attributes": {
+            "path": "coders/mat.c",
+            "additions": 2,
+            "deletions": 2,
+            "hunks": 2
+          }
+        },
+        {
+          "node_id": "pattern_0",
+          "kind": "pattern",
+          "label": "use_after_free",
+          "attributes": {
+            "type": "use_after_free",
+            "description": "补丁前，局部变量在对象被销毁/从链表删除后仍保留旧别名，后续代码可能继续通过该别名访问失效对象；补丁通过删除销毁点和在删除前将别名置空来阻断该机制。",
+            "trigger_conditions": [
+              "在 `DeleteImageFromList(&tmp)` 或等价删除/销毁调用前，存在其他本地指针别名指向同一对象，如 `tmp == image2`",
+              "删除/销毁后旧别名未被清空、重绑或权威重查，后续仍可能被返回、解引用、传递或作为链表节点继续使用",
+              "错误路径或清理路径中执行 `DestroyImageInfo(clone_info)`，但后续控制流仍可能继续依赖 `clone_info` 或其内部资源"
+            ],
+            "fix_patterns": [
+              "在对象删除前检查别名关系并执行 `if (tmp == image2) image2=(Image *) NULL;`，使后续无法继续通过 `image2` 使用已删除对象",
+              "删除危险销毁调用 `clone_info=DestroyImageInfo(clone_info);`，避免该对象在当前路径过早进入失效态",
+              "对将被删除/释放的对象，优先阻断旧句柄继续存活，而不是仅依赖非空性判断"
+            ],
+            "affected_functions": [
+              "DestroyImageInfo"
+            ],
+            "cross_file": false,
+            "source": "llm",
+            "confidence": 0.94,
+            "evidence_lines": [
+              "删除清理调用: `if (clone_info) clone_info=DestroyImageInfo(clone_info);`",
+              "新增别名失效屏障: `if (tmp == image2)`",
+              "新增置空动作: `image2=(Image *) NULL;`",
+              "危险删除点仍在: `DeleteImageFromList(&tmp);`"
+            ]
+          }
+        },
+        {
+          "node_id": "func_1",
+          "kind": "function",
+          "label": "DestroyImageInfo",
+          "attributes": {
+            "function": "DestroyImageInfo"
+          }
+        },
+        {
+          "node_id": "guard_1",
+          "kind": "guard",
+          "label": "在 `DeleteImageFromList(&tmp)` 或等价删除/销毁调用前，存在其他本地指针别名指向同一对象，如 `tmp == image2`",
+          "attributes": {
+            "condition": "在 `DeleteImageFromList(&tmp)` 或等价删除/销毁调用前，存在其他本地指针别名指向同一对象，如 `tmp == image2`"
+          }
+        },
+        {
+          "node_id": "guard_2",
+          "kind": "guard",
+          "label": "删除/销毁后旧别名未被清空、重绑或权威重查，后续仍可能被返回、解引用、传递或作为链表节点继续使用",
+          "attributes": {
+            "condition": "删除/销毁后旧别名未被清空、重绑或权威重查，后续仍可能被返回、解引用、传递或作为链表节点继续使用"
+          }
+        },
+        {
+          "node_id": "guard_3",
+          "kind": "guard",
+          "label": "错误路径或清理路径中执行 `DestroyImageInfo(clone_info)`，但后续控制流仍可能继续依赖 `clone_info` 或其内部资源",
+          "attributes": {
+            "condition": "错误路径或清理路径中执行 `DestroyImageInfo(clone_info)`，但后续控制流仍可能继续依赖 `clone_info` 或其内部资源"
+          }
+        },
+        {
+          "node_id": "strategy",
+          "kind": "strategy",
+          "label": "use_after_free",
+          "attributes": {
+            "primary_pattern": "use_after_free",
+            "check_types": [
+              "local_alias_invalidation_after_free_delete",
+              "use_after_free_on_container_list_element_removal",
+              "premature_cleanup_on_error_exit_path"
+            ],
+            "entry_points": [
+              "`coders/mat.c` 中包含 `DeleteImageFromList(&...)` 的循环/清理逻辑",
+              "`coders/mat.c` 中对 `DestroyImageInfo(...)` 的错误路径或收尾路径调用"
+            ],
+            "data_flow_tracking": false,
+            "cross_file_analysis": false,
+            "suggestions": [
+              "首稿优先命中补丁里的最小锚点：`DeleteImageFromList(&tmp)` 前存在同作用域别名比较/更新需求，旧逻辑缺少对 `image2` 这类别名的失效处理。",
+              "首稿不要把新增 guard `if (tmp == image2)` 写成硬过滤；应先找“对象被 `DeleteImageFromList` 删除，但同函数内其他指针变量继续保留该对象”的模式，guard 只作为修复形态参考。",
+              "可用局部 AST/CFG 即可：识别删除/销毁调用、同一基本块或相邻路径中的别名变量、以及删除后未置空/未重绑的继续使用。",
+              "对 `DestroyImageInfo(clone_info)` 相关规则，首稿应关注‘清理路径中过早销毁后继续执行’这一形态；若补丁未给出明确后续 sink，不要把所有 `DestroyImageInfo` 都报出，可作为二次收敛条件结合后续访问/传递。",
+              "辅助收敛条件可以是：变量位于同一函数、删除前后控制流连续、别名来自直接赋值或比较；这些适合二次过滤，不应作为首要命中前提。",
+              "不要把旧指针非空当作仍然有效的证明；此补丁明确说明即使 `image2` 非空，只要其目标对象刚被 `DeleteImageFromList` 删除，就必须失效化。"
+            ]
+          }
+        },
+        {
+          "node_id": "func_2",
+          "kind": "function",
+          "label": "DisableMSCWarning",
+          "attributes": {
+            "function": "DisableMSCWarning",
+            "source": "patch_fact"
+          }
+        },
+        {
+          "node_id": "guard_4",
+          "kind": "guard",
+          "label": "if (tmp == image2)",
+          "attributes": {
+            "condition": "if (tmp == image2)",
+            "source": "patch_fact"
+          }
+        },
+        {
+          "node_id": "fix_1",
+          "kind": "fix",
+          "label": "在对象删除前检查别名关系并执行 `if (tmp == image2) image2=(Image *) NULL;`，使后续无法继续通过 `image2` 使用已删除对象",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "在对象删除前检查别名关系并执行 `if (tmp == image2) image2=(Image *) NULL;`，使后续无法继续通过 `image2` 使用已删除对象"
+          }
+        },
+        {
+          "node_id": "fix_2",
+          "kind": "fix",
+          "label": "删除危险销毁调用 `clone_info=DestroyImageInfo(clone_info);`，避免该对象在当前路径过早进入失效态",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "删除危险销毁调用 `clone_info=DestroyImageInfo(clone_info);`，避免该对象在当前路径过早进入失效态"
+          }
+        },
+        {
+          "node_id": "fix_3",
+          "kind": "fix",
+          "label": "对将被删除/释放的对象，优先阻断旧句柄继续存活，而不是仅依赖非空性判断",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "对将被删除/释放的对象，优先阻断旧句柄继续存活，而不是仅依赖非空性判断"
+          }
+        }
+      ],
+      "edges": [
+        {
+          "source": "patch",
+          "target": "file_0",
+          "relation": "touches",
+          "confidence": 0.95
+        },
+        {
+          "source": "patch",
+          "target": "pattern_0",
+          "relation": "indicates",
+          "confidence": 0.9
+        },
+        {
+          "source": "pattern_0",
+          "target": "func_1",
+          "relation": "affects",
+          "confidence": 0.75
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_1",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_2",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_3",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "patch",
+          "target": "strategy",
+          "relation": "guides",
+          "confidence": 0.85
+        },
+        {
+          "source": "patch",
+          "target": "func_2",
+          "relation": "focuses_on",
+          "confidence": 0.82
+        },
+        {
+          "source": "patch",
+          "target": "guard_4",
+          "relation": "adds_guard",
+          "confidence": 0.84
+        },
+        {
+          "source": "patch",
+          "target": "fix_1",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_2",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_3",
+          "relation": "introduces",
+          "confidence": 0.8
+        }
+      ]
+    },
+    "evidence_plan": {
+      "primary_pattern": "use_after_free",
+      "hypotheses": [
+        "The patch likely changes a resource lifecycle or stale-state transition."
+      ],
+      "requirements": [
+        {
+          "evidence_type": "patch_fact",
+          "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+          "priority": 100,
+          "preferred_analyzers": [],
+          "confidence": 1.0,
+          "mechanism_refs": [
+            "patch"
+          ]
+        },
+        {
+          "evidence_type": "allocation_lifecycle",
+          "reason": "Lifetime-sensitive bug family requires allocation/free reasoning.",
+          "priority": 92,
+          "preferred_analyzers": [
+            "csa"
+          ],
+          "confidence": 0.92,
+          "mechanism_refs": [
+            "pattern_0"
+          ]
+        },
+        {
+          "evidence_type": "state_transition",
+          "reason": "Need local state transitions around free/delete and later uses.",
+          "priority": 89,
+          "preferred_analyzers": [
+            "csa"
+          ],
+          "confidence": 0.88,
+          "mechanism_refs": [
+            "pattern_0"
+          ]
+        }
+      ],
+      "recommended_analyzers": [
+        "csa"
+      ],
+      "planner_notes": [
+        "Added guards detected in patch diff; path-sensitive evidence should stay near top priority."
+      ],
+      "coverage_gaps": [],
+      "uncertainty_budget": "low",
+      "escalation_triggers": []
+    },
+    "evidence_bundle": {
+      "records": [
+        {
+          "evidence_id": "pf_000",
+          "type": "patch_fact",
+          "analyzer": "patch",
+          "scope": {
+            "repo": "fix.patch",
+            "file": "coders/mat.c",
+            "function": "DestroyImageInfo"
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "fact_type": "patch_overview",
+            "label": "Patch overview",
+            "attributes": {
+              "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe416_imagemagick_cve201712877/patches/fix.patch",
+              "changed_files": [
+                "coders/mat.c"
+              ],
+              "changed_file_count": 1,
+              "added_line_count": 2,
+              "deleted_line_count": 2
+            }
+          },
+          "provenance": {
+            "tool": "patch-analysis",
+            "artifact": "patch_overview",
+            "confidence": 0.95
+          },
+          "evidence_slice": {}
+        },
+        {
+          "evidence_id": "pf_001",
+          "type": "patch_fact",
+          "analyzer": "patch",
+          "scope": {
+            "repo": "fix.patch",
+            "file": "coders/mat.c",
+            "function": "DestroyImageInfo"
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "fact_type": "vulnerability_patterns",
+            "label": "Vulnerability patterns inferred from patch",
+            "attributes": {
+              "patterns": [
+                "use_after_free"
+              ],
+              "descriptions": [
+                "补丁前，局部变量在对象被销毁/从链表删除后仍保留旧别名，后续代码可能继续通过该别名访问失效对象；补丁通过删除销毁点和在删除前将别名置空来阻断该机制。"
+              ]
+            }
+          },
+          "provenance": {
+            "tool": "patch-analysis",
+            "artifact": "vulnerability_patterns",
+            "confidence": 0.95
+          },
+          "evidence_slice": {}
+        },
+        {
+          "evidence_id": "pf_002",
+          "type": "patch_fact",
+          "analyzer": "patch",
+          "scope": {
+            "repo": "fix.patch",
+            "file": "coders/mat.c",
+            "function": "DestroyImageInfo"
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "fact_type": "affected_functions",
+            "label": "Functions implicated by removed or fixed code",
+            "attributes": {
+              "functions": [
+                "DestroyImageInfo",
+                "DisableMSCWarning"
+              ]
+            }
+          },
+          "provenance": {
+            "tool": "patch-analysis",
+            "artifact": "affected_functions",
+            "confidence": 0.95
+          },
+          "evidence_slice": {}
+        },
+        {
+          "evidence_id": "pf_003",
+          "type": "patch_fact",
+          "analyzer": "patch",
+          "scope": {
+            "repo": "fix.patch",
+            "file": "coders/mat.c",
+            "function": "DestroyImageInfo"
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "fact_type": "detection_strategy",
+            "label": "Existing patch analysis detection strategy",
+            "attributes": {
+              "primary_pattern": "use_after_free",
+              "check_types": [
+                "local_alias_invalidation_after_free_delete",
+                "use_after_free_on_container_list_element_removal",
+                "premature_cleanup_on_error_exit_path"
+              ],
+              "entry_points": [
+                "`coders/mat.c` 中包含 `DeleteImageFromList(&...)` 的循环/清理逻辑",
+                "`coders/mat.c` 中对 `DestroyImageInfo(...)` 的错误路径或收尾路径调用"
+              ],
+              "data_flow_tracking": false,
+              "cross_file_analysis": false,
+              "suggestions": [
+                "首稿优先命中补丁里的最小锚点：`DeleteImageFromList(&tmp)` 前存在同作用域别名比较/更新需求，旧逻辑缺少对 `image2` 这类别名的失效处理。",
+                "首稿不要把新增 guard `if (tmp == image2)` 写成硬过滤；应先找“对象被 `DeleteImageFromList` 删除，但同函数内其他指针变量继续保留该对象”的模式，guard 只作为修复形态参考。",
+                "可用局部 AST/CFG 即可：识别删除/销毁调用、同一基本块或相邻路径中的别名变量、以及删除后未置空/未重绑的继续使用。",
+                "对 `DestroyImageInfo(clone_info)` 相关规则，首稿应关注‘清理路径中过早销毁后继续执行’这一形态；若补丁未给出明确后续 sink，不要把所有 `DestroyImageInfo` 都报出，可作为二次收敛条件结合后续访问/传递。",
+                "辅助收敛条件可以是：变量位于同一函数、删除前后控制流连续、别名来自直接赋值或比较；这些适合二次过滤，不应作为首要命中前提。",
+                "不要把旧指针非空当作仍然有效的证明；此补丁明确说明即使 `image2` 非空，只要其目标对象刚被 `DeleteImageFromList` 删除，就必须失效化。"
+              ]
+            }
+          },
+          "provenance": {
+            "tool": "patch-analysis",
+            "artifact": "detection_strategy",
+            "confidence": 0.95
+          },
+          "evidence_slice": {}
+        },
+        {
+          "evidence_id": "pf_004",
+          "type": "patch_fact",
+          "analyzer": "patch",
+          "scope": {
+            "repo": "fix.patch",
+            "file": "coders/mat.c",
+            "function": "DestroyImageInfo"
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "fact_type": "added_guards",
+            "label": "Patch introduces or strengthens guards",
+            "attributes": {
+              "guards": [
+                "if (tmp == image2)"
+              ]
+            }
+          },
+          "provenance": {
+            "tool": "patch-analysis",
+            "artifact": "added_guards",
+            "confidence": 0.95
+          },
+          "evidence_slice": {}
+        },
+        {
+          "evidence_id": "pf_005",
+          "type": "patch_fact",
+          "analyzer": "patch",
+          "scope": {
+            "repo": "fix.patch",
+            "file": "coders/mat.c",
+            "function": "DestroyImageInfo"
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "fact_type": "fix_patterns",
+            "label": "Patch introduces reusable fix patterns",
+            "attributes": {
+              "patterns": [
+                "在对象删除前检查别名关系并执行 `if (tmp == image2) image2=(Image *) NULL;`，使后续无法继续通过 `image2` 使用已删除对象",
+                "删除危险销毁调用 `clone_info=DestroyImageInfo(clone_info);`，避免该对象在当前路径过早进入失效态",
+                "对将被删除/释放的对象，优先阻断旧句柄继续存活，而不是仅依赖非空性判断"
+              ]
+            }
+          },
+          "provenance": {
+            "tool": "patch-analysis",
+            "artifact": "fix_patterns",
+            "confidence": 0.95
+          },
+          "evidence_slice": {}
+        }
+      ],
+      "missing_evidence": [
+        "allocation_lifecycle",
+        "state_transition"
+      ],
+      "collected_analyzers": [
+        "patch"
+      ]
+    }
+  }
+}

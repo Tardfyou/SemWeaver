@@ -1,0 +1,16 @@
+--- /SoK-main/Vul4C-Benchmark/libtiff/CVE-2017-7595/CVE-2017-7595_CWE-369_tif_jpeg.c_OLD.c	2025-10-13 01:37:24.934410889 +0000
++++ /SoK-main/Vul4C-Benchmark/libtiff/CVE-2017-7595/CVE-2017-7595_CWE-369_tif_jpeg.c_NEW.c	2025-10-13 01:37:24.934410889 +0000
+@@ -1626,6 +1626,13 @@
+ 	case PHOTOMETRIC_YCBCR:
+ 		sp->h_sampling = td->td_ycbcrsubsampling[0];
+ 		sp->v_sampling = td->td_ycbcrsubsampling[1];
++                if( sp->h_sampling == 0 || sp->v_sampling == 0 )
++                {
++                    TIFFErrorExt(tif->tif_clientdata, module,
++                            "Invalig horizontal/vertical sampling value");
++                    return (0);
++                }
++
+ 		/*
+ 		 * A ReferenceBlackWhite field *must* be present since the
+ 		 * default value is inappropriate for YCbCr.  Fill in the

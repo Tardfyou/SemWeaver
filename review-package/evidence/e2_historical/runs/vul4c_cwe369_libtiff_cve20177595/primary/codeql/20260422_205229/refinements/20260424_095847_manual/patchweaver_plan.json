@@ -1,0 +1,868 @@
+{
+  "files_changed": [
+    "libtiff/tif_jpeg.c"
+  ],
+  "file_details": [
+    {
+      "path": "libtiff/tif_jpeg.c",
+      "additions": 7,
+      "deletions": 0,
+      "hunks": 1
+    }
+  ],
+  "vulnerability_patterns": [
+    {
+      "type": "divide_by_zero",
+      "description": "Before the patch, zero values copied from `td->td_ycbcrsubsampling[0/1]` into `sp->h_sampling` or `sp->v_sampling` could continue through the `PHOTOMETRIC_YCBCR` path and be consumed by later arithmetic that assumes positive sampling factors. The patch blocks this by rejecting zero immediately after assignment and before any further processing.",
+      "trigger_conditions": [
+        "`td->td_ycbcrsubsampling[0]` or `td->td_ycbcrsubsampling[1]` is 0",
+        "`sp->h_sampling` and `sp->v_sampling` are assigned directly from those array elements",
+        "execution remains on the `PHOTOMETRIC_YCBCR` path without returning before later arithmetic use of the sampling fields"
+      ],
+      "fix_patterns": [
+        "Add a guard immediately after assignment: `if( sp->h_sampling == 0 || sp->v_sampling == 0 )`",
+        "On zero sampling, emit an error via `TIFFErrorExt(...)` and abort the path with `return (0)`",
+        "Prevent any subsequent computation from consuming zero-valued sampling fields"
+      ],
+      "affected_functions": [
+        "TIFFErrorExt"
+      ],
+      "cross_file": false,
+      "source": "llm",
+      "confidence": 0.96,
+      "evidence_lines": [
+        "`sp->h_sampling = td->td_ycbcrsubsampling[0];`",
+        "`sp->v_sampling = td->td_ycbcrsubsampling[1];`",
+        "`if( sp->h_sampling == 0 || sp->v_sampling == 0 )`",
+        "`TIFFErrorExt(tif->tif_clientdata, module, \"Invalig horizontal/vertical sampling value\");`",
+        "`return (0);`"
+      ]
+    }
+  ],
+  "cross_file_dependencies": [],
+  "detection_strategy": {
+    "primary_pattern": "divide_by_zero",
+    "check_types": [
+      "guard_inference",
+      "local_arithmetic_precondition_check",
+      "patch_local_source_to_sink_field_usage",
+      "path_sensitive_zero_value_barrier_detection"
+    ],
+    "entry_points": [
+      "Assignments to `sp->h_sampling` and `sp->v_sampling` from `td->td_ycbcrsubsampling[]` in the `PHOTOMETRIC_YCBCR` branch of `libtiff/tif_jpeg.c`",
+      "Subsequent uses of `sp->h_sampling` or `sp->v_sampling` in arithmetic operations, especially divisor positions, modulo, scale/stride/block calculations, or loop-step/bounds computations in the same function/file"
+    ],
+    "data_flow_tracking": false,
+    "cross_file_analysis": false,
+    "suggestions": [
+      "首稿先命中 patch-local 锚点：`sp->h_sampling`/`sp->v_sampling` 从 `td->td_ycbcrsubsampling[]` 取值后，在同一路径上被后续算术消费且缺少零值屏障。",
+      "不要把新增的 `if( sp->h_sampling == 0 || sp->v_sampling == 0 )` 一开始写成硬过滤；首稿应先找未受该类 guard 保护的相同消费模式。",
+      "优先把后续对 `sp->h_sampling` 或 `sp->v_sampling` 的除法、取模、按采样因子缩放、分块尺寸/循环边界计算作为 sink；如果没有显式除法，也应纳入依赖非零因子的算术表达式。",
+      "该补丁的最小语义单位是“数组元素赋值到采样字段后立即做零值 barrier”；检测器可用局部 AST/CFG 完成，无需跨文件分析。",
+      "辅助收敛条件可以包括 `PHOTOMETRIC_YCBCR` 分支、字段名包含 `sampling`、来源为 `td_ycbcrsubsampling`；这些适合作为二次过滤，不应替代对危险消费点的首要匹配。",
+      "不要把‘字段非空/已赋值’误当作安全条件；这里需要的是‘字段数值非零’这一算术前置条件。"
+    ]
+  },
+  "checker_name_suggestion": "YCbCrSamplingZeroDivisorChecker",
+  "affected_functions": [
+    "TIFFErrorExt"
+  ],
+  "key_functions": [
+    "TIFFErrorExt"
+  ],
+  "patch_semantics": {
+    "added_guards": [
+      "if( sp->h_sampling == 0 || sp->v_sampling == 0 )"
+    ],
+    "added_api_calls": [
+      "TIFFErrorExt"
+    ],
+    "removed_api_calls": [],
+    "state_resets": [],
+    "lifecycle_changes": []
+  },
+  "analysis_backend": "llm",
+  "analysis_confidence": 0.96,
+  "analysis_rationale": "The patch adds an early guard in `libtiff/tif_jpeg.c` immediately after assigning `sp->h_sampling` and `sp->v_sampling` from `td->td_ycbcrsubsampling[]` inside the `PHOTOMETRIC_YCBCR` case. The new branch rejects zero sampling values with `TIFFErrorExt(...)` and `return (0);`, which is strong patch-local evidence that later code in the same path consumes these fields as divisors or in computations that require non-zero sampling factors. The fix shape is a classic barrier inserted between field assignment and subsequent use, with no other lifecycle or cleanup changes.",
+  "llm_usage": {
+    "prompt_tokens": 6811,
+    "completion_tokens": 1132,
+    "total_tokens": 7943,
+    "call_count": 1,
+    "available": true,
+    "model": "gpt-5.4"
+  },
+  "patchweaver": {
+    "summary": "Patch suggests divide_by_zero semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=3, metadata refs=0.",
+    "patch_facts": [
+      {
+        "fact_type": "patch_overview",
+        "label": "Patch overview",
+        "attributes": {
+          "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe369_libtiff_cve20177595/patches/fix.patch",
+          "changed_files": [
+            "libtiff/tif_jpeg.c"
+          ],
+          "changed_file_count": 1,
+          "added_line_count": 7,
+          "deleted_line_count": 0
+        }
+      },
+      {
+        "fact_type": "vulnerability_patterns",
+        "label": "Vulnerability patterns inferred from patch",
+        "attributes": {
+          "patterns": [
+            "divide_by_zero"
+          ],
+          "descriptions": [
+            "Before the patch, zero values copied from `td->td_ycbcrsubsampling[0/1]` into `sp->h_sampling` or `sp->v_sampling` could continue through the `PHOTOMETRIC_YCBCR` path and be consumed by later arithmetic that assumes positive sampling factors. The patch blocks this by rejecting zero immediately after assignment and before any further processing."
+          ]
+        }
+      },
+      {
+        "fact_type": "affected_functions",
+        "label": "Functions implicated by removed or fixed code",
+        "attributes": {
+          "functions": [
+            "JPEGSetupEncode",
+            "TIFFErrorExt"
+          ]
+        }
+      },
+      {
+        "fact_type": "detection_strategy",
+        "label": "Existing patch analysis detection strategy",
+        "attributes": {
+          "primary_pattern": "divide_by_zero",
+          "check_types": [
+            "guard_inference",
+            "local_arithmetic_precondition_check",
+            "patch_local_source_to_sink_field_usage",
+            "path_sensitive_zero_value_barrier_detection"
+          ],
+          "entry_points": [
+            "Assignments to `sp->h_sampling` and `sp->v_sampling` from `td->td_ycbcrsubsampling[]` in the `PHOTOMETRIC_YCBCR` branch of `libtiff/tif_jpeg.c`",
+            "Subsequent uses of `sp->h_sampling` or `sp->v_sampling` in arithmetic operations, especially divisor positions, modulo, scale/stride/block calculations, or loop-step/bounds computations in the same function/file"
+          ],
+          "data_flow_tracking": false,
+          "cross_file_analysis": false,
+          "suggestions": [
+            "首稿先命中 patch-local 锚点：`sp->h_sampling`/`sp->v_sampling` 从 `td->td_ycbcrsubsampling[]` 取值后，在同一路径上被后续算术消费且缺少零值屏障。",
+            "不要把新增的 `if( sp->h_sampling == 0 || sp->v_sampling == 0 )` 一开始写成硬过滤；首稿应先找未受该类 guard 保护的相同消费模式。",
+            "优先把后续对 `sp->h_sampling` 或 `sp->v_sampling` 的除法、取模、按采样因子缩放、分块尺寸/循环边界计算作为 sink；如果没有显式除法，也应纳入依赖非零因子的算术表达式。",
+            "该补丁的最小语义单位是“数组元素赋值到采样字段后立即做零值 barrier”；检测器可用局部 AST/CFG 完成，无需跨文件分析。",
+            "辅助收敛条件可以包括 `PHOTOMETRIC_YCBCR` 分支、字段名包含 `sampling`、来源为 `td_ycbcrsubsampling`；这些适合作为二次过滤，不应替代对危险消费点的首要匹配。",
+            "不要把‘字段非空/已赋值’误当作安全条件；这里需要的是‘字段数值非零’这一算术前置条件。"
+          ]
+        }
+      },
+      {
+        "fact_type": "added_guards",
+        "label": "Patch introduces or strengthens guards",
+        "attributes": {
+          "guards": [
+            "if( sp->h_sampling == 0 || sp->v_sampling == 0 )"
+          ]
+        }
+      },
+      {
+        "fact_type": "fix_patterns",
+        "label": "Patch introduces reusable fix patterns",
+        "attributes": {
+          "patterns": [
+            "Add a guard immediately after assignment: `if( sp->h_sampling == 0 || sp->v_sampling == 0 )`",
+            "On zero sampling, emit an error via `TIFFErrorExt(...)` and abort the path with `return (0)`",
+            "Prevent any subsequent computation from consuming zero-valued sampling fields"
+          ]
+        }
+      },
+      {
+        "fact_type": "added_api_calls",
+        "label": "Patch introduces or highlights API usage",
+        "attributes": {
+          "apis": [
+            "TIFFErrorExt"
+          ]
+        }
+      }
+    ],
+    "mechanism_graph": {
+      "summary": "Patch suggests divide_by_zero semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=3, metadata refs=0.",
+      "primary_patterns": [
+        "divide_by_zero"
+      ],
+      "nodes": [
+        {
+          "node_id": "patch",
+          "kind": "patch",
+          "label": "Security patch",
+          "attributes": {
+            "changed_files": [
+              "libtiff/tif_jpeg.c"
+            ]
+          }
+        },
+        {
+          "node_id": "file_0",
+          "kind": "file",
+          "label": "libtiff/tif_jpeg.c",
+          "attributes": {
+            "path": "libtiff/tif_jpeg.c",
+            "additions": 7,
+            "deletions": 0,
+            "hunks": 1
+          }
+        },
+        {
+          "node_id": "pattern_0",
+          "kind": "pattern",
+          "label": "divide_by_zero",
+          "attributes": {
+            "type": "divide_by_zero",
+            "description": "Before the patch, zero values copied from `td->td_ycbcrsubsampling[0/1]` into `sp->h_sampling` or `sp->v_sampling` could continue through the `PHOTOMETRIC_YCBCR` path and be consumed by later arithmetic that assumes positive sampling factors. The patch blocks this by rejecting zero immediately after assignment and before any further processing.",
+            "trigger_conditions": [
+              "`td->td_ycbcrsubsampling[0]` or `td->td_ycbcrsubsampling[1]` is 0",
+              "`sp->h_sampling` and `sp->v_sampling` are assigned directly from those array elements",
+              "execution remains on the `PHOTOMETRIC_YCBCR` path without returning before later arithmetic use of the sampling fields"
+            ],
+            "fix_patterns": [
+              "Add a guard immediately after assignment: `if( sp->h_sampling == 0 || sp->v_sampling == 0 )`",
+              "On zero sampling, emit an error via `TIFFErrorExt(...)` and abort the path with `return (0)`",
+              "Prevent any subsequent computation from consuming zero-valued sampling fields"
+            ],
+            "affected_functions": [
+              "TIFFErrorExt"
+            ],
+            "cross_file": false,
+            "source": "llm",
+            "confidence": 0.96,
+            "evidence_lines": [
+              "`sp->h_sampling = td->td_ycbcrsubsampling[0];`",
+              "`sp->v_sampling = td->td_ycbcrsubsampling[1];`",
+              "`if( sp->h_sampling == 0 || sp->v_sampling == 0 )`",
+              "`TIFFErrorExt(tif->tif_clientdata, module, \"Invalig horizontal/vertical sampling value\");`",
+              "`return (0);`"
+            ]
+          }
+        },
+        {
+          "node_id": "func_1",
+          "kind": "function",
+          "label": "TIFFErrorExt",
+          "attributes": {
+            "function": "TIFFErrorExt"
+          }
+        },
+        {
+          "node_id": "guard_1",
+          "kind": "guard",
+          "label": "`td->td_ycbcrsubsampling[0]` or `td->td_ycbcrsubsampling[1]` is 0",
+          "attributes": {
+            "condition": "`td->td_ycbcrsubsampling[0]` or `td->td_ycbcrsubsampling[1]` is 0"
+          }
+        },
+        {
+          "node_id": "guard_2",
+          "kind": "guard",
+          "label": "`sp->h_sampling` and `sp->v_sampling` are assigned directly from those array elements",
+          "attributes": {
+            "condition": "`sp->h_sampling` and `sp->v_sampling` are assigned directly from those array elements"
+          }
+        },
+        {
+          "node_id": "guard_3",
+          "kind": "guard",
+          "label": "execution remains on the `PHOTOMETRIC_YCBCR` path without returning before later arithmetic use of the sampling fields",
+          "attributes": {
+            "condition": "execution remains on the `PHOTOMETRIC_YCBCR` path without returning before later arithmetic use of the sampling fields"
+          }
+        },
+        {
+          "node_id": "strategy",
+          "kind": "strategy",
+          "label": "divide_by_zero",
+          "attributes": {
+            "primary_pattern": "divide_by_zero",
+            "check_types": [
+              "guard_inference",
+              "local_arithmetic_precondition_check",
+              "patch_local_source_to_sink_field_usage",
+              "path_sensitive_zero_value_barrier_detection"
+            ],
+            "entry_points": [
+              "Assignments to `sp->h_sampling` and `sp->v_sampling` from `td->td_ycbcrsubsampling[]` in the `PHOTOMETRIC_YCBCR` branch of `libtiff/tif_jpeg.c`",
+              "Subsequent uses of `sp->h_sampling` or `sp->v_sampling` in arithmetic operations, especially divisor positions, modulo, scale/stride/block calculations, or loop-step/bounds computations in the same function/file"
+            ],
+            "data_flow_tracking": false,
+            "cross_file_analysis": false,
+            "suggestions": [
+              "首稿先命中 patch-local 锚点：`sp->h_sampling`/`sp->v_sampling` 从 `td->td_ycbcrsubsampling[]` 取值后，在同一路径上被后续算术消费且缺少零值屏障。",
+              "不要把新增的 `if( sp->h_sampling == 0 || sp->v_sampling == 0 )` 一开始写成硬过滤；首稿应先找未受该类 guard 保护的相同消费模式。",
+              "优先把后续对 `sp->h_sampling` 或 `sp->v_sampling` 的除法、取模、按采样因子缩放、分块尺寸/循环边界计算作为 sink；如果没有显式除法，也应纳入依赖非零因子的算术表达式。",
+              "该补丁的最小语义单位是“数组元素赋值到采样字段后立即做零值 barrier”；检测器可用局部 AST/CFG 完成，无需跨文件分析。",
+              "辅助收敛条件可以包括 `PHOTOMETRIC_YCBCR` 分支、字段名包含 `sampling`、来源为 `td_ycbcrsubsampling`；这些适合作为二次过滤，不应替代对危险消费点的首要匹配。",
+              "不要把‘字段非空/已赋值’误当作安全条件；这里需要的是‘字段数值非零’这一算术前置条件。"
+            ]
+          }
+        },
+        {
+          "node_id": "func_2",
+          "kind": "function",
+          "label": "JPEGSetupEncode",
+          "attributes": {
+            "function": "JPEGSetupEncode",
+            "source": "patch_fact"
+          }
+        },
+        {
+          "node_id": "guard_4",
+          "kind": "guard",
+          "label": "if( sp->h_sampling == 0 || sp->v_sampling == 0 )",
+          "attributes": {
+            "condition": "if( sp->h_sampling == 0 || sp->v_sampling == 0 )",
+            "source": "patch_fact"
+          }
+        },
+        {
+          "node_id": "fix_1",
+          "kind": "fix",
+          "label": "Add a guard immediately after assignment: `if( sp->h_sampling == 0 || sp->v_sampling == 0 )`",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "Add a guard immediately after assignment: `if( sp->h_sampling == 0 || sp->v_sampling == 0 )`"
+          }
+        },
+        {
+          "node_id": "fix_2",
+          "kind": "fix",
+          "label": "On zero sampling, emit an error via `TIFFErrorExt(...)` and abort the path with `return (0)`",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "On zero sampling, emit an error via `TIFFErrorExt(...)` and abort the path with `return (0)`"
+          }
+        },
+        {
+          "node_id": "fix_3",
+          "kind": "fix",
+          "label": "Prevent any subsequent computation from consuming zero-valued sampling fields",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "Prevent any subsequent computation from consuming zero-valued sampling fields"
+          }
+        },
+        {
+          "node_id": "fix_4",
+          "kind": "fix",
+          "label": "TIFFErrorExt",
+          "attributes": {
+            "kind": "added_api_calls",
+            "value": "TIFFErrorExt"
+          }
+        }
+      ],
+      "edges": [
+        {
+          "source": "patch",
+          "target": "file_0",
+          "relation": "touches",
+          "confidence": 0.95
+        },
+        {
+          "source": "patch",
+          "target": "pattern_0",
+          "relation": "indicates",
+          "confidence": 0.9
+        },
+        {
+          "source": "pattern_0",
+          "target": "func_1",
+          "relation": "affects",
+          "confidence": 0.75
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_1",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_2",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_3",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "patch",
+          "target": "strategy",
+          "relation": "guides",
+          "confidence": 0.85
+        },
+        {
+          "source": "patch",
+          "target": "func_2",
+          "relation": "focuses_on",
+          "confidence": 0.82
+        },
+        {
+          "source": "patch",
+          "target": "guard_4",
+          "relation": "adds_guard",
+          "confidence": 0.84
+        },
+        {
+          "source": "patch",
+          "target": "fix_1",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_2",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_3",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_4",
+          "relation": "introduces",
+          "confidence": 0.8
+        }
+      ]
+    },
+    "evidence_plan": {
+      "primary_pattern": "divide_by_zero",
+      "hypotheses": [
+        "Patch likely encodes a reusable vulnerability mechanism but available metadata is weak; keep evidence collection broad."
+      ],
+      "requirements": [
+        {
+          "evidence_type": "patch_fact",
+          "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+          "priority": 100,
+          "preferred_analyzers": [],
+          "confidence": 1.0,
+          "mechanism_refs": [
+            "patch"
+          ]
+        }
+      ],
+      "recommended_analyzers": [
+        "csa",
+        "codeql"
+      ],
+      "planner_notes": [
+        "Added guards detected in patch diff; path-sensitive evidence should stay near top priority."
+      ],
+      "coverage_gaps": [],
+      "uncertainty_budget": "low",
+      "escalation_triggers": []
+    },
+    "refinement_targets": {
+      "codeql": {
+        "checker_name": "LibtiffYCbCrSamplingDivideByZero",
+        "artifact_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe369_libtiff_cve20177595/primary/codeql/20260422_205229/codeql/LibtiffYCbCrSamplingDivideByZero.ql",
+        "artifact_kind": "query",
+        "validation_summary": "命中验证目标并通过功能验证",
+        "refinement_summary": "- validation_outcome @ semantic_validation: semantic validation passed with 5 diagnostics [coverage=full]"
+      }
+    },
+    "validation_feedback_history": [
+      {
+        "analyzer": "codeql",
+        "phase": "initial_validation",
+        "summary": "- validation_outcome @ semantic_validation: semantic validation passed with 5 diagnostics [coverage=full]"
+      }
+    ]
+  },
+  "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe369_libtiff_cve20177595/patches/fix.patch",
+  "summary": "Patch suggests divide_by_zero semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=3, metadata refs=0.",
+  "patch_facts": [
+    {
+      "fact_type": "patch_overview",
+      "label": "Patch overview",
+      "attributes": {
+        "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe369_libtiff_cve20177595/patches/fix.patch",
+        "changed_files": [
+          "libtiff/tif_jpeg.c"
+        ],
+        "changed_file_count": 1,
+        "added_line_count": 7,
+        "deleted_line_count": 0
+      }
+    },
+    {
+      "fact_type": "vulnerability_patterns",
+      "label": "Vulnerability patterns inferred from patch",
+      "attributes": {
+        "patterns": [
+          "divide_by_zero"
+        ],
+        "descriptions": [
+          "Before the patch, zero values copied from `td->td_ycbcrsubsampling[0/1]` into `sp->h_sampling` or `sp->v_sampling` could continue through the `PHOTOMETRIC_YCBCR` path and be consumed by later arithmetic that assumes positive sampling factors. The patch blocks this by rejecting zero immediately after assignment and before any further processing."
+        ]
+      }
+    },
+    {
+      "fact_type": "affected_functions",
+      "label": "Functions implicated by removed or fixed code",
+      "attributes": {
+        "functions": [
+          "JPEGSetupEncode",
+          "TIFFErrorExt"
+        ]
+      }
+    },
+    {
+      "fact_type": "detection_strategy",
+      "label": "Existing patch analysis detection strategy",
+      "attributes": {
+        "primary_pattern": "divide_by_zero",
+        "check_types": [
+          "guard_inference",
+          "local_arithmetic_precondition_check",
+          "patch_local_source_to_sink_field_usage",
+          "path_sensitive_zero_value_barrier_detection"
+        ],
+        "entry_points": [
+          "Assignments to `sp->h_sampling` and `sp->v_sampling` from `td->td_ycbcrsubsampling[]` in the `PHOTOMETRIC_YCBCR` branch of `libtiff/tif_jpeg.c`",
+          "Subsequent uses of `sp->h_sampling` or `sp->v_sampling` in arithmetic operations, especially divisor positions, modulo, scale/stride/block calculations, or loop-step/bounds computations in the same function/file"
+        ],
+        "data_flow_tracking": false,
+        "cross_file_analysis": false,
+        "suggestions": [
+          "首稿先命中 patch-local 锚点：`sp->h_sampling`/`sp->v_sampling` 从 `td->td_ycbcrsubsampling[]` 取值后，在同一路径上被后续算术消费且缺少零值屏障。",
+          "不要把新增的 `if( sp->h_sampling == 0 || sp->v_sampling == 0 )` 一开始写成硬过滤；首稿应先找未受该类 guard 保护的相同消费模式。",
+          "优先把后续对 `sp->h_sampling` 或 `sp->v_sampling` 的除法、取模、按采样因子缩放、分块尺寸/循环边界计算作为 sink；如果没有显式除法，也应纳入依赖非零因子的算术表达式。",
+          "该补丁的最小语义单位是“数组元素赋值到采样字段后立即做零值 barrier”；检测器可用局部 AST/CFG 完成，无需跨文件分析。",
+          "辅助收敛条件可以包括 `PHOTOMETRIC_YCBCR` 分支、字段名包含 `sampling`、来源为 `td_ycbcrsubsampling`；这些适合作为二次过滤，不应替代对危险消费点的首要匹配。",
+          "不要把‘字段非空/已赋值’误当作安全条件；这里需要的是‘字段数值非零’这一算术前置条件。"
+        ]
+      }
+    },
+    {
+      "fact_type": "added_guards",
+      "label": "Patch introduces or strengthens guards",
+      "attributes": {
+        "guards": [
+          "if( sp->h_sampling == 0 || sp->v_sampling == 0 )"
+        ]
+      }
+    },
+    {
+      "fact_type": "fix_patterns",
+      "label": "Patch introduces reusable fix patterns",
+      "attributes": {
+        "patterns": [
+          "Add a guard immediately after assignment: `if( sp->h_sampling == 0 || sp->v_sampling == 0 )`",
+          "On zero sampling, emit an error via `TIFFErrorExt(...)` and abort the path with `return (0)`",
+          "Prevent any subsequent computation from consuming zero-valued sampling fields"
+        ]
+      }
+    },
+    {
+      "fact_type": "added_api_calls",
+      "label": "Patch introduces or highlights API usage",
+      "attributes": {
+        "apis": [
+          "TIFFErrorExt"
+        ]
+      }
+    }
+  ],
+  "mechanism_graph": {
+    "summary": "Patch suggests divide_by_zero semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=3, metadata refs=0.",
+    "primary_patterns": [
+      "divide_by_zero"
+    ],
+    "nodes": [
+      {
+        "node_id": "patch",
+        "kind": "patch",
+        "label": "Security patch",
+        "attributes": {
+          "changed_files": [
+            "libtiff/tif_jpeg.c"
+          ]
+        }
+      },
+      {
+        "node_id": "file_0",
+        "kind": "file",
+        "label": "libtiff/tif_jpeg.c",
+        "attributes": {
+          "path": "libtiff/tif_jpeg.c",
+          "additions": 7,
+          "deletions": 0,
+          "hunks": 1
+        }
+      },
+      {
+        "node_id": "pattern_0",
+        "kind": "pattern",
+        "label": "divide_by_zero",
+        "attributes": {
+          "type": "divide_by_zero",
+          "description": "Before the patch, zero values copied from `td->td_ycbcrsubsampling[0/1]` into `sp->h_sampling` or `sp->v_sampling` could continue through the `PHOTOMETRIC_YCBCR` path and be consumed by later arithmetic that assumes positive sampling factors. The patch blocks this by rejecting zero immediately after assignment and before any further processing.",
+          "trigger_conditions": [
+            "`td->td_ycbcrsubsampling[0]` or `td->td_ycbcrsubsampling[1]` is 0",
+            "`sp->h_sampling` and `sp->v_sampling` are assigned directly from those array elements",
+            "execution remains on the `PHOTOMETRIC_YCBCR` path without returning before later arithmetic use of the sampling fields"
+          ],
+          "fix_patterns": [
+            "Add a guard immediately after assignment: `if( sp->h_sampling == 0 || sp->v_sampling == 0 )`",
+            "On zero sampling, emit an error via `TIFFErrorExt(...)` and abort the path with `return (0)`",
+            "Prevent any subsequent computation from consuming zero-valued sampling fields"
+          ],
+          "affected_functions": [
+            "TIFFErrorExt"
+          ],
+          "cross_file": false,
+          "source": "llm",
+          "confidence": 0.96,
+          "evidence_lines": [
+            "`sp->h_sampling = td->td_ycbcrsubsampling[0];`",
+            "`sp->v_sampling = td->td_ycbcrsubsampling[1];`",
+            "`if( sp->h_sampling == 0 || sp->v_sampling == 0 )`",
+            "`TIFFErrorExt(tif->tif_clientdata, module, \"Invalig horizontal/vertical sampling value\");`",
+            "`return (0);`"
+          ]
+        }
+      },
+      {
+        "node_id": "func_1",
+        "kind": "function",
+        "label": "TIFFErrorExt",
+        "attributes": {
+          "function": "TIFFErrorExt"
+        }
+      },
+      {
+        "node_id": "guard_1",
+        "kind": "guard",
+        "label": "`td->td_ycbcrsubsampling[0]` or `td->td_ycbcrsubsampling[1]` is 0",
+        "attributes": {
+          "condition": "`td->td_ycbcrsubsampling[0]` or `td->td_ycbcrsubsampling[1]` is 0"
+        }
+      },
+      {
+        "node_id": "guard_2",
+        "kind": "guard",
+        "label": "`sp->h_sampling` and `sp->v_sampling` are assigned directly from those array elements",
+        "attributes": {
+          "condition": "`sp->h_sampling` and `sp->v_sampling` are assigned directly from those array elements"
+        }
+      },
+      {
+        "node_id": "guard_3",
+        "kind": "guard",
+        "label": "execution remains on the `PHOTOMETRIC_YCBCR` path without returning before later arithmetic use of the sampling fields",
+        "attributes": {
+          "condition": "execution remains on the `PHOTOMETRIC_YCBCR` path without returning before later arithmetic use of the sampling fields"
+        }
+      },
+      {
+        "node_id": "strategy",
+        "kind": "strategy",
+        "label": "divide_by_zero",
+        "attributes": {
+          "primary_pattern": "divide_by_zero",
+          "check_types": [
+            "guard_inference",
+            "local_arithmetic_precondition_check",
+            "patch_local_source_to_sink_field_usage",
+            "path_sensitive_zero_value_barrier_detection"
+          ],
+          "entry_points": [
+            "Assignments to `sp->h_sampling` and `sp->v_sampling` from `td->td_ycbcrsubsampling[]` in the `PHOTOMETRIC_YCBCR` branch of `libtiff/tif_jpeg.c`",
+            "Subsequent uses of `sp->h_sampling` or `sp->v_sampling` in arithmetic operations, especially divisor positions, modulo, scale/stride/block calculations, or loop-step/bounds computations in the same function/file"
+          ],
+          "data_flow_tracking": false,
+          "cross_file_analysis": false,
+          "suggestions": [
+            "首稿先命中 patch-local 锚点：`sp->h_sampling`/`sp->v_sampling` 从 `td->td_ycbcrsubsampling[]` 取值后，在同一路径上被后续算术消费且缺少零值屏障。",
+            "不要把新增的 `if( sp->h_sampling == 0 || sp->v_sampling == 0 )` 一开始写成硬过滤；首稿应先找未受该类 guard 保护的相同消费模式。",
+            "优先把后续对 `sp->h_sampling` 或 `sp->v_sampling` 的除法、取模、按采样因子缩放、分块尺寸/循环边界计算作为 sink；如果没有显式除法，也应纳入依赖非零因子的算术表达式。",
+            "该补丁的最小语义单位是“数组元素赋值到采样字段后立即做零值 barrier”；检测器可用局部 AST/CFG 完成，无需跨文件分析。",
+            "辅助收敛条件可以包括 `PHOTOMETRIC_YCBCR` 分支、字段名包含 `sampling`、来源为 `td_ycbcrsubsampling`；这些适合作为二次过滤，不应替代对危险消费点的首要匹配。",
+            "不要把‘字段非空/已赋值’误当作安全条件；这里需要的是‘字段数值非零’这一算术前置条件。"
+          ]
+        }
+      },
+      {
+        "node_id": "func_2",
+        "kind": "function",
+        "label": "JPEGSetupEncode",
+        "attributes": {
+          "function": "JPEGSetupEncode",
+          "source": "patch_fact"
+        }
+      },
+      {
+        "node_id": "guard_4",
+        "kind": "guard",
+        "label": "if( sp->h_sampling == 0 || sp->v_sampling == 0 )",
+        "attributes": {
+          "condition": "if( sp->h_sampling == 0 || sp->v_sampling == 0 )",
+          "source": "patch_fact"
+        }
+      },
+      {
+        "node_id": "fix_1",
+        "kind": "fix",
+        "label": "Add a guard immediately after assignment: `if( sp->h_sampling == 0 || sp->v_sampling == 0 )`",
+        "attributes": {
+          "kind": "fix_patterns",
+          "value": "Add a guard immediately after assignment: `if( sp->h_sampling == 0 || sp->v_sampling == 0 )`"
+        }
+      },
+      {
+        "node_id": "fix_2",
+        "kind": "fix",
+        "label": "On zero sampling, emit an error via `TIFFErrorExt(...)` and abort the path with `return (0)`",
+        "attributes": {
+          "kind": "fix_patterns",
+          "value": "On zero sampling, emit an error via `TIFFErrorExt(...)` and abort the path with `return (0)`"
+        }
+      },
+      {
+        "node_id": "fix_3",
+        "kind": "fix",
+        "label": "Prevent any subsequent computation from consuming zero-valued sampling fields",
+        "attributes": {
+          "kind": "fix_patterns",
+          "value": "Prevent any subsequent computation from consuming zero-valued sampling fields"
+        }
+      },
+      {
+        "node_id": "fix_4",
+        "kind": "fix",
+        "label": "TIFFErrorExt",
+        "attributes": {
+          "kind": "added_api_calls",
+          "value": "TIFFErrorExt"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "patch",
+        "target": "file_0",
+        "relation": "touches",
+        "confidence": 0.95
+      },
+      {
+        "source": "patch",
+        "target": "pattern_0",
+        "relation": "indicates",
+        "confidence": 0.9
+      },
+      {
+        "source": "pattern_0",
+        "target": "func_1",
+        "relation": "affects",
+        "confidence": 0.75
+      },
+      {
+        "source": "pattern_0",
+        "target": "guard_1",
+        "relation": "requires",
+        "confidence": 0.7
+      },
+      {
+        "source": "pattern_0",
+        "target": "guard_2",
+        "relation": "requires",
+        "confidence": 0.7
+      },
+      {
+        "source": "pattern_0",
+        "target": "guard_3",
+        "relation": "requires",
+        "confidence": 0.7
+      },
+      {
+        "source": "patch",
+        "target": "strategy",
+        "relation": "guides",
+        "confidence": 0.85
+      },
+      {
+        "source": "patch",
+        "target": "func_2",
+        "relation": "focuses_on",
+        "confidence": 0.82
+      },
+      {
+        "source": "patch",
+        "target": "guard_4",
+        "relation": "adds_guard",
+        "confidence": 0.84
+      },
+      {
+        "source": "patch",
+        "target": "fix_1",
+        "relation": "introduces",
+        "confidence": 0.8
+      },
+      {
+        "source": "patch",
+        "target": "fix_2",
+        "relation": "introduces",
+        "confidence": 0.8
+      },
+      {
+        "source": "patch",
+        "target": "fix_3",
+        "relation": "introduces",
+        "confidence": 0.8
+      },
+      {
+        "source": "patch",
+        "target": "fix_4",
+        "relation": "introduces",
+        "confidence": 0.8
+      }
+    ]
+  },
+  "evidence_plan": {
+    "primary_pattern": "divide_by_zero",
+    "hypotheses": [
+      "Patch likely encodes a reusable vulnerability mechanism but available metadata is weak; keep evidence collection broad."
+    ],
+    "requirements": [
+      {
+        "evidence_type": "patch_fact",
+        "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+        "priority": 100,
+        "preferred_analyzers": [],
+        "confidence": 1.0,
+        "mechanism_refs": [
+          "patch"
+        ]
+      }
+    ],
+    "recommended_analyzers": [
+      "csa",
+      "codeql"
+    ],
+    "planner_notes": [
+      "Added guards detected in patch diff; path-sensitive evidence should stay near top priority."
+    ],
+    "coverage_gaps": [],
+    "uncertainty_budget": "low",
+    "escalation_triggers": []
+  }
+}

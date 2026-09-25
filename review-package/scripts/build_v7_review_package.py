@@ -29,8 +29,8 @@ LINUX = LLM_NATIVE / "SemWeaver" / "artifacts" / "external" / "linux"
 
 TEXT_SUFFIXES = {
     ".bib", ".c", ".cpp", ".csv", ".h", ".json", ".jsonl",
-    ".log", ".md", ".patch", ".py", ".sh", ".sty", ".tex",
-    ".txt", ".yaml", ".yml", ".toml", ".cfg", ".ini",
+    ".log", ".md", ".patch", ".py", ".ql", ".sh", ".sty", ".tex",
+    ".txt", ".text", ".diff", ".yaml", ".yml", ".toml", ".cfg", ".ini",
 }
 SKIP_PARTS = {
     ".git", ".venv", ".venv-dev", "__pycache__", ".pytest_cache",
@@ -255,6 +255,10 @@ def main() -> None:
         "expansion_materialized_v1", "expansion_validation_v2",
     ):
         package.copy_tree(ARTIFACTS / name, Path("evidence") / name)
+    e2 = LLM_NATIVE / "experiment_source" / "e2"
+    for component in ("runs", "tables", "manifests", "datasets/curated"):
+        package.copy_tree(e2 / component, Path("evidence/e2_historical") / component)
+    package.copy(PROJECT / "E2_HISTORICAL_README.md", "evidence/e2_historical/README.md")
     package.copy_tree(ARTIFACTS / "repeats_v7" / "case19_patch_local_probe", "evidence/repeats_v7/case19_patch_local_probe")
     package.copy(PROJECT / "ARTIFACT_RELEASE_README.md", "README.md")
 

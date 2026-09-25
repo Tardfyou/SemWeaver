@@ -1,0 +1,710 @@
+{
+  "records": [
+    {
+      "evidence_id": "pf_000",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "lib/zip_dirent.c",
+        "function": "_zip_buffer_free"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "patch_overview",
+        "label": "Patch overview",
+        "attributes": {
+          "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe415_libzip_cve201712858/patches/fix.patch",
+          "changed_files": [
+            "lib/zip_dirent.c"
+          ],
+          "changed_file_count": 1,
+          "added_line_count": 0,
+          "deleted_line_count": 3
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "patch_overview",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_001",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "lib/zip_dirent.c",
+        "function": "_zip_buffer_free"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "vulnerability_patterns",
+        "label": "Vulnerability patterns inferred from patch",
+        "attributes": {
+          "patterns": [
+            "double_free"
+          ],
+          "descriptions": [
+            "错误路径在 `_zip_dirent_process_winzip_aes` 失败后额外释放 `buffer`，而该对象在其他路径仍会被释放，导致同一对象被重复释放；修复方式是删除局部错误路径中的释放，保留单一释放者/统一清理路径。"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "vulnerability_patterns",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_002",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "lib/zip_dirent.c",
+        "function": "_zip_buffer_free"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "affected_functions",
+        "label": "Functions implicated by removed or fixed code",
+        "attributes": {
+          "functions": [
+            "_zip_buffer_free",
+            "_zip_dirent_read"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "affected_functions",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_003",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "lib/zip_dirent.c",
+        "function": "_zip_buffer_free"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "detection_strategy",
+        "label": "Existing patch analysis detection strategy",
+        "attributes": {
+          "primary_pattern": "double_free",
+          "check_types": [
+            "intra_procedural_lifecycle_analysis",
+            "error_path_sink_matching",
+            "ownership_cleanup_path_consistency"
+          ],
+          "entry_points": [
+            "`lib/zip_dirent.c` 中 `_zip_dirent_process_winzip_aes(zde, error)` 的失败分支",
+            "错误分支内对 `buffer` 的 `_zip_buffer_free(buffer)` 调用",
+            "同函数内其他退出路径或统一清理路径对同一 `buffer` 的释放"
+          ],
+          "data_flow_tracking": false,
+          "cross_file_analysis": false,
+          "suggestions": [
+            "首稿先命中最小 patch-local 锚点：`_zip_dirent_process_winzip_aes(...)` 失败分支中的 `_zip_buffer_free(buffer)`。",
+            "首稿不要把 `!from_buffer` 写成硬过滤；它只是该历史漏洞出现时的附带条件，不是重复释放机制的本体。",
+            "优先检测“错误路径中的局部 free 之后函数仍走向其他清理/释放责任路径”这一局部 CFG 模式；不需要复杂跨文件数据流。",
+            "若生成器支持，增加二次收敛：确认同一函数中该对象在其他 `return`/cleanup 路径还有 `_zip_buffer_free(buffer)` 或等价释放。",
+            "不要把指针非空或 `from_buffer` 条件成立当作对象仍可安全释放的证明；关键是释放权是否重复。",
+            "此补丁没有新增 guard/barrier，修复形状是删除危险释放，因此检测器首稿应围绕被删除的 free sink，而不是寻找缺失检查。"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "detection_strategy",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_004",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "lib/zip_dirent.c",
+        "function": "_zip_buffer_free"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "removed_risky_operations",
+        "label": "Patch removes risky operations",
+        "attributes": {
+          "operations": [
+            "_zip_buffer_free(buffer);"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "removed_risky_operations",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_005",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "lib/zip_dirent.c",
+        "function": "_zip_buffer_free"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "fix_patterns",
+        "label": "Patch introduces reusable fix patterns",
+        "attributes": {
+          "patterns": [
+            "删除错误路径中的 `_zip_buffer_free(buffer)` 调用",
+            "将对象释放责任集中到单一清理路径，而不是在中间错误分支提前释放",
+            "遇到子过程失败时直接返回，让既有所有权/清理机制处理 `buffer`"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "fix_patterns",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "csa_validation_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "lib/zip_dirent.c",
+        "function": "_zip_dirent_read"
+      },
+      "location": {
+        "line": 365,
+        "column": 13
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at lib/zip_dirent.c:365",
+        "diagnostic_message": "Patch-scoped match: _zip_buffer_free(buffer) appears under if (!from_buffer) inside _zip_dirent_read; this branch-level cleanup is the risky pattern in the vulnerable version [custom.WinzipAESBufferOwnershipChecker]",
+        "diagnostic_checker": "WinzipAESBufferOwnershipChecker",
+        "state_before": [
+          "input(zde)",
+          "input(src)",
+          "input(buffer)",
+          "buffer(zde->offset)",
+          "buffer(zde->disk_number)",
+          "sinks(_zip_buffer_get_64, _zip_buffer_get_32)"
+        ],
+        "state_after": [
+          "diagnostic(Patch-scoped match: _zip_buffer_free(buffer) appears under if (!from_buffer) inside _zip_dirent_read; this branch-level cleanup is the risky pattern in the vulnerable version [custom.WinzipAESBufferOwnershipChecker])"
+        ],
+        "functions": [
+          "_zip_dirent_read"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "zde",
+          "src",
+          "buffer",
+          "local",
+          "error"
+        ],
+        "buffer_fields": [
+          "zde->offset",
+          "zde->disk_number",
+          "zde->extra_fields"
+        ],
+        "call_targets": [
+          "_zip_buffer_get_64",
+          "_zip_buffer_get_32",
+          "zip_error_set",
+          "_zip_buffer_free",
+          "_zip_ef_remove_internal"
+        ],
+        "call_edges": [],
+        "state_statements": [],
+        "source_file": "lib/zip_dirent.c",
+        "source_excerpt": "546: \t    if (zde->offset == ZIP_UINT32_MAX)\n547: \t\tzde->offset = _zip_buffer_get_64(ef_buffer);\n548: \t    if (zde->disk_number == ZIP_UINT16_MAX)\n549: \t\tzde->disk_number = _zip_buffer_get_32(buffer);\n550: \t}\n551: \n552:         if (!_zip_buffer_eof(ef_buffer)) {\n553:             zip_error_set(error, ZIP_ER_INCONS, 0);\n554:             _zip_buffer_free(ef_buffer);\n555:             if (!from_buffer) {\n556:                 _zip_buffer_free(buffer);\n557:             }\n558:             return -1;\n559:         }\n560:         _zip_buffer_free(ef_buffer);\n561:     }\n562: \n563:     if (!_zip_buffer_ok(buffer)) {\n564:         zip_error_set(error, ZIP_ER_INTERNAL, 0);\n565:         if (!from_buffer) {\n566:             _zip_buffer_free(buffer);\n567:         }\n568:         return -1;\n569:     }\n570:     if (!from_buffer) {\n571:         _zip_buffer_free(buffer);\n572:     }\n573: \n574:     /* zip_source_seek / zip_source_tell don't support values > ZIP_INT64_MAX */\n575:     if (zde->offset > ZIP_INT64_MAX) {\n576: \tzip_error_set(error, ZIP_ER_SEEK, EFBIG);\n577: \treturn -1;\n578:     }\n579: \n580:     if (!_zip_dirent_process_winzip_aes(zde, error)) {\n581: \tif (!from_buffer) {\n582: \t    _zip_buffer_free(buffer);\n583: \t}\n584: \treturn -1;\n585:     }\n586: \n587:     zde->extra_fields = _zip_ef_remove_internal(zde->extra_fields);\n588: \n589:     return (zip_int64_t)(size + variable_size);\n590: }",
+        "coverage_status": "full",
+        "contract_type": "",
+        "guard_exprs": [
+          "zde->offset == ZIP_UINT32_MAX",
+          "zde->disk_number == ZIP_UINT16_MAX",
+          "!_zip_buffer_eof(ef_buffer)",
+          "!from_buffer"
+        ],
+        "sink_calls": [
+          "_zip_buffer_get_64",
+          "_zip_buffer_get_32",
+          "zip_error_set",
+          "_zip_buffer_free"
+        ]
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.86
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "lib/zip_dirent.c",
+          "hunk_index": 0,
+          "source_line": 365
+        },
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at lib/zip_dirent.c:365",
+        "statements": [
+          "546: \t    if (zde->offset == ZIP_UINT32_MAX)",
+          "547: \t\tzde->offset = _zip_buffer_get_64(ef_buffer);",
+          "548: \t    if (zde->disk_number == ZIP_UINT16_MAX)",
+          "549: \t\tzde->disk_number = _zip_buffer_get_32(buffer);",
+          "550: \t}",
+          "551:"
+        ],
+        "guards": [
+          "zde->offset == ZIP_UINT32_MAX",
+          "zde->disk_number == ZIP_UINT16_MAX",
+          "!_zip_buffer_eof(ef_buffer)",
+          "!from_buffer"
+        ],
+        "call_boundary": [
+          "_zip_buffer_get_64",
+          "_zip_buffer_get_32",
+          "zip_error_set",
+          "_zip_buffer_free",
+          "_zip_ef_remove_internal"
+        ],
+        "call_edges": [],
+        "state_transitions": [
+          "diagnostic(Patch-scoped match: _zip_buffer_free(buffer) appears under if (!from_buffer) inside _zip_dirent_read; this branch-level cleanup is the risky pattern in the vulnerable version [custom.WinzipAESBufferOwnershipChecker])"
+        ],
+        "api_terms": [
+          "_zip_buffer_get_64",
+          "_zip_buffer_get_32",
+          "zip_error_set",
+          "_zip_buffer_free",
+          "_zip_ef_remove_internal"
+        ],
+        "related_symbols": [
+          "zde",
+          "src",
+          "buffer",
+          "local",
+          "error"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_validation_path_guard_1",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "lib/zip_dirent.c",
+        "function": "_zip_dirent_read"
+      },
+      "location": {
+        "line": 365,
+        "column": 13
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "CSA validation reaches lib/zip_dirent.c:365 in _zip_dirent_read with guards zde->offset == ZIP_UINT32_MAX, zde->disk_number == ZIP_UINT16_MAX",
+        "diagnostic_message": "Patch-scoped match: _zip_buffer_free(buffer) appears under if (!from_buffer) inside _zip_dirent_read; this branch-level cleanup is the risky pattern in the vulnerable version [custom.WinzipAESBufferOwnershipChecker]",
+        "diagnostic_checker": "WinzipAESBufferOwnershipChecker",
+        "state_before": [
+          "input(zde)",
+          "input(src)",
+          "input(buffer)",
+          "buffer(zde->offset)",
+          "buffer(zde->disk_number)",
+          "sinks(_zip_buffer_get_64, _zip_buffer_get_32)"
+        ],
+        "state_after": [
+          "guard(zde->offset == ZIP_UINT32_MAX)",
+          "guard(zde->disk_number == ZIP_UINT16_MAX)",
+          "diagnostic(Patch-scoped match: _zip_buffer_free(buffer) appears under if (!from_buffer) inside _zip_dirent_read; this branch-level cleanup is the risky pattern in the vulnerable version [custom.WinzipAESBufferOwnershipChecker])"
+        ],
+        "functions": [
+          "_zip_dirent_read"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "zde",
+          "src",
+          "buffer",
+          "local",
+          "error"
+        ],
+        "buffer_fields": [
+          "zde->offset",
+          "zde->disk_number",
+          "zde->extra_fields"
+        ],
+        "call_targets": [
+          "_zip_buffer_get_64",
+          "_zip_buffer_get_32",
+          "zip_error_set",
+          "_zip_buffer_free",
+          "_zip_ef_remove_internal"
+        ],
+        "call_edges": [],
+        "state_statements": [],
+        "source_file": "lib/zip_dirent.c",
+        "source_excerpt": "546: \t    if (zde->offset == ZIP_UINT32_MAX)\n547: \t\tzde->offset = _zip_buffer_get_64(ef_buffer);\n548: \t    if (zde->disk_number == ZIP_UINT16_MAX)\n549: \t\tzde->disk_number = _zip_buffer_get_32(buffer);\n550: \t}\n551: \n552:         if (!_zip_buffer_eof(ef_buffer)) {\n553:             zip_error_set(error, ZIP_ER_INCONS, 0);\n554:             _zip_buffer_free(ef_buffer);\n555:             if (!from_buffer) {\n556:                 _zip_buffer_free(buffer);\n557:             }\n558:             return -1;\n559:         }\n560:         _zip_buffer_free(ef_buffer);\n561:     }\n562: \n563:     if (!_zip_buffer_ok(buffer)) {\n564:         zip_error_set(error, ZIP_ER_INTERNAL, 0);\n565:         if (!from_buffer) {\n566:             _zip_buffer_free(buffer);\n567:         }\n568:         return -1;\n569:     }\n570:     if (!from_buffer) {\n571:         _zip_buffer_free(buffer);\n572:     }\n573: \n574:     /* zip_source_seek / zip_source_tell don't support values > ZIP_INT64_MAX */\n575:     if (zde->offset > ZIP_INT64_MAX) {\n576: \tzip_error_set(error, ZIP_ER_SEEK, EFBIG);\n577: \treturn -1;\n578:     }\n579: \n580:     if (!_zip_dirent_process_winzip_aes(zde, error)) {\n581: \tif (!from_buffer) {\n582: \t    _zip_buffer_free(buffer);\n583: \t}\n584: \treturn -1;\n585:     }\n586: \n587:     zde->extra_fields = _zip_ef_remove_internal(zde->extra_fields);\n588: \n589:     return (zip_int64_t)(size + variable_size);\n590: }",
+        "coverage_status": "full",
+        "guard_expr": "zde->offset == ZIP_UINT32_MAX",
+        "cfg_branch_kinds": [],
+        "branch_conditions": [
+          "zde->offset == ZIP_UINT32_MAX",
+          "zde->disk_number == ZIP_UINT16_MAX",
+          "!_zip_buffer_eof(ef_buffer)",
+          "!from_buffer"
+        ]
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.86
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "lib/zip_dirent.c",
+          "hunk_index": 0,
+          "source_line": 365
+        },
+        "summary": "CSA validation reaches lib/zip_dirent.c:365 in _zip_dirent_read with guards zde->offset == ZIP_UINT32_MAX, zde->disk_number == ZIP_UINT16_MAX",
+        "statements": [
+          "546: \t    if (zde->offset == ZIP_UINT32_MAX)",
+          "547: \t\tzde->offset = _zip_buffer_get_64(ef_buffer);",
+          "548: \t    if (zde->disk_number == ZIP_UINT16_MAX)",
+          "549: \t\tzde->disk_number = _zip_buffer_get_32(buffer);",
+          "550: \t}",
+          "551:"
+        ],
+        "guards": [
+          "zde->offset == ZIP_UINT32_MAX",
+          "zde->disk_number == ZIP_UINT16_MAX",
+          "!_zip_buffer_eof(ef_buffer)",
+          "!from_buffer"
+        ],
+        "call_boundary": [
+          "_zip_buffer_get_64",
+          "_zip_buffer_get_32",
+          "zip_error_set",
+          "_zip_buffer_free",
+          "_zip_ef_remove_internal"
+        ],
+        "call_edges": [],
+        "state_transitions": [
+          "guard(zde->offset == ZIP_UINT32_MAX)",
+          "guard(zde->disk_number == ZIP_UINT16_MAX)",
+          "diagnostic(Patch-scoped match: _zip_buffer_free(buffer) appears under if (!from_buffer) inside _zip_dirent_read; this branch-level cleanup is the risky pattern in the vulnerable version [custom.WinzipAESBufferOwnershipChecker])"
+        ],
+        "api_terms": [
+          "_zip_buffer_get_64",
+          "_zip_buffer_get_32",
+          "zip_error_set",
+          "_zip_buffer_free",
+          "_zip_ef_remove_internal"
+        ],
+        "related_symbols": [
+          "zde",
+          "src",
+          "buffer",
+          "local",
+          "error"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_validation_state_transition_2",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "lib/zip_dirent.c",
+        "function": "_zip_dirent_read"
+      },
+      "location": {
+        "line": 365,
+        "column": 13
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "_zip_dirent_read in lib/zip_dirent.c has CSA-observed state near line 365",
+        "diagnostic_message": "Patch-scoped match: _zip_buffer_free(buffer) appears under if (!from_buffer) inside _zip_dirent_read; this branch-level cleanup is the risky pattern in the vulnerable version [custom.WinzipAESBufferOwnershipChecker]",
+        "diagnostic_checker": "WinzipAESBufferOwnershipChecker",
+        "state_before": [
+          "input(zde)",
+          "input(src)",
+          "input(buffer)",
+          "buffer(zde->offset)",
+          "buffer(zde->disk_number)",
+          "sinks(_zip_buffer_get_64, _zip_buffer_get_32)"
+        ],
+        "state_after": [
+          "call(_zip_buffer_get_64)",
+          "call(_zip_buffer_get_32)",
+          "diagnostic(Patch-scoped match: _zip_buffer_free(buffer) appears under if (!from_buffer) inside _zip_dirent_read; this branch-level cleanup is the risky pattern in the vulnerable version [custom.WinzipAESBufferOwnershipChecker])"
+        ],
+        "functions": [
+          "_zip_dirent_read"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "zde",
+          "src",
+          "buffer",
+          "local",
+          "error"
+        ],
+        "buffer_fields": [
+          "zde->offset",
+          "zde->disk_number",
+          "zde->extra_fields"
+        ],
+        "call_targets": [
+          "_zip_buffer_get_64",
+          "_zip_buffer_get_32",
+          "zip_error_set",
+          "_zip_buffer_free",
+          "_zip_ef_remove_internal"
+        ],
+        "call_edges": [],
+        "state_statements": [],
+        "source_file": "lib/zip_dirent.c",
+        "source_excerpt": "546: \t    if (zde->offset == ZIP_UINT32_MAX)\n547: \t\tzde->offset = _zip_buffer_get_64(ef_buffer);\n548: \t    if (zde->disk_number == ZIP_UINT16_MAX)\n549: \t\tzde->disk_number = _zip_buffer_get_32(buffer);\n550: \t}\n551: \n552:         if (!_zip_buffer_eof(ef_buffer)) {\n553:             zip_error_set(error, ZIP_ER_INCONS, 0);\n554:             _zip_buffer_free(ef_buffer);\n555:             if (!from_buffer) {\n556:                 _zip_buffer_free(buffer);\n557:             }\n558:             return -1;\n559:         }\n560:         _zip_buffer_free(ef_buffer);\n561:     }\n562: \n563:     if (!_zip_buffer_ok(buffer)) {\n564:         zip_error_set(error, ZIP_ER_INTERNAL, 0);\n565:         if (!from_buffer) {\n566:             _zip_buffer_free(buffer);\n567:         }\n568:         return -1;\n569:     }\n570:     if (!from_buffer) {\n571:         _zip_buffer_free(buffer);\n572:     }\n573: \n574:     /* zip_source_seek / zip_source_tell don't support values > ZIP_INT64_MAX */\n575:     if (zde->offset > ZIP_INT64_MAX) {\n576: \tzip_error_set(error, ZIP_ER_SEEK, EFBIG);\n577: \treturn -1;\n578:     }\n579: \n580:     if (!_zip_dirent_process_winzip_aes(zde, error)) {\n581: \tif (!from_buffer) {\n582: \t    _zip_buffer_free(buffer);\n583: \t}\n584: \treturn -1;\n585:     }\n586: \n587:     zde->extra_fields = _zip_ef_remove_internal(zde->extra_fields);\n588: \n589:     return (zip_int64_t)(size + variable_size);\n590: }",
+        "coverage_status": "full",
+        "cfg_branch_kinds": [],
+        "branch_conditions": [
+          "zde->offset == ZIP_UINT32_MAX",
+          "zde->disk_number == ZIP_UINT16_MAX",
+          "!_zip_buffer_eof(ef_buffer)",
+          "!from_buffer"
+        ]
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.86
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "lib/zip_dirent.c",
+          "hunk_index": 0,
+          "source_line": 365
+        },
+        "summary": "_zip_dirent_read in lib/zip_dirent.c has CSA-observed state near line 365",
+        "statements": [
+          "546: \t    if (zde->offset == ZIP_UINT32_MAX)",
+          "547: \t\tzde->offset = _zip_buffer_get_64(ef_buffer);",
+          "548: \t    if (zde->disk_number == ZIP_UINT16_MAX)",
+          "549: \t\tzde->disk_number = _zip_buffer_get_32(buffer);",
+          "550: \t}",
+          "551:"
+        ],
+        "guards": [
+          "zde->offset == ZIP_UINT32_MAX",
+          "zde->disk_number == ZIP_UINT16_MAX",
+          "!_zip_buffer_eof(ef_buffer)",
+          "!from_buffer"
+        ],
+        "call_boundary": [
+          "_zip_buffer_get_64",
+          "_zip_buffer_get_32",
+          "zip_error_set",
+          "_zip_buffer_free",
+          "_zip_ef_remove_internal"
+        ],
+        "call_edges": [],
+        "state_transitions": [
+          "call(_zip_buffer_get_64)",
+          "call(_zip_buffer_get_32)",
+          "diagnostic(Patch-scoped match: _zip_buffer_free(buffer) appears under if (!from_buffer) inside _zip_dirent_read; this branch-level cleanup is the risky pattern in the vulnerable version [custom.WinzipAESBufferOwnershipChecker])"
+        ],
+        "api_terms": [
+          "_zip_buffer_get_64",
+          "_zip_buffer_get_32",
+          "zip_error_set",
+          "_zip_buffer_free",
+          "_zip_ef_remove_internal"
+        ],
+        "related_symbols": [
+          "zde",
+          "src",
+          "buffer",
+          "local",
+          "error"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_3",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "lib/zip_dirent.c",
+        "function": "_zip_dirent_read"
+      },
+      "location": {
+        "line": 365,
+        "column": 13
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "_zip_dirent_read in lib/zip_dirent.c provides CSA-backed pointer/resource lifecycle context near line 365",
+        "diagnostic_message": "Patch-scoped match: _zip_buffer_free(buffer) appears under if (!from_buffer) inside _zip_dirent_read; this branch-level cleanup is the risky pattern in the vulnerable version [custom.WinzipAESBufferOwnershipChecker]",
+        "diagnostic_checker": "WinzipAESBufferOwnershipChecker",
+        "state_before": [
+          "input(zde)",
+          "input(src)",
+          "input(buffer)",
+          "buffer(zde->offset)",
+          "buffer(zde->disk_number)",
+          "sinks(_zip_buffer_get_64, _zip_buffer_get_32)"
+        ],
+        "state_after": [
+          "diagnostic(Patch-scoped match: _zip_buffer_free(buffer) appears under if (!from_buffer) inside _zip_dirent_read; this branch-level cleanup is the risky pattern in the vulnerable version [custom.WinzipAESBufferOwnershipChecker])"
+        ],
+        "functions": [
+          "_zip_dirent_read"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "zde",
+          "src",
+          "buffer",
+          "local",
+          "error"
+        ],
+        "buffer_fields": [
+          "zde->offset",
+          "zde->disk_number",
+          "zde->extra_fields"
+        ],
+        "call_targets": [
+          "_zip_buffer_get_64",
+          "_zip_buffer_get_32",
+          "zip_error_set",
+          "_zip_buffer_free",
+          "_zip_ef_remove_internal"
+        ],
+        "call_edges": [],
+        "state_statements": [],
+        "source_file": "lib/zip_dirent.c",
+        "source_excerpt": "546: \t    if (zde->offset == ZIP_UINT32_MAX)\n547: \t\tzde->offset = _zip_buffer_get_64(ef_buffer);\n548: \t    if (zde->disk_number == ZIP_UINT16_MAX)\n549: \t\tzde->disk_number = _zip_buffer_get_32(buffer);\n550: \t}\n551: \n552:         if (!_zip_buffer_eof(ef_buffer)) {\n553:             zip_error_set(error, ZIP_ER_INCONS, 0);\n554:             _zip_buffer_free(ef_buffer);\n555:             if (!from_buffer) {\n556:                 _zip_buffer_free(buffer);\n557:             }\n558:             return -1;\n559:         }\n560:         _zip_buffer_free(ef_buffer);\n561:     }\n562: \n563:     if (!_zip_buffer_ok(buffer)) {\n564:         zip_error_set(error, ZIP_ER_INTERNAL, 0);\n565:         if (!from_buffer) {\n566:             _zip_buffer_free(buffer);\n567:         }\n568:         return -1;\n569:     }\n570:     if (!from_buffer) {\n571:         _zip_buffer_free(buffer);\n572:     }\n573: \n574:     /* zip_source_seek / zip_source_tell don't support values > ZIP_INT64_MAX */\n575:     if (zde->offset > ZIP_INT64_MAX) {\n576: \tzip_error_set(error, ZIP_ER_SEEK, EFBIG);\n577: \treturn -1;\n578:     }\n579: \n580:     if (!_zip_dirent_process_winzip_aes(zde, error)) {\n581: \tif (!from_buffer) {\n582: \t    _zip_buffer_free(buffer);\n583: \t}\n584: \treturn -1;\n585:     }\n586: \n587:     zde->extra_fields = _zip_ef_remove_internal(zde->extra_fields);\n588: \n589:     return (zip_int64_t)(size + variable_size);\n590: }",
+        "coverage_status": "full",
+        "operations": [],
+        "acquisition_ops": [],
+        "release_ops": []
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.86
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "lib/zip_dirent.c",
+          "hunk_index": 0,
+          "source_line": 365
+        },
+        "summary": "_zip_dirent_read in lib/zip_dirent.c provides CSA-backed pointer/resource lifecycle context near line 365",
+        "statements": [
+          "546: \t    if (zde->offset == ZIP_UINT32_MAX)",
+          "547: \t\tzde->offset = _zip_buffer_get_64(ef_buffer);",
+          "548: \t    if (zde->disk_number == ZIP_UINT16_MAX)",
+          "549: \t\tzde->disk_number = _zip_buffer_get_32(buffer);",
+          "550: \t}",
+          "551:"
+        ],
+        "guards": [
+          "zde->offset == ZIP_UINT32_MAX",
+          "zde->disk_number == ZIP_UINT16_MAX",
+          "!_zip_buffer_eof(ef_buffer)",
+          "!from_buffer"
+        ],
+        "call_boundary": [
+          "_zip_buffer_get_64",
+          "_zip_buffer_get_32",
+          "zip_error_set",
+          "_zip_buffer_free",
+          "_zip_ef_remove_internal"
+        ],
+        "call_edges": [],
+        "state_transitions": [
+          "diagnostic(Patch-scoped match: _zip_buffer_free(buffer) appears under if (!from_buffer) inside _zip_dirent_read; this branch-level cleanup is the risky pattern in the vulnerable version [custom.WinzipAESBufferOwnershipChecker])"
+        ],
+        "api_terms": [
+          "_zip_buffer_get_64",
+          "_zip_buffer_get_32",
+          "zip_error_set",
+          "_zip_buffer_free",
+          "_zip_ef_remove_internal"
+        ],
+        "related_symbols": [
+          "zde",
+          "src",
+          "buffer",
+          "local",
+          "error"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "full"
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "collected_analyzers": [
+    "csa",
+    "patch"
+  ]
+}

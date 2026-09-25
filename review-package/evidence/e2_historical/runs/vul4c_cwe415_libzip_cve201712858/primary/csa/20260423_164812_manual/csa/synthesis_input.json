@@ -1,0 +1,1177 @@
+{
+  "analyzer_id": "csa",
+  "detector_artifact": "checker_plugin",
+  "primary_pattern": "double_free",
+  "objective": "Synthesize a path-sensitive double_free detector that encodes the same local state, guards, and lifecycle mechanism evidenced by the patch, while still generalizing to semantically equivalent sites.",
+  "mechanism_contract": {
+    "mechanism_family": "resource_lifetime_violation",
+    "semantic_dimensions": [
+      "resource identity or alias",
+      "release event count",
+      "reinitialization or nulling barrier"
+    ],
+    "trigger_invariants": [
+      "the same symbolic resource is released more than once on a feasible path",
+      "no reallocation, rebinding, or nulling separates the release events",
+      "Patch-backed trigger clue: removed risky operation: _zip_buffer_free(buffer);",
+      "Patch-backed trigger clue: detection hints: 首稿先命中最小 patch-local 锚点：`_zip_dirent_process_winzip_aes(...)` 失败分支中的 `_zip_buffer_free(buffer)`。, 首稿不要把 `!from_buffer` 写成硬过滤；它只是该历史漏洞出现时的附带条件，不是重复释放机制的本体。, 优先检测“错误路径中的局部 free 之后函数仍走向其他清理/释放责任路径”这一局部 CFG 模式；不需要复杂跨文件数据流。"
+    ],
+    "silence_invariants": [
+      "the resource is nulled, transferred, or rebound after the first release",
+      "a guard prevents the second release on the active path",
+      "patch-introduced barrier pattern: 删除错误路径中的 `_zip_buffer_free(buffer)` 调用",
+      "patch-introduced barrier pattern: 将对象释放责任集中到单一清理路径，而不是在中间错误分支提前释放",
+      "patch-introduced barrier pattern: 遇到子过程失败时直接返回，让既有所有权/清理机制处理 `buffer`"
+    ],
+    "transfer_axes": [
+      "equivalent repeated-release sequences for the same resource role",
+      "equivalent ownership handoff patterns across sibling helpers",
+      "equivalent guard or barrier predicates on sibling paths",
+      "equivalent local state transitions around the same sink or dereference",
+      "equivalent ownership or release/reinit lifecycle on the same symbolic resource"
+    ],
+    "forbidden_shortcuts": [
+      "bind the detector to fixed file paths, line numbers, or exact patch strings",
+      "broaden into unrelated bug families just to improve hit count",
+      "count free/delete calls without tracking resource identity",
+      "treat unrelated release sites as the same resource lifecycle",
+      "placeholder helper logic or empty ProgramState modeling"
+    ],
+    "evidence_backed_axes": [
+      "resource lifecycle",
+      "path guards and barrier conditions",
+      "semantic trigger slice",
+      "state transitions"
+    ]
+  },
+  "detector_name_hint": "DoubleFreeOnErrorPathChecker",
+  "focus_files": [
+    "lib/zip_dirent.c"
+  ],
+  "focus_functions": [
+    "_zip_buffer_free"
+  ],
+  "hypotheses": [
+    "The patch likely changes a resource lifecycle or stale-state transition."
+  ],
+  "required_evidence_types": [
+    "patch_fact",
+    "allocation_lifecycle",
+    "state_transition"
+  ],
+  "missing_evidence_types": [],
+  "evidence_degraded": false,
+  "patch_mechanism_signals": [
+    "removed risky operation: _zip_buffer_free(buffer);",
+    "detection hints: 首稿先命中最小 patch-local 锚点：`_zip_dirent_process_winzip_aes(...)` 失败分支中的 `_zip_buffer_free(buffer)`。, 首稿不要把 `!from_buffer` 写成硬过滤；它只是该历史漏洞出现时的附带条件，不是重复释放机制的本体。, 优先检测“错误路径中的局部 free 之后函数仍走向其他清理/释放责任路径”这一局部 CFG 模式；不需要复杂跨文件数据流。"
+  ],
+  "silencing_conditions": [
+    "patch-introduced barrier pattern: 删除错误路径中的 `_zip_buffer_free(buffer)` 调用",
+    "patch-introduced barrier pattern: 将对象释放责任集中到单一清理路径，而不是在中间错误分支提前释放",
+    "patch-introduced barrier pattern: 遇到子过程失败时直接返回，让既有所有权/清理机制处理 `buffer`"
+  ],
+  "retry_guidance": [],
+  "selected_evidence_ids": [
+    "csa_validation_allocation_lifecycle_3",
+    "csa_validation_path_guard_1",
+    "csa_validation_semantic_slice_0",
+    "csa_validation_state_transition_2",
+    "pf_004",
+    "pf_005",
+    "pf_003",
+    "pf_002",
+    "pf_001"
+  ],
+  "selected_evidence": [
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_3",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "lib/zip_dirent.c",
+        "function": "_zip_dirent_read"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "_zip_dirent_read in lib/zip_dirent.c provides CSA-backed pointer/resource lifecycle context near line 365",
+        "state_before": [
+          "input(zde)",
+          "input(src)",
+          "input(buffer)",
+          "buffer(zde->offset)",
+          "buffer(zde->disk_number)",
+          "sinks(_zip_buffer_get_64, _zip_buffer_get_32)"
+        ],
+        "state_after": [
+          "diagnostic(Patch-scoped match: _zip_buffer_free(buffer) appears under if (!from_buffer) inside _zip_dirent_read; this branch-level cleanup is the risky pattern in the vulnerable version [custom.WinzipAESBufferOwnershipChecker])"
+        ],
+        "tracked_symbols": [
+          "zde",
+          "src",
+          "buffer",
+          "local",
+          "error"
+        ],
+        "buffer_fields": [
+          "zde->offset",
+          "zde->disk_number",
+          "zde->extra_fields"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "_zip_dirent_read"
+        ],
+        "call_targets": [
+          "_zip_buffer_get_64",
+          "_zip_buffer_get_32",
+          "zip_error_set",
+          "_zip_buffer_free",
+          "_zip_ef_remove_internal"
+        ],
+        "source_file": "lib/zip_dirent.c"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "lib/zip_dirent.c",
+          "hunk_index": 0,
+          "source_line": 365
+        },
+        "summary": "_zip_dirent_read in lib/zip_dirent.c provides CSA-backed pointer/resource lifecycle context near line 365",
+        "statements": [
+          "546: \t    if (zde->offset == ZIP_UINT32_MAX)",
+          "547: \t\tzde->offset = _zip_buffer_get_64(ef_buffer);",
+          "548: \t    if (zde->disk_number == ZIP_UINT16_MAX)",
+          "549: \t\tzde->disk_number = _zip_buffer_get_32(buffer);",
+          "550: \t}",
+          "551:"
+        ],
+        "guards": [
+          "zde->offset == ZIP_UINT32_MAX",
+          "zde->disk_number == ZIP_UINT16_MAX",
+          "!_zip_buffer_eof(ef_buffer)",
+          "!from_buffer"
+        ],
+        "call_boundary": [
+          "_zip_buffer_get_64",
+          "_zip_buffer_get_32",
+          "zip_error_set",
+          "_zip_buffer_free",
+          "_zip_ef_remove_internal"
+        ],
+        "call_edges": [],
+        "state_transitions": [
+          "diagnostic(Patch-scoped match: _zip_buffer_free(buffer) appears under if (!from_buffer) inside _zip_dirent_read; this branch-level cleanup is the risky pattern in the vulnerable version [custom.WinzipAESBufferOwnershipChecker])"
+        ],
+        "api_terms": [
+          "_zip_buffer_get_64",
+          "_zip_buffer_get_32",
+          "zip_error_set",
+          "_zip_buffer_free",
+          "_zip_ef_remove_internal"
+        ],
+        "related_symbols": [
+          "zde",
+          "src",
+          "buffer",
+          "local",
+          "error"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.86
+    },
+    {
+      "evidence_id": "csa_validation_path_guard_1",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "lib/zip_dirent.c",
+        "function": "_zip_dirent_read"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "guard_expr": "zde->offset == ZIP_UINT32_MAX",
+        "summary": "CSA validation reaches lib/zip_dirent.c:365 in _zip_dirent_read with guards zde->offset == ZIP_UINT32_MAX, zde->disk_number == ZIP_UINT16_MAX",
+        "state_before": [
+          "input(zde)",
+          "input(src)",
+          "input(buffer)",
+          "buffer(zde->offset)",
+          "buffer(zde->disk_number)",
+          "sinks(_zip_buffer_get_64, _zip_buffer_get_32)"
+        ],
+        "state_after": [
+          "guard(zde->offset == ZIP_UINT32_MAX)",
+          "guard(zde->disk_number == ZIP_UINT16_MAX)",
+          "diagnostic(Patch-scoped match: _zip_buffer_free(buffer) appears under if (!from_buffer) inside _zip_dirent_read; this branch-level cleanup is the risky pattern in the vulnerable version [custom.WinzipAESBufferOwnershipChecker])"
+        ],
+        "tracked_symbols": [
+          "zde",
+          "src",
+          "buffer",
+          "local",
+          "error"
+        ],
+        "buffer_fields": [
+          "zde->offset",
+          "zde->disk_number",
+          "zde->extra_fields"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "_zip_dirent_read"
+        ],
+        "call_targets": [
+          "_zip_buffer_get_64",
+          "_zip_buffer_get_32",
+          "zip_error_set",
+          "_zip_buffer_free",
+          "_zip_ef_remove_internal"
+        ],
+        "branch_conditions": [
+          "zde->offset == ZIP_UINT32_MAX",
+          "zde->disk_number == ZIP_UINT16_MAX",
+          "!_zip_buffer_eof(ef_buffer)",
+          "!from_buffer"
+        ],
+        "source_file": "lib/zip_dirent.c"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "lib/zip_dirent.c",
+          "hunk_index": 0,
+          "source_line": 365
+        },
+        "summary": "CSA validation reaches lib/zip_dirent.c:365 in _zip_dirent_read with guards zde->offset == ZIP_UINT32_MAX, zde->disk_number == ZIP_UINT16_MAX",
+        "statements": [
+          "546: \t    if (zde->offset == ZIP_UINT32_MAX)",
+          "547: \t\tzde->offset = _zip_buffer_get_64(ef_buffer);",
+          "548: \t    if (zde->disk_number == ZIP_UINT16_MAX)",
+          "549: \t\tzde->disk_number = _zip_buffer_get_32(buffer);",
+          "550: \t}",
+          "551:"
+        ],
+        "guards": [
+          "zde->offset == ZIP_UINT32_MAX",
+          "zde->disk_number == ZIP_UINT16_MAX",
+          "!_zip_buffer_eof(ef_buffer)",
+          "!from_buffer"
+        ],
+        "call_boundary": [
+          "_zip_buffer_get_64",
+          "_zip_buffer_get_32",
+          "zip_error_set",
+          "_zip_buffer_free",
+          "_zip_ef_remove_internal"
+        ],
+        "call_edges": [],
+        "state_transitions": [
+          "guard(zde->offset == ZIP_UINT32_MAX)",
+          "guard(zde->disk_number == ZIP_UINT16_MAX)",
+          "diagnostic(Patch-scoped match: _zip_buffer_free(buffer) appears under if (!from_buffer) inside _zip_dirent_read; this branch-level cleanup is the risky pattern in the vulnerable version [custom.WinzipAESBufferOwnershipChecker])"
+        ],
+        "api_terms": [
+          "_zip_buffer_get_64",
+          "_zip_buffer_get_32",
+          "zip_error_set",
+          "_zip_buffer_free",
+          "_zip_ef_remove_internal"
+        ],
+        "related_symbols": [
+          "zde",
+          "src",
+          "buffer",
+          "local",
+          "error"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.86
+    },
+    {
+      "evidence_id": "csa_validation_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "lib/zip_dirent.c",
+        "function": "_zip_dirent_read"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at lib/zip_dirent.c:365",
+        "state_before": [
+          "input(zde)",
+          "input(src)",
+          "input(buffer)",
+          "buffer(zde->offset)",
+          "buffer(zde->disk_number)",
+          "sinks(_zip_buffer_get_64, _zip_buffer_get_32)"
+        ],
+        "state_after": [
+          "diagnostic(Patch-scoped match: _zip_buffer_free(buffer) appears under if (!from_buffer) inside _zip_dirent_read; this branch-level cleanup is the risky pattern in the vulnerable version [custom.WinzipAESBufferOwnershipChecker])"
+        ],
+        "tracked_symbols": [
+          "zde",
+          "src",
+          "buffer",
+          "local",
+          "error"
+        ],
+        "buffer_fields": [
+          "zde->offset",
+          "zde->disk_number",
+          "zde->extra_fields"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "_zip_dirent_read"
+        ],
+        "call_targets": [
+          "_zip_buffer_get_64",
+          "_zip_buffer_get_32",
+          "zip_error_set",
+          "_zip_buffer_free",
+          "_zip_ef_remove_internal"
+        ],
+        "source_file": "lib/zip_dirent.c"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "lib/zip_dirent.c",
+          "hunk_index": 0,
+          "source_line": 365
+        },
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at lib/zip_dirent.c:365",
+        "statements": [
+          "546: \t    if (zde->offset == ZIP_UINT32_MAX)",
+          "547: \t\tzde->offset = _zip_buffer_get_64(ef_buffer);",
+          "548: \t    if (zde->disk_number == ZIP_UINT16_MAX)",
+          "549: \t\tzde->disk_number = _zip_buffer_get_32(buffer);",
+          "550: \t}",
+          "551:"
+        ],
+        "guards": [
+          "zde->offset == ZIP_UINT32_MAX",
+          "zde->disk_number == ZIP_UINT16_MAX",
+          "!_zip_buffer_eof(ef_buffer)",
+          "!from_buffer"
+        ],
+        "call_boundary": [
+          "_zip_buffer_get_64",
+          "_zip_buffer_get_32",
+          "zip_error_set",
+          "_zip_buffer_free",
+          "_zip_ef_remove_internal"
+        ],
+        "call_edges": [],
+        "state_transitions": [
+          "diagnostic(Patch-scoped match: _zip_buffer_free(buffer) appears under if (!from_buffer) inside _zip_dirent_read; this branch-level cleanup is the risky pattern in the vulnerable version [custom.WinzipAESBufferOwnershipChecker])"
+        ],
+        "api_terms": [
+          "_zip_buffer_get_64",
+          "_zip_buffer_get_32",
+          "zip_error_set",
+          "_zip_buffer_free",
+          "_zip_ef_remove_internal"
+        ],
+        "related_symbols": [
+          "zde",
+          "src",
+          "buffer",
+          "local",
+          "error"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.86
+    },
+    {
+      "evidence_id": "csa_validation_state_transition_2",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "lib/zip_dirent.c",
+        "function": "_zip_dirent_read"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "_zip_dirent_read in lib/zip_dirent.c has CSA-observed state near line 365",
+        "state_before": [
+          "input(zde)",
+          "input(src)",
+          "input(buffer)",
+          "buffer(zde->offset)",
+          "buffer(zde->disk_number)",
+          "sinks(_zip_buffer_get_64, _zip_buffer_get_32)"
+        ],
+        "state_after": [
+          "call(_zip_buffer_get_64)",
+          "call(_zip_buffer_get_32)",
+          "diagnostic(Patch-scoped match: _zip_buffer_free(buffer) appears under if (!from_buffer) inside _zip_dirent_read; this branch-level cleanup is the risky pattern in the vulnerable version [custom.WinzipAESBufferOwnershipChecker])"
+        ],
+        "tracked_symbols": [
+          "zde",
+          "src",
+          "buffer",
+          "local",
+          "error"
+        ],
+        "buffer_fields": [
+          "zde->offset",
+          "zde->disk_number",
+          "zde->extra_fields"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "_zip_dirent_read"
+        ],
+        "call_targets": [
+          "_zip_buffer_get_64",
+          "_zip_buffer_get_32",
+          "zip_error_set",
+          "_zip_buffer_free",
+          "_zip_ef_remove_internal"
+        ],
+        "branch_conditions": [
+          "zde->offset == ZIP_UINT32_MAX",
+          "zde->disk_number == ZIP_UINT16_MAX",
+          "!_zip_buffer_eof(ef_buffer)",
+          "!from_buffer"
+        ],
+        "source_file": "lib/zip_dirent.c"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "lib/zip_dirent.c",
+          "hunk_index": 0,
+          "source_line": 365
+        },
+        "summary": "_zip_dirent_read in lib/zip_dirent.c has CSA-observed state near line 365",
+        "statements": [
+          "546: \t    if (zde->offset == ZIP_UINT32_MAX)",
+          "547: \t\tzde->offset = _zip_buffer_get_64(ef_buffer);",
+          "548: \t    if (zde->disk_number == ZIP_UINT16_MAX)",
+          "549: \t\tzde->disk_number = _zip_buffer_get_32(buffer);",
+          "550: \t}",
+          "551:"
+        ],
+        "guards": [
+          "zde->offset == ZIP_UINT32_MAX",
+          "zde->disk_number == ZIP_UINT16_MAX",
+          "!_zip_buffer_eof(ef_buffer)",
+          "!from_buffer"
+        ],
+        "call_boundary": [
+          "_zip_buffer_get_64",
+          "_zip_buffer_get_32",
+          "zip_error_set",
+          "_zip_buffer_free",
+          "_zip_ef_remove_internal"
+        ],
+        "call_edges": [],
+        "state_transitions": [
+          "call(_zip_buffer_get_64)",
+          "call(_zip_buffer_get_32)",
+          "diagnostic(Patch-scoped match: _zip_buffer_free(buffer) appears under if (!from_buffer) inside _zip_dirent_read; this branch-level cleanup is the risky pattern in the vulnerable version [custom.WinzipAESBufferOwnershipChecker])"
+        ],
+        "api_terms": [
+          "_zip_buffer_get_64",
+          "_zip_buffer_get_32",
+          "zip_error_set",
+          "_zip_buffer_free",
+          "_zip_ef_remove_internal"
+        ],
+        "related_symbols": [
+          "zde",
+          "src",
+          "buffer",
+          "local",
+          "error"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.86
+    },
+    {
+      "evidence_id": "pf_004",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "lib/zip_dirent.c",
+        "function": "_zip_buffer_free"
+      },
+      "semantic_payload": {
+        "label": "Patch removes risky operations"
+      },
+      "evidence_slice": {},
+      "confidence": 0.95
+    },
+    {
+      "evidence_id": "pf_005",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "lib/zip_dirent.c",
+        "function": "_zip_buffer_free"
+      },
+      "semantic_payload": {
+        "label": "Patch introduces reusable fix patterns"
+      },
+      "evidence_slice": {},
+      "confidence": 0.95
+    },
+    {
+      "evidence_id": "pf_003",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "lib/zip_dirent.c",
+        "function": "_zip_buffer_free"
+      },
+      "semantic_payload": {
+        "label": "Existing patch analysis detection strategy"
+      },
+      "evidence_slice": {},
+      "confidence": 0.95
+    },
+    {
+      "evidence_id": "pf_002",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "lib/zip_dirent.c",
+        "function": "_zip_buffer_free"
+      },
+      "semantic_payload": {
+        "label": "Functions implicated by removed or fixed code"
+      },
+      "evidence_slice": {},
+      "confidence": 0.95
+    },
+    {
+      "evidence_id": "pf_001",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "lib/zip_dirent.c",
+        "function": "_zip_buffer_free"
+      },
+      "semantic_payload": {
+        "label": "Vulnerability patterns inferred from patch"
+      },
+      "evidence_slice": {},
+      "confidence": 0.95
+    }
+  ],
+  "semantic_slice_count": 4,
+  "context_summary_count": 0,
+  "semantic_slice_coverage": "full",
+  "selected_semantic_slice_ids": [
+    "csa_validation_allocation_lifecycle_3",
+    "csa_validation_path_guard_1",
+    "csa_validation_semantic_slice_0",
+    "csa_validation_state_transition_2"
+  ],
+  "selected_context_summary_ids": [],
+  "selected_semantic_slices": [
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_3",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "lib/zip_dirent.c",
+        "function": "_zip_dirent_read"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "_zip_dirent_read in lib/zip_dirent.c provides CSA-backed pointer/resource lifecycle context near line 365",
+        "state_before": [
+          "input(zde)",
+          "input(src)",
+          "input(buffer)",
+          "buffer(zde->offset)",
+          "buffer(zde->disk_number)",
+          "sinks(_zip_buffer_get_64, _zip_buffer_get_32)"
+        ],
+        "state_after": [
+          "diagnostic(Patch-scoped match: _zip_buffer_free(buffer) appears under if (!from_buffer) inside _zip_dirent_read; this branch-level cleanup is the risky pattern in the vulnerable version [custom.WinzipAESBufferOwnershipChecker])"
+        ],
+        "tracked_symbols": [
+          "zde",
+          "src",
+          "buffer",
+          "local",
+          "error"
+        ],
+        "buffer_fields": [
+          "zde->offset",
+          "zde->disk_number",
+          "zde->extra_fields"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "_zip_dirent_read"
+        ],
+        "call_targets": [
+          "_zip_buffer_get_64",
+          "_zip_buffer_get_32",
+          "zip_error_set",
+          "_zip_buffer_free",
+          "_zip_ef_remove_internal"
+        ],
+        "source_file": "lib/zip_dirent.c"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "lib/zip_dirent.c",
+          "hunk_index": 0,
+          "source_line": 365
+        },
+        "summary": "_zip_dirent_read in lib/zip_dirent.c provides CSA-backed pointer/resource lifecycle context near line 365",
+        "statements": [
+          "546: \t    if (zde->offset == ZIP_UINT32_MAX)",
+          "547: \t\tzde->offset = _zip_buffer_get_64(ef_buffer);",
+          "548: \t    if (zde->disk_number == ZIP_UINT16_MAX)",
+          "549: \t\tzde->disk_number = _zip_buffer_get_32(buffer);",
+          "550: \t}",
+          "551:"
+        ],
+        "guards": [
+          "zde->offset == ZIP_UINT32_MAX",
+          "zde->disk_number == ZIP_UINT16_MAX",
+          "!_zip_buffer_eof(ef_buffer)",
+          "!from_buffer"
+        ],
+        "call_boundary": [
+          "_zip_buffer_get_64",
+          "_zip_buffer_get_32",
+          "zip_error_set",
+          "_zip_buffer_free",
+          "_zip_ef_remove_internal"
+        ],
+        "call_edges": [],
+        "state_transitions": [
+          "diagnostic(Patch-scoped match: _zip_buffer_free(buffer) appears under if (!from_buffer) inside _zip_dirent_read; this branch-level cleanup is the risky pattern in the vulnerable version [custom.WinzipAESBufferOwnershipChecker])"
+        ],
+        "api_terms": [
+          "_zip_buffer_get_64",
+          "_zip_buffer_get_32",
+          "zip_error_set",
+          "_zip_buffer_free",
+          "_zip_ef_remove_internal"
+        ],
+        "related_symbols": [
+          "zde",
+          "src",
+          "buffer",
+          "local",
+          "error"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.86
+    },
+    {
+      "evidence_id": "csa_validation_path_guard_1",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "lib/zip_dirent.c",
+        "function": "_zip_dirent_read"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "guard_expr": "zde->offset == ZIP_UINT32_MAX",
+        "summary": "CSA validation reaches lib/zip_dirent.c:365 in _zip_dirent_read with guards zde->offset == ZIP_UINT32_MAX, zde->disk_number == ZIP_UINT16_MAX",
+        "state_before": [
+          "input(zde)",
+          "input(src)",
+          "input(buffer)",
+          "buffer(zde->offset)",
+          "buffer(zde->disk_number)",
+          "sinks(_zip_buffer_get_64, _zip_buffer_get_32)"
+        ],
+        "state_after": [
+          "guard(zde->offset == ZIP_UINT32_MAX)",
+          "guard(zde->disk_number == ZIP_UINT16_MAX)",
+          "diagnostic(Patch-scoped match: _zip_buffer_free(buffer) appears under if (!from_buffer) inside _zip_dirent_read; this branch-level cleanup is the risky pattern in the vulnerable version [custom.WinzipAESBufferOwnershipChecker])"
+        ],
+        "tracked_symbols": [
+          "zde",
+          "src",
+          "buffer",
+          "local",
+          "error"
+        ],
+        "buffer_fields": [
+          "zde->offset",
+          "zde->disk_number",
+          "zde->extra_fields"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "_zip_dirent_read"
+        ],
+        "call_targets": [
+          "_zip_buffer_get_64",
+          "_zip_buffer_get_32",
+          "zip_error_set",
+          "_zip_buffer_free",
+          "_zip_ef_remove_internal"
+        ],
+        "branch_conditions": [
+          "zde->offset == ZIP_UINT32_MAX",
+          "zde->disk_number == ZIP_UINT16_MAX",
+          "!_zip_buffer_eof(ef_buffer)",
+          "!from_buffer"
+        ],
+        "source_file": "lib/zip_dirent.c"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "lib/zip_dirent.c",
+          "hunk_index": 0,
+          "source_line": 365
+        },
+        "summary": "CSA validation reaches lib/zip_dirent.c:365 in _zip_dirent_read with guards zde->offset == ZIP_UINT32_MAX, zde->disk_number == ZIP_UINT16_MAX",
+        "statements": [
+          "546: \t    if (zde->offset == ZIP_UINT32_MAX)",
+          "547: \t\tzde->offset = _zip_buffer_get_64(ef_buffer);",
+          "548: \t    if (zde->disk_number == ZIP_UINT16_MAX)",
+          "549: \t\tzde->disk_number = _zip_buffer_get_32(buffer);",
+          "550: \t}",
+          "551:"
+        ],
+        "guards": [
+          "zde->offset == ZIP_UINT32_MAX",
+          "zde->disk_number == ZIP_UINT16_MAX",
+          "!_zip_buffer_eof(ef_buffer)",
+          "!from_buffer"
+        ],
+        "call_boundary": [
+          "_zip_buffer_get_64",
+          "_zip_buffer_get_32",
+          "zip_error_set",
+          "_zip_buffer_free",
+          "_zip_ef_remove_internal"
+        ],
+        "call_edges": [],
+        "state_transitions": [
+          "guard(zde->offset == ZIP_UINT32_MAX)",
+          "guard(zde->disk_number == ZIP_UINT16_MAX)",
+          "diagnostic(Patch-scoped match: _zip_buffer_free(buffer) appears under if (!from_buffer) inside _zip_dirent_read; this branch-level cleanup is the risky pattern in the vulnerable version [custom.WinzipAESBufferOwnershipChecker])"
+        ],
+        "api_terms": [
+          "_zip_buffer_get_64",
+          "_zip_buffer_get_32",
+          "zip_error_set",
+          "_zip_buffer_free",
+          "_zip_ef_remove_internal"
+        ],
+        "related_symbols": [
+          "zde",
+          "src",
+          "buffer",
+          "local",
+          "error"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.86
+    },
+    {
+      "evidence_id": "csa_validation_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "lib/zip_dirent.c",
+        "function": "_zip_dirent_read"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at lib/zip_dirent.c:365",
+        "state_before": [
+          "input(zde)",
+          "input(src)",
+          "input(buffer)",
+          "buffer(zde->offset)",
+          "buffer(zde->disk_number)",
+          "sinks(_zip_buffer_get_64, _zip_buffer_get_32)"
+        ],
+        "state_after": [
+          "diagnostic(Patch-scoped match: _zip_buffer_free(buffer) appears under if (!from_buffer) inside _zip_dirent_read; this branch-level cleanup is the risky pattern in the vulnerable version [custom.WinzipAESBufferOwnershipChecker])"
+        ],
+        "tracked_symbols": [
+          "zde",
+          "src",
+          "buffer",
+          "local",
+          "error"
+        ],
+        "buffer_fields": [
+          "zde->offset",
+          "zde->disk_number",
+          "zde->extra_fields"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "_zip_dirent_read"
+        ],
+        "call_targets": [
+          "_zip_buffer_get_64",
+          "_zip_buffer_get_32",
+          "zip_error_set",
+          "_zip_buffer_free",
+          "_zip_ef_remove_internal"
+        ],
+        "source_file": "lib/zip_dirent.c"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "lib/zip_dirent.c",
+          "hunk_index": 0,
+          "source_line": 365
+        },
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at lib/zip_dirent.c:365",
+        "statements": [
+          "546: \t    if (zde->offset == ZIP_UINT32_MAX)",
+          "547: \t\tzde->offset = _zip_buffer_get_64(ef_buffer);",
+          "548: \t    if (zde->disk_number == ZIP_UINT16_MAX)",
+          "549: \t\tzde->disk_number = _zip_buffer_get_32(buffer);",
+          "550: \t}",
+          "551:"
+        ],
+        "guards": [
+          "zde->offset == ZIP_UINT32_MAX",
+          "zde->disk_number == ZIP_UINT16_MAX",
+          "!_zip_buffer_eof(ef_buffer)",
+          "!from_buffer"
+        ],
+        "call_boundary": [
+          "_zip_buffer_get_64",
+          "_zip_buffer_get_32",
+          "zip_error_set",
+          "_zip_buffer_free",
+          "_zip_ef_remove_internal"
+        ],
+        "call_edges": [],
+        "state_transitions": [
+          "diagnostic(Patch-scoped match: _zip_buffer_free(buffer) appears under if (!from_buffer) inside _zip_dirent_read; this branch-level cleanup is the risky pattern in the vulnerable version [custom.WinzipAESBufferOwnershipChecker])"
+        ],
+        "api_terms": [
+          "_zip_buffer_get_64",
+          "_zip_buffer_get_32",
+          "zip_error_set",
+          "_zip_buffer_free",
+          "_zip_ef_remove_internal"
+        ],
+        "related_symbols": [
+          "zde",
+          "src",
+          "buffer",
+          "local",
+          "error"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.86
+    },
+    {
+      "evidence_id": "csa_validation_state_transition_2",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "lib/zip_dirent.c",
+        "function": "_zip_dirent_read"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "_zip_dirent_read in lib/zip_dirent.c has CSA-observed state near line 365",
+        "state_before": [
+          "input(zde)",
+          "input(src)",
+          "input(buffer)",
+          "buffer(zde->offset)",
+          "buffer(zde->disk_number)",
+          "sinks(_zip_buffer_get_64, _zip_buffer_get_32)"
+        ],
+        "state_after": [
+          "call(_zip_buffer_get_64)",
+          "call(_zip_buffer_get_32)",
+          "diagnostic(Patch-scoped match: _zip_buffer_free(buffer) appears under if (!from_buffer) inside _zip_dirent_read; this branch-level cleanup is the risky pattern in the vulnerable version [custom.WinzipAESBufferOwnershipChecker])"
+        ],
+        "tracked_symbols": [
+          "zde",
+          "src",
+          "buffer",
+          "local",
+          "error"
+        ],
+        "buffer_fields": [
+          "zde->offset",
+          "zde->disk_number",
+          "zde->extra_fields"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "_zip_dirent_read"
+        ],
+        "call_targets": [
+          "_zip_buffer_get_64",
+          "_zip_buffer_get_32",
+          "zip_error_set",
+          "_zip_buffer_free",
+          "_zip_ef_remove_internal"
+        ],
+        "branch_conditions": [
+          "zde->offset == ZIP_UINT32_MAX",
+          "zde->disk_number == ZIP_UINT16_MAX",
+          "!_zip_buffer_eof(ef_buffer)",
+          "!from_buffer"
+        ],
+        "source_file": "lib/zip_dirent.c"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "lib/zip_dirent.c",
+          "hunk_index": 0,
+          "source_line": 365
+        },
+        "summary": "_zip_dirent_read in lib/zip_dirent.c has CSA-observed state near line 365",
+        "statements": [
+          "546: \t    if (zde->offset == ZIP_UINT32_MAX)",
+          "547: \t\tzde->offset = _zip_buffer_get_64(ef_buffer);",
+          "548: \t    if (zde->disk_number == ZIP_UINT16_MAX)",
+          "549: \t\tzde->disk_number = _zip_buffer_get_32(buffer);",
+          "550: \t}",
+          "551:"
+        ],
+        "guards": [
+          "zde->offset == ZIP_UINT32_MAX",
+          "zde->disk_number == ZIP_UINT16_MAX",
+          "!_zip_buffer_eof(ef_buffer)",
+          "!from_buffer"
+        ],
+        "call_boundary": [
+          "_zip_buffer_get_64",
+          "_zip_buffer_get_32",
+          "zip_error_set",
+          "_zip_buffer_free",
+          "_zip_ef_remove_internal"
+        ],
+        "call_edges": [],
+        "state_transitions": [
+          "call(_zip_buffer_get_64)",
+          "call(_zip_buffer_get_32)",
+          "diagnostic(Patch-scoped match: _zip_buffer_free(buffer) appears under if (!from_buffer) inside _zip_dirent_read; this branch-level cleanup is the risky pattern in the vulnerable version [custom.WinzipAESBufferOwnershipChecker])"
+        ],
+        "api_terms": [
+          "_zip_buffer_get_64",
+          "_zip_buffer_get_32",
+          "zip_error_set",
+          "_zip_buffer_free",
+          "_zip_ef_remove_internal"
+        ],
+        "related_symbols": [
+          "zde",
+          "src",
+          "buffer",
+          "local",
+          "error"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.86
+    }
+  ],
+  "selected_context_summaries": [],
+  "semantic_clause_plan": [
+    {
+      "clause_id": "vulnerable_trigger_clause",
+      "intent": "Trigger on the vulnerable double_free mechanism using evidence-backed path/flow semantics.",
+      "supporting_evidence_ids": [
+        "csa_validation_allocation_lifecycle_3",
+        "csa_validation_path_guard_1",
+        "csa_validation_semantic_slice_0",
+        "csa_validation_state_transition_2"
+      ],
+      "repair_when": [
+        "semantic_no_hits"
+      ],
+      "focus_functions": [
+        "_zip_buffer_free"
+      ]
+    },
+    {
+      "clause_id": "patched_silence_clause",
+      "intent": "Stay silent on patched code when patch-added guards, barriers, or safe APIs prove the mechanism is blocked.",
+      "supporting_evidence_ids": [
+        "csa_validation_path_guard_1",
+        "csa_validation_semantic_slice_0",
+        "csa_validation_state_transition_2",
+        "pf_004",
+        "pf_005",
+        "pf_003",
+        "pf_002",
+        "pf_001"
+      ],
+      "repair_when": [],
+      "silencing_conditions": [
+        "patch-introduced barrier pattern: 删除错误路径中的 `_zip_buffer_free(buffer)` 调用",
+        "patch-introduced barrier pattern: 将对象释放责任集中到单一清理路径，而不是在中间错误分支提前释放",
+        "patch-introduced barrier pattern: 遇到子过程失败时直接返回，让既有所有权/清理机制处理 `buffer`"
+      ]
+    },
+    {
+      "clause_id": "semantic_transfer_clause",
+      "intent": "Generalize along semantic slices and call-chain evidence rather than patch-local syntax.",
+      "supporting_evidence_ids": [
+        "csa_validation_semantic_slice_0"
+      ],
+      "repair_when": [],
+      "analyzer_id": "csa"
+    },
+    {
+      "clause_id": "analyzer_interface_clause",
+      "intent": "Preserve valid analyzer-facing syntax and interfaces while keeping semantics unchanged.",
+      "supporting_evidence_ids": [
+        "pf_004",
+        "pf_005",
+        "pf_003",
+        "pf_002",
+        "pf_001"
+      ],
+      "repair_when": [
+        "semantic_execution_error"
+      ],
+      "analyzer_id": "csa"
+    }
+  ],
+  "repair_directives": [],
+  "constraints": [
+    {
+      "title": "Generalize beyond patch site",
+      "description": "Do not bind the detector to fixed file paths, line numbers, or exact patch strings.",
+      "priority": "high"
+    },
+    {
+      "title": "Preserve vulnerability semantics",
+      "description": "Keep the detector focused on the vulnerability family implied by the patch and evidence.",
+      "priority": "high"
+    },
+    {
+      "title": "Respect analyzer-native form",
+      "description": "Output must be a valid checker_plugin for csa.",
+      "priority": "high"
+    },
+    {
+      "title": "Stay within proven mechanism scope",
+      "description": "Generalize only along evidence-supported semantic dimensions. Do not broaden the detector into unrelated globals, APIs, or bug families.",
+      "priority": "high"
+    },
+    {
+      "title": "Honor mechanism contract",
+      "description": "Preserve the mechanism family `resource_lifetime_violation` by keeping trigger invariants the same symbolic resource is released more than once on a feasible path; no reallocation, rebinding, or nulling separates the release events; Patch-backed trigger clue: removed risky operation: _zip_buffer_free(buffer);.",
+      "priority": "high"
+    },
+    {
+      "title": "Generalize only on contract axes",
+      "description": "Reuse semantics only along these transfer axes: equivalent repeated-release sequences for the same resource role; equivalent ownership handoff patterns across sibling helpers; equivalent guard or barrier predicates on sibling paths.",
+      "priority": "high"
+    },
+    {
+      "title": "Anchor on patch-touched scope",
+      "description": "Use patch-touched files/functions as the semantic anchor for synthesis. Only extend beyond them when the same mechanism is explicitly supported by evidence.",
+      "priority": "high"
+    },
+    {
+      "title": "Encode the patch-added barrier",
+      "description": "model the absence of barriers like 删除错误路径中的 `_zip_buffer_free(buffer)` 调用, 将对象释放责任集中到单一清理路径，而不是在中间错误分支提前释放, 遇到子过程失败时直接返回，让既有所有权/清理机制处理 `buffer`.",
+      "priority": "high"
+    },
+    {
+      "title": "Respect patched silence",
+      "description": "Use these no-report conditions when they are semantically proven: patch-introduced barrier pattern: 删除错误路径中的 `_zip_buffer_free(buffer)` 调用; patch-introduced barrier pattern: 将对象释放责任集中到单一清理路径，而不是在中间错误分支提前释放; patch-introduced barrier pattern: 遇到子过程失败时直接返回，让既有所有权/清理机制处理 `buffer`.",
+      "priority": "high"
+    },
+    {
+      "title": "Track resource identity across lifetime edges",
+      "description": "Model release, reuse, reinitialization, and ownership transfer on the same symbolic resource; do not count frees or uses in isolation.",
+      "priority": "high"
+    },
+    {
+      "title": "Do not key on local identifier names",
+      "description": "Do not define the vulnerable resource role solely by field/variable names such as session/cache/context; infer it from release-use-nulling-relookup semantics and alias continuity.",
+      "priority": "high"
+    },
+    {
+      "title": "Use path-sensitive evidence",
+      "description": "Prefer guards, state transitions, and lifecycle facts over broad textual matching.",
+      "priority": "high"
+    },
+    {
+      "title": "No placeholder helper logic",
+      "description": "Helper predicates must inspect AST/program state and must not be unconditional return-true/return-false stubs.",
+      "priority": "high"
+    }
+  ],
+  "implementation_hints": [
+    "Mechanism family: resource_lifetime_violation",
+    "Mechanism dimensions: resource identity or alias, release event count, reinitialization or nulling barrier",
+    "Trigger invariants: the same symbolic resource is released more than once on a feasible path, no reallocation, rebinding, or nulling separates the release events, Patch-backed trigger clue: removed risky operation: _zip_buffer_free(buffer);",
+    "Silence invariants: the resource is nulled, transferred, or rebound after the first release, a guard prevents the second release on the active path, patch-introduced barrier pattern: 删除错误路径中的 `_zip_buffer_free(buffer)` 调用",
+    "Transfer axes: equivalent repeated-release sequences for the same resource role, equivalent ownership handoff patterns across sibling helpers, equivalent guard or barrier predicates on sibling paths",
+    "Focus files: lib/zip_dirent.c",
+    "Priority functions: _zip_buffer_free",
+    "Patch-added barriers: 删除错误路径中的 `_zip_buffer_free(buffer)` 调用, 将对象释放责任集中到单一清理路径，而不是在中间错误分支提前释放, 遇到子过程失败时直接返回，让既有所有权/清理机制处理 `buffer`"
+  ],
+  "validation_expectations": [
+    "Vulnerable version should trigger a double_free finding.",
+    "Patched version should stay silent for the same mechanism.",
+    "Semantic validation that executes but returns zero hits is not acceptable; recover coverage with evidence-backed semantics.",
+    "Repair phase may fix syntax/interfaces only; it must not simplify away the core detection logic.",
+    "Generalization must stay inside the mechanism contract transfer axes instead of widening to adjacent bug families.",
+    "Sibling variants that preserve the same release-then-use lifecycle should also trigger; patch-local identifier matching is not sufficient.",
+    "Trigger invariant: the same symbolic resource is released more than once on a feasible path.",
+    "Trigger invariant: no reallocation, rebinding, or nulling separates the release events.",
+    "Patched silence depends on: patch-introduced barrier pattern: 删除错误路径中的 `_zip_buffer_free(buffer)` 调用.",
+    "Patched silence depends on: patch-introduced barrier pattern: 将对象释放责任集中到单一清理路径，而不是在中间错误分支提前释放."
+  ]
+}

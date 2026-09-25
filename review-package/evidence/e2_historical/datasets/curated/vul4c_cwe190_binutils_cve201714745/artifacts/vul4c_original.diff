@@ -1,0 +1,11 @@
+--- /SoK-main/Vul4C-Benchmark/binutils/CVE-2017-14745/CVE-2017-14745_CWE-190_elf32-i386.c_OLD.c	2025-10-13 01:35:41.126552737 +0000
++++ /SoK-main/Vul4C-Benchmark/binutils/CVE-2017-14745/CVE-2017-14745_CWE-190_elf32-i386.c_NEW.c	2025-10-13 01:35:41.106552764 +0000
+@@ -6342,6 +6342,8 @@
+ 
+   dynrelcount = bfd_canonicalize_dynamic_reloc (abfd, dynrelbuf,
+ 						dynsyms);
++  if (dynrelcount < 0)
++    return -1;
+ 
+   /* Sort the relocs by address.  */
+   qsort (dynrelbuf, dynrelcount, sizeof (arelent *), compare_relocs);

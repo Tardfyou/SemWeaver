@@ -1,0 +1,1256 @@
+{
+  "success": false,
+  "validation_requested": true,
+  "functional_validation_passed": false,
+  "semantic_target_hit": false,
+  "validation_state": "generation_failed",
+  "semantic_acceptance": false,
+  "semantic_acceptance_summary": "生成失败",
+  "checker_name": "FormattedInputWidthBoundChecker",
+  "artifact_display_name": "FormattedInputWidthBoundChecker",
+  "output_path": "",
+  "source_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe787_openjpeg_cve201714041/primary/csa/20260423_180340/csa/refinements/20260424_133644/csa/FormattedInputWidthBoundChecker.cpp",
+  "iterations": 2,
+  "compile_attempts": 0,
+  "error": "结构审查或编译未通过",
+  "validation": {},
+  "llm_usage": {
+    "prompt_tokens": 21522,
+    "completion_tokens": 3798,
+    "total_tokens": 25320,
+    "call_count": 2,
+    "available": true,
+    "model": "gpt-5.5"
+  },
+  "artifact_metrics": {
+    "path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe787_openjpeg_cve201714041/primary/csa/20260423_180340/csa/refinements/20260424_133644/csa/FormattedInputWidthBoundChecker.cpp",
+    "total_lines": 312,
+    "nonempty_lines": 257,
+    "char_count": 8527,
+    "byte_count": 8527
+  },
+  "artifact_delta": {
+    "baseline_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe787_openjpeg_cve201714041/primary/csa/20260423_180340/csa/FormattedInputWidthBoundChecker.cpp",
+    "current_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe787_openjpeg_cve201714041/primary/csa/20260423_180340/csa/refinements/20260424_133644/csa/FormattedInputWidthBoundChecker.cpp",
+    "baseline_total_lines": 266,
+    "current_total_lines": 312,
+    "baseline_nonempty_lines": 227,
+    "current_nonempty_lines": 257,
+    "delta_total_lines": 46,
+    "delta_nonempty_lines": 30,
+    "growth_ratio": 0.132159
+  },
+  "artifact_review": {
+    "success": true,
+    "error": "",
+    "findings": []
+  },
+  "evidence_records": 11,
+  "missing_evidence": [],
+  "evidence_degraded": false,
+  "semantic_slice_records": 4,
+  "context_summary_records": 0,
+  "slice_coverage": "full",
+  "verifier_backed_slices": 4,
+  "slice_kinds": {
+    "state_witness": 1,
+    "semantic_slice": 1,
+    "path_witness": 1,
+    "lifecycle_witness": 1
+  },
+  "evidence_escalation": {},
+  "validation_feedback_records": 0,
+  "validation_feedback_summary": "",
+  "validation_feedback_history": [
+    {
+      "analyzer": "csa",
+      "phase": "initial_validation",
+      "summary": "- validation_outcome @ semantic_validation: semantic validation passed with 29 diagnostics [coverage=full]"
+    },
+    {
+      "analyzer": "csa",
+      "phase": "baseline_reused_validation",
+      "summary": "- validation_outcome @ semantic_validation: semantic validation passed with 29 diagnostics [coverage=full]"
+    },
+    {
+      "analyzer": "csa",
+      "phase": "refine_candidate",
+      "summary": "- validation_outcome @ semantic_validation: semantic validation passed with 29 diagnostics [coverage=full]"
+    }
+  ],
+  "refinement_attempted": true,
+  "refinement_adopted": true,
+  "refinement_iterations_attempted": 1,
+  "refinement_skipped_reason": "",
+  "last_refinement_candidate_success": false,
+  "last_refinement_candidate_error": "结构审查或编译未通过",
+  "last_refinement_candidate_artifact_review": {
+    "success": true,
+    "error": "",
+    "findings": []
+  },
+  "last_refinement_candidate_output_path": "",
+  "post_validation_evidence_records": 0,
+  "post_validation_missing_evidence": [],
+  "post_validation_semantic_slice_records": 0,
+  "post_validation_context_summary_records": 0,
+  "post_validation_slice_coverage": "",
+  "synthesis_input": {
+    "analyzer_id": "csa",
+    "detector_artifact": "checker_plugin",
+    "primary_pattern": "buffer_overflow",
+    "objective": "Synthesize a path-sensitive buffer_overflow detector that encodes the same local state, guards, and lifecycle mechanism evidenced by the patch, while still generalizing to semantically equivalent sites.",
+    "mechanism_contract": {
+      "mechanism_family": "memory_write_without_proven_bound",
+      "semantic_dimensions": [
+        "write or copy sink",
+        "destination object or buffer identity",
+        "length/capacity relation",
+        "guard or safe-API barrier"
+      ],
+      "trigger_invariants": [
+        "a write-like sink is reached",
+        "destination capacity is not proven sufficient for the copied data",
+        "the current path lacks a barrier that proves the write is bounded",
+        "Patch-backed trigger clue: added guard: if (fscanf(f, \"PG%31[ \\t]%c%c%31[ \\t+-]%d%31[ \\t]%d%31[ \\t]%d\", temp, &endian1,",
+        "Patch-backed trigger clue: added or highlighted APIs: fscanf",
+        "Patch-backed trigger clue: detection hints: 首稿先命中 patch-local 最小锚点：`fscanf` format literal containing `%[` without a numeric width., 优先把危险操作本身作为命中条件：未限定宽度的 scanset 写入，而不是先要求证明缓冲区精确大小。, 不要把补丁中的 `!= 9` 失败检查写成硬过滤；它只处理解析失败，不阻断扫描时已经发生的越界写。"
+      ],
+      "silence_invariants": [
+        "a guard or checked bounded API proves the write fits the destination",
+        "patch-style length or return-value validation blocks the unsafe write",
+        "length/capacity guard present: if (fscanf(f, \"PG%31[ \\t]%c%c%31[ \\t+-]%d%31[ \\t]%d%31[ \\t]%d\", temp, &endian1,",
+        "patch-introduced barrier pattern: Replace `%[` with width-limited `%31[` in the same `fscanf` format string",
+        "patch-introduced barrier pattern: Constrain each scanset sink at the parsing site instead of relying on later checks",
+        "patch-introduced barrier pattern: Keep the existing parse-failure branch (`!= 9`) but add a write bound before the dangerous write occurs"
+      ],
+      "transfer_axes": [
+        "equivalent sink/size relationships across sibling functions",
+        "equivalent guard omission around the same bounded destination model",
+        "equivalent guard or barrier predicates on sibling paths",
+        "equivalent local state transitions around the same sink or dereference",
+        "equivalent ownership or release/reinit lifecycle on the same symbolic resource"
+      ],
+      "forbidden_shortcuts": [
+        "bind the detector to fixed file paths, line numbers, or exact patch strings",
+        "broaden into unrelated bug families just to improve hit count",
+        "treat every risky copy API as a finding without size semantics",
+        "infer guard semantics from strings instead of AST/state relations",
+        "placeholder helper logic or empty ProgramState modeling"
+      ],
+      "evidence_backed_axes": [
+        "resource lifecycle",
+        "path guards and barrier conditions",
+        "semantic trigger slice",
+        "state transitions"
+      ]
+    },
+    "detector_name_hint": "ScanfUnboundedScansetChecker",
+    "focus_files": [
+      "src/bin/jp2/convert.c"
+    ],
+    "focus_functions": [
+      "fscanf"
+    ],
+    "hypotheses": [
+      "Patch likely encodes a reusable vulnerability mechanism but available metadata is weak; keep evidence collection broad."
+    ],
+    "required_evidence_types": [
+      "patch_fact"
+    ],
+    "missing_evidence_types": [],
+    "evidence_degraded": false,
+    "patch_mechanism_signals": [
+      "added guard: if (fscanf(f, \"PG%31[ \\t]%c%c%31[ \\t+-]%d%31[ \\t]%d%31[ \\t]%d\", temp, &endian1,",
+      "added or highlighted APIs: fscanf",
+      "detection hints: 首稿先命中 patch-local 最小锚点：`fscanf` format literal containing `%[` without a numeric width., 优先把危险操作本身作为命中条件：未限定宽度的 scanset 写入，而不是先要求证明缓冲区精确大小。, 不要把补丁中的 `!= 9` 失败检查写成硬过滤；它只处理解析失败，不阻断扫描时已经发生的越界写。"
+    ],
+    "silencing_conditions": [
+      "length/capacity guard present: if (fscanf(f, \"PG%31[ \\t]%c%c%31[ \\t+-]%d%31[ \\t]%d%31[ \\t]%d\", temp, &endian1,",
+      "patch-introduced barrier pattern: Replace `%[` with width-limited `%31[` in the same `fscanf` format string",
+      "patch-introduced barrier pattern: Constrain each scanset sink at the parsing site instead of relying on later checks",
+      "patch-introduced barrier pattern: Keep the existing parse-failure branch (`!= 9`) but add a write bound before the dangerous write occurs",
+      "current path condition proves the copied byte count fits the destination buffer"
+    ],
+    "retry_guidance": [],
+    "selected_evidence_ids": [
+      "csa_validation_allocation_lifecycle_2",
+      "csa_validation_path_guard_1",
+      "csa_validation_semantic_slice_0",
+      "csa_state_0",
+      "pf_004",
+      "pf_005",
+      "pf_006",
+      "pf_003",
+      "pf_002"
+    ],
+    "selected_evidence": [
+      {
+        "evidence_id": "csa_validation_allocation_lifecycle_2",
+        "type": "allocation_lifecycle",
+        "analyzer": "csa",
+        "scope": {
+          "repo": "fix.patch",
+          "file": "src/bin/jp2/convert.c",
+          "function": "pgxtoimage"
+        },
+        "semantic_payload": {
+          "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+          "summary": "pgxtoimage in src/bin/jp2/convert.c provides CSA-backed pointer/resource lifecycle context near line 1170",
+          "state_before": [
+            "input(filename)",
+            "input(parameters)",
+            "buffer(parameters->image_offset_x0)",
+            "buffer(parameters->image_offset_y0)",
+            "sinks(memset, fopen)"
+          ],
+          "state_after": [
+            "operation(i++;)",
+            "diagnostic(Formatted input uses an unbounded %[ scanset that may overflow the destination character buffer [custom.FormattedInputWidthBoundChecker])"
+          ],
+          "tracked_symbols": [
+            "filename",
+            "parameters"
+          ],
+          "buffer_fields": [
+            "parameters->image_offset_x0",
+            "parameters->image_offset_y0",
+            "parameters->subsampling_dx"
+          ],
+          "coverage_status": "full",
+          "operations": [
+            "i++;"
+          ],
+          "functions": [
+            "pgxtoimage"
+          ],
+          "call_targets": [
+            "memset",
+            "fopen",
+            "fprintf",
+            "fseek",
+            "fscanf",
+            "fclose"
+          ],
+          "state_statements": [
+            "i++;"
+          ],
+          "source_file": "src/bin/jp2/convert.c"
+        },
+        "evidence_slice": {
+          "kind": "lifecycle_witness",
+          "anchor": {
+            "patch_file": "src/bin/jp2/convert.c",
+            "hunk_index": 0,
+            "source_line": 1170
+          },
+          "summary": "pgxtoimage in src/bin/jp2/convert.c provides CSA-backed pointer/resource lifecycle context near line 1170",
+          "statements": [
+            "1139: opj_image_t* pgxtoimage(const char *filename, opj_cparameters_t *parameters)",
+            "1140: {",
+            "1141:     FILE *f = NULL;",
+            "1142:     int w, h, prec;",
+            "1143:     int i, numcomps, max;",
+            "1144:     OPJ_COLOR_SPACE color_space;"
+          ],
+          "guards": [
+            "!f",
+            "signtmp[i] != '\\0'",
+            "signtmp[i] == '-'",
+            "endian1 == 'M' && endian2 == 'L'"
+          ],
+          "call_boundary": [
+            "memset",
+            "fopen",
+            "fprintf",
+            "fseek",
+            "fscanf",
+            "fclose"
+          ],
+          "call_edges": [],
+          "state_transitions": [
+            "operation(i++;)",
+            "diagnostic(Formatted input uses an unbounded %[ scanset that may overflow the destination character buffer [custom.FormattedInputWidthBoundChecker])"
+          ],
+          "api_terms": [
+            "i++;",
+            "memset",
+            "fopen",
+            "fprintf",
+            "fseek",
+            "fscanf"
+          ],
+          "related_symbols": [
+            "filename",
+            "parameters"
+          ],
+          "verifier": "csa-validation",
+          "extraction_method": "existing_result_json+source_window",
+          "coverage_status": "full"
+        },
+        "confidence": 0.86
+      },
+      {
+        "evidence_id": "csa_validation_path_guard_1",
+        "type": "path_guard",
+        "analyzer": "csa",
+        "scope": {
+          "repo": "fix.patch",
+          "file": "src/bin/jp2/convert.c",
+          "function": "pgxtoimage"
+        },
+        "semantic_payload": {
+          "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+          "guard_expr": "!f",
+          "summary": "CSA validation reaches src/bin/jp2/convert.c:1170 in pgxtoimage with guards !f, signtmp[i] != '\\0'",
+          "state_before": [
+            "input(filename)",
+            "input(parameters)",
+            "buffer(parameters->image_offset_x0)",
+            "buffer(parameters->image_offset_y0)",
+            "sinks(memset, fopen)"
+          ],
+          "state_after": [
+            "guard(!f)",
+            "guard(signtmp[i] != '\\0')",
+            "diagnostic(Formatted input uses an unbounded %[ scanset that may overflow the destination character buffer [custom.FormattedInputWidthBoundChecker])"
+          ],
+          "tracked_symbols": [
+            "filename",
+            "parameters"
+          ],
+          "buffer_fields": [
+            "parameters->image_offset_x0",
+            "parameters->image_offset_y0",
+            "parameters->subsampling_dx"
+          ],
+          "coverage_status": "full",
+          "functions": [
+            "pgxtoimage"
+          ],
+          "call_targets": [
+            "memset",
+            "fopen",
+            "fprintf",
+            "fseek",
+            "fscanf",
+            "fclose"
+          ],
+          "branch_conditions": [
+            "!f",
+            "signtmp[i] != '\\0'",
+            "signtmp[i] == '-'",
+            "endian1 == 'M' && endian2 == 'L'"
+          ],
+          "state_statements": [
+            "i++;"
+          ],
+          "source_file": "src/bin/jp2/convert.c"
+        },
+        "evidence_slice": {
+          "kind": "path_witness",
+          "anchor": {
+            "patch_file": "src/bin/jp2/convert.c",
+            "hunk_index": 0,
+            "source_line": 1170
+          },
+          "summary": "CSA validation reaches src/bin/jp2/convert.c:1170 in pgxtoimage with guards !f, signtmp[i] != '\\0'",
+          "statements": [
+            "1139: opj_image_t* pgxtoimage(const char *filename, opj_cparameters_t *parameters)",
+            "1140: {",
+            "1141:     FILE *f = NULL;",
+            "1142:     int w, h, prec;",
+            "1143:     int i, numcomps, max;",
+            "1144:     OPJ_COLOR_SPACE color_space;"
+          ],
+          "guards": [
+            "!f",
+            "signtmp[i] != '\\0'",
+            "signtmp[i] == '-'",
+            "endian1 == 'M' && endian2 == 'L'"
+          ],
+          "call_boundary": [
+            "memset",
+            "fopen",
+            "fprintf",
+            "fseek",
+            "fscanf",
+            "fclose"
+          ],
+          "call_edges": [],
+          "state_transitions": [
+            "guard(!f)",
+            "guard(signtmp[i] != '\\0')",
+            "diagnostic(Formatted input uses an unbounded %[ scanset that may overflow the destination character buffer [custom.FormattedInputWidthBoundChecker])"
+          ],
+          "api_terms": [
+            "i++;",
+            "memset",
+            "fopen",
+            "fprintf",
+            "fseek",
+            "fscanf"
+          ],
+          "related_symbols": [
+            "filename",
+            "parameters"
+          ],
+          "verifier": "csa-validation",
+          "extraction_method": "existing_result_json+source_window",
+          "coverage_status": "full"
+        },
+        "confidence": 0.86
+      },
+      {
+        "evidence_id": "csa_validation_semantic_slice_0",
+        "type": "semantic_slice",
+        "analyzer": "csa",
+        "scope": {
+          "repo": "fix.patch",
+          "file": "src/bin/jp2/convert.c",
+          "function": "pgxtoimage"
+        },
+        "semantic_payload": {
+          "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+          "summary": "CSA validation diagnostic anchors the patch-local semantic slice at src/bin/jp2/convert.c:1170",
+          "state_before": [
+            "input(filename)",
+            "input(parameters)",
+            "buffer(parameters->image_offset_x0)",
+            "buffer(parameters->image_offset_y0)",
+            "sinks(memset, fopen)"
+          ],
+          "state_after": [
+            "diagnostic(Formatted input uses an unbounded %[ scanset that may overflow the destination character buffer [custom.FormattedInputWidthBoundChecker])"
+          ],
+          "tracked_symbols": [
+            "filename",
+            "parameters"
+          ],
+          "buffer_fields": [
+            "parameters->image_offset_x0",
+            "parameters->image_offset_y0",
+            "parameters->subsampling_dx"
+          ],
+          "coverage_status": "full",
+          "functions": [
+            "pgxtoimage"
+          ],
+          "call_targets": [
+            "memset",
+            "fopen",
+            "fprintf",
+            "fseek",
+            "fscanf",
+            "fclose"
+          ],
+          "state_statements": [
+            "i++;"
+          ],
+          "source_file": "src/bin/jp2/convert.c"
+        },
+        "evidence_slice": {
+          "kind": "semantic_slice",
+          "anchor": {
+            "patch_file": "src/bin/jp2/convert.c",
+            "hunk_index": 0,
+            "source_line": 1170
+          },
+          "summary": "CSA validation diagnostic anchors the patch-local semantic slice at src/bin/jp2/convert.c:1170",
+          "statements": [
+            "1139: opj_image_t* pgxtoimage(const char *filename, opj_cparameters_t *parameters)",
+            "1140: {",
+            "1141:     FILE *f = NULL;",
+            "1142:     int w, h, prec;",
+            "1143:     int i, numcomps, max;",
+            "1144:     OPJ_COLOR_SPACE color_space;"
+          ],
+          "guards": [
+            "!f",
+            "signtmp[i] != '\\0'",
+            "signtmp[i] == '-'",
+            "endian1 == 'M' && endian2 == 'L'"
+          ],
+          "call_boundary": [
+            "memset",
+            "fopen",
+            "fprintf",
+            "fseek",
+            "fscanf",
+            "fclose"
+          ],
+          "call_edges": [],
+          "state_transitions": [
+            "diagnostic(Formatted input uses an unbounded %[ scanset that may overflow the destination character buffer [custom.FormattedInputWidthBoundChecker])"
+          ],
+          "api_terms": [
+            "i++;",
+            "memset",
+            "fopen",
+            "fprintf",
+            "fseek",
+            "fscanf"
+          ],
+          "related_symbols": [
+            "filename",
+            "parameters"
+          ],
+          "verifier": "csa-validation",
+          "extraction_method": "existing_result_json+source_window",
+          "coverage_status": "full"
+        },
+        "confidence": 0.86
+      },
+      {
+        "evidence_id": "csa_state_0",
+        "type": "state_transition",
+        "analyzer": "csa",
+        "scope": {
+          "repo": "fix.patch",
+          "file": "src/bin/jp2/convert.c",
+          "function": "pgxtoimage"
+        },
+        "semantic_payload": {
+          "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+          "summary": "pgxtoimage in src/bin/jp2/convert.c: state_ops=i++;",
+          "state_before": [
+            "input(filename)",
+            "input(parameters)",
+            "buffer(parameters->image_offset_x0)",
+            "buffer(parameters->image_offset_y0)",
+            "sinks(memset, fopen)"
+          ],
+          "state_after": [
+            "transition(i++;)"
+          ],
+          "tracked_symbols": [
+            "filename",
+            "parameters",
+            "parameters->image_offset_x0",
+            "parameters->image_offset_y0",
+            "parameters->subsampling_dx"
+          ],
+          "buffer_fields": [
+            "parameters->image_offset_x0",
+            "parameters->image_offset_y0",
+            "parameters->subsampling_dx"
+          ],
+          "coverage_status": "full",
+          "functions": [
+            "pgxtoimage"
+          ],
+          "call_targets": [
+            "memset",
+            "fopen",
+            "fprintf",
+            "fseek",
+            "fscanf",
+            "fclose",
+            "fgetc"
+          ],
+          "source_file": "src/bin/jp2/convert.c"
+        },
+        "evidence_slice": {
+          "kind": "state_witness",
+          "anchor": {
+            "patch_file": "src/bin/jp2/convert.c",
+            "hunk_index": 0,
+            "source_line": 1170
+          },
+          "summary": "pgxtoimage in src/bin/jp2/convert.c: state_ops=i++;",
+          "statements": [
+            "1139: opj_image_t* pgxtoimage(const char *filename, opj_cparameters_t *parameters)",
+            "1140: {",
+            "1141:     FILE *f = NULL;",
+            "1142:     int w, h, prec;",
+            "1143:     int i, numcomps, max;",
+            "1144:     OPJ_COLOR_SPACE color_space;"
+          ],
+          "guards": [],
+          "call_boundary": [
+            "memset",
+            "fopen",
+            "fprintf",
+            "fseek",
+            "fscanf",
+            "fclose"
+          ],
+          "call_edges": [],
+          "state_transitions": [
+            "transition(i++;)"
+          ],
+          "api_terms": [],
+          "related_symbols": [
+            "filename",
+            "parameters",
+            "parameters->image_offset_x0",
+            "parameters->image_offset_y0",
+            "parameters->subsampling_dx"
+          ],
+          "verifier": "clang-analyzer",
+          "extraction_method": "runtime_cfg+source_window",
+          "coverage_status": "full"
+        },
+        "confidence": 0.81
+      },
+      {
+        "evidence_id": "pf_004",
+        "type": "patch_fact",
+        "analyzer": "patch",
+        "scope": {
+          "repo": "fix.patch",
+          "file": "src/bin/jp2/convert.c",
+          "function": "fscanf"
+        },
+        "semantic_payload": {
+          "label": "Patch introduces or strengthens guards"
+        },
+        "evidence_slice": {},
+        "confidence": 0.95
+      },
+      {
+        "evidence_id": "pf_005",
+        "type": "patch_fact",
+        "analyzer": "patch",
+        "scope": {
+          "repo": "fix.patch",
+          "file": "src/bin/jp2/convert.c",
+          "function": "fscanf"
+        },
+        "semantic_payload": {
+          "label": "Patch introduces reusable fix patterns"
+        },
+        "evidence_slice": {},
+        "confidence": 0.95
+      },
+      {
+        "evidence_id": "pf_006",
+        "type": "patch_fact",
+        "analyzer": "patch",
+        "scope": {
+          "repo": "fix.patch",
+          "file": "src/bin/jp2/convert.c",
+          "function": "fscanf"
+        },
+        "semantic_payload": {
+          "label": "Patch introduces or highlights API usage"
+        },
+        "evidence_slice": {},
+        "confidence": 0.95
+      },
+      {
+        "evidence_id": "pf_003",
+        "type": "patch_fact",
+        "analyzer": "patch",
+        "scope": {
+          "repo": "fix.patch",
+          "file": "src/bin/jp2/convert.c",
+          "function": "fscanf"
+        },
+        "semantic_payload": {
+          "label": "Existing patch analysis detection strategy"
+        },
+        "evidence_slice": {},
+        "confidence": 0.95
+      },
+      {
+        "evidence_id": "pf_002",
+        "type": "patch_fact",
+        "analyzer": "patch",
+        "scope": {
+          "repo": "fix.patch",
+          "file": "src/bin/jp2/convert.c",
+          "function": "fscanf"
+        },
+        "semantic_payload": {
+          "label": "Functions implicated by removed or fixed code"
+        },
+        "evidence_slice": {},
+        "confidence": 0.95
+      }
+    ],
+    "semantic_slice_count": 4,
+    "context_summary_count": 0,
+    "semantic_slice_coverage": "full",
+    "selected_semantic_slice_ids": [
+      "csa_validation_allocation_lifecycle_2",
+      "csa_validation_path_guard_1",
+      "csa_validation_semantic_slice_0",
+      "csa_state_0"
+    ],
+    "selected_context_summary_ids": [],
+    "selected_semantic_slices": [
+      {
+        "evidence_id": "csa_validation_allocation_lifecycle_2",
+        "type": "allocation_lifecycle",
+        "analyzer": "csa",
+        "scope": {
+          "repo": "fix.patch",
+          "file": "src/bin/jp2/convert.c",
+          "function": "pgxtoimage"
+        },
+        "semantic_payload": {
+          "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+          "summary": "pgxtoimage in src/bin/jp2/convert.c provides CSA-backed pointer/resource lifecycle context near line 1170",
+          "state_before": [
+            "input(filename)",
+            "input(parameters)",
+            "buffer(parameters->image_offset_x0)",
+            "buffer(parameters->image_offset_y0)",
+            "sinks(memset, fopen)"
+          ],
+          "state_after": [
+            "operation(i++;)",
+            "diagnostic(Formatted input uses an unbounded %[ scanset that may overflow the destination character buffer [custom.FormattedInputWidthBoundChecker])"
+          ],
+          "tracked_symbols": [
+            "filename",
+            "parameters"
+          ],
+          "buffer_fields": [
+            "parameters->image_offset_x0",
+            "parameters->image_offset_y0",
+            "parameters->subsampling_dx"
+          ],
+          "coverage_status": "full",
+          "operations": [
+            "i++;"
+          ],
+          "functions": [
+            "pgxtoimage"
+          ],
+          "call_targets": [
+            "memset",
+            "fopen",
+            "fprintf",
+            "fseek",
+            "fscanf",
+            "fclose"
+          ],
+          "state_statements": [
+            "i++;"
+          ],
+          "source_file": "src/bin/jp2/convert.c"
+        },
+        "evidence_slice": {
+          "kind": "lifecycle_witness",
+          "anchor": {
+            "patch_file": "src/bin/jp2/convert.c",
+            "hunk_index": 0,
+            "source_line": 1170
+          },
+          "summary": "pgxtoimage in src/bin/jp2/convert.c provides CSA-backed pointer/resource lifecycle context near line 1170",
+          "statements": [
+            "1139: opj_image_t* pgxtoimage(const char *filename, opj_cparameters_t *parameters)",
+            "1140: {",
+            "1141:     FILE *f = NULL;",
+            "1142:     int w, h, prec;",
+            "1143:     int i, numcomps, max;",
+            "1144:     OPJ_COLOR_SPACE color_space;"
+          ],
+          "guards": [
+            "!f",
+            "signtmp[i] != '\\0'",
+            "signtmp[i] == '-'",
+            "endian1 == 'M' && endian2 == 'L'"
+          ],
+          "call_boundary": [
+            "memset",
+            "fopen",
+            "fprintf",
+            "fseek",
+            "fscanf",
+            "fclose"
+          ],
+          "call_edges": [],
+          "state_transitions": [
+            "operation(i++;)",
+            "diagnostic(Formatted input uses an unbounded %[ scanset that may overflow the destination character buffer [custom.FormattedInputWidthBoundChecker])"
+          ],
+          "api_terms": [
+            "i++;",
+            "memset",
+            "fopen",
+            "fprintf",
+            "fseek",
+            "fscanf"
+          ],
+          "related_symbols": [
+            "filename",
+            "parameters"
+          ],
+          "verifier": "csa-validation",
+          "extraction_method": "existing_result_json+source_window",
+          "coverage_status": "full"
+        },
+        "confidence": 0.86
+      },
+      {
+        "evidence_id": "csa_validation_path_guard_1",
+        "type": "path_guard",
+        "analyzer": "csa",
+        "scope": {
+          "repo": "fix.patch",
+          "file": "src/bin/jp2/convert.c",
+          "function": "pgxtoimage"
+        },
+        "semantic_payload": {
+          "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+          "guard_expr": "!f",
+          "summary": "CSA validation reaches src/bin/jp2/convert.c:1170 in pgxtoimage with guards !f, signtmp[i] != '\\0'",
+          "state_before": [
+            "input(filename)",
+            "input(parameters)",
+            "buffer(parameters->image_offset_x0)",
+            "buffer(parameters->image_offset_y0)",
+            "sinks(memset, fopen)"
+          ],
+          "state_after": [
+            "guard(!f)",
+            "guard(signtmp[i] != '\\0')",
+            "diagnostic(Formatted input uses an unbounded %[ scanset that may overflow the destination character buffer [custom.FormattedInputWidthBoundChecker])"
+          ],
+          "tracked_symbols": [
+            "filename",
+            "parameters"
+          ],
+          "buffer_fields": [
+            "parameters->image_offset_x0",
+            "parameters->image_offset_y0",
+            "parameters->subsampling_dx"
+          ],
+          "coverage_status": "full",
+          "functions": [
+            "pgxtoimage"
+          ],
+          "call_targets": [
+            "memset",
+            "fopen",
+            "fprintf",
+            "fseek",
+            "fscanf",
+            "fclose"
+          ],
+          "branch_conditions": [
+            "!f",
+            "signtmp[i] != '\\0'",
+            "signtmp[i] == '-'",
+            "endian1 == 'M' && endian2 == 'L'"
+          ],
+          "state_statements": [
+            "i++;"
+          ],
+          "source_file": "src/bin/jp2/convert.c"
+        },
+        "evidence_slice": {
+          "kind": "path_witness",
+          "anchor": {
+            "patch_file": "src/bin/jp2/convert.c",
+            "hunk_index": 0,
+            "source_line": 1170
+          },
+          "summary": "CSA validation reaches src/bin/jp2/convert.c:1170 in pgxtoimage with guards !f, signtmp[i] != '\\0'",
+          "statements": [
+            "1139: opj_image_t* pgxtoimage(const char *filename, opj_cparameters_t *parameters)",
+            "1140: {",
+            "1141:     FILE *f = NULL;",
+            "1142:     int w, h, prec;",
+            "1143:     int i, numcomps, max;",
+            "1144:     OPJ_COLOR_SPACE color_space;"
+          ],
+          "guards": [
+            "!f",
+            "signtmp[i] != '\\0'",
+            "signtmp[i] == '-'",
+            "endian1 == 'M' && endian2 == 'L'"
+          ],
+          "call_boundary": [
+            "memset",
+            "fopen",
+            "fprintf",
+            "fseek",
+            "fscanf",
+            "fclose"
+          ],
+          "call_edges": [],
+          "state_transitions": [
+            "guard(!f)",
+            "guard(signtmp[i] != '\\0')",
+            "diagnostic(Formatted input uses an unbounded %[ scanset that may overflow the destination character buffer [custom.FormattedInputWidthBoundChecker])"
+          ],
+          "api_terms": [
+            "i++;",
+            "memset",
+            "fopen",
+            "fprintf",
+            "fseek",
+            "fscanf"
+          ],
+          "related_symbols": [
+            "filename",
+            "parameters"
+          ],
+          "verifier": "csa-validation",
+          "extraction_method": "existing_result_json+source_window",
+          "coverage_status": "full"
+        },
+        "confidence": 0.86
+      },
+      {
+        "evidence_id": "csa_validation_semantic_slice_0",
+        "type": "semantic_slice",
+        "analyzer": "csa",
+        "scope": {
+          "repo": "fix.patch",
+          "file": "src/bin/jp2/convert.c",
+          "function": "pgxtoimage"
+        },
+        "semantic_payload": {
+          "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+          "summary": "CSA validation diagnostic anchors the patch-local semantic slice at src/bin/jp2/convert.c:1170",
+          "state_before": [
+            "input(filename)",
+            "input(parameters)",
+            "buffer(parameters->image_offset_x0)",
+            "buffer(parameters->image_offset_y0)",
+            "sinks(memset, fopen)"
+          ],
+          "state_after": [
+            "diagnostic(Formatted input uses an unbounded %[ scanset that may overflow the destination character buffer [custom.FormattedInputWidthBoundChecker])"
+          ],
+          "tracked_symbols": [
+            "filename",
+            "parameters"
+          ],
+          "buffer_fields": [
+            "parameters->image_offset_x0",
+            "parameters->image_offset_y0",
+            "parameters->subsampling_dx"
+          ],
+          "coverage_status": "full",
+          "functions": [
+            "pgxtoimage"
+          ],
+          "call_targets": [
+            "memset",
+            "fopen",
+            "fprintf",
+            "fseek",
+            "fscanf",
+            "fclose"
+          ],
+          "state_statements": [
+            "i++;"
+          ],
+          "source_file": "src/bin/jp2/convert.c"
+        },
+        "evidence_slice": {
+          "kind": "semantic_slice",
+          "anchor": {
+            "patch_file": "src/bin/jp2/convert.c",
+            "hunk_index": 0,
+            "source_line": 1170
+          },
+          "summary": "CSA validation diagnostic anchors the patch-local semantic slice at src/bin/jp2/convert.c:1170",
+          "statements": [
+            "1139: opj_image_t* pgxtoimage(const char *filename, opj_cparameters_t *parameters)",
+            "1140: {",
+            "1141:     FILE *f = NULL;",
+            "1142:     int w, h, prec;",
+            "1143:     int i, numcomps, max;",
+            "1144:     OPJ_COLOR_SPACE color_space;"
+          ],
+          "guards": [
+            "!f",
+            "signtmp[i] != '\\0'",
+            "signtmp[i] == '-'",
+            "endian1 == 'M' && endian2 == 'L'"
+          ],
+          "call_boundary": [
+            "memset",
+            "fopen",
+            "fprintf",
+            "fseek",
+            "fscanf",
+            "fclose"
+          ],
+          "call_edges": [],
+          "state_transitions": [
+            "diagnostic(Formatted input uses an unbounded %[ scanset that may overflow the destination character buffer [custom.FormattedInputWidthBoundChecker])"
+          ],
+          "api_terms": [
+            "i++;",
+            "memset",
+            "fopen",
+            "fprintf",
+            "fseek",
+            "fscanf"
+          ],
+          "related_symbols": [
+            "filename",
+            "parameters"
+          ],
+          "verifier": "csa-validation",
+          "extraction_method": "existing_result_json+source_window",
+          "coverage_status": "full"
+        },
+        "confidence": 0.86
+      },
+      {
+        "evidence_id": "csa_state_0",
+        "type": "state_transition",
+        "analyzer": "csa",
+        "scope": {
+          "repo": "fix.patch",
+          "file": "src/bin/jp2/convert.c",
+          "function": "pgxtoimage"
+        },
+        "semantic_payload": {
+          "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+          "summary": "pgxtoimage in src/bin/jp2/convert.c: state_ops=i++;",
+          "state_before": [
+            "input(filename)",
+            "input(parameters)",
+            "buffer(parameters->image_offset_x0)",
+            "buffer(parameters->image_offset_y0)",
+            "sinks(memset, fopen)"
+          ],
+          "state_after": [
+            "transition(i++;)"
+          ],
+          "tracked_symbols": [
+            "filename",
+            "parameters",
+            "parameters->image_offset_x0",
+            "parameters->image_offset_y0",
+            "parameters->subsampling_dx"
+          ],
+          "buffer_fields": [
+            "parameters->image_offset_x0",
+            "parameters->image_offset_y0",
+            "parameters->subsampling_dx"
+          ],
+          "coverage_status": "full",
+          "functions": [
+            "pgxtoimage"
+          ],
+          "call_targets": [
+            "memset",
+            "fopen",
+            "fprintf",
+            "fseek",
+            "fscanf",
+            "fclose",
+            "fgetc"
+          ],
+          "source_file": "src/bin/jp2/convert.c"
+        },
+        "evidence_slice": {
+          "kind": "state_witness",
+          "anchor": {
+            "patch_file": "src/bin/jp2/convert.c",
+            "hunk_index": 0,
+            "source_line": 1170
+          },
+          "summary": "pgxtoimage in src/bin/jp2/convert.c: state_ops=i++;",
+          "statements": [
+            "1139: opj_image_t* pgxtoimage(const char *filename, opj_cparameters_t *parameters)",
+            "1140: {",
+            "1141:     FILE *f = NULL;",
+            "1142:     int w, h, prec;",
+            "1143:     int i, numcomps, max;",
+            "1144:     OPJ_COLOR_SPACE color_space;"
+          ],
+          "guards": [],
+          "call_boundary": [
+            "memset",
+            "fopen",
+            "fprintf",
+            "fseek",
+            "fscanf",
+            "fclose"
+          ],
+          "call_edges": [],
+          "state_transitions": [
+            "transition(i++;)"
+          ],
+          "api_terms": [],
+          "related_symbols": [
+            "filename",
+            "parameters",
+            "parameters->image_offset_x0",
+            "parameters->image_offset_y0",
+            "parameters->subsampling_dx"
+          ],
+          "verifier": "clang-analyzer",
+          "extraction_method": "runtime_cfg+source_window",
+          "coverage_status": "full"
+        },
+        "confidence": 0.81
+      }
+    ],
+    "selected_context_summaries": [],
+    "semantic_clause_plan": [
+      {
+        "clause_id": "vulnerable_trigger_clause",
+        "intent": "Trigger on the vulnerable buffer_overflow mechanism using evidence-backed path/flow semantics.",
+        "supporting_evidence_ids": [
+          "csa_validation_allocation_lifecycle_2",
+          "csa_validation_path_guard_1",
+          "csa_validation_semantic_slice_0",
+          "csa_state_0"
+        ],
+        "repair_when": [
+          "semantic_no_hits"
+        ],
+        "focus_functions": [
+          "fscanf"
+        ]
+      },
+      {
+        "clause_id": "patched_silence_clause",
+        "intent": "Stay silent on patched code when patch-added guards, barriers, or safe APIs prove the mechanism is blocked.",
+        "supporting_evidence_ids": [
+          "csa_validation_path_guard_1",
+          "csa_validation_semantic_slice_0",
+          "csa_state_0",
+          "pf_004",
+          "pf_005",
+          "pf_006",
+          "pf_003",
+          "pf_002"
+        ],
+        "repair_when": [],
+        "silencing_conditions": [
+          "length/capacity guard present: if (fscanf(f, \"PG%31[ \\t]%c%c%31[ \\t+-]%d%31[ \\t]%d%31[ \\t]%d\", temp, &endian1,",
+          "patch-introduced barrier pattern: Replace `%[` with width-limited `%31[` in the same `fscanf` format string",
+          "patch-introduced barrier pattern: Constrain each scanset sink at the parsing site instead of relying on later checks",
+          "patch-introduced barrier pattern: Keep the existing parse-failure branch (`!= 9`) but add a write bound before the dangerous write occurs"
+        ]
+      },
+      {
+        "clause_id": "semantic_transfer_clause",
+        "intent": "Generalize along semantic slices and call-chain evidence rather than patch-local syntax.",
+        "supporting_evidence_ids": [
+          "csa_validation_semantic_slice_0"
+        ],
+        "repair_when": [],
+        "analyzer_id": "csa"
+      },
+      {
+        "clause_id": "analyzer_interface_clause",
+        "intent": "Preserve valid analyzer-facing syntax and interfaces while keeping semantics unchanged.",
+        "supporting_evidence_ids": [
+          "pf_004",
+          "pf_005",
+          "pf_006",
+          "pf_003",
+          "pf_002"
+        ],
+        "repair_when": [
+          "semantic_execution_error"
+        ],
+        "analyzer_id": "csa"
+      }
+    ],
+    "repair_directives": [],
+    "constraints": [
+      {
+        "title": "Generalize beyond patch site",
+        "description": "Do not bind the detector to fixed file paths, line numbers, or exact patch strings.",
+        "priority": "high"
+      },
+      {
+        "title": "Preserve vulnerability semantics",
+        "description": "Keep the detector focused on the vulnerability family implied by the patch and evidence.",
+        "priority": "high"
+      },
+      {
+        "title": "Respect analyzer-native form",
+        "description": "Output must be a valid checker_plugin for csa.",
+        "priority": "high"
+      },
+      {
+        "title": "Stay within proven mechanism scope",
+        "description": "Generalize only along evidence-supported semantic dimensions. Do not broaden the detector into unrelated globals, APIs, or bug families.",
+        "priority": "high"
+      },
+      {
+        "title": "Honor mechanism contract",
+        "description": "Preserve the mechanism family `memory_write_without_proven_bound` by keeping trigger invariants a write-like sink is reached; destination capacity is not proven sufficient for the copied data; the current path lacks a barrier that proves the write is bounded.",
+        "priority": "high"
+      },
+      {
+        "title": "Generalize only on contract axes",
+        "description": "Reuse semantics only along these transfer axes: equivalent sink/size relationships across sibling functions; equivalent guard omission around the same bounded destination model; equivalent guard or barrier predicates on sibling paths.",
+        "priority": "high"
+      },
+      {
+        "title": "Anchor on patch-touched scope",
+        "description": "Use patch-touched files/functions as the semantic anchor for synthesis. Only extend beyond them when the same mechanism is explicitly supported by evidence.",
+        "priority": "high"
+      },
+      {
+        "title": "Encode the patch-added barrier",
+        "description": "model the absence of barriers like Replace `%[` with width-limited `%31[` in the same `fscanf` format string, Constrain each scanset sink at the parsing site instead of relying on later checks, Keep the existing parse-failure branch (`!= 9`) but add a write bound before the dangerous write occurs; treat guards such as if (fscanf(f, \"PG%31[ \\t]%c%c%31[ \\t+-]%d%31[ \\t]%d%31[ \\t]%d\", temp, &endian1, as semantic barriers; use APIs such as fscanf as semantic clues, not string matches.",
+        "priority": "high"
+      },
+      {
+        "title": "Respect patched silence",
+        "description": "Use these no-report conditions when they are semantically proven: length/capacity guard present: if (fscanf(f, \"PG%31[ \\t]%c%c%31[ \\t+-]%d%31[ \\t]%d%31[ \\t]%d\", temp, &endian1,; patch-introduced barrier pattern: Replace `%[` with width-limited `%31[` in the same `fscanf` format string; patch-introduced barrier pattern: Constrain each scanset sink at the parsing site instead of relying on later checks.",
+        "priority": "high"
+      },
+      {
+        "title": "Use path-sensitive evidence",
+        "description": "Prefer guards, state transitions, and lifecycle facts over broad textual matching.",
+        "priority": "high"
+      },
+      {
+        "title": "No placeholder helper logic",
+        "description": "Helper predicates must inspect AST/program state and must not be unconditional return-true/return-false stubs.",
+        "priority": "high"
+      },
+      {
+        "title": "Do not return early on unknown string length",
+        "description": "For inherently unbounded sinks like strcpy/strcat/sprintf/gets, missing concrete source length is not by itself a no-report condition; require a real barrier proof to stay silent.",
+        "priority": "high"
+      },
+      {
+        "title": "Do not confuse nullness with bounds",
+        "description": "Null/non-null checks on source, destination, or size symbols are not buffer-bound proofs and must not be used as silence conditions for overflow detection.",
+        "priority": "high"
+      }
+    ],
+    "implementation_hints": [
+      "Mechanism family: memory_write_without_proven_bound",
+      "Mechanism dimensions: write or copy sink, destination object or buffer identity, length/capacity relation, guard or safe-API barrier",
+      "Trigger invariants: a write-like sink is reached, destination capacity is not proven sufficient for the copied data, the current path lacks a barrier that proves the write is bounded",
+      "Silence invariants: a guard or checked bounded API proves the write fits the destination, patch-style length or return-value validation blocks the unsafe write, length/capacity guard present: if (fscanf(f, \"PG%31[ \\t]%c%c%31[ \\t+-]%d%31[ \\t]%d%31[ \\t]%d\", temp, &endian1,",
+      "Transfer axes: equivalent sink/size relationships across sibling functions, equivalent guard omission around the same bounded destination model, equivalent guard or barrier predicates on sibling paths",
+      "Focus files: src/bin/jp2/convert.c",
+      "Priority functions: fscanf",
+      "Patch-added barriers: Replace `%[` with width-limited `%31[` in the same `fscanf` format string, Constrain each scanset sink at the parsing site instead of relying on later checks, Keep the existing parse-failure branch (`!= 9`) but add a write bound before the dangerous write occurs"
+    ],
+    "validation_expectations": [
+      "Vulnerable version should trigger a buffer_overflow finding.",
+      "Patched version should stay silent for the same mechanism.",
+      "Semantic validation that executes but returns zero hits is not acceptable; recover coverage with evidence-backed semantics.",
+      "Repair phase may fix syntax/interfaces only; it must not simplify away the core detection logic.",
+      "Generalization must stay inside the mechanism contract transfer axes instead of widening to adjacent bug families.",
+      "Trigger invariant: a write-like sink is reached.",
+      "Trigger invariant: destination capacity is not proven sufficient for the copied data.",
+      "Patched silence depends on: length/capacity guard present: if (fscanf(f, \"PG%31[ \\t]%c%c%31[ \\t+-]%d%31[ \\t]%d%31[ \\t]%d\", temp, &endian1,.",
+      "Patched silence depends on: patch-introduced barrier pattern: Replace `%[` with width-limited `%31[` in the same `fscanf` format string."
+    ]
+  },
+  "evidence_effectiveness": {
+    "baseline_records": 11,
+    "post_validation_records": 11,
+    "new_records": 0,
+    "baseline_missing": [],
+    "post_validation_missing": [],
+    "resolved_missing": [],
+    "improved": false,
+    "summary": "验证反馈未新增证据或缺口变化"
+  }
+}

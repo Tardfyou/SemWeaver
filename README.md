@@ -4,7 +4,8 @@ The current replication package is in [review-package/](review-package/README.md
 It contains the pinned SemWeaver source, the FSE-format manuscript and PDF,
 frozen checker/patch inputs, raw and derived evidence, three matched repeats
 against KNighter's actual refinement loop, a ten-candidate extension screen,
-and English instructions for offline verification.
+historical mixed-provenance CSA/CodeQL records, and English instructions for
+offline verification.
 
 ```bash
 cd review-package

@@ -1,0 +1,497 @@
+{
+  "records": [
+    {
+      "evidence_id": "pf_000",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "jpgfile.c",
+        "function": "process_COM"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "patch_overview",
+        "label": "Patch overview",
+        "attributes": {
+          "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe120_jhead_cve202028840/patches/fix.patch",
+          "changed_files": [
+            "jpgfile.c"
+          ],
+          "changed_file_count": 1,
+          "added_line_count": 1,
+          "deleted_line_count": 1
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "patch_overview",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_001",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "jpgfile.c",
+        "function": "process_COM"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "vulnerability_patterns",
+        "label": "Vulnerability patterns inferred from patch",
+        "attributes": {
+          "patterns": [
+            "out_of_bounds_read",
+            "integer_overflow"
+          ],
+          "descriptions": [
+            "A lookahead read uses `Data[a+1]` without first proving that `a+1` is still within the buffer length while iterating up to `a < length`."
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "vulnerability_patterns",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_002",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "jpgfile.c",
+        "function": "process_COM"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "affected_functions",
+        "label": "Functions implicated by removed or fixed code",
+        "attributes": {
+          "functions": [
+            "process_COM",
+            "unknown"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "affected_functions",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_003",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "jpgfile.c",
+        "function": "process_COM"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "detection_strategy",
+        "label": "Existing patch analysis detection strategy",
+        "attributes": {
+          "primary_pattern": "out_of_bounds_read",
+          "check_types": [
+            "local_ast_pattern_matching",
+            "intra_procedural_bounds_reasoning",
+            "guarded_array_access_detection",
+            "loop_index_and_lookahead_access_correlation"
+          ],
+          "entry_points": [
+            "Conditions that read `buf[index+1]`, `buf[index-1]`, or similar lookahead/lookbehind expressions inside loops",
+            "Array or pointer reads in boolean conjunctions where the bound check is absent or added by patch",
+            "Loops with upper bound `index < length` combined with sink `buffer[index+1]`"
+          ],
+          "data_flow_tracking": false,
+          "cross_file_analysis": false,
+          "suggestions": [
+            "首稿直接命中 patch-local 锚点：循环内条件表达式中的 `Data[a+1]` 读取，而循环条件仅保证 `a < length`。",
+            "将 `a == length-1` 时发生的 lookahead 越界作为核心机制；不需要先依赖复杂污点传播。",
+            "新增的 `a < length-1` 是 barrier，但首稿不要把“存在该 guard”写成必要前提；应优先搜索缺少该 barrier 的同类 lookahead 访问。",
+            "辅助收敛条件可使用：同一基本块或同一条件中先有 `ch = Data[a]`，后有 `Data[a+1]`；以及循环上界是 `a < length`。",
+            "无需跨文件分析，只盯住补丁涉及函数/文件中的局部 AST/CFG 即可。",
+            "可泛化到 `index+const` 读取：若循环只证明 `index < len`，但读取 `buf[index+1]`，则要求额外证明 `index < len-1`。"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "detection_strategy",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_004",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "jpgfile.c",
+        "function": "process_COM"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "added_guards",
+        "label": "Patch introduces or strengthens guards",
+        "attributes": {
+          "guards": [
+            "if (ch == '\\r' && a < length-1 && Data[a+1] == '\\n') continue; // Remove cr followed by lf."
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "added_guards",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_005",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "jpgfile.c",
+        "function": "process_COM"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "fix_patterns",
+        "label": "Patch introduces reusable fix patterns",
+        "attributes": {
+          "patterns": [
+            "Add an explicit guard `a < length-1` before accessing `Data[a+1]`.",
+            "Keep the dangerous sink local: guarded lookahead remains in the same conditional and is blocked on the final valid index.",
+            "overflow-safe accumulator",
+            "overflow bounds check"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "fix_patterns",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "codeql_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "codeql",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "jpgfile.c",
+        "function": "process_COM"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "summary": "focus=process_COM | state=guard(ch == '\\r' && a < length-1 && Data[a+1] == '\\n') | call_edges=process_COM -> printf; process_COM -> strcpy | targets=printf, strcpy | patch_contracts=process_COM: barrier `ch == '\\r' && a < length-1 && Data[a+1] == '\\n'` around printf, strcpy | patch_fix=overflow-safe accumulator, overflow bounds check | guards=length > MAX_COMMENT_SIZE; a=2;a<length;a++ | symbols=Data, length | deps=jhead.h | apis=printf, strcpy, FileTimeAsString, putchar",
+        "focus_function": "process_COM",
+        "call_edges": [
+          "process_COM -> printf",
+          "process_COM -> strcpy"
+        ],
+        "call_targets": [
+          "printf",
+          "strcpy"
+        ],
+        "entry_points": [
+          "Data",
+          "length"
+        ],
+        "tracked_symbols": [
+          "ch",
+          "r",
+          "a",
+          "length",
+          "Data",
+          "n"
+        ],
+        "sink_calls": [],
+        "state_transitions": [
+          "guard(ch == '\\r' && a < length-1 && Data[a+1] == '\\n')"
+        ],
+        "statements": [
+          "if (ch == '\\r' && a < length-1 && Data[a+1] == '\\n') continue; // Remove cr followed by lf."
+        ],
+        "apis": [
+          "printf",
+          "strcpy",
+          "FileTimeAsString",
+          "putchar",
+          "sscanf",
+          "Put16u"
+        ],
+        "dependencies": [
+          "jhead.h"
+        ],
+        "source_excerpt": "37: static void process_COM (const uchar * Data, int length)\n38: {\n39:     int ch;\n40:     char Comment[MAX_COMMENT_SIZE+1];\n41:     int nch;\n42:     int a;\n43: \n44:     nch = 0;\n45: \n46:     if (length > MAX_COMMENT_SIZE) length = MAX_COMMENT_SIZE; // Truncate if it won't fit in our structure.\n47: \n48:     for (a=2;a<length;a++){\n49:         ch = Data[a];\n50: \n51:         if (ch == '\\r' && Data[a+1] == '\\n') continue; // Remove cr followed by lf.\n52: \n53:         if (ch >= 32 || ch == '\\n' || ch == '\\t'){\n54:             Comment[nch++] = (char)ch;\n55:         }else{\n56:             Comment[nch++] = '?';\n57:         }\n58:     }\n59: \n60:     Comment[nch] = '\\0'; // Null terminate\n61: \n62:     if (ShowTags){\n63:         printf(\"COM marker comment: %s\\n\",Comment);\n64:     }\n65: \n66:     strcpy(ImageInfo.Comments,Comment);\n67: }",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "codeql",
+        "artifact": "codeql-db:semantic-slice",
+        "confidence": 0.9
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "jpgfile.c",
+          "hunk_index": 0,
+          "source_line": 51
+        },
+        "summary": "focus=process_COM | state=guard(ch == '\\r' && a < length-1 && Data[a+1] == '\\n') | call_edges=process_COM -> printf; process_COM -> strcpy | targets=printf, strcpy | patch_contracts=process_COM: barrier `ch == '\\r' && a < length-1 && Data[a+1] == '\\n'` around printf, strcpy | patch_fix=overflow-safe accumulator, overflow bounds check | guards=length > MAX_COMMENT_SIZE; a=2;a<length;a++ | symbols=Data, length | deps=jhead.h | apis=printf, strcpy, FileTimeAsString, putchar",
+        "statements": [
+          "if (ch == '\\r' && a < length-1 && Data[a+1] == '\\n') continue; // Remove cr followed by lf."
+        ],
+        "guards": [],
+        "call_boundary": [
+          "printf",
+          "strcpy"
+        ],
+        "call_edges": [
+          "process_COM -> printf",
+          "process_COM -> strcpy"
+        ],
+        "state_transitions": [
+          "guard(ch == '\\r' && a < length-1 && Data[a+1] == '\\n')"
+        ],
+        "api_terms": [
+          "printf",
+          "strcpy",
+          "FileTimeAsString",
+          "putchar",
+          "sscanf",
+          "Put16u"
+        ],
+        "related_symbols": [
+          "ch",
+          "r",
+          "a",
+          "length",
+          "Data",
+          "n"
+        ],
+        "verifier": "codeql-live-inventory",
+        "extraction_method": "live_inventory+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "codeql_flow_0",
+      "type": "dataflow_candidate",
+      "analyzer": "codeql",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "jpgfile.c",
+        "function": "process_COM"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "source": "ch, r, a, length",
+        "sink": "printf, strcpy",
+        "path": [
+          "function:process_COM",
+          "guard:ch == '\\r' && a < length-1 && Data[a+1] == '\\n'",
+          "api:printf",
+          "api:strcpy",
+          "process_COM -> printf",
+          "process_COM -> strcpy"
+        ],
+        "summary": "process_COM: barrier `ch == '\\r' && a < length-1 && Data[a+1] == '\\n'` around printf, strcpy",
+        "focus_function": "process_COM",
+        "entry_points": [
+          "ch",
+          "r",
+          "a",
+          "length",
+          "Data",
+          "n"
+        ],
+        "call_targets": [
+          "printf",
+          "strcpy"
+        ],
+        "state_transitions": [
+          "guard(ch == '\\r' && a < length-1 && Data[a+1] == '\\n')"
+        ],
+        "source_excerpt": "37: static void process_COM (const uchar * Data, int length)\n38: {\n39:     int ch;\n40:     char Comment[MAX_COMMENT_SIZE+1];\n41:     int nch;\n42:     int a;\n43: \n44:     nch = 0;\n45: \n46:     if (length > MAX_COMMENT_SIZE) length = MAX_COMMENT_SIZE; // Truncate if it won't fit in our structure.\n47: \n48:     for (a=2;a<length;a++){\n49:         ch = Data[a];\n50: \n51:         if (ch == '\\r' && Data[a+1] == '\\n') continue; // Remove cr followed by lf.\n52: \n53:         if (ch >= 32 || ch == '\\n' || ch == '\\t'){\n54:             Comment[nch++] = (char)ch;\n55:         }else{\n56:             Comment[nch++] = '?';\n57:         }\n58:     }\n59: \n60:     Comment[nch] = '\\0'; // Null terminate\n61: \n62:     if (ShowTags){\n63:         printf(\"COM marker comment: %s\\n\",Comment);\n64:     }\n65: \n66:     strcpy(ImageInfo.Comments,Comment);\n67: }",
+        "live_query_status": "success",
+        "database_status": "ready",
+        "database_create_message": "CodeQL 数据库创建成功",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "codeql",
+        "artifact": "codeql-db:live-inventory",
+        "confidence": 0.9
+      },
+      "evidence_slice": {
+        "kind": "flow_witness",
+        "anchor": {
+          "patch_file": "jpgfile.c",
+          "hunk_index": 0,
+          "source_line": 51
+        },
+        "summary": "process_COM: barrier `ch == '\\r' && a < length-1 && Data[a+1] == '\\n'` around printf, strcpy",
+        "statements": [
+          "37: static void process_COM (const uchar * Data, int length)",
+          "38: {",
+          "39:     int ch;",
+          "40:     char Comment[MAX_COMMENT_SIZE+1];",
+          "41:     int nch;",
+          "42:     int a;"
+        ],
+        "guards": [],
+        "call_boundary": [
+          "printf, strcpy"
+        ],
+        "call_edges": [
+          "function:process_COM",
+          "guard:ch == '\\r' && a < length-1 && Data[a+1] == '\\n'",
+          "api:printf",
+          "api:strcpy",
+          "process_COM -> printf",
+          "process_COM -> strcpy"
+        ],
+        "state_transitions": [
+          "guard(ch == '\\r' && a < length-1 && Data[a+1] == '\\n')"
+        ],
+        "api_terms": [
+          "printf",
+          "strcpy"
+        ],
+        "related_symbols": [
+          "ch",
+          "r",
+          "a",
+          "length",
+          "Data",
+          "n"
+        ],
+        "verifier": "codeql-live-inventory",
+        "extraction_method": "live_inventory+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "codeql_chain_0",
+      "type": "call_chain",
+      "analyzer": "codeql",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "jpgfile.c",
+        "function": "process_COM"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": [
+          "process_COM -> printf",
+          "process_COM -> strcpy"
+        ],
+        "call_edges": [
+          "process_COM -> printf",
+          "process_COM -> strcpy"
+        ],
+        "live_query_status": "success",
+        "database_status": "ready",
+        "database_create_message": "CodeQL 数据库创建成功",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "codeql",
+        "artifact": "codeql-db:call-edges",
+        "confidence": 0.88
+      },
+      "evidence_slice": {
+        "kind": "interprocedural_slice",
+        "anchor": {
+          "patch_file": "jpgfile.c",
+          "hunk_index": 0,
+          "source_line": 51
+        },
+        "summary": "process_COM -> printf, process_COM -> strcpy",
+        "statements": [
+          "37: static void process_COM (const uchar * Data, int length)",
+          "38: {",
+          "39:     int ch;",
+          "40:     char Comment[MAX_COMMENT_SIZE+1];",
+          "41:     int nch;",
+          "42:     int a;"
+        ],
+        "guards": [],
+        "call_boundary": [
+          "printf",
+          "strcpy"
+        ],
+        "call_edges": [
+          "process_COM -> printf",
+          "process_COM -> strcpy"
+        ],
+        "state_transitions": [],
+        "api_terms": [
+          "printf",
+          "strcpy",
+          "FileTimeAsString",
+          "putchar",
+          "sscanf",
+          "Put16u"
+        ],
+        "related_symbols": [
+          "Data",
+          "length"
+        ],
+        "verifier": "codeql-live-inventory",
+        "extraction_method": "live_inventory+source_window",
+        "coverage_status": "full"
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "collected_analyzers": [
+    "codeql",
+    "patch"
+  ]
+}

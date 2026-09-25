@@ -1,0 +1,164 @@
+{
+  "meta": {
+    "generated_at": "20260423_205600",
+    "analyzer_type": "csa",
+    "workflow_mode": "generate",
+    "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe787_ngiflib_cve201810717/patches/fix.patch",
+    "validate_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe787_ngiflib_cve201810717/vulnerable",
+    "success": true,
+    "generation_success": true,
+    "semantic_success": true,
+    "error_message": "",
+    "preferred_analyzer": "",
+    "run_metrics_summary": "csa=330.273s | tokens=167349"
+  },
+  "csa": {
+    "success": true,
+    "validation_requested": true,
+    "functional_validation_passed": true,
+    "semantic_target_hit": true,
+    "validation_state": "target_hit",
+    "semantic_acceptance": true,
+    "semantic_acceptance_summary": "命中漏洞版 patch 目标",
+    "checker_name": "RemainingPixelBoundsWriteChecker",
+    "artifact_display_name": "RemainingPixelBoundsWriteChecker",
+    "output_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe787_ngiflib_cve201810717/primary/csa/20260423_205600/csa/RemainingPixelBoundsWriteChecker.so",
+    "source_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe787_ngiflib_cve201810717/primary/csa/20260423_205600/csa/RemainingPixelBoundsWriteChecker.cpp",
+    "iterations": 17,
+    "compile_attempts": 1,
+    "error": "",
+    "validation": {
+      "stage": "semantic",
+      "analyzer": "csa",
+      "success": true,
+      "execution_time": 1.305588722229004,
+      "error_message": "",
+      "diagnostics": [
+        {
+          "file_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe787_ngiflib_cve201810717/vulnerable/gif2tga.c",
+          "line": 68,
+          "column": 3,
+          "severity": "warning",
+          "message": "Potential leak of memory pointed to by 'gif' [unix.Malloc]",
+          "source": "csa",
+          "code": "",
+          "suggestion": ""
+        },
+        {
+          "file_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe787_ngiflib_cve201810717/vulnerable/ngiflib.c",
+          "line": 531,
+          "column": 4,
+          "severity": "warning",
+          "message": "Call to WritePixel appears before any local guard requiring npix > 0, which matches the patched out-of-bounds write pattern [custom.RemainingPixelBoundsWriteChecker]",
+          "source": "csa",
+          "code": "",
+          "suggestion": ""
+        },
+        {
+          "file_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe787_ngiflib_cve201810717/vulnerable/ngiflib.c",
+          "line": 542,
+          "column": 17,
+          "severity": "warning",
+          "message": "Assigned value is garbage or undefined [core.uninitialized.Assign]",
+          "source": "csa",
+          "code": "",
+          "suggestion": ""
+        },
+        {
+          "file_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe787_ngiflib_cve201810717/vulnerable/ngiflib.c",
+          "line": 548,
+          "column": 4,
+          "severity": "warning",
+          "message": "Call to WritePixels uses stack_top - stackp as the requested length without any prior local guard requiring npix >= stack_top - stackp, which matches the patched out-of-bounds write pattern [custom.RemainingPixelBoundsWriteChecker]",
+          "source": "csa",
+          "code": "",
+          "suggestion": ""
+        }
+      ],
+      "diagnostics_count": 4,
+      "all_diagnostics_count": 4,
+      "generated_diagnostics_count": 4,
+      "warnings_count": 4,
+      "errors_count": 0,
+      "environment_blocked": false,
+      "environment_block_reason": "",
+      "validation_target": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe787_ngiflib_cve201810717/vulnerable",
+      "diagnostics_filtered": true
+    },
+    "llm_usage": {
+      "prompt_tokens": 154306,
+      "completion_tokens": 4730,
+      "total_tokens": 159036,
+      "call_count": 16,
+      "available": true,
+      "model": "gpt-5.4"
+    },
+    "artifact_metrics": {
+      "path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe787_ngiflib_cve201810717/primary/csa/20260423_205600/csa/RemainingPixelBoundsWriteChecker.cpp",
+      "total_lines": 242,
+      "nonempty_lines": 213,
+      "char_count": 7680,
+      "byte_count": 7680
+    },
+    "artifact_delta": {},
+    "artifact_review": {
+      "success": true,
+      "summary": "manual_const_signature_fix"
+    },
+    "refinement_attempted": false,
+    "refinement_adopted": false,
+    "refinement_iterations_attempted": 0
+  },
+  "codeql": {},
+  "patchweaver": {
+    "llm_usage": {
+      "prompt_tokens": 6974,
+      "completion_tokens": 1339,
+      "total_tokens": 8313,
+      "call_count": 1,
+      "available": true,
+      "model": "gpt-5.4"
+    }
+  },
+  "validation_feedback": {
+    "manual_completion": true,
+    "reason": "interrupted_repair_loop_then_manual_const_fix"
+  },
+  "portfolio": {},
+  "run_metrics": {
+    "event_count": 130,
+    "total_seconds": 330.273,
+    "preflight_seconds": null,
+    "analyzers": {
+      "csa": {
+        "total_seconds": 330.273,
+        "agent_seconds": 330.273,
+        "validation_seconds": 1.306,
+        "bottleneck": "agent",
+        "llm_usage": {
+          "total": {
+            "prompt_tokens": 154306,
+            "completion_tokens": 4730,
+            "total_tokens": 159036,
+            "call_count": 16,
+            "available": true,
+            "model": "gpt-5.4"
+          }
+        }
+      }
+    },
+    "llm_usage": {
+      "prompt_tokens": 161280,
+      "completion_tokens": 6069,
+      "total_tokens": 167349,
+      "call_count": 17,
+      "available": true,
+      "model": "gpt-5.4"
+    },
+    "summary": "csa=330.273s | tokens=167349"
+  },
+  "artifacts": {
+    "csa_dir": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe787_ngiflib_cve201810717/primary/csa/20260423_205600/csa",
+    "report_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe787_ngiflib_cve201810717/primary/csa/20260423_205600/final_report.json"
+  }
+}

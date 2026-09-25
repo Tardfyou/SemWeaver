@@ -187,6 +187,25 @@ def verify_expansion(evidence: Evidence) -> dict:
     return dict(Counter(row["status"] for row in result["rows"]))
 
 
+def verify_e2_history(evidence: Evidence) -> dict:
+    audit = load(evidence.root / "evidence/e2_legacy_audit_v1/RESULT.json")
+    table = Path("evidence/e2_historical/tables/refine_results.csv")
+    evidence.bound(table, audit["source_csv_sha256"])
+    with (evidence.root / table).open(newline="", encoding="utf-8-sig") as handle:
+        rows = list(csv.DictReader(handle))
+    require(len(rows) == audit["all_rows"]["rows"] == 20, "historical E2 row count")
+    require(audit["manual_path_marked"]["rows"] == 7, "historical E2 manual markers")
+    require(audit["all_rows"]["zero_model_calls"] == 2, "historical E2 zero-call rows")
+    source = evidence.root / "evidence/e2_historical/runs"
+    checker_sources = list(source.rglob("*.cpp")) + list(source.rglob("*.ql"))
+    require(len(checker_sources) >= 20, "historical E2 checker/query sources missing")
+    return {
+        "rows": len(rows), "manual_path_rows": 7, "zero_call_rows": 2,
+        "checker_and_query_source_files": len(checker_sources),
+        "status": "historical_mixed_provenance_not_automatic_effect",
+    }
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("package", type=Path)
@@ -196,9 +215,10 @@ def main() -> None:
     origins = verify_internal_evidence(evidence, ids)
     repeats = verify_repeats(evidence, ids)
     expansion = verify_expansion(evidence)
+    e2 = verify_e2_history(evidence)
     print(json.dumps({
         "status": "verified_offline", "cases": len(ids), "origins": origins,
-        **repeats, "expansion_statuses": expansion,
+        **repeats, "expansion_statuses": expansion, "e2_history": e2,
     }, indent=2))
 
 

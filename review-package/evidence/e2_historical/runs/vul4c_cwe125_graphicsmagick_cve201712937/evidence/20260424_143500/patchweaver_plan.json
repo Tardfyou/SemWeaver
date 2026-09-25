@@ -1,0 +1,668 @@
+{
+  "files_changed": [
+    "coders/sun.c"
+  ],
+  "file_details": [
+    {
+      "path": "coders/sun.c",
+      "additions": 2,
+      "deletions": 0,
+      "hunks": 2
+    }
+  ],
+  "vulnerability_patterns": [
+    {
+      "type": "out_of_bounds_read",
+      "description": "Before the patch, index derived from ((*p) & (0x01 << bit)) was used directly to read image->colormap[index]. If the image colormap has fewer entries than the possible index value, the colormap access can read out of bounds. The patch blocks this by calling VerifyColormapIndex(image,index) before each colormap read.",
+      "trigger_conditions": [
+        "In VerifyColormapIndex-related SUN decoding logic, index is assigned from bit extraction: index=((*p) & (0x01 << bit) ? 0x01 : 0x00).",
+        "The computed index is written to indexes[x+7-bit] and then used as image->colormap[index].",
+        "No VerifyColormapIndex(image,index) or equivalent colormap bounds validation occurs between index assignment and image->colormap[index].",
+        "The image colormap may not contain the computed index value, especially index 1 for a too-small colormap."
+      ],
+      "fix_patterns": [
+        "Insert VerifyColormapIndex(image,index) after index computation and before image->colormap[index].",
+        "Apply the same validation in both the main 8-bit loop and the trailing partial-byte loop.",
+        "Treat the verifier call as a barrier protecting the subsequent colormap array read, not as a generic logging or formatting change."
+      ],
+      "affected_functions": [
+        "VerifyColormapIndex"
+      ],
+      "cross_file": false,
+      "source": "llm",
+      "confidence": 0.9,
+      "evidence_lines": [
+        "index=((*p) & (0x01 << bit) ? 0x01 : 0x00);",
+        "+              VerifyColormapIndex(image,index);",
+        "indexes[x+7-bit]=index;",
+        "q[x+7-bit]=image->colormap[index];",
+        "for (bit=7; bit >= (long) (8-(image->columns % 8)); bit--)"
+      ]
+    }
+  ],
+  "cross_file_dependencies": [],
+  "detection_strategy": {
+    "primary_pattern": "out_of_bounds_read",
+    "check_types": [
+      "patch_local_array_access_check",
+      "guarded_index_validation_check",
+      "local_cfg_dominance_check"
+    ],
+    "entry_points": [
+      "coders/sun.c",
+      "VerifyColormapIndex"
+    ],
+    "data_flow_tracking": false,
+    "cross_file_analysis": false,
+    "suggestions": [
+      "First-draft detector should anchor on q[...] = image->colormap[index] where index was recently assigned from ((*p) & (0x01 << bit) ? 0x01 : 0x00).",
+      "Require only local AST/CFG initially: index assignment, optional indexes[...] write, then image->colormap[index] read in the same loop body.",
+      "Do not make absence of VerifyColormapIndex(image,index) an overly broad global filter first; use it as a local non-dominance condition between index assignment and colormap read.",
+      "The strongest barrier is VerifyColormapIndex(image,index) immediately before image->colormap[index]; treat equivalent colormap-index validation as a secondary refinement.",
+      "The loop shape over bit and x+7-bit indexing is useful for precision but should be secondary; the primary sink is image->colormap[index].",
+      "Cross-file analysis is not needed for an initial detector because the patch-local mechanism is fully visible in coders/sun.c."
+    ]
+  },
+  "checker_name_suggestion": "ColormapIndexOutOfBoundsReadChecker",
+  "affected_functions": [
+    "VerifyColormapIndex"
+  ],
+  "key_functions": [
+    "VerifyColormapIndex"
+  ],
+  "patch_semantics": {
+    "added_guards": [],
+    "added_api_calls": [
+      "VerifyColormapIndex"
+    ],
+    "removed_api_calls": [],
+    "state_resets": [],
+    "lifecycle_changes": []
+  },
+  "analysis_backend": "llm",
+  "analysis_confidence": 0.9,
+  "analysis_rationale": "The diff adds VerifyColormapIndex(image,index) immediately after index is computed from input byte bits and immediately before indexes[...] assignment and q[...] = image->colormap[index] in both full-byte and remainder-bit loops. The dangerous patch-local sink is the array read image->colormap[index]; before the patch, index values 0 or 1 were consumed without verifying that the image colormap actually contains that index.",
+  "llm_usage": {
+    "prompt_tokens": 6801,
+    "completion_tokens": 944,
+    "total_tokens": 7745,
+    "call_count": 1,
+    "available": true,
+    "model": "gpt-5.5"
+  },
+  "patchweaver": {
+    "summary": "Patch suggests out_of_bounds_read semantics across 1 file(s); added guards=0, removed risky operations=0, fix patterns=3, metadata refs=0.",
+    "patch_facts": [
+      {
+        "fact_type": "patch_overview",
+        "label": "Patch overview",
+        "attributes": {
+          "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe125_graphicsmagick_cve201712937/patches/fix.patch",
+          "changed_files": [
+            "coders/sun.c"
+          ],
+          "changed_file_count": 1,
+          "added_line_count": 2,
+          "deleted_line_count": 0
+        }
+      },
+      {
+        "fact_type": "vulnerability_patterns",
+        "label": "Vulnerability patterns inferred from patch",
+        "attributes": {
+          "patterns": [
+            "out_of_bounds_read"
+          ],
+          "descriptions": [
+            "Before the patch, index derived from ((*p) & (0x01 << bit)) was used directly to read image->colormap[index]. If the image colormap has fewer entries than the possible index value, the colormap access can read out of bounds. The patch blocks this by calling VerifyColormapIndex(image,index) before each colormap read."
+          ]
+        }
+      },
+      {
+        "fact_type": "affected_functions",
+        "label": "Functions implicated by removed or fixed code",
+        "attributes": {
+          "functions": [
+            "ThrowReaderException",
+            "VerifyColormapIndex"
+          ]
+        }
+      },
+      {
+        "fact_type": "detection_strategy",
+        "label": "Existing patch analysis detection strategy",
+        "attributes": {
+          "primary_pattern": "out_of_bounds_read",
+          "check_types": [
+            "patch_local_array_access_check",
+            "guarded_index_validation_check",
+            "local_cfg_dominance_check"
+          ],
+          "entry_points": [
+            "coders/sun.c",
+            "VerifyColormapIndex"
+          ],
+          "data_flow_tracking": false,
+          "cross_file_analysis": false,
+          "suggestions": [
+            "First-draft detector should anchor on q[...] = image->colormap[index] where index was recently assigned from ((*p) & (0x01 << bit) ? 0x01 : 0x00).",
+            "Require only local AST/CFG initially: index assignment, optional indexes[...] write, then image->colormap[index] read in the same loop body.",
+            "Do not make absence of VerifyColormapIndex(image,index) an overly broad global filter first; use it as a local non-dominance condition between index assignment and colormap read.",
+            "The strongest barrier is VerifyColormapIndex(image,index) immediately before image->colormap[index]; treat equivalent colormap-index validation as a secondary refinement.",
+            "The loop shape over bit and x+7-bit indexing is useful for precision but should be secondary; the primary sink is image->colormap[index].",
+            "Cross-file analysis is not needed for an initial detector because the patch-local mechanism is fully visible in coders/sun.c."
+          ]
+        }
+      },
+      {
+        "fact_type": "fix_patterns",
+        "label": "Patch introduces reusable fix patterns",
+        "attributes": {
+          "patterns": [
+            "Insert VerifyColormapIndex(image,index) after index computation and before image->colormap[index].",
+            "Apply the same validation in both the main 8-bit loop and the trailing partial-byte loop.",
+            "Treat the verifier call as a barrier protecting the subsequent colormap array read, not as a generic logging or formatting change."
+          ]
+        }
+      },
+      {
+        "fact_type": "added_api_calls",
+        "label": "Patch introduces or highlights API usage",
+        "attributes": {
+          "apis": [
+            "VerifyColormapIndex"
+          ]
+        }
+      }
+    ],
+    "mechanism_graph": {
+      "summary": "Patch suggests out_of_bounds_read semantics across 1 file(s); added guards=0, removed risky operations=0, fix patterns=3, metadata refs=0.",
+      "primary_patterns": [
+        "out_of_bounds_read"
+      ],
+      "nodes": [
+        {
+          "node_id": "patch",
+          "kind": "patch",
+          "label": "Security patch",
+          "attributes": {
+            "changed_files": [
+              "coders/sun.c"
+            ]
+          }
+        },
+        {
+          "node_id": "file_0",
+          "kind": "file",
+          "label": "coders/sun.c",
+          "attributes": {
+            "path": "coders/sun.c",
+            "additions": 2,
+            "deletions": 0,
+            "hunks": 2
+          }
+        },
+        {
+          "node_id": "pattern_0",
+          "kind": "pattern",
+          "label": "out_of_bounds_read",
+          "attributes": {
+            "type": "out_of_bounds_read",
+            "description": "Before the patch, index derived from ((*p) & (0x01 << bit)) was used directly to read image->colormap[index]. If the image colormap has fewer entries than the possible index value, the colormap access can read out of bounds. The patch blocks this by calling VerifyColormapIndex(image,index) before each colormap read.",
+            "trigger_conditions": [
+              "In VerifyColormapIndex-related SUN decoding logic, index is assigned from bit extraction: index=((*p) & (0x01 << bit) ? 0x01 : 0x00).",
+              "The computed index is written to indexes[x+7-bit] and then used as image->colormap[index].",
+              "No VerifyColormapIndex(image,index) or equivalent colormap bounds validation occurs between index assignment and image->colormap[index].",
+              "The image colormap may not contain the computed index value, especially index 1 for a too-small colormap."
+            ],
+            "fix_patterns": [
+              "Insert VerifyColormapIndex(image,index) after index computation and before image->colormap[index].",
+              "Apply the same validation in both the main 8-bit loop and the trailing partial-byte loop.",
+              "Treat the verifier call as a barrier protecting the subsequent colormap array read, not as a generic logging or formatting change."
+            ],
+            "affected_functions": [
+              "VerifyColormapIndex"
+            ],
+            "cross_file": false,
+            "source": "llm",
+            "confidence": 0.9,
+            "evidence_lines": [
+              "index=((*p) & (0x01 << bit) ? 0x01 : 0x00);",
+              "+              VerifyColormapIndex(image,index);",
+              "indexes[x+7-bit]=index;",
+              "q[x+7-bit]=image->colormap[index];",
+              "for (bit=7; bit >= (long) (8-(image->columns % 8)); bit--)"
+            ]
+          }
+        },
+        {
+          "node_id": "func_1",
+          "kind": "function",
+          "label": "VerifyColormapIndex",
+          "attributes": {
+            "function": "VerifyColormapIndex"
+          }
+        },
+        {
+          "node_id": "guard_1",
+          "kind": "guard",
+          "label": "In VerifyColormapIndex-related SUN decoding logic, index is assigned from bit extraction: index=((*p) & (0x01 << bit) ? 0x01 : 0x00).",
+          "attributes": {
+            "condition": "In VerifyColormapIndex-related SUN decoding logic, index is assigned from bit extraction: index=((*p) & (0x01 << bit) ? 0x01 : 0x00)."
+          }
+        },
+        {
+          "node_id": "guard_2",
+          "kind": "guard",
+          "label": "The computed index is written to indexes[x+7-bit] and then used as image->colormap[index].",
+          "attributes": {
+            "condition": "The computed index is written to indexes[x+7-bit] and then used as image->colormap[index]."
+          }
+        },
+        {
+          "node_id": "guard_3",
+          "kind": "guard",
+          "label": "No VerifyColormapIndex(image,index) or equivalent colormap bounds validation occurs between index assignment and image->colormap[index].",
+          "attributes": {
+            "condition": "No VerifyColormapIndex(image,index) or equivalent colormap bounds validation occurs between index assignment and image->colormap[index]."
+          }
+        },
+        {
+          "node_id": "guard_4",
+          "kind": "guard",
+          "label": "The image colormap may not contain the computed index value, especially index 1 for a too-small colormap.",
+          "attributes": {
+            "condition": "The image colormap may not contain the computed index value, especially index 1 for a too-small colormap."
+          }
+        },
+        {
+          "node_id": "strategy",
+          "kind": "strategy",
+          "label": "out_of_bounds_read",
+          "attributes": {
+            "primary_pattern": "out_of_bounds_read",
+            "check_types": [
+              "patch_local_array_access_check",
+              "guarded_index_validation_check",
+              "local_cfg_dominance_check"
+            ],
+            "entry_points": [
+              "coders/sun.c",
+              "VerifyColormapIndex"
+            ],
+            "data_flow_tracking": false,
+            "cross_file_analysis": false,
+            "suggestions": [
+              "First-draft detector should anchor on q[...] = image->colormap[index] where index was recently assigned from ((*p) & (0x01 << bit) ? 0x01 : 0x00).",
+              "Require only local AST/CFG initially: index assignment, optional indexes[...] write, then image->colormap[index] read in the same loop body.",
+              "Do not make absence of VerifyColormapIndex(image,index) an overly broad global filter first; use it as a local non-dominance condition between index assignment and colormap read.",
+              "The strongest barrier is VerifyColormapIndex(image,index) immediately before image->colormap[index]; treat equivalent colormap-index validation as a secondary refinement.",
+              "The loop shape over bit and x+7-bit indexing is useful for precision but should be secondary; the primary sink is image->colormap[index].",
+              "Cross-file analysis is not needed for an initial detector because the patch-local mechanism is fully visible in coders/sun.c."
+            ]
+          }
+        },
+        {
+          "node_id": "func_2",
+          "kind": "function",
+          "label": "ThrowReaderException",
+          "attributes": {
+            "function": "ThrowReaderException",
+            "source": "patch_fact"
+          }
+        },
+        {
+          "node_id": "fix_1",
+          "kind": "fix",
+          "label": "Insert VerifyColormapIndex(image,index) after index computation and before image->colormap[index].",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "Insert VerifyColormapIndex(image,index) after index computation and before image->colormap[index]."
+          }
+        },
+        {
+          "node_id": "fix_2",
+          "kind": "fix",
+          "label": "Apply the same validation in both the main 8-bit loop and the trailing partial-byte loop.",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "Apply the same validation in both the main 8-bit loop and the trailing partial-byte loop."
+          }
+        },
+        {
+          "node_id": "fix_3",
+          "kind": "fix",
+          "label": "Treat the verifier call as a barrier protecting the subsequent colormap array read, not as a generic logging or formatting change.",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "Treat the verifier call as a barrier protecting the subsequent colormap array read, not as a generic logging or formatting change."
+          }
+        },
+        {
+          "node_id": "fix_4",
+          "kind": "fix",
+          "label": "VerifyColormapIndex",
+          "attributes": {
+            "kind": "added_api_calls",
+            "value": "VerifyColormapIndex"
+          }
+        }
+      ],
+      "edges": [
+        {
+          "source": "patch",
+          "target": "file_0",
+          "relation": "touches",
+          "confidence": 0.95
+        },
+        {
+          "source": "patch",
+          "target": "pattern_0",
+          "relation": "indicates",
+          "confidence": 0.9
+        },
+        {
+          "source": "pattern_0",
+          "target": "func_1",
+          "relation": "affects",
+          "confidence": 0.75
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_1",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_2",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_3",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_4",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "patch",
+          "target": "strategy",
+          "relation": "guides",
+          "confidence": 0.85
+        },
+        {
+          "source": "patch",
+          "target": "func_2",
+          "relation": "focuses_on",
+          "confidence": 0.82
+        },
+        {
+          "source": "patch",
+          "target": "fix_1",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_2",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_3",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_4",
+          "relation": "introduces",
+          "confidence": 0.8
+        }
+      ]
+    },
+    "evidence_plan": {
+      "primary_pattern": "out_of_bounds_read",
+      "hypotheses": [
+        "Patch likely encodes a reusable vulnerability mechanism but available metadata is weak; keep evidence collection broad."
+      ],
+      "requirements": [
+        {
+          "evidence_type": "patch_fact",
+          "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+          "priority": 100,
+          "preferred_analyzers": [],
+          "confidence": 1.0,
+          "mechanism_refs": [
+            "patch"
+          ]
+        }
+      ],
+      "recommended_analyzers": [
+        "csa",
+        "codeql"
+      ],
+      "planner_notes": [],
+      "coverage_gaps": [],
+      "uncertainty_budget": "low",
+      "escalation_triggers": []
+    },
+    "evidence_bundle": {
+      "records": [
+        {
+          "evidence_id": "pf_000",
+          "type": "patch_fact",
+          "analyzer": "patch",
+          "scope": {
+            "repo": "fix.patch",
+            "file": "coders/sun.c",
+            "function": "ThrowReaderException"
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "fact_type": "patch_overview",
+            "label": "Patch overview",
+            "attributes": {
+              "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe125_graphicsmagick_cve201712937/patches/fix.patch",
+              "changed_files": [
+                "coders/sun.c"
+              ],
+              "changed_file_count": 1,
+              "added_line_count": 2,
+              "deleted_line_count": 0
+            }
+          },
+          "provenance": {
+            "tool": "patch-analysis",
+            "artifact": "patch_overview",
+            "confidence": 0.95
+          },
+          "evidence_slice": {}
+        },
+        {
+          "evidence_id": "pf_001",
+          "type": "patch_fact",
+          "analyzer": "patch",
+          "scope": {
+            "repo": "fix.patch",
+            "file": "coders/sun.c",
+            "function": "ThrowReaderException"
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "fact_type": "vulnerability_patterns",
+            "label": "Vulnerability patterns inferred from patch",
+            "attributes": {
+              "patterns": [
+                "out_of_bounds_read"
+              ],
+              "descriptions": [
+                "Before the patch, index derived from ((*p) & (0x01 << bit)) was used directly to read image->colormap[index]. If the image colormap has fewer entries than the possible index value, the colormap access can read out of bounds. The patch blocks this by calling VerifyColormapIndex(image,index) before each colormap read."
+              ]
+            }
+          },
+          "provenance": {
+            "tool": "patch-analysis",
+            "artifact": "vulnerability_patterns",
+            "confidence": 0.95
+          },
+          "evidence_slice": {}
+        },
+        {
+          "evidence_id": "pf_002",
+          "type": "patch_fact",
+          "analyzer": "patch",
+          "scope": {
+            "repo": "fix.patch",
+            "file": "coders/sun.c",
+            "function": "ThrowReaderException"
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "fact_type": "affected_functions",
+            "label": "Functions implicated by removed or fixed code",
+            "attributes": {
+              "functions": [
+                "ThrowReaderException",
+                "VerifyColormapIndex"
+              ]
+            }
+          },
+          "provenance": {
+            "tool": "patch-analysis",
+            "artifact": "affected_functions",
+            "confidence": 0.95
+          },
+          "evidence_slice": {}
+        },
+        {
+          "evidence_id": "pf_003",
+          "type": "patch_fact",
+          "analyzer": "patch",
+          "scope": {
+            "repo": "fix.patch",
+            "file": "coders/sun.c",
+            "function": "ThrowReaderException"
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "fact_type": "detection_strategy",
+            "label": "Existing patch analysis detection strategy",
+            "attributes": {
+              "primary_pattern": "out_of_bounds_read",
+              "check_types": [
+                "patch_local_array_access_check",
+                "guarded_index_validation_check",
+                "local_cfg_dominance_check"
+              ],
+              "entry_points": [
+                "coders/sun.c",
+                "VerifyColormapIndex"
+              ],
+              "data_flow_tracking": false,
+              "cross_file_analysis": false,
+              "suggestions": [
+                "First-draft detector should anchor on q[...] = image->colormap[index] where index was recently assigned from ((*p) & (0x01 << bit) ? 0x01 : 0x00).",
+                "Require only local AST/CFG initially: index assignment, optional indexes[...] write, then image->colormap[index] read in the same loop body.",
+                "Do not make absence of VerifyColormapIndex(image,index) an overly broad global filter first; use it as a local non-dominance condition between index assignment and colormap read.",
+                "The strongest barrier is VerifyColormapIndex(image,index) immediately before image->colormap[index]; treat equivalent colormap-index validation as a secondary refinement.",
+                "The loop shape over bit and x+7-bit indexing is useful for precision but should be secondary; the primary sink is image->colormap[index].",
+                "Cross-file analysis is not needed for an initial detector because the patch-local mechanism is fully visible in coders/sun.c."
+              ]
+            }
+          },
+          "provenance": {
+            "tool": "patch-analysis",
+            "artifact": "detection_strategy",
+            "confidence": 0.95
+          },
+          "evidence_slice": {}
+        },
+        {
+          "evidence_id": "pf_004",
+          "type": "patch_fact",
+          "analyzer": "patch",
+          "scope": {
+            "repo": "fix.patch",
+            "file": "coders/sun.c",
+            "function": "ThrowReaderException"
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "fact_type": "fix_patterns",
+            "label": "Patch introduces reusable fix patterns",
+            "attributes": {
+              "patterns": [
+                "Insert VerifyColormapIndex(image,index) after index computation and before image->colormap[index].",
+                "Apply the same validation in both the main 8-bit loop and the trailing partial-byte loop.",
+                "Treat the verifier call as a barrier protecting the subsequent colormap array read, not as a generic logging or formatting change."
+              ]
+            }
+          },
+          "provenance": {
+            "tool": "patch-analysis",
+            "artifact": "fix_patterns",
+            "confidence": 0.95
+          },
+          "evidence_slice": {}
+        },
+        {
+          "evidence_id": "pf_005",
+          "type": "patch_fact",
+          "analyzer": "patch",
+          "scope": {
+            "repo": "fix.patch",
+            "file": "coders/sun.c",
+            "function": "ThrowReaderException"
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "fact_type": "added_api_calls",
+            "label": "Patch introduces or highlights API usage",
+            "attributes": {
+              "apis": [
+                "VerifyColormapIndex"
+              ]
+            }
+          },
+          "provenance": {
+            "tool": "patch-analysis",
+            "artifact": "added_api_calls",
+            "confidence": 0.95
+          },
+          "evidence_slice": {}
+        }
+      ],
+      "missing_evidence": [],
+      "collected_analyzers": [
+        "patch"
+      ]
+    }
+  }
+}

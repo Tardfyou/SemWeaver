@@ -1,0 +1,14 @@
+--- /SoK-main/Vul4C-Benchmark/zziplib/CVE-2017-5975/CVE-2017-5975_CWE-787_memdisk.c_OLD.c	2025-10-13 01:37:26.214409121 +0000
++++ /SoK-main/Vul4C-Benchmark/zziplib/CVE-2017-5975/CVE-2017-5975_CWE-787_memdisk.c_NEW.c	2025-10-13 01:37:26.214409121 +0000
+@@ -173,6 +173,11 @@
+         return 0;               /* errno=ENOMEM; */
+     ___ struct zzip_file_header *header =
+         zzip_disk_entry_to_file_header(disk, entry);
++    if (! header) 
++    {
++        free (item);
++        return 0; /* errno=EBADMSG; */
++    }
+     /*  there is a number of duplicated information in the file header
+      *  or the disk entry block. Theoretically some part may be missing
+      *  that exists in the other, ... but we will prefer the disk entry.

@@ -1,0 +1,123 @@
+/**
+ * @name PatchGuidedQuery
+ * @description Early buffer free on a failing path without invalidating ownership before later cleanup
+ * @kind problem
+ * @problem.severity warning
+ * @precision medium
+ * @id cpp/custom/double_free_patch_scoped
+ * @tags security
+ *       correctness
+ */
+
+import cpp
+
+predicate inTargetFunction(Function f) {
+  f.getName() = "_zip_dirent_read" and
+  f.getFile().getRelativePath().matches("%lib/zip_dirent.c")
+}
+
+predicate bufferVariable(Variable bufferVar) {
+  bufferVar.getName() = "buffer"
+}
+
+predicate isBufferExpr(Expr e) {
+  exists(VariableAccess va, Variable bufferVar |
+    bufferVariable(bufferVar) and
+    va = e.getAChild*() and
+    va.getTarget() = bufferVar
+  )
+}
+
+predicate sameBufferExpr(Expr e, Variable bufferVar) {
+  bufferVariable(bufferVar) and
+  exists(VariableAccess va |
+    va = e.getAChild*() and
+    va.getTarget() = bufferVar
+  )
+}
+
+predicate isFromBufferExpr(Expr e) {
+  exists(VariableAccess va |
+    va = e.getAChild*() and
+    va.getTarget().getName() = "from_buffer"
+  )
+}
+
+predicate isBufferFreeCall(FunctionCall call) {
+  call.getTarget().hasName("_zip_buffer_free") and
+  isBufferExpr(call.getArgument(0))
+}
+
+predicate isFromBufferOwnershipCheck(IfStmt guard) {
+  isFromBufferExpr(guard.getCondition())
+}
+
+predicate guardOwnsBuffer(IfStmt guard, FunctionCall freeCall) {
+  isFromBufferOwnershipCheck(guard) and
+  isBufferFreeCall(freeCall) and
+  guard.getThen().getAChild*() = freeCall
+}
+
+predicate guardOwnsSameLocalBuffer(IfStmt guard, FunctionCall freeCall, Variable bufferVar) {
+  isFromBufferOwnershipCheck(guard) and
+  sameBufferExpr(freeCall.getArgument(0), bufferVar) and
+  guard.getThen().getAChild*() = freeCall
+}
+
+predicate isFailureReturn(ReturnStmt ret) {
+  exists(UnaryMinusExpr minus |
+    minus = ret.getExpr() and
+    minus.getOperand().toString() = "1"
+  )
+}
+
+predicate returnsFailureFromThenBranch(IfStmt outer, ReturnStmt ret) {
+  outer.getThen().getAChild*() = ret and
+  isFailureReturn(ret)
+}
+
+predicate hasBufferInvalidationBetween(IfStmt outer, FunctionCall freeCall, ReturnStmt ret, Variable bufferVar) {
+  exists(AssignExpr assign, VariableAccess lhs |
+    outer.getThen().getAChild*() = assign and
+    lhs = assign.getLValue().getAChild*() and
+    lhs.getTarget() = bufferVar and
+    freeCall.getLocation().getStartLine() < assign.getLocation().getStartLine() and
+    assign.getLocation().getStartLine() < ret.getLocation().getStartLine()
+  )
+}
+
+predicate nestedOwnedFreeBeforeFailureReturn(IfStmt outer, IfStmt ownershipGuard, FunctionCall freeCall, ReturnStmt ret, Variable bufferVar) {
+  returnsFailureFromThenBranch(outer, ret) and
+  guardOwnsSameLocalBuffer(ownershipGuard, freeCall, bufferVar) and
+  ownershipGuard.getParent*() = outer.getThen() and
+  not hasBufferInvalidationBetween(outer, freeCall, ret, bufferVar)
+}
+
+predicate isCleanupSuccessBranch(IfStmt guard) {
+  exists(FunctionCall condCall |
+    condCall = guard.getCondition().getAChild*() and
+    condCall.getTarget().hasName("_zip_buffer_ok") and
+    isBufferExpr(condCall.getArgument(0))
+  )
+}
+
+predicate cleanupFreeAfterGuard(IfStmt guard, FunctionCall laterFree, Variable bufferVar) {
+  isCleanupSuccessBranch(guard) and
+  sameBufferExpr(laterFree.getArgument(0), bufferVar) and
+  laterFree.getParent*() = guard.getParent*() and
+  not laterFree.getParent*() = guard.getThen() and
+  not exists(IfStmt ownershipGuard |
+    ownershipGuard.getThen().getAChild*() = laterFree and
+    isFromBufferOwnershipCheck(ownershipGuard)
+  )
+}
+
+from Function f, IfStmt failOuter, IfStmt ownershipGuard, FunctionCall freeCall, ReturnStmt ret, IfStmt cleanupGuard, FunctionCall laterFree, Variable bufferVar
+where
+  inTargetFunction(f) and
+  failOuter.getEnclosingFunction() = f and
+  cleanupGuard.getEnclosingFunction() = f and
+  nestedOwnedFreeBeforeFailureReturn(failOuter, ownershipGuard, freeCall, ret, bufferVar) and
+  cleanupFreeAfterGuard(cleanupGuard, laterFree, bufferVar)
+select freeCall,
+  "Buffer ownership is discharged on an error path under '!from_buffer', but the same local may still reach later unconditional cleanup without being invalidated."

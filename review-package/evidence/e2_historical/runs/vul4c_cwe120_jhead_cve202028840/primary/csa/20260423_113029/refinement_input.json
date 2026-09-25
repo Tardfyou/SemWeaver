@@ -1,0 +1,834 @@
+{
+  "schema_version": 1,
+  "workflow_mode": "generate",
+  "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe120_jhead_cve202028840/patches/fix.patch",
+  "validate_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe120_jhead_cve202028840/vulnerable",
+  "analyzer_choice": "csa",
+  "shared_analysis_path": "patchweaver_plan.json",
+  "shared_analysis": {
+    "files_changed": [
+      "jpgfile.c"
+    ],
+    "file_details": [
+      {
+        "path": "jpgfile.c",
+        "additions": 1,
+        "deletions": 1,
+        "hunks": 1
+      }
+    ],
+    "vulnerability_patterns": [
+      {
+        "type": "out_of_bounds_read",
+        "description": "A lookahead read of the next byte was performed without ensuring that the current index was not already at the final valid element.",
+        "trigger_conditions": [
+          "`length` is small or the loop reaches its final iteration with `a == length-1`",
+          "`Data[a]` equals `\\r`, causing evaluation of the lookahead condition",
+          "`Data[a+1]` is accessed without confirming `a+1 < length`"
+        ],
+        "fix_patterns": [
+          "Added explicit bounds guard before lookahead access",
+          "Short-circuit condition reordered to validate index before dereference"
+        ],
+        "affected_functions": [
+          "unknown"
+        ],
+        "cross_file": false,
+        "source": "llm",
+        "confidence": 0.98,
+        "evidence_lines": [
+          "Loop condition allows `a` up to `length-1`: `for (a=2;a<length;a++){`",
+          "Old code read past end on final iteration: `if (ch == '\\r' && Data[a+1] == '\\n') continue;`",
+          "New code guards the lookahead: `if (ch == '\\r' && a < length-1 && Data[a+1] == '\\n') continue;`"
+        ]
+      }
+    ],
+    "cross_file_dependencies": [],
+    "detection_strategy": {
+      "primary_pattern": "out_of_bounds_read",
+      "check_types": [
+        "loop_index_boundary_validation",
+        "lookahead_read_ahead_access_checks",
+        "short_circuit_guard_ordering_analysis",
+        "buffer_length_to_index_relation_checking"
+      ],
+      "entry_points": [
+        "Conditions that access `buf[i+1]`, `buf[i-1]`, or similar neighbor elements inside loops",
+        "Parsing code that scans variable-length input buffers",
+        "Character filtering logic using CRLF or delimiter lookahead"
+      ],
+      "data_flow_tracking": true,
+      "cross_file_analysis": false,
+      "suggestions": [
+        "Prefer detecting consumer-side lookahead misuse such as `buffer[index+1]` under a loop bounded only by `index < length`.",
+        "Require proof that `index + offset` stays within bounds before dereference; do not treat the loop guard alone as sufficient for neighbor access.",
+        "Model C short-circuit semantics and flag cases where dereference appears before authoritative bound validation.",
+        "Prefer missing explicit bounds validation over generic null-check reasoning; buffer non-nullness does not prove neighbor-byte safety."
+      ]
+    },
+    "checker_name_suggestion": "OutOfBoundsLookaheadReadChecker",
+    "affected_functions": [
+      "unknown"
+    ],
+    "key_functions": [
+      "unknown"
+    ],
+    "patch_semantics": {
+      "added_guards": [
+        "if (ch == '\\r' && a < length-1 && Data[a+1] == '\\n') continue; // Remove cr followed by lf."
+      ],
+      "added_api_calls": [],
+      "removed_api_calls": [],
+      "state_resets": [],
+      "lifecycle_changes": []
+    },
+    "analysis_backend": "llm",
+    "analysis_confidence": 0.98,
+    "analysis_rationale": "The patch adds a missing upper-bound check before reading `Data[a+1]` inside a loop that iterates with `a < length`. Previously, when `a == length-1` and `ch == '\\r'`, the expression `Data[a+1]` accessed one byte past the valid buffer. The fix is a direct guard insertion: `a < length-1 && Data[a+1] == '\\n'`.",
+    "llm_usage": {
+      "prompt_tokens": 5463,
+      "completion_tokens": 693,
+      "total_tokens": 6156,
+      "call_count": 1,
+      "available": true,
+      "model": "gpt-5.4"
+    },
+    "patchweaver": {
+      "summary": "Patch suggests out_of_bounds_read semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=4, metadata refs=0.",
+      "patch_facts": [
+        {
+          "fact_type": "patch_overview",
+          "label": "Patch overview",
+          "attributes": {
+            "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe120_jhead_cve202028840/patches/fix.patch",
+            "changed_files": [
+              "jpgfile.c"
+            ],
+            "changed_file_count": 1,
+            "added_line_count": 1,
+            "deleted_line_count": 1
+          }
+        },
+        {
+          "fact_type": "vulnerability_patterns",
+          "label": "Vulnerability patterns inferred from patch",
+          "attributes": {
+            "patterns": [
+              "out_of_bounds_read",
+              "integer_overflow"
+            ],
+            "descriptions": [
+              "A lookahead read of the next byte was performed without ensuring that the current index was not already at the final valid element."
+            ]
+          }
+        },
+        {
+          "fact_type": "affected_functions",
+          "label": "Functions implicated by removed or fixed code",
+          "attributes": {
+            "functions": [
+              "process_COM",
+              "unknown"
+            ]
+          }
+        },
+        {
+          "fact_type": "detection_strategy",
+          "label": "Existing patch analysis detection strategy",
+          "attributes": {
+            "primary_pattern": "out_of_bounds_read",
+            "check_types": [
+              "loop_index_boundary_validation",
+              "lookahead_read_ahead_access_checks",
+              "short_circuit_guard_ordering_analysis",
+              "buffer_length_to_index_relation_checking"
+            ],
+            "entry_points": [
+              "Conditions that access `buf[i+1]`, `buf[i-1]`, or similar neighbor elements inside loops",
+              "Parsing code that scans variable-length input buffers",
+              "Character filtering logic using CRLF or delimiter lookahead"
+            ],
+            "data_flow_tracking": true,
+            "cross_file_analysis": false,
+            "suggestions": [
+              "Prefer detecting consumer-side lookahead misuse such as `buffer[index+1]` under a loop bounded only by `index < length`.",
+              "Require proof that `index + offset` stays within bounds before dereference; do not treat the loop guard alone as sufficient for neighbor access.",
+              "Model C short-circuit semantics and flag cases where dereference appears before authoritative bound validation.",
+              "Prefer missing explicit bounds validation over generic null-check reasoning; buffer non-nullness does not prove neighbor-byte safety."
+            ]
+          }
+        },
+        {
+          "fact_type": "added_guards",
+          "label": "Patch introduces or strengthens guards",
+          "attributes": {
+            "guards": [
+              "if (ch == '\\r' && a < length-1 && Data[a+1] == '\\n') continue; // Remove cr followed by lf."
+            ]
+          }
+        },
+        {
+          "fact_type": "fix_patterns",
+          "label": "Patch introduces reusable fix patterns",
+          "attributes": {
+            "patterns": [
+              "Added explicit bounds guard before lookahead access",
+              "Short-circuit condition reordered to validate index before dereference",
+              "overflow-safe accumulator",
+              "overflow bounds check"
+            ]
+          }
+        }
+      ],
+      "mechanism_graph": {
+        "summary": "Patch suggests out_of_bounds_read semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=4, metadata refs=0.",
+        "primary_patterns": [
+          "out_of_bounds_read"
+        ],
+        "nodes": [
+          {
+            "node_id": "patch",
+            "kind": "patch",
+            "label": "Security patch",
+            "attributes": {
+              "changed_files": [
+                "jpgfile.c"
+              ]
+            }
+          },
+          {
+            "node_id": "file_0",
+            "kind": "file",
+            "label": "jpgfile.c",
+            "attributes": {
+              "path": "jpgfile.c",
+              "additions": 1,
+              "deletions": 1,
+              "hunks": 1
+            }
+          },
+          {
+            "node_id": "pattern_0",
+            "kind": "pattern",
+            "label": "out_of_bounds_read",
+            "attributes": {
+              "type": "out_of_bounds_read",
+              "description": "A lookahead read of the next byte was performed without ensuring that the current index was not already at the final valid element.",
+              "trigger_conditions": [
+                "`length` is small or the loop reaches its final iteration with `a == length-1`",
+                "`Data[a]` equals `\\r`, causing evaluation of the lookahead condition",
+                "`Data[a+1]` is accessed without confirming `a+1 < length`"
+              ],
+              "fix_patterns": [
+                "Added explicit bounds guard before lookahead access",
+                "Short-circuit condition reordered to validate index before dereference"
+              ],
+              "affected_functions": [
+                "unknown"
+              ],
+              "cross_file": false,
+              "source": "llm",
+              "confidence": 0.98,
+              "evidence_lines": [
+                "Loop condition allows `a` up to `length-1`: `for (a=2;a<length;a++){`",
+                "Old code read past end on final iteration: `if (ch == '\\r' && Data[a+1] == '\\n') continue;`",
+                "New code guards the lookahead: `if (ch == '\\r' && a < length-1 && Data[a+1] == '\\n') continue;`"
+              ]
+            }
+          },
+          {
+            "node_id": "func_1",
+            "kind": "function",
+            "label": "unknown",
+            "attributes": {
+              "function": "unknown"
+            }
+          },
+          {
+            "node_id": "guard_1",
+            "kind": "guard",
+            "label": "`length` is small or the loop reaches its final iteration with `a == length-1`",
+            "attributes": {
+              "condition": "`length` is small or the loop reaches its final iteration with `a == length-1`"
+            }
+          },
+          {
+            "node_id": "guard_2",
+            "kind": "guard",
+            "label": "`Data[a]` equals `\\r`, causing evaluation of the lookahead condition",
+            "attributes": {
+              "condition": "`Data[a]` equals `\\r`, causing evaluation of the lookahead condition"
+            }
+          },
+          {
+            "node_id": "guard_3",
+            "kind": "guard",
+            "label": "`Data[a+1]` is accessed without confirming `a+1 < length`",
+            "attributes": {
+              "condition": "`Data[a+1]` is accessed without confirming `a+1 < length`"
+            }
+          },
+          {
+            "node_id": "strategy",
+            "kind": "strategy",
+            "label": "out_of_bounds_read",
+            "attributes": {
+              "primary_pattern": "out_of_bounds_read",
+              "check_types": [
+                "loop_index_boundary_validation",
+                "lookahead_read_ahead_access_checks",
+                "short_circuit_guard_ordering_analysis",
+                "buffer_length_to_index_relation_checking"
+              ],
+              "entry_points": [
+                "Conditions that access `buf[i+1]`, `buf[i-1]`, or similar neighbor elements inside loops",
+                "Parsing code that scans variable-length input buffers",
+                "Character filtering logic using CRLF or delimiter lookahead"
+              ],
+              "data_flow_tracking": true,
+              "cross_file_analysis": false,
+              "suggestions": [
+                "Prefer detecting consumer-side lookahead misuse such as `buffer[index+1]` under a loop bounded only by `index < length`.",
+                "Require proof that `index + offset` stays within bounds before dereference; do not treat the loop guard alone as sufficient for neighbor access.",
+                "Model C short-circuit semantics and flag cases where dereference appears before authoritative bound validation.",
+                "Prefer missing explicit bounds validation over generic null-check reasoning; buffer non-nullness does not prove neighbor-byte safety."
+              ]
+            }
+          },
+          {
+            "node_id": "func_2",
+            "kind": "function",
+            "label": "process_COM",
+            "attributes": {
+              "function": "process_COM",
+              "source": "patch_fact"
+            }
+          },
+          {
+            "node_id": "guard_4",
+            "kind": "guard",
+            "label": "if (ch == '\\r' && a < length-1 && Data[a+1] == '\\n') continue; // Remove cr followed by lf.",
+            "attributes": {
+              "condition": "if (ch == '\\r' && a < length-1 && Data[a+1] == '\\n') continue; // Remove cr followed by lf.",
+              "source": "patch_fact"
+            }
+          },
+          {
+            "node_id": "fix_1",
+            "kind": "fix",
+            "label": "Added explicit bounds guard before lookahead access",
+            "attributes": {
+              "kind": "fix_patterns",
+              "value": "Added explicit bounds guard before lookahead access"
+            }
+          },
+          {
+            "node_id": "fix_2",
+            "kind": "fix",
+            "label": "Short-circuit condition reordered to validate index before dereference",
+            "attributes": {
+              "kind": "fix_patterns",
+              "value": "Short-circuit condition reordered to validate index before dereference"
+            }
+          },
+          {
+            "node_id": "fix_3",
+            "kind": "fix",
+            "label": "overflow-safe accumulator",
+            "attributes": {
+              "kind": "fix_patterns",
+              "value": "overflow-safe accumulator"
+            }
+          },
+          {
+            "node_id": "fix_4",
+            "kind": "fix",
+            "label": "overflow bounds check",
+            "attributes": {
+              "kind": "fix_patterns",
+              "value": "overflow bounds check"
+            }
+          }
+        ],
+        "edges": [
+          {
+            "source": "patch",
+            "target": "file_0",
+            "relation": "touches",
+            "confidence": 0.95
+          },
+          {
+            "source": "patch",
+            "target": "pattern_0",
+            "relation": "indicates",
+            "confidence": 0.9
+          },
+          {
+            "source": "pattern_0",
+            "target": "func_1",
+            "relation": "affects",
+            "confidence": 0.75
+          },
+          {
+            "source": "pattern_0",
+            "target": "guard_1",
+            "relation": "requires",
+            "confidence": 0.7
+          },
+          {
+            "source": "pattern_0",
+            "target": "guard_2",
+            "relation": "requires",
+            "confidence": 0.7
+          },
+          {
+            "source": "pattern_0",
+            "target": "guard_3",
+            "relation": "requires",
+            "confidence": 0.7
+          },
+          {
+            "source": "patch",
+            "target": "strategy",
+            "relation": "guides",
+            "confidence": 0.85
+          },
+          {
+            "source": "patch",
+            "target": "func_2",
+            "relation": "focuses_on",
+            "confidence": 0.82
+          },
+          {
+            "source": "patch",
+            "target": "guard_4",
+            "relation": "adds_guard",
+            "confidence": 0.84
+          },
+          {
+            "source": "patch",
+            "target": "fix_1",
+            "relation": "introduces",
+            "confidence": 0.8
+          },
+          {
+            "source": "patch",
+            "target": "fix_2",
+            "relation": "introduces",
+            "confidence": 0.8
+          },
+          {
+            "source": "patch",
+            "target": "fix_3",
+            "relation": "introduces",
+            "confidence": 0.8
+          },
+          {
+            "source": "patch",
+            "target": "fix_4",
+            "relation": "introduces",
+            "confidence": 0.8
+          }
+        ]
+      },
+      "evidence_plan": {
+        "primary_pattern": "out_of_bounds_read",
+        "hypotheses": [
+          "The patch changes a data propagation condition that should generalize beyond the edited lines."
+        ],
+        "requirements": [
+          {
+            "evidence_type": "patch_fact",
+            "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+            "priority": 100,
+            "preferred_analyzers": [],
+            "confidence": 1.0,
+            "mechanism_refs": [
+              "patch"
+            ]
+          },
+          {
+            "evidence_type": "dataflow_candidate",
+            "reason": "Patch analysis requests data-flow tracking.",
+            "priority": 95,
+            "preferred_analyzers": [
+              "codeql"
+            ],
+            "confidence": 0.9,
+            "mechanism_refs": [
+              "strategy"
+            ]
+          },
+          {
+            "evidence_type": "call_chain",
+            "reason": "Interprocedural call-chain context is needed to generalize the fix pattern.",
+            "priority": 78,
+            "preferred_analyzers": [
+              "codeql"
+            ],
+            "confidence": 0.78,
+            "mechanism_refs": [
+              "strategy"
+            ]
+          }
+        ],
+        "recommended_analyzers": [
+          "codeql"
+        ],
+        "planner_notes": [
+          "Added guards detected in patch diff; path-sensitive evidence should stay near top priority.",
+          "Selected analyzers do not cover every planned evidence primitive."
+        ],
+        "coverage_gaps": [
+          "dataflow_candidate is not covered by selected analyzers ['csa']",
+          "call_chain is not covered by selected analyzers ['csa']"
+        ],
+        "uncertainty_budget": "low",
+        "escalation_triggers": [
+          "selected_coverage_gap"
+        ]
+      }
+    }
+  },
+  "artifacts": {
+    "csa": {
+      "analyzer_id": "csa",
+      "checker_name": "OutOfBoundsLookaheadReadChecker",
+      "source_path": "csa/OutOfBoundsLookaheadReadChecker.cpp",
+      "output_path": "csa/OutOfBoundsLookaheadReadChecker.so",
+      "result_path": "csa/result.json",
+      "report_entry": {
+        "success": true,
+        "validation_requested": true,
+        "functional_validation_passed": true,
+        "semantic_target_hit": true,
+        "validation_state": "target_hit",
+        "semantic_acceptance": true,
+        "semantic_acceptance_summary": "命中验证目标并通过功能验证",
+        "checker_name": "OutOfBoundsLookaheadReadChecker",
+        "artifact_display_name": "OutOfBoundsLookaheadReadChecker",
+        "output_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe120_jhead_cve202028840/primary/csa/20260423_113029/csa/OutOfBoundsLookaheadReadChecker.so",
+        "source_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe120_jhead_cve202028840/primary/csa/20260423_113029/csa/OutOfBoundsLookaheadReadChecker.cpp",
+        "iterations": 4,
+        "compile_attempts": 1,
+        "error": "",
+        "validation": {
+          "stage": "semantic",
+          "analyzer": "csa",
+          "success": true,
+          "execution_time": 3.1425607204437256,
+          "error_message": "",
+          "diagnostics": [
+            {
+              "file_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe120_jhead_cve202028840/vulnerable/jpgfile.c",
+              "line": 51,
+              "column": 27,
+              "severity": "warning",
+              "message": "Array lookahead read uses index + constant offset without an explicit upper-bound guard proving the extra byte is within the buffer length [custom.OutOfBoundsLookaheadReadChecker]",
+              "source": "csa",
+              "code": "",
+              "suggestion": ""
+            },
+            {
+              "file_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe120_jhead_cve202028840/vulnerable/jpgfile.c",
+              "line": 293,
+              "column": 41,
+              "severity": "warning",
+              "message": "Array lookahead read uses index + constant offset without an explicit upper-bound guard proving the extra byte is within the buffer length [custom.OutOfBoundsLookaheadReadChecker]",
+              "source": "csa",
+              "code": "",
+              "suggestion": ""
+            },
+            {
+              "file_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe120_jhead_cve202028840/vulnerable/jpgfile.c",
+              "line": 749,
+              "column": 23,
+              "severity": "warning",
+              "message": "Array lookahead read uses index + constant offset without an explicit upper-bound guard proving the extra byte is within the buffer length [custom.OutOfBoundsLookaheadReadChecker]",
+              "source": "csa",
+              "code": "",
+              "suggestion": ""
+            }
+          ],
+          "diagnostics_count": 3,
+          "warnings_count": 3,
+          "errors_count": 0,
+          "environment_blocked": false,
+          "environment_block_reason": "",
+          "validation_target": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe120_jhead_cve202028840/vulnerable",
+          "all_diagnostics_count": 27,
+          "generated_diagnostics_count": 12,
+          "patch_targets": [
+            "jpgfile.c"
+          ]
+        },
+        "llm_usage": {
+          "prompt_tokens": 33231,
+          "completion_tokens": 6723,
+          "total_tokens": 39954,
+          "call_count": 4,
+          "available": true,
+          "model": "gpt-5.4"
+        },
+        "artifact_metrics": {
+          "path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe120_jhead_cve202028840/primary/csa/20260423_113029/csa/OutOfBoundsLookaheadReadChecker.cpp",
+          "total_lines": 432,
+          "nonempty_lines": 363,
+          "char_count": 13369,
+          "byte_count": 13369
+        },
+        "artifact_delta": {},
+        "artifact_review": {
+          "success": true,
+          "error": "",
+          "findings": []
+        },
+        "evidence_records": 0,
+        "missing_evidence": [],
+        "evidence_degraded": false,
+        "semantic_slice_records": 0,
+        "context_summary_records": 0,
+        "slice_coverage": "missing",
+        "verifier_backed_slices": 0,
+        "slice_kinds": {},
+        "evidence_escalation": {},
+        "validation_feedback_records": 1,
+        "validation_feedback_summary": "- validation_outcome @ semantic_validation: semantic validation passed with 27 diagnostics [coverage=full]",
+        "validation_feedback_history": [
+          {
+            "analyzer": "csa",
+            "phase": "initial_validation",
+            "summary": "- validation_outcome @ semantic_validation: semantic validation passed with 27 diagnostics [coverage=full]"
+          }
+        ],
+        "refinement_attempted": false,
+        "refinement_adopted": false,
+        "refinement_iterations_attempted": 0,
+        "refinement_skipped_reason": "",
+        "last_refinement_candidate_success": false,
+        "last_refinement_candidate_error": "",
+        "last_refinement_candidate_artifact_review": {},
+        "last_refinement_candidate_output_path": "",
+        "post_validation_evidence_records": 1,
+        "post_validation_missing_evidence": [],
+        "post_validation_semantic_slice_records": 0,
+        "post_validation_context_summary_records": 0,
+        "post_validation_slice_coverage": "missing",
+        "synthesis_input": {
+          "analyzer_id": "csa",
+          "detector_artifact": "checker_plugin",
+          "primary_pattern": "out_of_bounds_read",
+          "objective": "Synthesize a path-sensitive out_of_bounds_read detector that encodes the same local state, guards, and lifecycle mechanism evidenced by the patch, while still generalizing to semantically equivalent sites.",
+          "mechanism_contract": {
+            "mechanism_family": "memory_read_without_proven_bound",
+            "semantic_dimensions": [
+              "read or dereference sink",
+              "buffer or region identity",
+              "index/offset/end-pointer relation",
+              "guard or sentinel barrier"
+            ],
+            "trigger_invariants": [
+              "a read-like sink is reached",
+              "the path does not prove the read stays inside the intended region",
+              "Patch-backed trigger clue: added guard: if (ch == '\\r' && a < length-1 && Data[a+1] == '\\n') continue; // Remove cr followed by lf.",
+              "Patch-backed trigger clue: detection hints: Prefer detecting consumer-side lookahead misuse such as `buffer[index+1]` under a loop bounded only by `index < length`., Require proof that `index + offset` stays within bounds before dereference; do not treat the loop guard alone as sufficient for neighbor access., Model C short-circuit semantics and flag cases where dereference appears before authoritative bound validation."
+            ],
+            "silence_invariants": [
+              "index, size, or end-pointer checks prove the read stays in bounds",
+              "patch-added sentinel or length validation blocks the unsafe read",
+              "length/capacity guard present: if (ch == '\\r' && a < length-1 && Data[a+1] == '\\n') continue; // Remove cr followed by lf.",
+              "patch-introduced barrier pattern: Added explicit bounds guard before lookahead access",
+              "patch-introduced barrier pattern: Short-circuit condition reordered to validate index before dereference",
+              "patch-introduced barrier pattern: overflow-safe accumulator"
+            ],
+            "transfer_axes": [
+              "equivalent index-to-buffer relations across sibling readers",
+              "equivalent end-pointer or length guards for the same data role"
+            ],
+            "forbidden_shortcuts": [
+              "bind the detector to fixed file paths, line numbers, or exact patch strings",
+              "broaden into unrelated bug families just to improve hit count",
+              "flag every array access without modeling index and region semantics",
+              "infer safe bounds from unrelated null or type checks",
+              "placeholder helper logic or empty ProgramState modeling"
+            ],
+            "evidence_backed_axes": []
+          },
+          "detector_name_hint": "OutOfBoundsLookaheadReadChecker",
+          "focus_files": [
+            "jpgfile.c"
+          ],
+          "focus_functions": [
+            "unknown"
+          ],
+          "hypotheses": [
+            "The patch changes a data propagation condition that should generalize beyond the edited lines."
+          ],
+          "required_evidence_types": [
+            "patch_fact",
+            "dataflow_candidate",
+            "call_chain"
+          ],
+          "missing_evidence_types": [],
+          "evidence_degraded": false,
+          "patch_mechanism_signals": [
+            "added guard: if (ch == '\\r' && a < length-1 && Data[a+1] == '\\n') continue; // Remove cr followed by lf.",
+            "detection hints: Prefer detecting consumer-side lookahead misuse such as `buffer[index+1]` under a loop bounded only by `index < length`., Require proof that `index + offset` stays within bounds before dereference; do not treat the loop guard alone as sufficient for neighbor access., Model C short-circuit semantics and flag cases where dereference appears before authoritative bound validation."
+          ],
+          "silencing_conditions": [
+            "length/capacity guard present: if (ch == '\\r' && a < length-1 && Data[a+1] == '\\n') continue; // Remove cr followed by lf.",
+            "patch-introduced barrier pattern: Added explicit bounds guard before lookahead access",
+            "patch-introduced barrier pattern: Short-circuit condition reordered to validate index before dereference",
+            "patch-introduced barrier pattern: overflow-safe accumulator",
+            "a dominating length/index/end-pointer guard proves the read stays inside the intended region"
+          ],
+          "retry_guidance": [],
+          "selected_evidence_ids": [],
+          "selected_evidence": [],
+          "semantic_slice_count": 0,
+          "context_summary_count": 0,
+          "semantic_slice_coverage": "missing",
+          "selected_semantic_slice_ids": [],
+          "selected_context_summary_ids": [],
+          "selected_semantic_slices": [],
+          "selected_context_summaries": [],
+          "semantic_clause_plan": [
+            {
+              "clause_id": "vulnerable_trigger_clause",
+              "intent": "Trigger on the vulnerable out_of_bounds_read mechanism using evidence-backed path/flow semantics.",
+              "supporting_evidence_ids": [],
+              "repair_when": [
+                "semantic_no_hits"
+              ],
+              "focus_functions": [
+                "unknown"
+              ]
+            },
+            {
+              "clause_id": "patched_silence_clause",
+              "intent": "Stay silent on patched code when patch-added guards, barriers, or safe APIs prove the mechanism is blocked.",
+              "supporting_evidence_ids": [],
+              "repair_when": [],
+              "silencing_conditions": [
+                "length/capacity guard present: if (ch == '\\r' && a < length-1 && Data[a+1] == '\\n') continue; // Remove cr followed by lf.",
+                "patch-introduced barrier pattern: Added explicit bounds guard before lookahead access",
+                "patch-introduced barrier pattern: Short-circuit condition reordered to validate index before dereference",
+                "patch-introduced barrier pattern: overflow-safe accumulator"
+              ]
+            },
+            {
+              "clause_id": "semantic_transfer_clause",
+              "intent": "Generalize along semantic slices and call-chain evidence rather than patch-local syntax.",
+              "supporting_evidence_ids": [],
+              "repair_when": [],
+              "analyzer_id": "csa"
+            },
+            {
+              "clause_id": "analyzer_interface_clause",
+              "intent": "Preserve valid analyzer-facing syntax and interfaces while keeping semantics unchanged.",
+              "supporting_evidence_ids": [],
+              "repair_when": [
+                "semantic_execution_error"
+              ],
+              "analyzer_id": "csa"
+            }
+          ],
+          "repair_directives": [],
+          "constraints": [
+            {
+              "title": "Generalize beyond patch site",
+              "description": "Do not bind the detector to fixed file paths, line numbers, or exact patch strings.",
+              "priority": "high"
+            },
+            {
+              "title": "Preserve vulnerability semantics",
+              "description": "Keep the detector focused on the vulnerability family implied by the patch and evidence.",
+              "priority": "high"
+            },
+            {
+              "title": "Respect analyzer-native form",
+              "description": "Output must be a valid checker_plugin for csa.",
+              "priority": "high"
+            },
+            {
+              "title": "Stay within proven mechanism scope",
+              "description": "Generalize only along evidence-supported semantic dimensions. Do not broaden the detector into unrelated globals, APIs, or bug families.",
+              "priority": "high"
+            },
+            {
+              "title": "Honor mechanism contract",
+              "description": "Preserve the mechanism family `memory_read_without_proven_bound` by keeping trigger invariants a read-like sink is reached; the path does not prove the read stays inside the intended region; Patch-backed trigger clue: added guard: if (ch == '\\r' && a < length-1 && Data[a+1] == '\\n') continue; // Remove cr followed by lf..",
+              "priority": "high"
+            },
+            {
+              "title": "Generalize only on contract axes",
+              "description": "Reuse semantics only along these transfer axes: equivalent index-to-buffer relations across sibling readers; equivalent end-pointer or length guards for the same data role.",
+              "priority": "high"
+            },
+            {
+              "title": "Anchor on patch-touched scope",
+              "description": "Use patch-touched files/functions as the semantic anchor for synthesis. Only extend beyond them when the same mechanism is explicitly supported by evidence.",
+              "priority": "high"
+            },
+            {
+              "title": "Encode the patch-added barrier",
+              "description": "model the absence of barriers like Added explicit bounds guard before lookahead access, Short-circuit condition reordered to validate index before dereference, overflow-safe accumulator, overflow bounds check; treat guards such as if (ch == '\\r' && a < length-1 && Data[a+1] == '\\n') continue; // Remove cr followed by lf. as semantic barriers.",
+              "priority": "high"
+            },
+            {
+              "title": "Respect patched silence",
+              "description": "Use these no-report conditions when they are semantically proven: length/capacity guard present: if (ch == '\\r' && a < length-1 && Data[a+1] == '\\n') continue; // Remove cr followed by lf.; patch-introduced barrier pattern: Added explicit bounds guard before lookahead access; patch-introduced barrier pattern: Short-circuit condition reordered to validate index before dereference.",
+              "priority": "high"
+            },
+            {
+              "title": "Model read bounds, not generic indexing",
+              "description": "Require a read-like sink plus missing proof that index, offset, or end pointer stays inside the intended region.",
+              "priority": "high"
+            },
+            {
+              "title": "Use path-sensitive evidence",
+              "description": "Prefer guards, state transitions, and lifecycle facts over broad textual matching.",
+              "priority": "high"
+            },
+            {
+              "title": "No placeholder helper logic",
+              "description": "Helper predicates must inspect AST/program state and must not be unconditional return-true/return-false stubs.",
+              "priority": "high"
+            }
+          ],
+          "implementation_hints": [
+            "Mechanism family: memory_read_without_proven_bound",
+            "Mechanism dimensions: read or dereference sink, buffer or region identity, index/offset/end-pointer relation, guard or sentinel barrier",
+            "Trigger invariants: a read-like sink is reached, the path does not prove the read stays inside the intended region, Patch-backed trigger clue: added guard: if (ch == '\\r' && a < length-1 && Data[a+1] == '\\n') continue; // Remove cr followed by lf.",
+            "Silence invariants: index, size, or end-pointer checks prove the read stays in bounds, patch-added sentinel or length validation blocks the unsafe read, length/capacity guard present: if (ch == '\\r' && a < length-1 && Data[a+1] == '\\n') continue; // Remove cr followed by lf.",
+            "Transfer axes: equivalent index-to-buffer relations across sibling readers, equivalent end-pointer or length guards for the same data role",
+            "Focus files: jpgfile.c",
+            "Priority functions: unknown",
+            "Patch-added barriers: Added explicit bounds guard before lookahead access, Short-circuit condition reordered to validate index before dereference, overflow-safe accumulator, overflow bounds check"
+          ],
+          "validation_expectations": [
+            "Vulnerable version should trigger a out_of_bounds_read finding.",
+            "Patched version should stay silent for the same mechanism.",
+            "Semantic validation that executes but returns zero hits is not acceptable; recover coverage with evidence-backed semantics.",
+            "Repair phase may fix syntax/interfaces only; it must not simplify away the core detection logic.",
+            "Generalization must stay inside the mechanism contract transfer axes instead of widening to adjacent bug families.",
+            "Trigger invariant: a read-like sink is reached.",
+            "Trigger invariant: the path does not prove the read stays inside the intended region.",
+            "Patched silence depends on: length/capacity guard present: if (ch == '\\r' && a < length-1 && Data[a+1] == '\\n') continue; // Remove cr followed by lf..",
+            "Patched silence depends on: patch-introduced barrier pattern: Added explicit bounds guard before lookahead access."
+          ]
+        },
+        "evidence_effectiveness": {
+          "baseline_records": 0,
+          "post_validation_records": 1,
+          "new_records": 1,
+          "baseline_missing": [],
+          "post_validation_missing": [],
+          "resolved_missing": [],
+          "improved": true,
+          "summary": "新增 1 条反馈后证据"
+        }
+      }
+    }
+  }
+}

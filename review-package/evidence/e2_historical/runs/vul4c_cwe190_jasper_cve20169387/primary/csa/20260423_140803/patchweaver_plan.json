@@ -1,0 +1,985 @@
+{
+  "files_changed": [
+    "src/libjasper/jpc/jpc_dec.c"
+  ],
+  "file_details": [
+    {
+      "path": "src/libjasper/jpc/jpc_dec.c",
+      "additions": 5,
+      "deletions": 1,
+      "hunks": 2
+    }
+  ],
+  "vulnerability_patterns": [
+    {
+      "type": "integer_overflow",
+      "description": "Unchecked multiplication of horizontal and vertical tile counts can overflow when deriving the total tile count, leading to an invalid `dec->numtiles` value used in subsequent allocation and indexing logic.",
+      "trigger_conditions": [
+        "`dec->numhtiles` and `dec->numvtiles` are derived from image/tile geometry and can become large enough that their product exceeds the destination integer range",
+        "The code computes total tiles with direct multiplication and stores the result without overflow validation",
+        "The resulting `dec->numtiles` is later consumed by allocation or iteration logic"
+      ],
+      "fix_patterns": [
+        "safe API replacement for arithmetic sizing using `jas_safe_size_mul`",
+        "added guard that rejects invalid multiplication results before state assignment",
+        "defer assignment to `dec->numtiles` until checked result is available"
+      ],
+      "affected_functions": [
+        "jas_safe_size_mul"
+      ],
+      "cross_file": false,
+      "source": "llm",
+      "confidence": 0.97,
+      "evidence_lines": [
+        "Added local `size_t size;` before computing tile counts",
+        "Replaced `dec->numtiles = dec->numhtiles * dec->numvtiles;`",
+        "Added `if (!jas_safe_size_mul(dec->numhtiles, dec->numvtiles, &size)) { return -1; }`",
+        "Assigned checked result with `dec->numtiles = size;`",
+        "`dec->numtiles` is then passed to `jas_alloc2(dec->numtiles, sizeof(jpc_dec_tile_t))`"
+      ]
+    }
+  ],
+  "cross_file_dependencies": [],
+  "detection_strategy": {
+    "primary_pattern": "integer_overflow",
+    "check_types": [
+      "unchecked_multiplication_in_size_count_derivation",
+      "overflow_sensitive_allocation_sizing",
+      "range_mismatch_between_computed_product_and_destination_field"
+    ],
+    "entry_points": [
+      "tile-count computation in `src/libjasper/jpc/jpc_dec.c` before `dec->numtiles` assignment",
+      "sites where geometry-derived dimensions are multiplied to form allocation counts"
+    ],
+    "data_flow_tracking": true,
+    "cross_file_analysis": false,
+    "suggestions": [
+      "Prefer detecting unchecked multiplicative size/count derivations that flow into allocation or loop bounds",
+      "Look for direct products of decoded/input-derived dimensions replaced by checked helpers like `jas_safe_size_mul`",
+      "Treat safe-math helper insertion plus early return as strong evidence of overflow remediation",
+      "Do not rely on nearby allocation APIs alone; prioritize the arithmetic root cause that computes the count",
+      "Track whether the checked temporary result is assigned only after validation, rather than inferring safety from later null checks"
+    ]
+  },
+  "checker_name_suggestion": "IntegerOverflowChecker",
+  "affected_functions": [
+    "jas_safe_size_mul"
+  ],
+  "key_functions": [
+    "jas_safe_size_mul"
+  ],
+  "patch_semantics": {
+    "added_guards": [
+      "if (!jas_safe_size_mul(dec->numhtiles, dec->numvtiles, &size)) {"
+    ],
+    "added_api_calls": [
+      "jas_safe_size_mul"
+    ],
+    "removed_api_calls": [],
+    "state_resets": [],
+    "lifecycle_changes": []
+  },
+  "analysis_backend": "llm",
+  "analysis_confidence": 0.97,
+  "analysis_rationale": "The patch replaces a direct multiplication of tile counts (`dec->numhtiles * dec->numvtiles`) with checked multiplication via `jas_safe_size_mul(dec->numhtiles, dec->numvtiles, &size)` and aborts on failure (`return -1`). This is concrete evidence that the vulnerable mechanism is unchecked arithmetic overflow in computing `dec->numtiles`, which then feeds allocation sizing through `jas_alloc2(dec->numtiles, sizeof(jpc_dec_tile_t))`.",
+  "llm_usage": {
+    "prompt_tokens": 5669,
+    "completion_tokens": 633,
+    "total_tokens": 6302,
+    "call_count": 1,
+    "available": true,
+    "model": "gpt-5.4-high"
+  },
+  "patchweaver": {
+    "summary": "Patch suggests integer_overflow semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=4, metadata refs=0.",
+    "patch_facts": [
+      {
+        "fact_type": "patch_overview",
+        "label": "Patch overview",
+        "attributes": {
+          "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe190_jasper_cve20169387/patches/fix.patch",
+          "changed_files": [
+            "src/libjasper/jpc/jpc_dec.c"
+          ],
+          "changed_file_count": 1,
+          "added_line_count": 5,
+          "deleted_line_count": 1
+        }
+      },
+      {
+        "fact_type": "vulnerability_patterns",
+        "label": "Vulnerability patterns inferred from patch",
+        "attributes": {
+          "patterns": [
+            "integer_overflow"
+          ],
+          "descriptions": [
+            "Unchecked multiplication of horizontal and vertical tile counts can overflow when deriving the total tile count, leading to an invalid `dec->numtiles` value used in subsequent allocation and indexing logic."
+          ]
+        }
+      },
+      {
+        "fact_type": "affected_functions",
+        "label": "Functions implicated by removed or fixed code",
+        "attributes": {
+          "functions": [
+            "jas_safe_size_mul",
+            "jpc_dec_process_siz"
+          ]
+        }
+      },
+      {
+        "fact_type": "detection_strategy",
+        "label": "Existing patch analysis detection strategy",
+        "attributes": {
+          "primary_pattern": "integer_overflow",
+          "check_types": [
+            "unchecked_multiplication_in_size_count_derivation",
+            "overflow_sensitive_allocation_sizing",
+            "range_mismatch_between_computed_product_and_destination_field"
+          ],
+          "entry_points": [
+            "tile-count computation in `src/libjasper/jpc/jpc_dec.c` before `dec->numtiles` assignment",
+            "sites where geometry-derived dimensions are multiplied to form allocation counts"
+          ],
+          "data_flow_tracking": true,
+          "cross_file_analysis": false,
+          "suggestions": [
+            "Prefer detecting unchecked multiplicative size/count derivations that flow into allocation or loop bounds",
+            "Look for direct products of decoded/input-derived dimensions replaced by checked helpers like `jas_safe_size_mul`",
+            "Treat safe-math helper insertion plus early return as strong evidence of overflow remediation",
+            "Do not rely on nearby allocation APIs alone; prioritize the arithmetic root cause that computes the count",
+            "Track whether the checked temporary result is assigned only after validation, rather than inferring safety from later null checks"
+          ]
+        }
+      },
+      {
+        "fact_type": "added_guards",
+        "label": "Patch introduces or strengthens guards",
+        "attributes": {
+          "guards": [
+            "if (!jas_safe_size_mul(dec->numhtiles, dec->numvtiles, &size)) {"
+          ]
+        }
+      },
+      {
+        "fact_type": "fix_patterns",
+        "label": "Patch introduces reusable fix patterns",
+        "attributes": {
+          "patterns": [
+            "safe API replacement for arithmetic sizing using `jas_safe_size_mul`",
+            "added guard that rejects invalid multiplication results before state assignment",
+            "defer assignment to `dec->numtiles` until checked result is available",
+            "overflow-safe accumulator"
+          ]
+        }
+      },
+      {
+        "fact_type": "added_api_calls",
+        "label": "Patch introduces or highlights API usage",
+        "attributes": {
+          "apis": [
+            "jas_safe_size_mul"
+          ]
+        }
+      }
+    ],
+    "mechanism_graph": {
+      "summary": "Patch suggests integer_overflow semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=4, metadata refs=0.",
+      "primary_patterns": [
+        "integer_overflow"
+      ],
+      "nodes": [
+        {
+          "node_id": "patch",
+          "kind": "patch",
+          "label": "Security patch",
+          "attributes": {
+            "changed_files": [
+              "src/libjasper/jpc/jpc_dec.c"
+            ]
+          }
+        },
+        {
+          "node_id": "file_0",
+          "kind": "file",
+          "label": "src/libjasper/jpc/jpc_dec.c",
+          "attributes": {
+            "path": "src/libjasper/jpc/jpc_dec.c",
+            "additions": 5,
+            "deletions": 1,
+            "hunks": 2
+          }
+        },
+        {
+          "node_id": "pattern_0",
+          "kind": "pattern",
+          "label": "integer_overflow",
+          "attributes": {
+            "type": "integer_overflow",
+            "description": "Unchecked multiplication of horizontal and vertical tile counts can overflow when deriving the total tile count, leading to an invalid `dec->numtiles` value used in subsequent allocation and indexing logic.",
+            "trigger_conditions": [
+              "`dec->numhtiles` and `dec->numvtiles` are derived from image/tile geometry and can become large enough that their product exceeds the destination integer range",
+              "The code computes total tiles with direct multiplication and stores the result without overflow validation",
+              "The resulting `dec->numtiles` is later consumed by allocation or iteration logic"
+            ],
+            "fix_patterns": [
+              "safe API replacement for arithmetic sizing using `jas_safe_size_mul`",
+              "added guard that rejects invalid multiplication results before state assignment",
+              "defer assignment to `dec->numtiles` until checked result is available"
+            ],
+            "affected_functions": [
+              "jas_safe_size_mul"
+            ],
+            "cross_file": false,
+            "source": "llm",
+            "confidence": 0.97,
+            "evidence_lines": [
+              "Added local `size_t size;` before computing tile counts",
+              "Replaced `dec->numtiles = dec->numhtiles * dec->numvtiles;`",
+              "Added `if (!jas_safe_size_mul(dec->numhtiles, dec->numvtiles, &size)) { return -1; }`",
+              "Assigned checked result with `dec->numtiles = size;`",
+              "`dec->numtiles` is then passed to `jas_alloc2(dec->numtiles, sizeof(jpc_dec_tile_t))`"
+            ]
+          }
+        },
+        {
+          "node_id": "func_1",
+          "kind": "function",
+          "label": "jas_safe_size_mul",
+          "attributes": {
+            "function": "jas_safe_size_mul"
+          }
+        },
+        {
+          "node_id": "guard_1",
+          "kind": "guard",
+          "label": "`dec->numhtiles` and `dec->numvtiles` are derived from image/tile geometry and can become large enough that their product exceeds the destination integer range",
+          "attributes": {
+            "condition": "`dec->numhtiles` and `dec->numvtiles` are derived from image/tile geometry and can become large enough that their product exceeds the destination integer range"
+          }
+        },
+        {
+          "node_id": "guard_2",
+          "kind": "guard",
+          "label": "The code computes total tiles with direct multiplication and stores the result without overflow validation",
+          "attributes": {
+            "condition": "The code computes total tiles with direct multiplication and stores the result without overflow validation"
+          }
+        },
+        {
+          "node_id": "guard_3",
+          "kind": "guard",
+          "label": "The resulting `dec->numtiles` is later consumed by allocation or iteration logic",
+          "attributes": {
+            "condition": "The resulting `dec->numtiles` is later consumed by allocation or iteration logic"
+          }
+        },
+        {
+          "node_id": "strategy",
+          "kind": "strategy",
+          "label": "integer_overflow",
+          "attributes": {
+            "primary_pattern": "integer_overflow",
+            "check_types": [
+              "unchecked_multiplication_in_size_count_derivation",
+              "overflow_sensitive_allocation_sizing",
+              "range_mismatch_between_computed_product_and_destination_field"
+            ],
+            "entry_points": [
+              "tile-count computation in `src/libjasper/jpc/jpc_dec.c` before `dec->numtiles` assignment",
+              "sites where geometry-derived dimensions are multiplied to form allocation counts"
+            ],
+            "data_flow_tracking": true,
+            "cross_file_analysis": false,
+            "suggestions": [
+              "Prefer detecting unchecked multiplicative size/count derivations that flow into allocation or loop bounds",
+              "Look for direct products of decoded/input-derived dimensions replaced by checked helpers like `jas_safe_size_mul`",
+              "Treat safe-math helper insertion plus early return as strong evidence of overflow remediation",
+              "Do not rely on nearby allocation APIs alone; prioritize the arithmetic root cause that computes the count",
+              "Track whether the checked temporary result is assigned only after validation, rather than inferring safety from later null checks"
+            ]
+          }
+        },
+        {
+          "node_id": "func_2",
+          "kind": "function",
+          "label": "jpc_dec_process_siz",
+          "attributes": {
+            "function": "jpc_dec_process_siz",
+            "source": "patch_fact"
+          }
+        },
+        {
+          "node_id": "guard_4",
+          "kind": "guard",
+          "label": "if (!jas_safe_size_mul(dec->numhtiles, dec->numvtiles, &size)) {",
+          "attributes": {
+            "condition": "if (!jas_safe_size_mul(dec->numhtiles, dec->numvtiles, &size)) {",
+            "source": "patch_fact"
+          }
+        },
+        {
+          "node_id": "fix_1",
+          "kind": "fix",
+          "label": "safe API replacement for arithmetic sizing using `jas_safe_size_mul`",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "safe API replacement for arithmetic sizing using `jas_safe_size_mul`"
+          }
+        },
+        {
+          "node_id": "fix_2",
+          "kind": "fix",
+          "label": "added guard that rejects invalid multiplication results before state assignment",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "added guard that rejects invalid multiplication results before state assignment"
+          }
+        },
+        {
+          "node_id": "fix_3",
+          "kind": "fix",
+          "label": "defer assignment to `dec->numtiles` until checked result is available",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "defer assignment to `dec->numtiles` until checked result is available"
+          }
+        },
+        {
+          "node_id": "fix_4",
+          "kind": "fix",
+          "label": "overflow-safe accumulator",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "overflow-safe accumulator"
+          }
+        },
+        {
+          "node_id": "fix_5",
+          "kind": "fix",
+          "label": "jas_safe_size_mul",
+          "attributes": {
+            "kind": "added_api_calls",
+            "value": "jas_safe_size_mul"
+          }
+        }
+      ],
+      "edges": [
+        {
+          "source": "patch",
+          "target": "file_0",
+          "relation": "touches",
+          "confidence": 0.95
+        },
+        {
+          "source": "patch",
+          "target": "pattern_0",
+          "relation": "indicates",
+          "confidence": 0.9
+        },
+        {
+          "source": "pattern_0",
+          "target": "func_1",
+          "relation": "affects",
+          "confidence": 0.75
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_1",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_2",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_3",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "patch",
+          "target": "strategy",
+          "relation": "guides",
+          "confidence": 0.85
+        },
+        {
+          "source": "patch",
+          "target": "func_2",
+          "relation": "focuses_on",
+          "confidence": 0.82
+        },
+        {
+          "source": "patch",
+          "target": "guard_4",
+          "relation": "adds_guard",
+          "confidence": 0.84
+        },
+        {
+          "source": "patch",
+          "target": "fix_1",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_2",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_3",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_4",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_5",
+          "relation": "introduces",
+          "confidence": 0.8
+        }
+      ]
+    },
+    "evidence_plan": {
+      "primary_pattern": "integer_overflow",
+      "hypotheses": [
+        "The patch changes a data propagation condition that should generalize beyond the edited lines.",
+        "The fix widens arithmetic carriers or restores a wider numeric domain before a size-related sink."
+      ],
+      "requirements": [
+        {
+          "evidence_type": "patch_fact",
+          "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+          "priority": 100,
+          "preferred_analyzers": [],
+          "confidence": 1.0,
+          "mechanism_refs": [
+            "patch"
+          ]
+        },
+        {
+          "evidence_type": "dataflow_candidate",
+          "reason": "Patch analysis requests data-flow tracking.",
+          "priority": 95,
+          "preferred_analyzers": [
+            "codeql"
+          ],
+          "confidence": 0.9,
+          "mechanism_refs": [
+            "strategy"
+          ]
+        },
+        {
+          "evidence_type": "semantic_slice",
+          "reason": "Arithmetic-overflow fixes need the concrete accumulator/sink slice, not a patch headline.",
+          "priority": 90,
+          "preferred_analyzers": [
+            "csa",
+            "codeql"
+          ],
+          "confidence": 0.9,
+          "mechanism_refs": [
+            "pattern_0"
+          ]
+        },
+        {
+          "evidence_type": "state_transition",
+          "reason": "Need local numeric-domain transitions such as int32 accumulator to i64 accumulator before the sink.",
+          "priority": 84,
+          "preferred_analyzers": [
+            "csa"
+          ],
+          "confidence": 0.82,
+          "mechanism_refs": [
+            "pattern_0"
+          ]
+        },
+        {
+          "evidence_type": "call_chain",
+          "reason": "Interprocedural call-chain context is needed to generalize the fix pattern.",
+          "priority": 78,
+          "preferred_analyzers": [
+            "codeql"
+          ],
+          "confidence": 0.78,
+          "mechanism_refs": [
+            "strategy"
+          ]
+        }
+      ],
+      "recommended_analyzers": [
+        "codeql",
+        "csa"
+      ],
+      "planner_notes": [
+        "Added guards detected in patch diff; path-sensitive evidence should stay near top priority.",
+        "Selected analyzers do not cover every planned evidence primitive."
+      ],
+      "coverage_gaps": [
+        "dataflow_candidate is not covered by selected analyzers ['csa']",
+        "call_chain is not covered by selected analyzers ['csa']"
+      ],
+      "uncertainty_budget": "low",
+      "escalation_triggers": [
+        "selected_coverage_gap"
+      ]
+    }
+  },
+  "summary": "Patch suggests integer_overflow semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=4, metadata refs=0.",
+  "patch_facts": [
+    {
+      "fact_type": "patch_overview",
+      "label": "Patch overview",
+      "attributes": {
+        "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe190_jasper_cve20169387/patches/fix.patch",
+        "changed_files": [
+          "src/libjasper/jpc/jpc_dec.c"
+        ],
+        "changed_file_count": 1,
+        "added_line_count": 5,
+        "deleted_line_count": 1
+      }
+    },
+    {
+      "fact_type": "vulnerability_patterns",
+      "label": "Vulnerability patterns inferred from patch",
+      "attributes": {
+        "patterns": [
+          "integer_overflow"
+        ],
+        "descriptions": [
+          "Unchecked multiplication of horizontal and vertical tile counts can overflow when deriving the total tile count, leading to an invalid `dec->numtiles` value used in subsequent allocation and indexing logic."
+        ]
+      }
+    },
+    {
+      "fact_type": "affected_functions",
+      "label": "Functions implicated by removed or fixed code",
+      "attributes": {
+        "functions": [
+          "jas_safe_size_mul",
+          "jpc_dec_process_siz"
+        ]
+      }
+    },
+    {
+      "fact_type": "detection_strategy",
+      "label": "Existing patch analysis detection strategy",
+      "attributes": {
+        "primary_pattern": "integer_overflow",
+        "check_types": [
+          "unchecked_multiplication_in_size_count_derivation",
+          "overflow_sensitive_allocation_sizing",
+          "range_mismatch_between_computed_product_and_destination_field"
+        ],
+        "entry_points": [
+          "tile-count computation in `src/libjasper/jpc/jpc_dec.c` before `dec->numtiles` assignment",
+          "sites where geometry-derived dimensions are multiplied to form allocation counts"
+        ],
+        "data_flow_tracking": true,
+        "cross_file_analysis": false,
+        "suggestions": [
+          "Prefer detecting unchecked multiplicative size/count derivations that flow into allocation or loop bounds",
+          "Look for direct products of decoded/input-derived dimensions replaced by checked helpers like `jas_safe_size_mul`",
+          "Treat safe-math helper insertion plus early return as strong evidence of overflow remediation",
+          "Do not rely on nearby allocation APIs alone; prioritize the arithmetic root cause that computes the count",
+          "Track whether the checked temporary result is assigned only after validation, rather than inferring safety from later null checks"
+        ]
+      }
+    },
+    {
+      "fact_type": "added_guards",
+      "label": "Patch introduces or strengthens guards",
+      "attributes": {
+        "guards": [
+          "if (!jas_safe_size_mul(dec->numhtiles, dec->numvtiles, &size)) {"
+        ]
+      }
+    },
+    {
+      "fact_type": "fix_patterns",
+      "label": "Patch introduces reusable fix patterns",
+      "attributes": {
+        "patterns": [
+          "safe API replacement for arithmetic sizing using `jas_safe_size_mul`",
+          "added guard that rejects invalid multiplication results before state assignment",
+          "defer assignment to `dec->numtiles` until checked result is available",
+          "overflow-safe accumulator"
+        ]
+      }
+    },
+    {
+      "fact_type": "added_api_calls",
+      "label": "Patch introduces or highlights API usage",
+      "attributes": {
+        "apis": [
+          "jas_safe_size_mul"
+        ]
+      }
+    }
+  ],
+  "mechanism_graph": {
+    "summary": "Patch suggests integer_overflow semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=4, metadata refs=0.",
+    "primary_patterns": [
+      "integer_overflow"
+    ],
+    "nodes": [
+      {
+        "node_id": "patch",
+        "kind": "patch",
+        "label": "Security patch",
+        "attributes": {
+          "changed_files": [
+            "src/libjasper/jpc/jpc_dec.c"
+          ]
+        }
+      },
+      {
+        "node_id": "file_0",
+        "kind": "file",
+        "label": "src/libjasper/jpc/jpc_dec.c",
+        "attributes": {
+          "path": "src/libjasper/jpc/jpc_dec.c",
+          "additions": 5,
+          "deletions": 1,
+          "hunks": 2
+        }
+      },
+      {
+        "node_id": "pattern_0",
+        "kind": "pattern",
+        "label": "integer_overflow",
+        "attributes": {
+          "type": "integer_overflow",
+          "description": "Unchecked multiplication of horizontal and vertical tile counts can overflow when deriving the total tile count, leading to an invalid `dec->numtiles` value used in subsequent allocation and indexing logic.",
+          "trigger_conditions": [
+            "`dec->numhtiles` and `dec->numvtiles` are derived from image/tile geometry and can become large enough that their product exceeds the destination integer range",
+            "The code computes total tiles with direct multiplication and stores the result without overflow validation",
+            "The resulting `dec->numtiles` is later consumed by allocation or iteration logic"
+          ],
+          "fix_patterns": [
+            "safe API replacement for arithmetic sizing using `jas_safe_size_mul`",
+            "added guard that rejects invalid multiplication results before state assignment",
+            "defer assignment to `dec->numtiles` until checked result is available"
+          ],
+          "affected_functions": [
+            "jas_safe_size_mul"
+          ],
+          "cross_file": false,
+          "source": "llm",
+          "confidence": 0.97,
+          "evidence_lines": [
+            "Added local `size_t size;` before computing tile counts",
+            "Replaced `dec->numtiles = dec->numhtiles * dec->numvtiles;`",
+            "Added `if (!jas_safe_size_mul(dec->numhtiles, dec->numvtiles, &size)) { return -1; }`",
+            "Assigned checked result with `dec->numtiles = size;`",
+            "`dec->numtiles` is then passed to `jas_alloc2(dec->numtiles, sizeof(jpc_dec_tile_t))`"
+          ]
+        }
+      },
+      {
+        "node_id": "func_1",
+        "kind": "function",
+        "label": "jas_safe_size_mul",
+        "attributes": {
+          "function": "jas_safe_size_mul"
+        }
+      },
+      {
+        "node_id": "guard_1",
+        "kind": "guard",
+        "label": "`dec->numhtiles` and `dec->numvtiles` are derived from image/tile geometry and can become large enough that their product exceeds the destination integer range",
+        "attributes": {
+          "condition": "`dec->numhtiles` and `dec->numvtiles` are derived from image/tile geometry and can become large enough that their product exceeds the destination integer range"
+        }
+      },
+      {
+        "node_id": "guard_2",
+        "kind": "guard",
+        "label": "The code computes total tiles with direct multiplication and stores the result without overflow validation",
+        "attributes": {
+          "condition": "The code computes total tiles with direct multiplication and stores the result without overflow validation"
+        }
+      },
+      {
+        "node_id": "guard_3",
+        "kind": "guard",
+        "label": "The resulting `dec->numtiles` is later consumed by allocation or iteration logic",
+        "attributes": {
+          "condition": "The resulting `dec->numtiles` is later consumed by allocation or iteration logic"
+        }
+      },
+      {
+        "node_id": "strategy",
+        "kind": "strategy",
+        "label": "integer_overflow",
+        "attributes": {
+          "primary_pattern": "integer_overflow",
+          "check_types": [
+            "unchecked_multiplication_in_size_count_derivation",
+            "overflow_sensitive_allocation_sizing",
+            "range_mismatch_between_computed_product_and_destination_field"
+          ],
+          "entry_points": [
+            "tile-count computation in `src/libjasper/jpc/jpc_dec.c` before `dec->numtiles` assignment",
+            "sites where geometry-derived dimensions are multiplied to form allocation counts"
+          ],
+          "data_flow_tracking": true,
+          "cross_file_analysis": false,
+          "suggestions": [
+            "Prefer detecting unchecked multiplicative size/count derivations that flow into allocation or loop bounds",
+            "Look for direct products of decoded/input-derived dimensions replaced by checked helpers like `jas_safe_size_mul`",
+            "Treat safe-math helper insertion plus early return as strong evidence of overflow remediation",
+            "Do not rely on nearby allocation APIs alone; prioritize the arithmetic root cause that computes the count",
+            "Track whether the checked temporary result is assigned only after validation, rather than inferring safety from later null checks"
+          ]
+        }
+      },
+      {
+        "node_id": "func_2",
+        "kind": "function",
+        "label": "jpc_dec_process_siz",
+        "attributes": {
+          "function": "jpc_dec_process_siz",
+          "source": "patch_fact"
+        }
+      },
+      {
+        "node_id": "guard_4",
+        "kind": "guard",
+        "label": "if (!jas_safe_size_mul(dec->numhtiles, dec->numvtiles, &size)) {",
+        "attributes": {
+          "condition": "if (!jas_safe_size_mul(dec->numhtiles, dec->numvtiles, &size)) {",
+          "source": "patch_fact"
+        }
+      },
+      {
+        "node_id": "fix_1",
+        "kind": "fix",
+        "label": "safe API replacement for arithmetic sizing using `jas_safe_size_mul`",
+        "attributes": {
+          "kind": "fix_patterns",
+          "value": "safe API replacement for arithmetic sizing using `jas_safe_size_mul`"
+        }
+      },
+      {
+        "node_id": "fix_2",
+        "kind": "fix",
+        "label": "added guard that rejects invalid multiplication results before state assignment",
+        "attributes": {
+          "kind": "fix_patterns",
+          "value": "added guard that rejects invalid multiplication results before state assignment"
+        }
+      },
+      {
+        "node_id": "fix_3",
+        "kind": "fix",
+        "label": "defer assignment to `dec->numtiles` until checked result is available",
+        "attributes": {
+          "kind": "fix_patterns",
+          "value": "defer assignment to `dec->numtiles` until checked result is available"
+        }
+      },
+      {
+        "node_id": "fix_4",
+        "kind": "fix",
+        "label": "overflow-safe accumulator",
+        "attributes": {
+          "kind": "fix_patterns",
+          "value": "overflow-safe accumulator"
+        }
+      },
+      {
+        "node_id": "fix_5",
+        "kind": "fix",
+        "label": "jas_safe_size_mul",
+        "attributes": {
+          "kind": "added_api_calls",
+          "value": "jas_safe_size_mul"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "patch",
+        "target": "file_0",
+        "relation": "touches",
+        "confidence": 0.95
+      },
+      {
+        "source": "patch",
+        "target": "pattern_0",
+        "relation": "indicates",
+        "confidence": 0.9
+      },
+      {
+        "source": "pattern_0",
+        "target": "func_1",
+        "relation": "affects",
+        "confidence": 0.75
+      },
+      {
+        "source": "pattern_0",
+        "target": "guard_1",
+        "relation": "requires",
+        "confidence": 0.7
+      },
+      {
+        "source": "pattern_0",
+        "target": "guard_2",
+        "relation": "requires",
+        "confidence": 0.7
+      },
+      {
+        "source": "pattern_0",
+        "target": "guard_3",
+        "relation": "requires",
+        "confidence": 0.7
+      },
+      {
+        "source": "patch",
+        "target": "strategy",
+        "relation": "guides",
+        "confidence": 0.85
+      },
+      {
+        "source": "patch",
+        "target": "func_2",
+        "relation": "focuses_on",
+        "confidence": 0.82
+      },
+      {
+        "source": "patch",
+        "target": "guard_4",
+        "relation": "adds_guard",
+        "confidence": 0.84
+      },
+      {
+        "source": "patch",
+        "target": "fix_1",
+        "relation": "introduces",
+        "confidence": 0.8
+      },
+      {
+        "source": "patch",
+        "target": "fix_2",
+        "relation": "introduces",
+        "confidence": 0.8
+      },
+      {
+        "source": "patch",
+        "target": "fix_3",
+        "relation": "introduces",
+        "confidence": 0.8
+      },
+      {
+        "source": "patch",
+        "target": "fix_4",
+        "relation": "introduces",
+        "confidence": 0.8
+      },
+      {
+        "source": "patch",
+        "target": "fix_5",
+        "relation": "introduces",
+        "confidence": 0.8
+      }
+    ]
+  },
+  "evidence_plan": {
+    "primary_pattern": "integer_overflow",
+    "hypotheses": [
+      "The patch changes a data propagation condition that should generalize beyond the edited lines.",
+      "The fix widens arithmetic carriers or restores a wider numeric domain before a size-related sink."
+    ],
+    "requirements": [
+      {
+        "evidence_type": "patch_fact",
+        "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+        "priority": 100,
+        "preferred_analyzers": [],
+        "confidence": 1.0,
+        "mechanism_refs": [
+          "patch"
+        ]
+      },
+      {
+        "evidence_type": "dataflow_candidate",
+        "reason": "Patch analysis requests data-flow tracking.",
+        "priority": 95,
+        "preferred_analyzers": [
+          "codeql"
+        ],
+        "confidence": 0.9,
+        "mechanism_refs": [
+          "strategy"
+        ]
+      },
+      {
+        "evidence_type": "semantic_slice",
+        "reason": "Arithmetic-overflow fixes need the concrete accumulator/sink slice, not a patch headline.",
+        "priority": 90,
+        "preferred_analyzers": [
+          "csa",
+          "codeql"
+        ],
+        "confidence": 0.9,
+        "mechanism_refs": [
+          "pattern_0"
+        ]
+      },
+      {
+        "evidence_type": "state_transition",
+        "reason": "Need local numeric-domain transitions such as int32 accumulator to i64 accumulator before the sink.",
+        "priority": 84,
+        "preferred_analyzers": [
+          "csa"
+        ],
+        "confidence": 0.82,
+        "mechanism_refs": [
+          "pattern_0"
+        ]
+      },
+      {
+        "evidence_type": "call_chain",
+        "reason": "Interprocedural call-chain context is needed to generalize the fix pattern.",
+        "priority": 78,
+        "preferred_analyzers": [
+          "codeql"
+        ],
+        "confidence": 0.78,
+        "mechanism_refs": [
+          "strategy"
+        ]
+      }
+    ],
+    "recommended_analyzers": [
+      "codeql",
+      "csa"
+    ],
+    "planner_notes": [
+      "Added guards detected in patch diff; path-sensitive evidence should stay near top priority.",
+      "Selected analyzers do not cover every planned evidence primitive."
+    ],
+    "coverage_gaps": [
+      "dataflow_candidate is not covered by selected analyzers ['csa']",
+      "call_chain is not covered by selected analyzers ['csa']"
+    ],
+    "uncertainty_budget": "low",
+    "escalation_triggers": [
+      "selected_coverage_gap"
+    ]
+  }
+}

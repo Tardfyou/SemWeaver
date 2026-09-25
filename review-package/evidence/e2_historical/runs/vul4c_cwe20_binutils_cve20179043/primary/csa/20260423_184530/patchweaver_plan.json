@@ -1,0 +1,841 @@
+{
+  "files_changed": [
+    "binutils/readelf.c"
+  ],
+  "file_details": [
+    {
+      "path": "binutils/readelf.c",
+      "additions": 15,
+      "deletions": 7,
+      "hunks": 2
+    }
+  ],
+  "vulnerability_patterns": [
+    {
+      "type": "improper_input_validation",
+      "description": "Before the patch, a length derived from the note name field was used directly as the byte count for numeric decoding, causing the loop to keep reading bytes from `name` and shifting/accumulating them into a fixed-width integer without first proving that the encoded numeric value fits. After the patch, oversized numeric encodings are rejected before the loop.",
+      "trigger_conditions": [
+        "`bytes` is computed from `pnote->namesz - (name - pnote->namedata)` or an equivalent remaining-length expression",
+        "`bytes` controls a loop such as `while (bytes --)` that consumes `* name ++`",
+        "the loop decodes bytes into a fixed-width integer using a shift/accumulation pattern",
+        "there is no prior guard equivalent to `bytes <= sizeof (val)` before the decode loop"
+      ],
+      "fix_patterns": [
+        "widen the numeric accumulator from `unsigned long` to `unsigned long long`",
+        "add a pre-loop barrier `if (bytes > sizeof (val))`",
+        "on guard failure, report the corrupt `namesz` and `return FALSE` before consuming `name`",
+        "keep the numeric decode loop reachable only when the byte count fits the accumulator width"
+      ],
+      "affected_functions": [
+        "binutils/readelf.c numeric GNU build attribute decoding block"
+      ],
+      "cross_file": false,
+      "source": "llm",
+      "confidence": 0.86,
+      "evidence_lines": [
+        "unsigned int        bytes = pnote->namesz - (name - pnote->namedata);",
+        "unsigned long long  val = 0;",
+        "if (bytes > sizeof (val))",
+        "error (_(\"corrupt name field: namesz of %lu is too large for a numeric value\\n\"),",
+        "return FALSE;",
+        "while (bytes --)"
+      ]
+    }
+  ],
+  "cross_file_dependencies": [],
+  "detection_strategy": {
+    "primary_pattern": "improper_input_validation",
+    "check_types": [
+      "local_ast",
+      "local_cfg",
+      "bounded_integer_decode",
+      "length_guard_presence"
+    ],
+    "entry_points": [
+      "binutils/readelf.c numeric GNU build attribute decoding block",
+      "case GNU_BUILD_ATTRIBUTE_TYPE_NUMERIC"
+    ],
+    "data_flow_tracking": true,
+    "cross_file_analysis": false,
+    "suggestions": [
+      "首稿优先命中 patch-local 锚点：`bytes = pnote->namesz - (name - pnote->namedata)` 后进入 `while (bytes --)` 并读取 `* name ++`。",
+      "核心 sink 是 unchecked length 驱动的 numeric decode loop，而不是新增的 `error` 或 `printf`。",
+      "首稿不要把 `if (bytes > sizeof (val)) return FALSE` 写成必须存在的硬过滤；应先找缺少该 barrier 的旧形态。",
+      "`bytes <= sizeof(val)`、`return FALSE`、错误日志内容适合作为二次收敛条件，用于确认这是 oversized numeric field 防护。",
+      "需要局部数据流追踪 `bytes` 从 `pnote->namesz` 到 loop bound，以及 `val` 的固定宽度；通常不需要跨文件分析。",
+      "同时可辅助检查循环体内是否存在按 `shift` 组装整数的模式，但不要要求完整跨过程语义。"
+    ]
+  },
+  "checker_name_suggestion": "OversizedNumericAttributeDecodeChecker",
+  "affected_functions": [
+    "binutils/readelf.c numeric GNU build attribute decoding block"
+  ],
+  "key_functions": [
+    "binutils/readelf.c numeric GNU build attribute decoding block"
+  ],
+  "patch_semantics": {
+    "added_guards": [
+      "if (bytes > sizeof (val))"
+    ],
+    "added_api_calls": [
+      "error",
+      "_",
+      "printf"
+    ],
+    "removed_api_calls": [
+      "printf"
+    ],
+    "state_resets": [
+      "unsigned long long  val = 0;",
+      "unsigned int        shift = 0;",
+      "char *              decoded = NULL;"
+    ],
+    "lifecycle_changes": []
+  },
+  "analysis_backend": "llm",
+  "analysis_confidence": 0.86,
+  "analysis_rationale": "The patch-local fix adds a guard on `bytes`, derived from `pnote->namesz - (name - pnote->namedata)`, before the numeric decode loop `while (bytes --)`. The old code consumed an unchecked name-field length as the loop bound for reading `* name ++` and accumulating into `val`; the new code rejects cases where `bytes > sizeof (val)` with `error (...)` and `return FALSE`. The type of `val` is also widened from `unsigned long` to `unsigned long long`, tying the bound directly to the destination integer width.",
+  "llm_usage": {
+    "prompt_tokens": 6985,
+    "completion_tokens": 1473,
+    "total_tokens": 8458,
+    "call_count": 1,
+    "available": true,
+    "model": "gpt-5.5"
+  },
+  "patchweaver": {
+    "summary": "Patch suggests improper_input_validation semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=5, metadata refs=0.",
+    "patch_facts": [
+      {
+        "fact_type": "patch_overview",
+        "label": "Patch overview",
+        "attributes": {
+          "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe20_binutils_cve20179043/patches/fix.patch",
+          "changed_files": [
+            "binutils/readelf.c"
+          ],
+          "changed_file_count": 1,
+          "added_line_count": 15,
+          "deleted_line_count": 7
+        }
+      },
+      {
+        "fact_type": "vulnerability_patterns",
+        "label": "Vulnerability patterns inferred from patch",
+        "attributes": {
+          "patterns": [
+            "improper_input_validation"
+          ],
+          "descriptions": [
+            "Before the patch, a length derived from the note name field was used directly as the byte count for numeric decoding, causing the loop to keep reading bytes from `name` and shifting/accumulating them into a fixed-width integer without first proving that the encoded numeric value fits. After the patch, oversized numeric encodings are rejected before the loop."
+          ]
+        }
+      },
+      {
+        "fact_type": "affected_functions",
+        "label": "Functions implicated by removed or fixed code",
+        "attributes": {
+          "functions": [
+            "binutils/readelf.c numeric GNU build attribute decoding block",
+            "print_gnu_build_attribute_name"
+          ]
+        }
+      },
+      {
+        "fact_type": "detection_strategy",
+        "label": "Existing patch analysis detection strategy",
+        "attributes": {
+          "primary_pattern": "improper_input_validation",
+          "check_types": [
+            "local_ast",
+            "local_cfg",
+            "bounded_integer_decode",
+            "length_guard_presence"
+          ],
+          "entry_points": [
+            "binutils/readelf.c numeric GNU build attribute decoding block",
+            "case GNU_BUILD_ATTRIBUTE_TYPE_NUMERIC"
+          ],
+          "data_flow_tracking": true,
+          "cross_file_analysis": false,
+          "suggestions": [
+            "首稿优先命中 patch-local 锚点：`bytes = pnote->namesz - (name - pnote->namedata)` 后进入 `while (bytes --)` 并读取 `* name ++`。",
+            "核心 sink 是 unchecked length 驱动的 numeric decode loop，而不是新增的 `error` 或 `printf`。",
+            "首稿不要把 `if (bytes > sizeof (val)) return FALSE` 写成必须存在的硬过滤；应先找缺少该 barrier 的旧形态。",
+            "`bytes <= sizeof(val)`、`return FALSE`、错误日志内容适合作为二次收敛条件，用于确认这是 oversized numeric field 防护。",
+            "需要局部数据流追踪 `bytes` 从 `pnote->namesz` 到 loop bound，以及 `val` 的固定宽度；通常不需要跨文件分析。",
+            "同时可辅助检查循环体内是否存在按 `shift` 组装整数的模式，但不要要求完整跨过程语义。"
+          ]
+        }
+      },
+      {
+        "fact_type": "added_guards",
+        "label": "Patch introduces or strengthens guards",
+        "attributes": {
+          "guards": [
+            "if (bytes > sizeof (val))"
+          ]
+        }
+      },
+      {
+        "fact_type": "fix_patterns",
+        "label": "Patch introduces reusable fix patterns",
+        "attributes": {
+          "patterns": [
+            "widen the numeric accumulator from `unsigned long` to `unsigned long long`",
+            "add a pre-loop barrier `if (bytes > sizeof (val))`",
+            "on guard failure, report the corrupt `namesz` and `return FALSE` before consuming `name`",
+            "keep the numeric decode loop reachable only when the byte count fits the accumulator width",
+            "bounds check"
+          ]
+        }
+      },
+      {
+        "fact_type": "added_api_calls",
+        "label": "Patch introduces or highlights API usage",
+        "attributes": {
+          "apis": [
+            "error",
+            "_",
+            "printf"
+          ]
+        }
+      }
+    ],
+    "mechanism_graph": {
+      "summary": "Patch suggests improper_input_validation semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=5, metadata refs=0.",
+      "primary_patterns": [
+        "improper_input_validation"
+      ],
+      "nodes": [
+        {
+          "node_id": "patch",
+          "kind": "patch",
+          "label": "Security patch",
+          "attributes": {
+            "changed_files": [
+              "binutils/readelf.c"
+            ]
+          }
+        },
+        {
+          "node_id": "file_0",
+          "kind": "file",
+          "label": "binutils/readelf.c",
+          "attributes": {
+            "path": "binutils/readelf.c",
+            "additions": 15,
+            "deletions": 7,
+            "hunks": 2
+          }
+        },
+        {
+          "node_id": "pattern_0",
+          "kind": "pattern",
+          "label": "improper_input_validation",
+          "attributes": {
+            "type": "improper_input_validation",
+            "description": "Before the patch, a length derived from the note name field was used directly as the byte count for numeric decoding, causing the loop to keep reading bytes from `name` and shifting/accumulating them into a fixed-width integer without first proving that the encoded numeric value fits. After the patch, oversized numeric encodings are rejected before the loop.",
+            "trigger_conditions": [
+              "`bytes` is computed from `pnote->namesz - (name - pnote->namedata)` or an equivalent remaining-length expression",
+              "`bytes` controls a loop such as `while (bytes --)` that consumes `* name ++`",
+              "the loop decodes bytes into a fixed-width integer using a shift/accumulation pattern",
+              "there is no prior guard equivalent to `bytes <= sizeof (val)` before the decode loop"
+            ],
+            "fix_patterns": [
+              "widen the numeric accumulator from `unsigned long` to `unsigned long long`",
+              "add a pre-loop barrier `if (bytes > sizeof (val))`",
+              "on guard failure, report the corrupt `namesz` and `return FALSE` before consuming `name`",
+              "keep the numeric decode loop reachable only when the byte count fits the accumulator width"
+            ],
+            "affected_functions": [
+              "binutils/readelf.c numeric GNU build attribute decoding block"
+            ],
+            "cross_file": false,
+            "source": "llm",
+            "confidence": 0.86,
+            "evidence_lines": [
+              "unsigned int        bytes = pnote->namesz - (name - pnote->namedata);",
+              "unsigned long long  val = 0;",
+              "if (bytes > sizeof (val))",
+              "error (_(\"corrupt name field: namesz of %lu is too large for a numeric value\\n\"),",
+              "return FALSE;",
+              "while (bytes --)"
+            ]
+          }
+        },
+        {
+          "node_id": "func_1",
+          "kind": "function",
+          "label": "binutils/readelf.c numeric GNU build attribute decoding block",
+          "attributes": {
+            "function": "binutils/readelf.c numeric GNU build attribute decoding block"
+          }
+        },
+        {
+          "node_id": "guard_1",
+          "kind": "guard",
+          "label": "`bytes` is computed from `pnote->namesz - (name - pnote->namedata)` or an equivalent remaining-length expression",
+          "attributes": {
+            "condition": "`bytes` is computed from `pnote->namesz - (name - pnote->namedata)` or an equivalent remaining-length expression"
+          }
+        },
+        {
+          "node_id": "guard_2",
+          "kind": "guard",
+          "label": "`bytes` controls a loop such as `while (bytes --)` that consumes `* name ++`",
+          "attributes": {
+            "condition": "`bytes` controls a loop such as `while (bytes --)` that consumes `* name ++`"
+          }
+        },
+        {
+          "node_id": "guard_3",
+          "kind": "guard",
+          "label": "the loop decodes bytes into a fixed-width integer using a shift/accumulation pattern",
+          "attributes": {
+            "condition": "the loop decodes bytes into a fixed-width integer using a shift/accumulation pattern"
+          }
+        },
+        {
+          "node_id": "guard_4",
+          "kind": "guard",
+          "label": "there is no prior guard equivalent to `bytes <= sizeof (val)` before the decode loop",
+          "attributes": {
+            "condition": "there is no prior guard equivalent to `bytes <= sizeof (val)` before the decode loop"
+          }
+        },
+        {
+          "node_id": "strategy",
+          "kind": "strategy",
+          "label": "improper_input_validation",
+          "attributes": {
+            "primary_pattern": "improper_input_validation",
+            "check_types": [
+              "local_ast",
+              "local_cfg",
+              "bounded_integer_decode",
+              "length_guard_presence"
+            ],
+            "entry_points": [
+              "binutils/readelf.c numeric GNU build attribute decoding block",
+              "case GNU_BUILD_ATTRIBUTE_TYPE_NUMERIC"
+            ],
+            "data_flow_tracking": true,
+            "cross_file_analysis": false,
+            "suggestions": [
+              "首稿优先命中 patch-local 锚点：`bytes = pnote->namesz - (name - pnote->namedata)` 后进入 `while (bytes --)` 并读取 `* name ++`。",
+              "核心 sink 是 unchecked length 驱动的 numeric decode loop，而不是新增的 `error` 或 `printf`。",
+              "首稿不要把 `if (bytes > sizeof (val)) return FALSE` 写成必须存在的硬过滤；应先找缺少该 barrier 的旧形态。",
+              "`bytes <= sizeof(val)`、`return FALSE`、错误日志内容适合作为二次收敛条件，用于确认这是 oversized numeric field 防护。",
+              "需要局部数据流追踪 `bytes` 从 `pnote->namesz` 到 loop bound，以及 `val` 的固定宽度；通常不需要跨文件分析。",
+              "同时可辅助检查循环体内是否存在按 `shift` 组装整数的模式，但不要要求完整跨过程语义。"
+            ]
+          }
+        },
+        {
+          "node_id": "func_2",
+          "kind": "function",
+          "label": "print_gnu_build_attribute_name",
+          "attributes": {
+            "function": "print_gnu_build_attribute_name",
+            "source": "patch_fact"
+          }
+        },
+        {
+          "node_id": "guard_5",
+          "kind": "guard",
+          "label": "if (bytes > sizeof (val))",
+          "attributes": {
+            "condition": "if (bytes > sizeof (val))",
+            "source": "patch_fact"
+          }
+        },
+        {
+          "node_id": "fix_1",
+          "kind": "fix",
+          "label": "widen the numeric accumulator from `unsigned long` to `unsigned long long`",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "widen the numeric accumulator from `unsigned long` to `unsigned long long`"
+          }
+        },
+        {
+          "node_id": "fix_2",
+          "kind": "fix",
+          "label": "add a pre-loop barrier `if (bytes > sizeof (val))`",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "add a pre-loop barrier `if (bytes > sizeof (val))`"
+          }
+        },
+        {
+          "node_id": "fix_3",
+          "kind": "fix",
+          "label": "on guard failure, report the corrupt `namesz` and `return FALSE` before consuming `name`",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "on guard failure, report the corrupt `namesz` and `return FALSE` before consuming `name`"
+          }
+        },
+        {
+          "node_id": "fix_4",
+          "kind": "fix",
+          "label": "keep the numeric decode loop reachable only when the byte count fits the accumulator width",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "keep the numeric decode loop reachable only when the byte count fits the accumulator width"
+          }
+        },
+        {
+          "node_id": "fix_5",
+          "kind": "fix",
+          "label": "bounds check",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "bounds check"
+          }
+        },
+        {
+          "node_id": "fix_6",
+          "kind": "fix",
+          "label": "error",
+          "attributes": {
+            "kind": "added_api_calls",
+            "value": "error"
+          }
+        },
+        {
+          "node_id": "fix_7",
+          "kind": "fix",
+          "label": "_",
+          "attributes": {
+            "kind": "added_api_calls",
+            "value": "_"
+          }
+        },
+        {
+          "node_id": "fix_8",
+          "kind": "fix",
+          "label": "printf",
+          "attributes": {
+            "kind": "added_api_calls",
+            "value": "printf"
+          }
+        }
+      ],
+      "edges": [
+        {
+          "source": "patch",
+          "target": "file_0",
+          "relation": "touches",
+          "confidence": 0.95
+        },
+        {
+          "source": "patch",
+          "target": "pattern_0",
+          "relation": "indicates",
+          "confidence": 0.9
+        },
+        {
+          "source": "pattern_0",
+          "target": "func_1",
+          "relation": "affects",
+          "confidence": 0.75
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_1",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_2",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_3",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_4",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "patch",
+          "target": "strategy",
+          "relation": "guides",
+          "confidence": 0.85
+        },
+        {
+          "source": "patch",
+          "target": "func_2",
+          "relation": "focuses_on",
+          "confidence": 0.82
+        },
+        {
+          "source": "patch",
+          "target": "guard_5",
+          "relation": "adds_guard",
+          "confidence": 0.84
+        },
+        {
+          "source": "patch",
+          "target": "fix_1",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_2",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_3",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_4",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_5",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_6",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_7",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_8",
+          "relation": "introduces",
+          "confidence": 0.8
+        }
+      ]
+    },
+    "evidence_plan": {
+      "primary_pattern": "improper_input_validation",
+      "hypotheses": [
+        "The patch changes a data propagation condition that should generalize beyond the edited lines."
+      ],
+      "requirements": [
+        {
+          "evidence_type": "patch_fact",
+          "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+          "priority": 100,
+          "preferred_analyzers": [],
+          "confidence": 1.0,
+          "mechanism_refs": [
+            "patch"
+          ]
+        },
+        {
+          "evidence_type": "dataflow_candidate",
+          "reason": "Patch analysis requests data-flow tracking.",
+          "priority": 95,
+          "preferred_analyzers": [
+            "codeql"
+          ],
+          "confidence": 0.9,
+          "mechanism_refs": [
+            "strategy"
+          ]
+        },
+        {
+          "evidence_type": "call_chain",
+          "reason": "Interprocedural call-chain context is needed to generalize the fix pattern.",
+          "priority": 78,
+          "preferred_analyzers": [
+            "codeql"
+          ],
+          "confidence": 0.78,
+          "mechanism_refs": [
+            "strategy"
+          ]
+        }
+      ],
+      "recommended_analyzers": [
+        "codeql"
+      ],
+      "planner_notes": [
+        "Added guards detected in patch diff; path-sensitive evidence should stay near top priority.",
+        "Selected analyzers do not cover every planned evidence primitive."
+      ],
+      "coverage_gaps": [
+        "dataflow_candidate is not covered by selected analyzers ['csa']",
+        "call_chain is not covered by selected analyzers ['csa']"
+      ],
+      "uncertainty_budget": "low",
+      "escalation_triggers": [
+        "selected_coverage_gap"
+      ]
+    },
+    "evidence_bundle": {
+      "records": [
+        {
+          "evidence_id": "pf_000",
+          "type": "patch_fact",
+          "analyzer": "patch",
+          "scope": {
+            "repo": "fix.patch",
+            "file": "binutils/readelf.c",
+            "function": "binutils/readelf.c numeric GNU build attribute decoding block"
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "fact_type": "patch_overview",
+            "label": "Patch overview",
+            "attributes": {
+              "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe20_binutils_cve20179043/patches/fix.patch",
+              "changed_files": [
+                "binutils/readelf.c"
+              ],
+              "changed_file_count": 1,
+              "added_line_count": 15,
+              "deleted_line_count": 7
+            }
+          },
+          "provenance": {
+            "tool": "patch-analysis",
+            "artifact": "patch_overview",
+            "confidence": 0.95
+          },
+          "evidence_slice": {}
+        },
+        {
+          "evidence_id": "pf_001",
+          "type": "patch_fact",
+          "analyzer": "patch",
+          "scope": {
+            "repo": "fix.patch",
+            "file": "binutils/readelf.c",
+            "function": "binutils/readelf.c numeric GNU build attribute decoding block"
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "fact_type": "vulnerability_patterns",
+            "label": "Vulnerability patterns inferred from patch",
+            "attributes": {
+              "patterns": [
+                "improper_input_validation"
+              ],
+              "descriptions": [
+                "Before the patch, a length derived from the note name field was used directly as the byte count for numeric decoding, causing the loop to keep reading bytes from `name` and shifting/accumulating them into a fixed-width integer without first proving that the encoded numeric value fits. After the patch, oversized numeric encodings are rejected before the loop."
+              ]
+            }
+          },
+          "provenance": {
+            "tool": "patch-analysis",
+            "artifact": "vulnerability_patterns",
+            "confidence": 0.95
+          },
+          "evidence_slice": {}
+        },
+        {
+          "evidence_id": "pf_002",
+          "type": "patch_fact",
+          "analyzer": "patch",
+          "scope": {
+            "repo": "fix.patch",
+            "file": "binutils/readelf.c",
+            "function": "binutils/readelf.c numeric GNU build attribute decoding block"
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "fact_type": "affected_functions",
+            "label": "Functions implicated by removed or fixed code",
+            "attributes": {
+              "functions": [
+                "binutils/readelf.c numeric GNU build attribute decoding block",
+                "print_gnu_build_attribute_name"
+              ]
+            }
+          },
+          "provenance": {
+            "tool": "patch-analysis",
+            "artifact": "affected_functions",
+            "confidence": 0.95
+          },
+          "evidence_slice": {}
+        },
+        {
+          "evidence_id": "pf_003",
+          "type": "patch_fact",
+          "analyzer": "patch",
+          "scope": {
+            "repo": "fix.patch",
+            "file": "binutils/readelf.c",
+            "function": "binutils/readelf.c numeric GNU build attribute decoding block"
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "fact_type": "detection_strategy",
+            "label": "Existing patch analysis detection strategy",
+            "attributes": {
+              "primary_pattern": "improper_input_validation",
+              "check_types": [
+                "local_ast",
+                "local_cfg",
+                "bounded_integer_decode",
+                "length_guard_presence"
+              ],
+              "entry_points": [
+                "binutils/readelf.c numeric GNU build attribute decoding block",
+                "case GNU_BUILD_ATTRIBUTE_TYPE_NUMERIC"
+              ],
+              "data_flow_tracking": true,
+              "cross_file_analysis": false,
+              "suggestions": [
+                "首稿优先命中 patch-local 锚点：`bytes = pnote->namesz - (name - pnote->namedata)` 后进入 `while (bytes --)` 并读取 `* name ++`。",
+                "核心 sink 是 unchecked length 驱动的 numeric decode loop，而不是新增的 `error` 或 `printf`。",
+                "首稿不要把 `if (bytes > sizeof (val)) return FALSE` 写成必须存在的硬过滤；应先找缺少该 barrier 的旧形态。",
+                "`bytes <= sizeof(val)`、`return FALSE`、错误日志内容适合作为二次收敛条件，用于确认这是 oversized numeric field 防护。",
+                "需要局部数据流追踪 `bytes` 从 `pnote->namesz` 到 loop bound，以及 `val` 的固定宽度；通常不需要跨文件分析。",
+                "同时可辅助检查循环体内是否存在按 `shift` 组装整数的模式，但不要要求完整跨过程语义。"
+              ]
+            }
+          },
+          "provenance": {
+            "tool": "patch-analysis",
+            "artifact": "detection_strategy",
+            "confidence": 0.95
+          },
+          "evidence_slice": {}
+        },
+        {
+          "evidence_id": "pf_004",
+          "type": "patch_fact",
+          "analyzer": "patch",
+          "scope": {
+            "repo": "fix.patch",
+            "file": "binutils/readelf.c",
+            "function": "binutils/readelf.c numeric GNU build attribute decoding block"
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "fact_type": "added_guards",
+            "label": "Patch introduces or strengthens guards",
+            "attributes": {
+              "guards": [
+                "if (bytes > sizeof (val))"
+              ]
+            }
+          },
+          "provenance": {
+            "tool": "patch-analysis",
+            "artifact": "added_guards",
+            "confidence": 0.95
+          },
+          "evidence_slice": {}
+        },
+        {
+          "evidence_id": "pf_005",
+          "type": "patch_fact",
+          "analyzer": "patch",
+          "scope": {
+            "repo": "fix.patch",
+            "file": "binutils/readelf.c",
+            "function": "binutils/readelf.c numeric GNU build attribute decoding block"
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "fact_type": "fix_patterns",
+            "label": "Patch introduces reusable fix patterns",
+            "attributes": {
+              "patterns": [
+                "widen the numeric accumulator from `unsigned long` to `unsigned long long`",
+                "add a pre-loop barrier `if (bytes > sizeof (val))`",
+                "on guard failure, report the corrupt `namesz` and `return FALSE` before consuming `name`",
+                "keep the numeric decode loop reachable only when the byte count fits the accumulator width",
+                "bounds check"
+              ]
+            }
+          },
+          "provenance": {
+            "tool": "patch-analysis",
+            "artifact": "fix_patterns",
+            "confidence": 0.95
+          },
+          "evidence_slice": {}
+        },
+        {
+          "evidence_id": "pf_006",
+          "type": "patch_fact",
+          "analyzer": "patch",
+          "scope": {
+            "repo": "fix.patch",
+            "file": "binutils/readelf.c",
+            "function": "binutils/readelf.c numeric GNU build attribute decoding block"
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "fact_type": "added_api_calls",
+            "label": "Patch introduces or highlights API usage",
+            "attributes": {
+              "apis": [
+                "error",
+                "_",
+                "printf"
+              ]
+            }
+          },
+          "provenance": {
+            "tool": "patch-analysis",
+            "artifact": "added_api_calls",
+            "confidence": 0.95
+          },
+          "evidence_slice": {}
+        }
+      ],
+      "missing_evidence": [
+        "dataflow_candidate",
+        "call_chain"
+      ],
+      "collected_analyzers": [
+        "patch"
+      ]
+    }
+  }
+}

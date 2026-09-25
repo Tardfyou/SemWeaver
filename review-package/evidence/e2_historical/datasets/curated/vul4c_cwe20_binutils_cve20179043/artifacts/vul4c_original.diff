@@ -1,0 +1,38 @@
+--- /SoK-main/Vul4C-Benchmark/binutils/CVE-2017-9043/CVE-2017-9043_CWE-20_readelf.c_OLD.c	2025-10-13 01:35:43.270549840 +0000
++++ /SoK-main/Vul4C-Benchmark/binutils/CVE-2017-9043/CVE-2017-9043_CWE-20_readelf.c_NEW.c	2025-10-13 01:35:43.270549840 +0000
+@@ -16929,11 +16929,19 @@
+     {
+     case GNU_BUILD_ATTRIBUTE_TYPE_NUMERIC:
+       {
+-	unsigned int   bytes = pnote->namesz - (name - pnote->namedata);
+-	unsigned long  val = 0;
+-	unsigned int   shift = 0;
+-	char *         decoded = NULL;
++	unsigned int        bytes = pnote->namesz - (name - pnote->namedata);
++	unsigned long long  val = 0;
++	unsigned int        shift = 0;
++	char *              decoded = NULL;
+ 
++	/* PR 21378 */
++	if (bytes > sizeof (val))
++	  {
++	    error (_("corrupt name field: namesz of %lu is too large for a numeric value\n"),
++		   pnote->namesz);
++	    return FALSE;
++	  }	
++	  
+ 	while (bytes --)
+ 	  {
+ 	    unsigned long byte = (* name ++) & 0xff;
+@@ -16976,9 +16984,9 @@
+ 	else
+ 	  {
+ 	    if (do_wide)
+-	      left -= printf ("0x%llx", val);
++	      left -= printf ("0x%lx", val);
+ 	    else
+-	      left -= printf ("0x%-.*lx", left, val);
++	      left -= printf ("0x%-.*llx", left, val);
+ 	  }
+       }
+       break;

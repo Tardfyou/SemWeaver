@@ -1,0 +1,29 @@
+--- /SoK-main/Vul4C-Benchmark/openjpeg/CVE-2016-7445/CVE-2016-7445_CWE-476_convert.c_OLD.c	2025-10-13 01:37:25.402410243 +0000
++++ /SoK-main/Vul4C-Benchmark/openjpeg/CVE-2016-7445/CVE-2016-7445_CWE-476_convert.c_NEW.c	2025-10-13 01:37:25.402410243 +0000
+@@ -1481,8 +1481,10 @@
+         if( !have_wh)
+         {
+             s = skip_int(s, &ph->width);
++			if(s == NULL || *s == 0) return;
+ 
+             s = skip_int(s, &ph->height);
++			if(s == NULL || *s == 0) return;
+ 
+             have_wh = 1;
+ 
+@@ -1498,6 +1500,7 @@
+                         break;
+                     }
+                 }
++				else return;
+             }
+             continue;
+         }
+@@ -1505,6 +1508,7 @@
+         {
+             /* P2, P3, P5, P6: */
+             s = skip_int(s, &ph->maxval);
++			if(s == NULL || *s == 0) return;
+ 
+             if(ph->maxval > 65535) return;
+         }

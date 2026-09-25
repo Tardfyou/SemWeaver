@@ -1,0 +1,20 @@
+--- /SoK-main/Vul4C-Benchmark/imagemagick/CVE-2017-12877/CVE-2017-12877_CWE-416_mat.c_OLD.c	2025-10-13 01:36:55.050452040 +0000
++++ /SoK-main/Vul4C-Benchmark/imagemagick/CVE-2017-12877/CVE-2017-12877_CWE-416_mat.c_NEW.c	2025-10-13 01:36:55.050452040 +0000
+@@ -1322,8 +1322,6 @@
+   if (quantum_info != (QuantumInfo *) NULL)
+     quantum_info=DestroyQuantumInfo(quantum_info);
+ END_OF_READING:
+-  if (clone_info)
+-    clone_info=DestroyImageInfo(clone_info);
+   CloseBlob(image);
+ 
+ 
+@@ -1341,6 +1339,8 @@
+         Image *tmp=p;
+         if ((p->rows == 0) || (p->columns == 0)) {
+           p=p->previous;
++          if (tmp == image2)
++            image2=(Image *) NULL;
+           DeleteImageFromList(&tmp);
+         } else {
+           image=p;

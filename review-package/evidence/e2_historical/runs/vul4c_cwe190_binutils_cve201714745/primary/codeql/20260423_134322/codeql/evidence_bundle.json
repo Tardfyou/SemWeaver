@@ -1,0 +1,453 @@
+{
+  "records": [
+    {
+      "evidence_id": "pf_000",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "bfd/elf64-x86-64.c",
+        "function": "elf_section_data"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "patch_overview",
+        "label": "Patch overview",
+        "attributes": {
+          "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe190_binutils_cve201714745/patches/fix.patch",
+          "changed_files": [
+            "bfd/elf64-x86-64.c"
+          ],
+          "changed_file_count": 1,
+          "added_line_count": 2,
+          "deleted_line_count": 0
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "patch_overview",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_001",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "bfd/elf64-x86-64.c",
+        "function": "elf_section_data"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "vulnerability_patterns",
+        "label": "Vulnerability patterns inferred from patch",
+        "attributes": {
+          "patterns": [
+            "unknown"
+          ],
+          "descriptions": []
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "vulnerability_patterns",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_002",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "bfd/elf64-x86-64.c",
+        "function": "elf_section_data"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "affected_functions",
+        "label": "Functions implicated by removed or fixed code",
+        "attributes": {
+          "functions": [
+            "elf_section_data"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "affected_functions",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_003",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "bfd/elf64-x86-64.c",
+        "function": "elf_section_data"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "detection_strategy",
+        "label": "Existing patch analysis detection strategy",
+        "attributes": {
+          "primary_pattern": "unknown",
+          "check_types": [
+            "local_ast_cfg_guard_absence",
+            "negative_return_as_size_count",
+            "error_code_used_in_library_length_parameter"
+          ],
+          "entry_points": [
+            "calls assigning from `bfd_canonicalize_dynamic_reloc(...)` or analogous count-returning APIs",
+            "calls to `qsort` where the element count argument is a recently assigned signed integer"
+          ],
+          "data_flow_tracking": false,
+          "cross_file_analysis": false,
+          "suggestions": [
+            "首稿优先命中 patch-local 锚点：同一函数内，某个有错误语义的 signed 返回值在缺少负值检查时直接作为 `qsort` 第二参数使用。",
+            "不要一开始把新增的 `if (dynrelcount < 0)` 写成硬过滤条件；首稿先抓“返回值直接流入计数/长度 sink”的局部模式，再把缺少负值 barrier 作为收敛。",
+            "首稿可只做局部 AST/CFG：赋值语句、随后的比较缺失、以及对 `qsort(..., count, ...)` 的调用，通常无需复杂数据流。",
+            "辅助收敛条件可以是：变量名/来源函数带有 `count/reloc/canonicalize` 语义，或 sink 为排序/拷贝/分配等需要非负大小的参数，但这些不应成为首要命中条件。",
+            "不要把变量非零或已初始化当作安全证据；这里真正需要的是‘负值错误码已被屏蔽’这一 barrier。",
+            "当前补丁未体现跨文件依赖；检测器首稿可只盯住补丁涉及函数/文件中的局部模式。"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "detection_strategy",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_004",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "bfd/elf64-x86-64.c",
+        "function": "elf_section_data"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "added_guards",
+        "label": "Patch introduces or strengthens guards",
+        "attributes": {
+          "guards": [
+            "if (dynrelcount < 0)"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "added_guards",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "codeql_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "codeql",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "bfd/elf64-x86-64.c",
+        "function": "elf_section_data"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "summary": "focus=elf_section_data | state=guard(dynrelcount < 0) | call_edges=elf_section_data -> bfd_canonicalize_dynamic_reloc; elf_section_data -> qsort | targets=bfd_canonicalize_dynamic_reloc, qsort | patch_contracts=elf_section_data: barrier `dynrelcount < 0` around bfd_get_dynamic_reloc_upper_bound, bfd_malloc | guards=(abfd->flags & (DYNAMIC | EXEC_P)) == 0; dynsymcount <= 0 | symbols=output_section, abfd->flags, flags | deps=libbfd.h, sysdep.h, stdarg.h | apis=bfd_get_dynamic_reloc_upper_bound, bfd_malloc, bfd_canonicalize_dynamic_reloc, qsort",
+        "focus_function": "elf_section_data",
+        "call_edges": [
+          "elf_section_data -> bfd_canonicalize_dynamic_reloc",
+          "elf_section_data -> qsort"
+        ],
+        "call_targets": [
+          "bfd_get_dynamic_reloc_upper_bound",
+          "bfd_malloc",
+          "bfd_canonicalize_dynamic_reloc",
+          "qsort"
+        ],
+        "entry_points": [
+          "output_section",
+          "abfd->flags",
+          "flags"
+        ],
+        "tracked_symbols": [
+          "dynrelcount"
+        ],
+        "sink_calls": [],
+        "state_transitions": [
+          "guard(dynrelcount < 0)"
+        ],
+        "statements": [
+          "if (dynrelcount < 0)",
+          "return -1;"
+        ],
+        "apis": [
+          "bfd_get_dynamic_reloc_upper_bound",
+          "bfd_malloc",
+          "bfd_canonicalize_dynamic_reloc",
+          "qsort"
+        ],
+        "dependencies": [
+          "libbfd.h",
+          "sysdep.h",
+          "stdarg.h"
+        ],
+        "source_excerpt": "6687:   const struct elf_x86_64_non_lazy_plt_layout *non_lazy_plt;\n6688:   const struct elf_x86_64_lazy_plt_layout *lazy_bnd_plt;\n6689:   const struct elf_x86_64_non_lazy_plt_layout *non_lazy_bnd_plt;\n6690:   const struct elf_x86_64_lazy_plt_layout *lazy_ibt_plt;\n6691:   const struct elf_x86_64_non_lazy_plt_layout *non_lazy_ibt_plt;\n6692:   asection *plt;\n6693:   char *names;\n6694:   enum elf_x86_64_plt_type plt_type;\n6695:   struct elf_x86_64_plt plts[] =\n6696:     {\n6697:       { \".plt\", NULL, NULL, plt_unknown, 0, 0, 0, 0 },\n6698:       { \".plt.got\", NULL, NULL, plt_non_lazy, 0, 0, 0, 0 },\n6699:       { \".plt.sec\", NULL, NULL, plt_second, 0, 0, 0, 0 },\n6700:       { \".plt.bnd\", NULL, NULL, plt_second, 0, 0, 0, 0 },\n6701:       { NULL, NULL, NULL, plt_non_lazy, 0, 0, 0, 0 }\n6702:     };\n6703: \n6704:   *ret = NULL;\n6705: \n6706:   if ((abfd->flags & (DYNAMIC | EXEC_P)) == 0)\n6707:     return 0;\n6708: \n6709:   if (dynsymcount <= 0)\n6710:     return 0;\n6711: \n6712:   relsize = bfd_get_dynamic_reloc_upper_bound (abfd);\n6713:   if (relsize <= 0)\n6714:     return -1;\n6715: \n6716:   dynrelbuf = (arelent **) bfd_malloc (relsize);\n6717:   if (dynrelbuf == NULL)\n6718:     return -1;\n6719: \n6720:   dynrelcount = bfd_canonicalize_dynamic_reloc (abfd, dynrelbuf,\n6721: \t\t\t\t\t\tdynsyms);\n6722: \n6723:   /* Sort the relocs by address.  */\n6724:   qsort (dynrelbuf, dynrelcount, sizeof (arelent *), compare_relocs);\n6725: \n6726:   if (get_elf_x86_64_backend_data (abfd)->os == is_normal)\n6727:     {\n6728:       lazy_plt = &elf_x86_64_lazy_plt;\n6729:       non_lazy_plt = &elf_x86_64_non_lazy_plt;\n6730:       lazy_bnd_plt = &elf_x86_64_lazy_bnd_plt;\n6731:       non_lazy_bnd_plt = &elf_x86_64_non_lazy_bnd_plt;\n6732:       if (ABI_64_P (abfd))\n6733: \t{\n6734: \t  lazy_ibt_plt = &elf_x86_64_lazy_ibt_plt;\n6735: \t  non_lazy_ibt_plt = &elf_x86_64_non_lazy_ibt_plt;\n6736: \t}\n6737:       else\n6738: \t{\n6739: \t  lazy_ibt_plt = &elf_x32_lazy_ibt_plt;\n6740: \t  non_lazy_ibt_plt = &elf_x32_non_lazy_ibt_plt;\n6741: \t}\n6742:     }\n6743:   else\n6744:     {\n6745:       lazy_plt = &elf_x86_64_nacl_plt;\n6746:       non_lazy_plt = NULL;\n6747:       lazy_bnd_plt = NULL;\n6748:       non_lazy_bnd_plt = NULL;\n6749:       lazy_ibt_plt = NULL;\n6750:       non_lazy_ibt_plt = NULL;\n6751:     }",
+        "coverage_status": "partial"
+      },
+      "provenance": {
+        "tool": "codeql",
+        "artifact": "source-window:semantic-slice",
+        "confidence": 0.8
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "bfd/elf64-x86-64.c",
+          "hunk_index": 0,
+          "source_line": 6719
+        },
+        "summary": "focus=elf_section_data | state=guard(dynrelcount < 0) | call_edges=elf_section_data -> bfd_canonicalize_dynamic_reloc; elf_section_data -> qsort | targets=bfd_canonicalize_dynamic_reloc, qsort | patch_contracts=elf_section_data: barrier `dynrelcount < 0` around bfd_get_dynamic_reloc_upper_bound, bfd_malloc | guards=(abfd->flags & (DYNAMIC | EXEC_P)) == 0; dynsymcount <= 0 | symbols=output_section, abfd->flags, flags | deps=libbfd.h, sysdep.h, stdarg.h | apis=bfd_get_dynamic_reloc_upper_bound, bfd_malloc, bfd_canonicalize_dynamic_reloc, qsort",
+        "statements": [
+          "if (dynrelcount < 0)",
+          "return -1;"
+        ],
+        "guards": [],
+        "call_boundary": [
+          "bfd_get_dynamic_reloc_upper_bound",
+          "bfd_malloc",
+          "bfd_canonicalize_dynamic_reloc",
+          "qsort"
+        ],
+        "call_edges": [
+          "elf_section_data -> bfd_canonicalize_dynamic_reloc",
+          "elf_section_data -> qsort"
+        ],
+        "state_transitions": [
+          "guard(dynrelcount < 0)"
+        ],
+        "api_terms": [
+          "bfd_get_dynamic_reloc_upper_bound",
+          "bfd_malloc",
+          "bfd_canonicalize_dynamic_reloc",
+          "qsort"
+        ],
+        "related_symbols": [
+          "dynrelcount"
+        ],
+        "verifier": "source-window",
+        "extraction_method": "source_window",
+        "coverage_status": "partial"
+      }
+    },
+    {
+      "evidence_id": "codeql_flow_0",
+      "type": "dataflow_candidate",
+      "analyzer": "codeql",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "bfd/elf64-x86-64.c",
+        "function": "elf_section_data"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "source": "dynrelcount, output_section, abfd->flags, flags",
+        "sink": "bfd_get_dynamic_reloc_upper_bound, bfd_malloc",
+        "path": [
+          "function:elf_section_data",
+          "guard:dynrelcount < 0",
+          "api:bfd_get_dynamic_reloc_upper_bound",
+          "api:bfd_malloc",
+          "elf_section_data -> bfd_canonicalize_dynamic_reloc",
+          "elf_section_data -> qsort"
+        ],
+        "summary": "elf_section_data: barrier `dynrelcount < 0` around bfd_get_dynamic_reloc_upper_bound, bfd_malloc",
+        "focus_function": "elf_section_data",
+        "entry_points": [
+          "dynrelcount",
+          "output_section",
+          "abfd->flags",
+          "flags"
+        ],
+        "call_targets": [
+          "bfd_get_dynamic_reloc_upper_bound",
+          "bfd_malloc",
+          "bfd_canonicalize_dynamic_reloc",
+          "qsort"
+        ],
+        "state_transitions": [
+          "guard(dynrelcount < 0)"
+        ],
+        "source_excerpt": "6687:   const struct elf_x86_64_non_lazy_plt_layout *non_lazy_plt;\n6688:   const struct elf_x86_64_lazy_plt_layout *lazy_bnd_plt;\n6689:   const struct elf_x86_64_non_lazy_plt_layout *non_lazy_bnd_plt;\n6690:   const struct elf_x86_64_lazy_plt_layout *lazy_ibt_plt;\n6691:   const struct elf_x86_64_non_lazy_plt_layout *non_lazy_ibt_plt;\n6692:   asection *plt;\n6693:   char *names;\n6694:   enum elf_x86_64_plt_type plt_type;\n6695:   struct elf_x86_64_plt plts[] =\n6696:     {\n6697:       { \".plt\", NULL, NULL, plt_unknown, 0, 0, 0, 0 },\n6698:       { \".plt.got\", NULL, NULL, plt_non_lazy, 0, 0, 0, 0 },\n6699:       { \".plt.sec\", NULL, NULL, plt_second, 0, 0, 0, 0 },\n6700:       { \".plt.bnd\", NULL, NULL, plt_second, 0, 0, 0, 0 },\n6701:       { NULL, NULL, NULL, plt_non_lazy, 0, 0, 0, 0 }\n6702:     };\n6703: \n6704:   *ret = NULL;\n6705: \n6706:   if ((abfd->flags & (DYNAMIC | EXEC_P)) == 0)\n6707:     return 0;\n6708: \n6709:   if (dynsymcount <= 0)\n6710:     return 0;\n6711: \n6712:   relsize = bfd_get_dynamic_reloc_upper_bound (abfd);\n6713:   if (relsize <= 0)\n6714:     return -1;\n6715: \n6716:   dynrelbuf = (arelent **) bfd_malloc (relsize);\n6717:   if (dynrelbuf == NULL)\n6718:     return -1;\n6719: \n6720:   dynrelcount = bfd_canonicalize_dynamic_reloc (abfd, dynrelbuf,\n6721: \t\t\t\t\t\tdynsyms);\n6722: \n6723:   /* Sort the relocs by address.  */\n6724:   qsort (dynrelbuf, dynrelcount, sizeof (arelent *), compare_relocs);\n6725: \n6726:   if (get_elf_x86_64_backend_data (abfd)->os == is_normal)\n6727:     {\n6728:       lazy_plt = &elf_x86_64_lazy_plt;\n6729:       non_lazy_plt = &elf_x86_64_non_lazy_plt;\n6730:       lazy_bnd_plt = &elf_x86_64_lazy_bnd_plt;\n6731:       non_lazy_bnd_plt = &elf_x86_64_non_lazy_bnd_plt;\n6732:       if (ABI_64_P (abfd))\n6733: \t{\n6734: \t  lazy_ibt_plt = &elf_x86_64_lazy_ibt_plt;\n6735: \t  non_lazy_ibt_plt = &elf_x86_64_non_lazy_ibt_plt;\n6736: \t}\n6737:       else\n6738: \t{\n6739: \t  lazy_ibt_plt = &elf_x32_lazy_ibt_plt;\n6740: \t  non_lazy_ibt_plt = &elf_x32_non_lazy_ibt_plt;\n6741: \t}\n6742:     }\n6743:   else\n6744:     {\n6745:       lazy_plt = &elf_x86_64_nacl_plt;\n6746:       non_lazy_plt = NULL;\n6747:       lazy_bnd_plt = NULL;\n6748:       non_lazy_bnd_plt = NULL;\n6749:       lazy_ibt_plt = NULL;\n6750:       non_lazy_ibt_plt = NULL;\n6751:     }",
+        "live_query_status": "database_missing",
+        "database_status": "missing",
+        "database_create_message": "CodeQL 数据库创建失败: Initializing database at /anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe190_binutils_cve201714745/primary/codeql/20260423_134322/codeql/codeql/database.\nRunning build command: [/bin/sh, /anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe190_binutils_cve201714745/primary/codeql/20260423_134322/codeql/codeql/codeql_build_28rxi4wa.sh]\nRunning command in /anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe190_binutils_cve201714745/vulnerable: [/bin/sh, /anonymous/home/LLM-Native/v2_experiments",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "codeql",
+        "artifact": "source-window:data-flow-seed",
+        "confidence": 0.84
+      },
+      "evidence_slice": {
+        "kind": "flow_witness",
+        "anchor": {
+          "patch_file": "bfd/elf64-x86-64.c",
+          "hunk_index": 0,
+          "source_line": 6719
+        },
+        "summary": "elf_section_data: barrier `dynrelcount < 0` around bfd_get_dynamic_reloc_upper_bound, bfd_malloc",
+        "statements": [
+          "6687:   const struct elf_x86_64_non_lazy_plt_layout *non_lazy_plt;",
+          "6688:   const struct elf_x86_64_lazy_plt_layout *lazy_bnd_plt;",
+          "6689:   const struct elf_x86_64_non_lazy_plt_layout *non_lazy_bnd_plt;",
+          "6690:   const struct elf_x86_64_lazy_plt_layout *lazy_ibt_plt;",
+          "6691:   const struct elf_x86_64_non_lazy_plt_layout *non_lazy_ibt_plt;",
+          "6692:   asection *plt;"
+        ],
+        "guards": [],
+        "call_boundary": [
+          "bfd_get_dynamic_reloc_upper_bound, bfd_malloc"
+        ],
+        "call_edges": [
+          "function:elf_section_data",
+          "guard:dynrelcount < 0",
+          "api:bfd_get_dynamic_reloc_upper_bound",
+          "api:bfd_malloc",
+          "elf_section_data -> bfd_canonicalize_dynamic_reloc",
+          "elf_section_data -> qsort"
+        ],
+        "state_transitions": [
+          "guard(dynrelcount < 0)"
+        ],
+        "api_terms": [
+          "bfd_get_dynamic_reloc_upper_bound",
+          "bfd_malloc",
+          "bfd_canonicalize_dynamic_reloc",
+          "qsort"
+        ],
+        "related_symbols": [
+          "dynrelcount",
+          "output_section",
+          "abfd->flags",
+          "flags"
+        ],
+        "verifier": "source-window",
+        "extraction_method": "source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "codeql_chain_0",
+      "type": "call_chain",
+      "analyzer": "codeql",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "bfd/elf64-x86-64.c",
+        "function": "elf_section_data"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": [
+          "elf_section_data -> bfd_canonicalize_dynamic_reloc",
+          "elf_section_data -> qsort"
+        ],
+        "call_edges": [
+          "elf_section_data -> bfd_canonicalize_dynamic_reloc",
+          "elf_section_data -> qsort"
+        ],
+        "live_query_status": "database_missing",
+        "database_status": "missing",
+        "database_create_message": "CodeQL 数据库创建失败: Initializing database at /anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe190_binutils_cve201714745/primary/codeql/20260423_134322/codeql/codeql/database.\nRunning build command: [/bin/sh, /anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe190_binutils_cve201714745/primary/codeql/20260423_134322/codeql/codeql/codeql_build_28rxi4wa.sh]\nRunning command in /anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe190_binutils_cve201714745/vulnerable: [/bin/sh, /anonymous/home/LLM-Native/v2_experiments",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "codeql",
+        "artifact": "source-window:interprocedural-summary",
+        "confidence": 0.78
+      },
+      "evidence_slice": {
+        "kind": "interprocedural_slice",
+        "anchor": {
+          "patch_file": "bfd/elf64-x86-64.c",
+          "hunk_index": 0,
+          "source_line": 6719
+        },
+        "summary": "elf_section_data -> bfd_canonicalize_dynamic_reloc, elf_section_data -> qsort",
+        "statements": [
+          "6687:   const struct elf_x86_64_non_lazy_plt_layout *non_lazy_plt;",
+          "6688:   const struct elf_x86_64_lazy_plt_layout *lazy_bnd_plt;",
+          "6689:   const struct elf_x86_64_non_lazy_plt_layout *non_lazy_bnd_plt;",
+          "6690:   const struct elf_x86_64_lazy_plt_layout *lazy_ibt_plt;",
+          "6691:   const struct elf_x86_64_non_lazy_plt_layout *non_lazy_ibt_plt;",
+          "6692:   asection *plt;"
+        ],
+        "guards": [],
+        "call_boundary": [
+          "bfd_canonicalize_dynamic_reloc",
+          "qsort"
+        ],
+        "call_edges": [
+          "elf_section_data -> bfd_canonicalize_dynamic_reloc",
+          "elf_section_data -> qsort"
+        ],
+        "state_transitions": [],
+        "api_terms": [
+          "bfd_get_dynamic_reloc_upper_bound",
+          "bfd_malloc",
+          "bfd_canonicalize_dynamic_reloc",
+          "qsort"
+        ],
+        "related_symbols": [
+          "output_section",
+          "abfd->flags",
+          "flags"
+        ],
+        "verifier": "source-window",
+        "extraction_method": "source_window",
+        "coverage_status": "full"
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "collected_analyzers": [
+    "codeql",
+    "patch"
+  ]
+}

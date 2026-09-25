@@ -1,0 +1,448 @@
+{
+  "files_changed": [
+    "bfd/dwarf2.c"
+  ],
+  "file_details": [
+    {
+      "path": "bfd/dwarf2.c",
+      "additions": 2,
+      "deletions": 1,
+      "hunks": 1
+    }
+  ],
+  "vulnerability_patterns": [],
+  "cross_file_dependencies": [],
+  "detection_strategy": {
+    "primary_pattern": "unknown",
+    "check_types": [],
+    "entry_points": [],
+    "data_flow_tracking": false,
+    "cross_file_analysis": false,
+    "suggestions": []
+  },
+  "checker_name_suggestion": "PatchFocusedChecker",
+  "affected_functions": [
+    "scan_unit_for_symbols"
+  ],
+  "key_functions": [
+    "scan_unit_for_symbols"
+  ],
+  "patch_semantics": {
+    "added_guards": [
+      "if (attr.u.blk->data != NULL"
+    ],
+    "added_api_calls": [],
+    "removed_api_calls": [],
+    "state_resets": [],
+    "lifecycle_changes": []
+  },
+  "analysis_backend": "structural",
+  "analysis_confidence": 0.0,
+  "patchweaver": {
+    "summary": "Patch suggests unknown semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=1, metadata refs=0.",
+    "patch_facts": [
+      {
+        "fact_type": "patch_overview",
+        "label": "Patch overview",
+        "attributes": {
+          "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe476_binutils_cve201714940/patches/fix.patch",
+          "changed_files": [
+            "bfd/dwarf2.c"
+          ],
+          "changed_file_count": 1,
+          "added_line_count": 2,
+          "deleted_line_count": 1
+        }
+      },
+      {
+        "fact_type": "vulnerability_patterns",
+        "label": "Vulnerability patterns inferred from patch",
+        "attributes": {
+          "patterns": [
+            "unknown"
+          ],
+          "descriptions": []
+        }
+      },
+      {
+        "fact_type": "affected_functions",
+        "label": "Functions implicated by removed or fixed code",
+        "attributes": {
+          "functions": [
+            "scan_unit_for_symbols"
+          ]
+        }
+      },
+      {
+        "fact_type": "detection_strategy",
+        "label": "Existing patch analysis detection strategy",
+        "attributes": {
+          "primary_pattern": "unknown",
+          "check_types": [],
+          "entry_points": [],
+          "data_flow_tracking": false,
+          "cross_file_analysis": false,
+          "suggestions": []
+        }
+      },
+      {
+        "fact_type": "added_guards",
+        "label": "Patch introduces or strengthens guards",
+        "attributes": {
+          "guards": [
+            "if (attr.u.blk->data != NULL"
+          ]
+        }
+      },
+      {
+        "fact_type": "fix_patterns",
+        "label": "Patch introduces reusable fix patterns",
+        "attributes": {
+          "patterns": [
+            "null check"
+          ]
+        }
+      }
+    ],
+    "mechanism_graph": {
+      "summary": "Patch suggests unknown semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=1, metadata refs=0.",
+      "primary_patterns": [],
+      "nodes": [
+        {
+          "node_id": "patch",
+          "kind": "patch",
+          "label": "Security patch",
+          "attributes": {
+            "changed_files": [
+              "bfd/dwarf2.c"
+            ]
+          }
+        },
+        {
+          "node_id": "file_0",
+          "kind": "file",
+          "label": "bfd/dwarf2.c",
+          "attributes": {
+            "path": "bfd/dwarf2.c",
+            "additions": 2,
+            "deletions": 1,
+            "hunks": 1
+          }
+        },
+        {
+          "node_id": "strategy",
+          "kind": "strategy",
+          "label": "unknown",
+          "attributes": {
+            "primary_pattern": "unknown",
+            "check_types": [],
+            "entry_points": [],
+            "data_flow_tracking": false,
+            "cross_file_analysis": false,
+            "suggestions": []
+          }
+        },
+        {
+          "node_id": "func_1",
+          "kind": "function",
+          "label": "scan_unit_for_symbols",
+          "attributes": {
+            "function": "scan_unit_for_symbols",
+            "source": "patch_fact"
+          }
+        },
+        {
+          "node_id": "guard_1",
+          "kind": "guard",
+          "label": "if (attr.u.blk->data != NULL",
+          "attributes": {
+            "condition": "if (attr.u.blk->data != NULL",
+            "source": "patch_fact"
+          }
+        },
+        {
+          "node_id": "fix_1",
+          "kind": "fix",
+          "label": "null check",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "null check"
+          }
+        }
+      ],
+      "edges": [
+        {
+          "source": "patch",
+          "target": "file_0",
+          "relation": "touches",
+          "confidence": 0.95
+        },
+        {
+          "source": "patch",
+          "target": "strategy",
+          "relation": "guides",
+          "confidence": 0.85
+        },
+        {
+          "source": "patch",
+          "target": "func_1",
+          "relation": "focuses_on",
+          "confidence": 0.82
+        },
+        {
+          "source": "patch",
+          "target": "guard_1",
+          "relation": "adds_guard",
+          "confidence": 0.84
+        },
+        {
+          "source": "patch",
+          "target": "fix_1",
+          "relation": "introduces",
+          "confidence": 0.8
+        }
+      ]
+    },
+    "evidence_plan": {
+      "primary_pattern": "unknown",
+      "hypotheses": [
+        "Patch likely encodes a reusable vulnerability mechanism but available metadata is weak; keep evidence collection broad."
+      ],
+      "requirements": [
+        {
+          "evidence_type": "patch_fact",
+          "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+          "priority": 100,
+          "preferred_analyzers": [],
+          "confidence": 1.0,
+          "mechanism_refs": [
+            "patch"
+          ]
+        }
+      ],
+      "recommended_analyzers": [
+        "csa",
+        "codeql"
+      ],
+      "planner_notes": [
+        "Added guards detected in patch diff; path-sensitive evidence should stay near top priority."
+      ],
+      "coverage_gaps": [],
+      "uncertainty_budget": "medium",
+      "escalation_triggers": [
+        "weak_primary_pattern"
+      ]
+    },
+    "refinement_targets": {
+      "csa": {
+        "checker_name": "NullDerefChecker",
+        "artifact_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe476_binutils_cve201714940/primary/csa/20260423_171100/csa/NullDerefChecker.cpp",
+        "artifact_kind": "checker_source",
+        "validation_summary": "命中验证目标并通过功能验证",
+        "refinement_summary": "- validation_outcome @ semantic_validation: semantic validation passed with 132 diagnostics [coverage=full]"
+      }
+    },
+    "validation_feedback_history": [
+      {
+        "analyzer": "csa",
+        "phase": "manual_fix_validation",
+        "summary": "- validation_outcome @ semantic_validation: semantic validation passed with 132 diagnostics [coverage=full]"
+      }
+    ]
+  },
+  "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe476_binutils_cve201714940/patches/fix.patch",
+  "summary": "Patch suggests unknown semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=1, metadata refs=0.",
+  "patch_facts": [
+    {
+      "fact_type": "patch_overview",
+      "label": "Patch overview",
+      "attributes": {
+        "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe476_binutils_cve201714940/patches/fix.patch",
+        "changed_files": [
+          "bfd/dwarf2.c"
+        ],
+        "changed_file_count": 1,
+        "added_line_count": 2,
+        "deleted_line_count": 1
+      }
+    },
+    {
+      "fact_type": "vulnerability_patterns",
+      "label": "Vulnerability patterns inferred from patch",
+      "attributes": {
+        "patterns": [
+          "unknown"
+        ],
+        "descriptions": []
+      }
+    },
+    {
+      "fact_type": "affected_functions",
+      "label": "Functions implicated by removed or fixed code",
+      "attributes": {
+        "functions": [
+          "scan_unit_for_symbols"
+        ]
+      }
+    },
+    {
+      "fact_type": "detection_strategy",
+      "label": "Existing patch analysis detection strategy",
+      "attributes": {
+        "primary_pattern": "unknown",
+        "check_types": [],
+        "entry_points": [],
+        "data_flow_tracking": false,
+        "cross_file_analysis": false,
+        "suggestions": []
+      }
+    },
+    {
+      "fact_type": "added_guards",
+      "label": "Patch introduces or strengthens guards",
+      "attributes": {
+        "guards": [
+          "if (attr.u.blk->data != NULL"
+        ]
+      }
+    },
+    {
+      "fact_type": "fix_patterns",
+      "label": "Patch introduces reusable fix patterns",
+      "attributes": {
+        "patterns": [
+          "null check"
+        ]
+      }
+    }
+  ],
+  "mechanism_graph": {
+    "summary": "Patch suggests unknown semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=1, metadata refs=0.",
+    "primary_patterns": [],
+    "nodes": [
+      {
+        "node_id": "patch",
+        "kind": "patch",
+        "label": "Security patch",
+        "attributes": {
+          "changed_files": [
+            "bfd/dwarf2.c"
+          ]
+        }
+      },
+      {
+        "node_id": "file_0",
+        "kind": "file",
+        "label": "bfd/dwarf2.c",
+        "attributes": {
+          "path": "bfd/dwarf2.c",
+          "additions": 2,
+          "deletions": 1,
+          "hunks": 1
+        }
+      },
+      {
+        "node_id": "strategy",
+        "kind": "strategy",
+        "label": "unknown",
+        "attributes": {
+          "primary_pattern": "unknown",
+          "check_types": [],
+          "entry_points": [],
+          "data_flow_tracking": false,
+          "cross_file_analysis": false,
+          "suggestions": []
+        }
+      },
+      {
+        "node_id": "func_1",
+        "kind": "function",
+        "label": "scan_unit_for_symbols",
+        "attributes": {
+          "function": "scan_unit_for_symbols",
+          "source": "patch_fact"
+        }
+      },
+      {
+        "node_id": "guard_1",
+        "kind": "guard",
+        "label": "if (attr.u.blk->data != NULL",
+        "attributes": {
+          "condition": "if (attr.u.blk->data != NULL",
+          "source": "patch_fact"
+        }
+      },
+      {
+        "node_id": "fix_1",
+        "kind": "fix",
+        "label": "null check",
+        "attributes": {
+          "kind": "fix_patterns",
+          "value": "null check"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "patch",
+        "target": "file_0",
+        "relation": "touches",
+        "confidence": 0.95
+      },
+      {
+        "source": "patch",
+        "target": "strategy",
+        "relation": "guides",
+        "confidence": 0.85
+      },
+      {
+        "source": "patch",
+        "target": "func_1",
+        "relation": "focuses_on",
+        "confidence": 0.82
+      },
+      {
+        "source": "patch",
+        "target": "guard_1",
+        "relation": "adds_guard",
+        "confidence": 0.84
+      },
+      {
+        "source": "patch",
+        "target": "fix_1",
+        "relation": "introduces",
+        "confidence": 0.8
+      }
+    ]
+  },
+  "evidence_plan": {
+    "primary_pattern": "unknown",
+    "hypotheses": [
+      "Patch likely encodes a reusable vulnerability mechanism but available metadata is weak; keep evidence collection broad."
+    ],
+    "requirements": [
+      {
+        "evidence_type": "patch_fact",
+        "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+        "priority": 100,
+        "preferred_analyzers": [],
+        "confidence": 1.0,
+        "mechanism_refs": [
+          "patch"
+        ]
+      }
+    ],
+    "recommended_analyzers": [
+      "csa",
+      "codeql"
+    ],
+    "planner_notes": [
+      "Added guards detected in patch diff; path-sensitive evidence should stay near top priority."
+    ],
+    "coverage_gaps": [],
+    "uncertainty_budget": "medium",
+    "escalation_triggers": [
+      "weak_primary_pattern"
+    ]
+  }
+}

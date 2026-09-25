@@ -1,0 +1,1178 @@
+{
+  "files_changed": [
+    "lib/zip_dirent.c"
+  ],
+  "file_details": [
+    {
+      "path": "lib/zip_dirent.c",
+      "additions": 0,
+      "deletions": 3,
+      "hunks": 1
+    }
+  ],
+  "vulnerability_patterns": [
+    {
+      "type": "double_free",
+      "description": "Possible duplicate deallocation on the AES-processing error path if `buffer` is also released by another cleanup path or owner.",
+      "trigger_conditions": [
+        "`_zip_dirent_process_winzip_aes(zde, error)` returns failure",
+        "`from_buffer` is false so the removed `_zip_buffer_free(buffer)` would execute",
+        "another path still frees or assumes ownership of `buffer` after this return"
+      ],
+      "fix_patterns": [
+        "Remove branch-local deallocation from error path",
+        "Preserve single authoritative owner for `buffer` lifetime",
+        "Avoid duplicate cleanup when ownership is external or handled later"
+      ],
+      "affected_functions": [
+        "_zip_buffer_free"
+      ],
+      "cross_file": false,
+      "source": "llm",
+      "confidence": 0.34,
+      "evidence_lines": [
+        "In `lib/zip_dirent.c`, the patch deletes `if (!from_buffer) { _zip_buffer_free(buffer); }` immediately before `return -1;` on `_zip_dirent_process_winzip_aes` failure."
+      ]
+    },
+    {
+      "type": "use_after_free",
+      "description": "Possible stale use if `buffer` was freed in this local branch but later referenced by caller-side or enclosing cleanup/state handling after the function returns `-1`.",
+      "trigger_conditions": [
+        "`_zip_dirent_process_winzip_aes(zde, error)` fails",
+        "`buffer` remains reachable by surrounding state or caller after this function returns",
+        "the removed `_zip_buffer_free(buffer)` invalidated `buffer` too early"
+      ],
+      "fix_patterns": [
+        "Explicitly avoid early invalidation on local error path",
+        "Keep resource alive until authoritative owner performs cleanup",
+        "Prefer single-point teardown over branch-specific freeing"
+      ],
+      "affected_functions": [
+        "_zip_buffer_free"
+      ],
+      "cross_file": false,
+      "source": "llm",
+      "confidence": 0.34,
+      "evidence_lines": [
+        "The only semantic change is deletion of `_zip_buffer_free(buffer)` from the AES-processing failure branch in `lib/zip_dirent.c`, indicating that freeing here was considered unsafe."
+      ]
+    }
+  ],
+  "cross_file_dependencies": [],
+  "detection_strategy": {
+    "primary_pattern": "unknown",
+    "check_types": [
+      "error_path_lifetime_analysis",
+      "ownership_cleanup_consistency",
+      "duplicate_free_path_detection",
+      "premature_free_before_later_consumer_use"
+    ],
+    "entry_points": [
+      "_zip_dirent_process_winzip_aes failure handling in `lib/zip_dirent.c`",
+      "branches conditioned on `from_buffer` around `buffer` ownership"
+    ],
+    "data_flow_tracking": true,
+    "cross_file_analysis": true,
+    "suggestions": [
+      "Model `buffer` ownership precisely across success and failure paths instead of classifying from the presence of `_zip_buffer_free` alone.",
+      "Prefer detecting inconsistent branch-local cleanup versus authoritative owner cleanup on return paths.",
+      "Check whether `buffer` is later freed by common epilogue or caller; if yes, prioritize duplicate-free findings.",
+      "Check whether any state still retains `buffer` after this branch; if yes, prioritize premature-free/use-after-free findings.",
+      "Avoid using null/non-null or `from_buffer` alone as proof of safe lifetime; require ownership evidence.",
+      "Prefer fix-shape reasoning: removed local deallocation on error path suggests centralizing teardown at a single authoritative lifecycle point."
+    ]
+  },
+  "checker_name_suggestion": "ErrorPathOwnershipConsistencyChecker",
+  "affected_functions": [
+    "_zip_buffer_free"
+  ],
+  "key_functions": [
+    "_zip_buffer_free"
+  ],
+  "patch_semantics": {
+    "added_guards": [],
+    "added_api_calls": [],
+    "removed_api_calls": [
+      "_zip_buffer_free"
+    ],
+    "state_resets": [],
+    "lifecycle_changes": []
+  },
+  "analysis_backend": "llm",
+  "analysis_confidence": 0.34,
+  "analysis_rationale": "The patch in `lib/zip_dirent.c` only removes a conditional call to `_zip_buffer_free(buffer)` on the `_zip_dirent_process_winzip_aes(zde, error)` failure path. This is concrete evidence of a lifecycle correction on an error path, but the excerpt alone does not prove whether the removed free previously caused a double free, a use-after-free, or another ownership/lifetime bug elsewhere. The strongest evidence-backed conclusion is that the fix avoids freeing `buffer` in this branch because ownership or later cleanup is handled elsewhere.",
+  "llm_usage": {
+    "prompt_tokens": 5400,
+    "completion_tokens": 779,
+    "total_tokens": 6179,
+    "call_count": 1,
+    "available": true,
+    "model": "gpt-5.4-high"
+  },
+  "patchweaver": {
+    "summary": "Patch suggests unknown semantics across 1 file(s); added guards=0, removed risky operations=1, fix patterns=6, metadata refs=0.",
+    "patch_facts": [
+      {
+        "fact_type": "patch_overview",
+        "label": "Patch overview",
+        "attributes": {
+          "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe415_libzip_cve201712858/patches/fix.patch",
+          "changed_files": [
+            "lib/zip_dirent.c"
+          ],
+          "changed_file_count": 1,
+          "added_line_count": 0,
+          "deleted_line_count": 3
+        }
+      },
+      {
+        "fact_type": "vulnerability_patterns",
+        "label": "Vulnerability patterns inferred from patch",
+        "attributes": {
+          "patterns": [
+            "double_free",
+            "use_after_free",
+            "unknown"
+          ],
+          "descriptions": [
+            "Possible duplicate deallocation on the AES-processing error path if `buffer` is also released by another cleanup path or owner.",
+            "Possible stale use if `buffer` was freed in this local branch but later referenced by caller-side or enclosing cleanup/state handling after the function returns `-1`."
+          ]
+        }
+      },
+      {
+        "fact_type": "affected_functions",
+        "label": "Functions implicated by removed or fixed code",
+        "attributes": {
+          "functions": [
+            "_zip_buffer_free",
+            "_zip_dirent_read"
+          ]
+        }
+      },
+      {
+        "fact_type": "detection_strategy",
+        "label": "Existing patch analysis detection strategy",
+        "attributes": {
+          "primary_pattern": "unknown",
+          "check_types": [
+            "error_path_lifetime_analysis",
+            "ownership_cleanup_consistency",
+            "duplicate_free_path_detection",
+            "premature_free_before_later_consumer_use"
+          ],
+          "entry_points": [
+            "_zip_dirent_process_winzip_aes failure handling in `lib/zip_dirent.c`",
+            "branches conditioned on `from_buffer` around `buffer` ownership"
+          ],
+          "data_flow_tracking": true,
+          "cross_file_analysis": true,
+          "suggestions": [
+            "Model `buffer` ownership precisely across success and failure paths instead of classifying from the presence of `_zip_buffer_free` alone.",
+            "Prefer detecting inconsistent branch-local cleanup versus authoritative owner cleanup on return paths.",
+            "Check whether `buffer` is later freed by common epilogue or caller; if yes, prioritize duplicate-free findings.",
+            "Check whether any state still retains `buffer` after this branch; if yes, prioritize premature-free/use-after-free findings.",
+            "Avoid using null/non-null or `from_buffer` alone as proof of safe lifetime; require ownership evidence.",
+            "Prefer fix-shape reasoning: removed local deallocation on error path suggests centralizing teardown at a single authoritative lifecycle point."
+          ]
+        }
+      },
+      {
+        "fact_type": "removed_risky_operations",
+        "label": "Patch removes risky operations",
+        "attributes": {
+          "operations": [
+            "_zip_buffer_free(buffer);"
+          ]
+        }
+      },
+      {
+        "fact_type": "fix_patterns",
+        "label": "Patch introduces reusable fix patterns",
+        "attributes": {
+          "patterns": [
+            "Remove branch-local deallocation from error path",
+            "Preserve single authoritative owner for `buffer` lifetime",
+            "Avoid duplicate cleanup when ownership is external or handled later",
+            "Explicitly avoid early invalidation on local error path",
+            "Keep resource alive until authoritative owner performs cleanup",
+            "Prefer single-point teardown over branch-specific freeing"
+          ]
+        }
+      }
+    ],
+    "mechanism_graph": {
+      "summary": "Patch suggests unknown semantics across 1 file(s); added guards=0, removed risky operations=1, fix patterns=6, metadata refs=0.",
+      "primary_patterns": [
+        "double_free",
+        "use_after_free"
+      ],
+      "nodes": [
+        {
+          "node_id": "patch",
+          "kind": "patch",
+          "label": "Security patch",
+          "attributes": {
+            "changed_files": [
+              "lib/zip_dirent.c"
+            ]
+          }
+        },
+        {
+          "node_id": "file_0",
+          "kind": "file",
+          "label": "lib/zip_dirent.c",
+          "attributes": {
+            "path": "lib/zip_dirent.c",
+            "additions": 0,
+            "deletions": 3,
+            "hunks": 1
+          }
+        },
+        {
+          "node_id": "pattern_0",
+          "kind": "pattern",
+          "label": "double_free",
+          "attributes": {
+            "type": "double_free",
+            "description": "Possible duplicate deallocation on the AES-processing error path if `buffer` is also released by another cleanup path or owner.",
+            "trigger_conditions": [
+              "`_zip_dirent_process_winzip_aes(zde, error)` returns failure",
+              "`from_buffer` is false so the removed `_zip_buffer_free(buffer)` would execute",
+              "another path still frees or assumes ownership of `buffer` after this return"
+            ],
+            "fix_patterns": [
+              "Remove branch-local deallocation from error path",
+              "Preserve single authoritative owner for `buffer` lifetime",
+              "Avoid duplicate cleanup when ownership is external or handled later"
+            ],
+            "affected_functions": [
+              "_zip_buffer_free"
+            ],
+            "cross_file": false,
+            "source": "llm",
+            "confidence": 0.34,
+            "evidence_lines": [
+              "In `lib/zip_dirent.c`, the patch deletes `if (!from_buffer) { _zip_buffer_free(buffer); }` immediately before `return -1;` on `_zip_dirent_process_winzip_aes` failure."
+            ]
+          }
+        },
+        {
+          "node_id": "func_1",
+          "kind": "function",
+          "label": "_zip_buffer_free",
+          "attributes": {
+            "function": "_zip_buffer_free"
+          }
+        },
+        {
+          "node_id": "guard_1",
+          "kind": "guard",
+          "label": "`_zip_dirent_process_winzip_aes(zde, error)` returns failure",
+          "attributes": {
+            "condition": "`_zip_dirent_process_winzip_aes(zde, error)` returns failure"
+          }
+        },
+        {
+          "node_id": "guard_2",
+          "kind": "guard",
+          "label": "`from_buffer` is false so the removed `_zip_buffer_free(buffer)` would execute",
+          "attributes": {
+            "condition": "`from_buffer` is false so the removed `_zip_buffer_free(buffer)` would execute"
+          }
+        },
+        {
+          "node_id": "guard_3",
+          "kind": "guard",
+          "label": "another path still frees or assumes ownership of `buffer` after this return",
+          "attributes": {
+            "condition": "another path still frees or assumes ownership of `buffer` after this return"
+          }
+        },
+        {
+          "node_id": "pattern_1",
+          "kind": "pattern",
+          "label": "use_after_free",
+          "attributes": {
+            "type": "use_after_free",
+            "description": "Possible stale use if `buffer` was freed in this local branch but later referenced by caller-side or enclosing cleanup/state handling after the function returns `-1`.",
+            "trigger_conditions": [
+              "`_zip_dirent_process_winzip_aes(zde, error)` fails",
+              "`buffer` remains reachable by surrounding state or caller after this function returns",
+              "the removed `_zip_buffer_free(buffer)` invalidated `buffer` too early"
+            ],
+            "fix_patterns": [
+              "Explicitly avoid early invalidation on local error path",
+              "Keep resource alive until authoritative owner performs cleanup",
+              "Prefer single-point teardown over branch-specific freeing"
+            ],
+            "affected_functions": [
+              "_zip_buffer_free"
+            ],
+            "cross_file": false,
+            "source": "llm",
+            "confidence": 0.34,
+            "evidence_lines": [
+              "The only semantic change is deletion of `_zip_buffer_free(buffer)` from the AES-processing failure branch in `lib/zip_dirent.c`, indicating that freeing here was considered unsafe."
+            ]
+          }
+        },
+        {
+          "node_id": "guard_4",
+          "kind": "guard",
+          "label": "`_zip_dirent_process_winzip_aes(zde, error)` fails",
+          "attributes": {
+            "condition": "`_zip_dirent_process_winzip_aes(zde, error)` fails"
+          }
+        },
+        {
+          "node_id": "guard_5",
+          "kind": "guard",
+          "label": "`buffer` remains reachable by surrounding state or caller after this function returns",
+          "attributes": {
+            "condition": "`buffer` remains reachable by surrounding state or caller after this function returns"
+          }
+        },
+        {
+          "node_id": "guard_6",
+          "kind": "guard",
+          "label": "the removed `_zip_buffer_free(buffer)` invalidated `buffer` too early",
+          "attributes": {
+            "condition": "the removed `_zip_buffer_free(buffer)` invalidated `buffer` too early"
+          }
+        },
+        {
+          "node_id": "strategy",
+          "kind": "strategy",
+          "label": "unknown",
+          "attributes": {
+            "primary_pattern": "unknown",
+            "check_types": [
+              "error_path_lifetime_analysis",
+              "ownership_cleanup_consistency",
+              "duplicate_free_path_detection",
+              "premature_free_before_later_consumer_use"
+            ],
+            "entry_points": [
+              "_zip_dirent_process_winzip_aes failure handling in `lib/zip_dirent.c`",
+              "branches conditioned on `from_buffer` around `buffer` ownership"
+            ],
+            "data_flow_tracking": true,
+            "cross_file_analysis": true,
+            "suggestions": [
+              "Model `buffer` ownership precisely across success and failure paths instead of classifying from the presence of `_zip_buffer_free` alone.",
+              "Prefer detecting inconsistent branch-local cleanup versus authoritative owner cleanup on return paths.",
+              "Check whether `buffer` is later freed by common epilogue or caller; if yes, prioritize duplicate-free findings.",
+              "Check whether any state still retains `buffer` after this branch; if yes, prioritize premature-free/use-after-free findings.",
+              "Avoid using null/non-null or `from_buffer` alone as proof of safe lifetime; require ownership evidence.",
+              "Prefer fix-shape reasoning: removed local deallocation on error path suggests centralizing teardown at a single authoritative lifecycle point."
+            ]
+          }
+        },
+        {
+          "node_id": "func_2",
+          "kind": "function",
+          "label": "_zip_dirent_read",
+          "attributes": {
+            "function": "_zip_dirent_read",
+            "source": "patch_fact"
+          }
+        },
+        {
+          "node_id": "fix_1",
+          "kind": "fix",
+          "label": "Remove branch-local deallocation from error path",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "Remove branch-local deallocation from error path"
+          }
+        },
+        {
+          "node_id": "fix_2",
+          "kind": "fix",
+          "label": "Preserve single authoritative owner for `buffer` lifetime",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "Preserve single authoritative owner for `buffer` lifetime"
+          }
+        },
+        {
+          "node_id": "fix_3",
+          "kind": "fix",
+          "label": "Avoid duplicate cleanup when ownership is external or handled later",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "Avoid duplicate cleanup when ownership is external or handled later"
+          }
+        },
+        {
+          "node_id": "fix_4",
+          "kind": "fix",
+          "label": "Explicitly avoid early invalidation on local error path",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "Explicitly avoid early invalidation on local error path"
+          }
+        },
+        {
+          "node_id": "fix_5",
+          "kind": "fix",
+          "label": "Keep resource alive until authoritative owner performs cleanup",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "Keep resource alive until authoritative owner performs cleanup"
+          }
+        },
+        {
+          "node_id": "fix_6",
+          "kind": "fix",
+          "label": "Prefer single-point teardown over branch-specific freeing",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "Prefer single-point teardown over branch-specific freeing"
+          }
+        }
+      ],
+      "edges": [
+        {
+          "source": "patch",
+          "target": "file_0",
+          "relation": "touches",
+          "confidence": 0.95
+        },
+        {
+          "source": "patch",
+          "target": "pattern_0",
+          "relation": "indicates",
+          "confidence": 0.9
+        },
+        {
+          "source": "pattern_0",
+          "target": "func_1",
+          "relation": "affects",
+          "confidence": 0.75
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_1",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_2",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_3",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "patch",
+          "target": "pattern_1",
+          "relation": "indicates",
+          "confidence": 0.9
+        },
+        {
+          "source": "pattern_1",
+          "target": "guard_4",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "pattern_1",
+          "target": "guard_5",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "pattern_1",
+          "target": "guard_6",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "patch",
+          "target": "strategy",
+          "relation": "guides",
+          "confidence": 0.85
+        },
+        {
+          "source": "patch",
+          "target": "func_2",
+          "relation": "focuses_on",
+          "confidence": 0.82
+        },
+        {
+          "source": "patch",
+          "target": "fix_1",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_2",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_3",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_4",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_5",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_6",
+          "relation": "introduces",
+          "confidence": 0.8
+        }
+      ]
+    },
+    "evidence_plan": {
+      "primary_pattern": "double_free",
+      "hypotheses": [
+        "The patch changes a data propagation condition that should generalize beyond the edited lines.",
+        "The vulnerability mechanism crosses file boundaries and should not be captured with local-only reasoning.",
+        "The patch likely changes a resource lifecycle or stale-state transition."
+      ],
+      "requirements": [
+        {
+          "evidence_type": "patch_fact",
+          "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+          "priority": 100,
+          "preferred_analyzers": [],
+          "confidence": 1.0,
+          "mechanism_refs": [
+            "patch"
+          ]
+        },
+        {
+          "evidence_type": "dataflow_candidate",
+          "reason": "Patch analysis requests data-flow tracking.",
+          "priority": 95,
+          "preferred_analyzers": [
+            "codeql"
+          ],
+          "confidence": 0.9,
+          "mechanism_refs": [
+            "strategy"
+          ]
+        },
+        {
+          "evidence_type": "allocation_lifecycle",
+          "reason": "Lifetime-sensitive bug family requires allocation/free reasoning.",
+          "priority": 92,
+          "preferred_analyzers": [
+            "csa"
+          ],
+          "confidence": 0.92,
+          "mechanism_refs": [
+            "pattern_0"
+          ]
+        },
+        {
+          "evidence_type": "state_transition",
+          "reason": "Need local state transitions around free/delete and later uses.",
+          "priority": 89,
+          "preferred_analyzers": [
+            "csa"
+          ],
+          "confidence": 0.88,
+          "mechanism_refs": [
+            "pattern_0"
+          ]
+        },
+        {
+          "evidence_type": "semantic_slice",
+          "reason": "Cross-file patch suggests a verifier-backed semantic slice is needed, not just a project summary.",
+          "priority": 86,
+          "preferred_analyzers": [
+            "csa",
+            "codeql"
+          ],
+          "confidence": 0.83,
+          "mechanism_refs": [
+            "strategy"
+          ]
+        },
+        {
+          "evidence_type": "call_chain",
+          "reason": "Cross-file patch needs interprocedural call edges, not only local edited-line context.",
+          "priority": 82,
+          "preferred_analyzers": [
+            "codeql"
+          ],
+          "confidence": 0.78,
+          "mechanism_refs": [
+            "strategy"
+          ]
+        }
+      ],
+      "recommended_analyzers": [
+        "csa",
+        "codeql"
+      ],
+      "planner_notes": [
+        "Selected analyzers do not cover every planned evidence primitive."
+      ],
+      "coverage_gaps": [
+        "allocation_lifecycle is not covered by selected analyzers ['codeql']",
+        "state_transition is not covered by selected analyzers ['codeql']"
+      ],
+      "uncertainty_budget": "high",
+      "escalation_triggers": [
+        "competing_patch_patterns",
+        "cross_file_mechanism",
+        "selected_coverage_gap"
+      ]
+    }
+  },
+  "summary": "Patch suggests unknown semantics across 1 file(s); added guards=0, removed risky operations=1, fix patterns=6, metadata refs=0.",
+  "patch_facts": [
+    {
+      "fact_type": "patch_overview",
+      "label": "Patch overview",
+      "attributes": {
+        "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe415_libzip_cve201712858/patches/fix.patch",
+        "changed_files": [
+          "lib/zip_dirent.c"
+        ],
+        "changed_file_count": 1,
+        "added_line_count": 0,
+        "deleted_line_count": 3
+      }
+    },
+    {
+      "fact_type": "vulnerability_patterns",
+      "label": "Vulnerability patterns inferred from patch",
+      "attributes": {
+        "patterns": [
+          "double_free",
+          "use_after_free",
+          "unknown"
+        ],
+        "descriptions": [
+          "Possible duplicate deallocation on the AES-processing error path if `buffer` is also released by another cleanup path or owner.",
+          "Possible stale use if `buffer` was freed in this local branch but later referenced by caller-side or enclosing cleanup/state handling after the function returns `-1`."
+        ]
+      }
+    },
+    {
+      "fact_type": "affected_functions",
+      "label": "Functions implicated by removed or fixed code",
+      "attributes": {
+        "functions": [
+          "_zip_buffer_free",
+          "_zip_dirent_read"
+        ]
+      }
+    },
+    {
+      "fact_type": "detection_strategy",
+      "label": "Existing patch analysis detection strategy",
+      "attributes": {
+        "primary_pattern": "unknown",
+        "check_types": [
+          "error_path_lifetime_analysis",
+          "ownership_cleanup_consistency",
+          "duplicate_free_path_detection",
+          "premature_free_before_later_consumer_use"
+        ],
+        "entry_points": [
+          "_zip_dirent_process_winzip_aes failure handling in `lib/zip_dirent.c`",
+          "branches conditioned on `from_buffer` around `buffer` ownership"
+        ],
+        "data_flow_tracking": true,
+        "cross_file_analysis": true,
+        "suggestions": [
+          "Model `buffer` ownership precisely across success and failure paths instead of classifying from the presence of `_zip_buffer_free` alone.",
+          "Prefer detecting inconsistent branch-local cleanup versus authoritative owner cleanup on return paths.",
+          "Check whether `buffer` is later freed by common epilogue or caller; if yes, prioritize duplicate-free findings.",
+          "Check whether any state still retains `buffer` after this branch; if yes, prioritize premature-free/use-after-free findings.",
+          "Avoid using null/non-null or `from_buffer` alone as proof of safe lifetime; require ownership evidence.",
+          "Prefer fix-shape reasoning: removed local deallocation on error path suggests centralizing teardown at a single authoritative lifecycle point."
+        ]
+      }
+    },
+    {
+      "fact_type": "removed_risky_operations",
+      "label": "Patch removes risky operations",
+      "attributes": {
+        "operations": [
+          "_zip_buffer_free(buffer);"
+        ]
+      }
+    },
+    {
+      "fact_type": "fix_patterns",
+      "label": "Patch introduces reusable fix patterns",
+      "attributes": {
+        "patterns": [
+          "Remove branch-local deallocation from error path",
+          "Preserve single authoritative owner for `buffer` lifetime",
+          "Avoid duplicate cleanup when ownership is external or handled later",
+          "Explicitly avoid early invalidation on local error path",
+          "Keep resource alive until authoritative owner performs cleanup",
+          "Prefer single-point teardown over branch-specific freeing"
+        ]
+      }
+    }
+  ],
+  "mechanism_graph": {
+    "summary": "Patch suggests unknown semantics across 1 file(s); added guards=0, removed risky operations=1, fix patterns=6, metadata refs=0.",
+    "primary_patterns": [
+      "double_free",
+      "use_after_free"
+    ],
+    "nodes": [
+      {
+        "node_id": "patch",
+        "kind": "patch",
+        "label": "Security patch",
+        "attributes": {
+          "changed_files": [
+            "lib/zip_dirent.c"
+          ]
+        }
+      },
+      {
+        "node_id": "file_0",
+        "kind": "file",
+        "label": "lib/zip_dirent.c",
+        "attributes": {
+          "path": "lib/zip_dirent.c",
+          "additions": 0,
+          "deletions": 3,
+          "hunks": 1
+        }
+      },
+      {
+        "node_id": "pattern_0",
+        "kind": "pattern",
+        "label": "double_free",
+        "attributes": {
+          "type": "double_free",
+          "description": "Possible duplicate deallocation on the AES-processing error path if `buffer` is also released by another cleanup path or owner.",
+          "trigger_conditions": [
+            "`_zip_dirent_process_winzip_aes(zde, error)` returns failure",
+            "`from_buffer` is false so the removed `_zip_buffer_free(buffer)` would execute",
+            "another path still frees or assumes ownership of `buffer` after this return"
+          ],
+          "fix_patterns": [
+            "Remove branch-local deallocation from error path",
+            "Preserve single authoritative owner for `buffer` lifetime",
+            "Avoid duplicate cleanup when ownership is external or handled later"
+          ],
+          "affected_functions": [
+            "_zip_buffer_free"
+          ],
+          "cross_file": false,
+          "source": "llm",
+          "confidence": 0.34,
+          "evidence_lines": [
+            "In `lib/zip_dirent.c`, the patch deletes `if (!from_buffer) { _zip_buffer_free(buffer); }` immediately before `return -1;` on `_zip_dirent_process_winzip_aes` failure."
+          ]
+        }
+      },
+      {
+        "node_id": "func_1",
+        "kind": "function",
+        "label": "_zip_buffer_free",
+        "attributes": {
+          "function": "_zip_buffer_free"
+        }
+      },
+      {
+        "node_id": "guard_1",
+        "kind": "guard",
+        "label": "`_zip_dirent_process_winzip_aes(zde, error)` returns failure",
+        "attributes": {
+          "condition": "`_zip_dirent_process_winzip_aes(zde, error)` returns failure"
+        }
+      },
+      {
+        "node_id": "guard_2",
+        "kind": "guard",
+        "label": "`from_buffer` is false so the removed `_zip_buffer_free(buffer)` would execute",
+        "attributes": {
+          "condition": "`from_buffer` is false so the removed `_zip_buffer_free(buffer)` would execute"
+        }
+      },
+      {
+        "node_id": "guard_3",
+        "kind": "guard",
+        "label": "another path still frees or assumes ownership of `buffer` after this return",
+        "attributes": {
+          "condition": "another path still frees or assumes ownership of `buffer` after this return"
+        }
+      },
+      {
+        "node_id": "pattern_1",
+        "kind": "pattern",
+        "label": "use_after_free",
+        "attributes": {
+          "type": "use_after_free",
+          "description": "Possible stale use if `buffer` was freed in this local branch but later referenced by caller-side or enclosing cleanup/state handling after the function returns `-1`.",
+          "trigger_conditions": [
+            "`_zip_dirent_process_winzip_aes(zde, error)` fails",
+            "`buffer` remains reachable by surrounding state or caller after this function returns",
+            "the removed `_zip_buffer_free(buffer)` invalidated `buffer` too early"
+          ],
+          "fix_patterns": [
+            "Explicitly avoid early invalidation on local error path",
+            "Keep resource alive until authoritative owner performs cleanup",
+            "Prefer single-point teardown over branch-specific freeing"
+          ],
+          "affected_functions": [
+            "_zip_buffer_free"
+          ],
+          "cross_file": false,
+          "source": "llm",
+          "confidence": 0.34,
+          "evidence_lines": [
+            "The only semantic change is deletion of `_zip_buffer_free(buffer)` from the AES-processing failure branch in `lib/zip_dirent.c`, indicating that freeing here was considered unsafe."
+          ]
+        }
+      },
+      {
+        "node_id": "guard_4",
+        "kind": "guard",
+        "label": "`_zip_dirent_process_winzip_aes(zde, error)` fails",
+        "attributes": {
+          "condition": "`_zip_dirent_process_winzip_aes(zde, error)` fails"
+        }
+      },
+      {
+        "node_id": "guard_5",
+        "kind": "guard",
+        "label": "`buffer` remains reachable by surrounding state or caller after this function returns",
+        "attributes": {
+          "condition": "`buffer` remains reachable by surrounding state or caller after this function returns"
+        }
+      },
+      {
+        "node_id": "guard_6",
+        "kind": "guard",
+        "label": "the removed `_zip_buffer_free(buffer)` invalidated `buffer` too early",
+        "attributes": {
+          "condition": "the removed `_zip_buffer_free(buffer)` invalidated `buffer` too early"
+        }
+      },
+      {
+        "node_id": "strategy",
+        "kind": "strategy",
+        "label": "unknown",
+        "attributes": {
+          "primary_pattern": "unknown",
+          "check_types": [
+            "error_path_lifetime_analysis",
+            "ownership_cleanup_consistency",
+            "duplicate_free_path_detection",
+            "premature_free_before_later_consumer_use"
+          ],
+          "entry_points": [
+            "_zip_dirent_process_winzip_aes failure handling in `lib/zip_dirent.c`",
+            "branches conditioned on `from_buffer` around `buffer` ownership"
+          ],
+          "data_flow_tracking": true,
+          "cross_file_analysis": true,
+          "suggestions": [
+            "Model `buffer` ownership precisely across success and failure paths instead of classifying from the presence of `_zip_buffer_free` alone.",
+            "Prefer detecting inconsistent branch-local cleanup versus authoritative owner cleanup on return paths.",
+            "Check whether `buffer` is later freed by common epilogue or caller; if yes, prioritize duplicate-free findings.",
+            "Check whether any state still retains `buffer` after this branch; if yes, prioritize premature-free/use-after-free findings.",
+            "Avoid using null/non-null or `from_buffer` alone as proof of safe lifetime; require ownership evidence.",
+            "Prefer fix-shape reasoning: removed local deallocation on error path suggests centralizing teardown at a single authoritative lifecycle point."
+          ]
+        }
+      },
+      {
+        "node_id": "func_2",
+        "kind": "function",
+        "label": "_zip_dirent_read",
+        "attributes": {
+          "function": "_zip_dirent_read",
+          "source": "patch_fact"
+        }
+      },
+      {
+        "node_id": "fix_1",
+        "kind": "fix",
+        "label": "Remove branch-local deallocation from error path",
+        "attributes": {
+          "kind": "fix_patterns",
+          "value": "Remove branch-local deallocation from error path"
+        }
+      },
+      {
+        "node_id": "fix_2",
+        "kind": "fix",
+        "label": "Preserve single authoritative owner for `buffer` lifetime",
+        "attributes": {
+          "kind": "fix_patterns",
+          "value": "Preserve single authoritative owner for `buffer` lifetime"
+        }
+      },
+      {
+        "node_id": "fix_3",
+        "kind": "fix",
+        "label": "Avoid duplicate cleanup when ownership is external or handled later",
+        "attributes": {
+          "kind": "fix_patterns",
+          "value": "Avoid duplicate cleanup when ownership is external or handled later"
+        }
+      },
+      {
+        "node_id": "fix_4",
+        "kind": "fix",
+        "label": "Explicitly avoid early invalidation on local error path",
+        "attributes": {
+          "kind": "fix_patterns",
+          "value": "Explicitly avoid early invalidation on local error path"
+        }
+      },
+      {
+        "node_id": "fix_5",
+        "kind": "fix",
+        "label": "Keep resource alive until authoritative owner performs cleanup",
+        "attributes": {
+          "kind": "fix_patterns",
+          "value": "Keep resource alive until authoritative owner performs cleanup"
+        }
+      },
+      {
+        "node_id": "fix_6",
+        "kind": "fix",
+        "label": "Prefer single-point teardown over branch-specific freeing",
+        "attributes": {
+          "kind": "fix_patterns",
+          "value": "Prefer single-point teardown over branch-specific freeing"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "patch",
+        "target": "file_0",
+        "relation": "touches",
+        "confidence": 0.95
+      },
+      {
+        "source": "patch",
+        "target": "pattern_0",
+        "relation": "indicates",
+        "confidence": 0.9
+      },
+      {
+        "source": "pattern_0",
+        "target": "func_1",
+        "relation": "affects",
+        "confidence": 0.75
+      },
+      {
+        "source": "pattern_0",
+        "target": "guard_1",
+        "relation": "requires",
+        "confidence": 0.7
+      },
+      {
+        "source": "pattern_0",
+        "target": "guard_2",
+        "relation": "requires",
+        "confidence": 0.7
+      },
+      {
+        "source": "pattern_0",
+        "target": "guard_3",
+        "relation": "requires",
+        "confidence": 0.7
+      },
+      {
+        "source": "patch",
+        "target": "pattern_1",
+        "relation": "indicates",
+        "confidence": 0.9
+      },
+      {
+        "source": "pattern_1",
+        "target": "guard_4",
+        "relation": "requires",
+        "confidence": 0.7
+      },
+      {
+        "source": "pattern_1",
+        "target": "guard_5",
+        "relation": "requires",
+        "confidence": 0.7
+      },
+      {
+        "source": "pattern_1",
+        "target": "guard_6",
+        "relation": "requires",
+        "confidence": 0.7
+      },
+      {
+        "source": "patch",
+        "target": "strategy",
+        "relation": "guides",
+        "confidence": 0.85
+      },
+      {
+        "source": "patch",
+        "target": "func_2",
+        "relation": "focuses_on",
+        "confidence": 0.82
+      },
+      {
+        "source": "patch",
+        "target": "fix_1",
+        "relation": "introduces",
+        "confidence": 0.8
+      },
+      {
+        "source": "patch",
+        "target": "fix_2",
+        "relation": "introduces",
+        "confidence": 0.8
+      },
+      {
+        "source": "patch",
+        "target": "fix_3",
+        "relation": "introduces",
+        "confidence": 0.8
+      },
+      {
+        "source": "patch",
+        "target": "fix_4",
+        "relation": "introduces",
+        "confidence": 0.8
+      },
+      {
+        "source": "patch",
+        "target": "fix_5",
+        "relation": "introduces",
+        "confidence": 0.8
+      },
+      {
+        "source": "patch",
+        "target": "fix_6",
+        "relation": "introduces",
+        "confidence": 0.8
+      }
+    ]
+  },
+  "evidence_plan": {
+    "primary_pattern": "double_free",
+    "hypotheses": [
+      "The patch changes a data propagation condition that should generalize beyond the edited lines.",
+      "The vulnerability mechanism crosses file boundaries and should not be captured with local-only reasoning.",
+      "The patch likely changes a resource lifecycle or stale-state transition."
+    ],
+    "requirements": [
+      {
+        "evidence_type": "patch_fact",
+        "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+        "priority": 100,
+        "preferred_analyzers": [],
+        "confidence": 1.0,
+        "mechanism_refs": [
+          "patch"
+        ]
+      },
+      {
+        "evidence_type": "dataflow_candidate",
+        "reason": "Patch analysis requests data-flow tracking.",
+        "priority": 95,
+        "preferred_analyzers": [
+          "codeql"
+        ],
+        "confidence": 0.9,
+        "mechanism_refs": [
+          "strategy"
+        ]
+      },
+      {
+        "evidence_type": "allocation_lifecycle",
+        "reason": "Lifetime-sensitive bug family requires allocation/free reasoning.",
+        "priority": 92,
+        "preferred_analyzers": [
+          "csa"
+        ],
+        "confidence": 0.92,
+        "mechanism_refs": [
+          "pattern_0"
+        ]
+      },
+      {
+        "evidence_type": "state_transition",
+        "reason": "Need local state transitions around free/delete and later uses.",
+        "priority": 89,
+        "preferred_analyzers": [
+          "csa"
+        ],
+        "confidence": 0.88,
+        "mechanism_refs": [
+          "pattern_0"
+        ]
+      },
+      {
+        "evidence_type": "semantic_slice",
+        "reason": "Cross-file patch suggests a verifier-backed semantic slice is needed, not just a project summary.",
+        "priority": 86,
+        "preferred_analyzers": [
+          "csa",
+          "codeql"
+        ],
+        "confidence": 0.83,
+        "mechanism_refs": [
+          "strategy"
+        ]
+      },
+      {
+        "evidence_type": "call_chain",
+        "reason": "Cross-file patch needs interprocedural call edges, not only local edited-line context.",
+        "priority": 82,
+        "preferred_analyzers": [
+          "codeql"
+        ],
+        "confidence": 0.78,
+        "mechanism_refs": [
+          "strategy"
+        ]
+      }
+    ],
+    "recommended_analyzers": [
+      "csa",
+      "codeql"
+    ],
+    "planner_notes": [
+      "Selected analyzers do not cover every planned evidence primitive."
+    ],
+    "coverage_gaps": [
+      "allocation_lifecycle is not covered by selected analyzers ['codeql']",
+      "state_transition is not covered by selected analyzers ['codeql']"
+    ],
+    "uncertainty_budget": "high",
+    "escalation_triggers": [
+      "competing_patch_patterns",
+      "cross_file_mechanism",
+      "selected_coverage_gap"
+    ]
+  }
+}

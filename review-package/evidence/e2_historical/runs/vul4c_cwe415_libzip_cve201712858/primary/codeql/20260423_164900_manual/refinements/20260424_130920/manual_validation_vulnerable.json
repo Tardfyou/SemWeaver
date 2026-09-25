@@ -1,0 +1,40 @@
+{
+  "label": "vulnerable",
+  "success": true,
+  "diagnostics_count": 1,
+  "error_message": "",
+  "metadata": {
+    "output_file": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe415_libzip_cve201712858/primary/codeql/20260423_164900_manual/codeql/refinements/20260424_130920/codeql/results.bqrs",
+    "bugs_found": 1,
+    "database_path": "/tmp/libzip_cve201712858_vuln_db",
+    "database_resolution": null,
+    "query_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe415_libzip_cve201712858/primary/codeql/20260423_164900_manual/codeql/refinements/20260424_130920/codeql/PatchGuidedQuery.ql",
+    "decoded_results": {
+      "text": {
+        "path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe415_libzip_cve201712858/primary/codeql/20260423_164900_manual/codeql/refinements/20260424_130920/codeql/results.text",
+        "preview": "| ID of freeCall |         freeCall         |                                                           URL for freeCall                                                            |                                                                                       col1                                                                                       |\n+----------------+--------------------------+---------------------------------------------------------------------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+\n|      -16769286 | call to _zip_buffer_free | file:///anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe415_libzip_cve201712858/vulnerable/lib/zip_dirent.c:582:6:582:21 | WinZip AES failure returns after releasing the local buffer under the ownership guard; the patch",
+        "content": null
+      },
+      "json": {
+        "path": "",
+        "preview": "{\"#select\":{\"columns\":[\n   {\"name\":\"freeCall\",\"kind\":\"Entity\"}\n  ,{\"kind\":\"String\"}]\n ,\"tuples\":[\n   [{\"id\":-16769286,\"label\":\"call to _zip_buffer_free\",\"url\":{\"uri\":\"file:/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe415_libzip_cve201712858/vulnerable/lib/zip_dirent.c\",\"startLine\":582,\"startColumn\":6,\"endLine\":582,\"endColumn\":21}},\"WinZip AES failure returns after releasing the local buffer under the ownership guard; the patched code removes this early release to avoid double-free-prone cleanup ownership.\"]]\n }}\n",
+        "content": "{\"#select\":{\"columns\":[\n   {\"name\":\"freeCall\",\"kind\":\"Entity\"}\n  ,{\"kind\":\"String\"}]\n ,\"tuples\":[\n   [{\"id\":-16769286,\"label\":\"call to _zip_buffer_free\",\"url\":{\"uri\":\"file:/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe415_libzip_cve201712858/vulnerable/lib/zip_dirent.c\",\"startLine\":582,\"startColumn\":6,\"endLine\":582,\"endColumn\":21}},\"WinZip AES failure returns after releasing the local buffer under the ownership guard; the patched code removes this early release to avoid double-free-prone cleanup ownership.\"]]\n }}\n"
+      }
+    },
+    "environment_blocked": false,
+    "environment_block_reason": "",
+    "validation_target": "v2_experiments/datasets/curated/vul4c_cwe415_libzip_cve201712858/vulnerable"
+  },
+  "diagnostics": [
+    {
+      "file_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe415_libzip_cve201712858/vulnerable/lib/zip_dirent.c",
+      "line": 582,
+      "column": 6,
+      "severity": "warning",
+      "message": "WinZip AES failure returns after releasing the local buffer under the ownership guard; the patched code removes this early release to avoid double-free-prone cleanup ownership.",
+      "source": "codeql",
+      "code": "#select",
+      "suggestion": ""
+    }
+  ]
+}

@@ -1,0 +1,987 @@
+{
+  "schema_version": 1,
+  "workflow_mode": "generate",
+  "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe415_libzip_cve201712858/patches/fix.patch",
+  "validate_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe415_libzip_cve201712858/vulnerable",
+  "analyzer_choice": "csa",
+  "shared_analysis_path": "patchweaver_plan.json",
+  "shared_analysis": {
+    "files_changed": [
+      "lib/zip_dirent.c"
+    ],
+    "file_details": [
+      {
+        "path": "lib/zip_dirent.c",
+        "additions": 0,
+        "deletions": 3,
+        "hunks": 1
+      }
+    ],
+    "vulnerability_patterns": [
+      {
+        "type": "double_free",
+        "description": "An error path performed an extra `_zip_buffer_free(buffer)` even though buffer ownership was not local to that branch, risking a second free when cleanup occurred elsewhere.",
+        "trigger_conditions": [
+          "Execution reaches the `_zip_dirent_process_winzip_aes(zde, error)` failure branch",
+          "`from_buffer` is false, satisfying the removed conditional free",
+          "The same `buffer` is later released by another cleanup/owner path"
+        ],
+        "fix_patterns": [
+          "Remove branch-local deallocation from failing helper path",
+          "Preserve a single authoritative owner/cleanup path for `buffer` lifetime",
+          "Avoid freeing resources in nested error handling when ownership is ambiguous"
+        ],
+        "affected_functions": [
+          "_zip_buffer_free"
+        ],
+        "cross_file": false,
+        "source": "llm",
+        "confidence": 0.94,
+        "evidence_lines": [
+          "In `lib/zip_dirent.c`, the failure branch for `_zip_dirent_process_winzip_aes(zde, error)` no longer calls `_zip_buffer_free(buffer)`",
+          "Removed code: `if (!from_buffer) { _zip_buffer_free(buffer); }` immediately before `return -1;`"
+        ]
+      }
+    ],
+    "cross_file_dependencies": [],
+    "detection_strategy": {
+      "primary_pattern": "double_free",
+      "check_types": [
+        "duplicate_deallocation_on_error_paths",
+        "ownership_lifetime_mismatch_for_heap_backed_buffers",
+        "branch_local_cleanup_that_overlaps_with_caller_or_outer_scope_cleanup"
+      ],
+      "entry_points": [
+        "`lib/zip_dirent.c` failure handling around `_zip_dirent_process_winzip_aes`",
+        "Calls to `_zip_buffer_free` in nested error branches"
+      ],
+      "data_flow_tracking": true,
+      "cross_file_analysis": true,
+      "suggestions": [
+        "Track buffer ownership across success and failure paths; flag frees in subordinate error branches when outer cleanup also frees the same object",
+        "Prefer ownership/lifecycle reasoning over null-check reasoning; no null reset was added here",
+        "Look for consumer-side duplicate cleanup on helper failure rather than only same-block consecutive frees",
+        "Treat removed deallocation in a narrow error branch as evidence that cleanup should be centralized in one authoritative path"
+      ]
+    },
+    "checker_name_suggestion": "DoubleFreeChecker",
+    "affected_functions": [
+      "_zip_buffer_free"
+    ],
+    "key_functions": [
+      "_zip_buffer_free"
+    ],
+    "patch_semantics": {
+      "added_guards": [],
+      "added_api_calls": [],
+      "removed_api_calls": [
+        "_zip_buffer_free"
+      ],
+      "state_resets": [],
+      "lifecycle_changes": []
+    },
+    "analysis_backend": "llm",
+    "analysis_confidence": 0.94,
+    "analysis_rationale": "The patch removes a conditional call to `_zip_buffer_free(buffer)` from an error path inside `lib/zip_dirent.c` when `_zip_dirent_process_winzip_aes(zde, error)` fails. Because no replacement guard, nulling, or ownership transfer code is added, the concrete fix shape is elimination of a duplicate deallocation in this branch, indicating the buffer is freed elsewhere or remains owned by another path. The vulnerability mechanism is therefore best classified as `double_free`, not a generic memory issue.",
+    "llm_usage": {
+      "prompt_tokens": 5400,
+      "completion_tokens": 576,
+      "total_tokens": 5976,
+      "call_count": 1,
+      "available": true,
+      "model": "gpt-5.4-high"
+    },
+    "patchweaver": {
+      "summary": "Patch suggests double_free semantics across 1 file(s); added guards=0, removed risky operations=1, fix patterns=3, metadata refs=0.",
+      "patch_facts": [
+        {
+          "fact_type": "patch_overview",
+          "label": "Patch overview",
+          "attributes": {
+            "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe415_libzip_cve201712858/patches/fix.patch",
+            "changed_files": [
+              "lib/zip_dirent.c"
+            ],
+            "changed_file_count": 1,
+            "added_line_count": 0,
+            "deleted_line_count": 3
+          }
+        },
+        {
+          "fact_type": "vulnerability_patterns",
+          "label": "Vulnerability patterns inferred from patch",
+          "attributes": {
+            "patterns": [
+              "double_free"
+            ],
+            "descriptions": [
+              "An error path performed an extra `_zip_buffer_free(buffer)` even though buffer ownership was not local to that branch, risking a second free when cleanup occurred elsewhere."
+            ]
+          }
+        },
+        {
+          "fact_type": "affected_functions",
+          "label": "Functions implicated by removed or fixed code",
+          "attributes": {
+            "functions": [
+              "_zip_buffer_free",
+              "_zip_dirent_read"
+            ]
+          }
+        },
+        {
+          "fact_type": "detection_strategy",
+          "label": "Existing patch analysis detection strategy",
+          "attributes": {
+            "primary_pattern": "double_free",
+            "check_types": [
+              "duplicate_deallocation_on_error_paths",
+              "ownership_lifetime_mismatch_for_heap_backed_buffers",
+              "branch_local_cleanup_that_overlaps_with_caller_or_outer_scope_cleanup"
+            ],
+            "entry_points": [
+              "`lib/zip_dirent.c` failure handling around `_zip_dirent_process_winzip_aes`",
+              "Calls to `_zip_buffer_free` in nested error branches"
+            ],
+            "data_flow_tracking": true,
+            "cross_file_analysis": true,
+            "suggestions": [
+              "Track buffer ownership across success and failure paths; flag frees in subordinate error branches when outer cleanup also frees the same object",
+              "Prefer ownership/lifecycle reasoning over null-check reasoning; no null reset was added here",
+              "Look for consumer-side duplicate cleanup on helper failure rather than only same-block consecutive frees",
+              "Treat removed deallocation in a narrow error branch as evidence that cleanup should be centralized in one authoritative path"
+            ]
+          }
+        },
+        {
+          "fact_type": "removed_risky_operations",
+          "label": "Patch removes risky operations",
+          "attributes": {
+            "operations": [
+              "_zip_buffer_free(buffer);"
+            ]
+          }
+        },
+        {
+          "fact_type": "fix_patterns",
+          "label": "Patch introduces reusable fix patterns",
+          "attributes": {
+            "patterns": [
+              "Remove branch-local deallocation from failing helper path",
+              "Preserve a single authoritative owner/cleanup path for `buffer` lifetime",
+              "Avoid freeing resources in nested error handling when ownership is ambiguous"
+            ]
+          }
+        }
+      ],
+      "mechanism_graph": {
+        "summary": "Patch suggests double_free semantics across 1 file(s); added guards=0, removed risky operations=1, fix patterns=3, metadata refs=0.",
+        "primary_patterns": [
+          "double_free"
+        ],
+        "nodes": [
+          {
+            "node_id": "patch",
+            "kind": "patch",
+            "label": "Security patch",
+            "attributes": {
+              "changed_files": [
+                "lib/zip_dirent.c"
+              ]
+            }
+          },
+          {
+            "node_id": "file_0",
+            "kind": "file",
+            "label": "lib/zip_dirent.c",
+            "attributes": {
+              "path": "lib/zip_dirent.c",
+              "additions": 0,
+              "deletions": 3,
+              "hunks": 1
+            }
+          },
+          {
+            "node_id": "pattern_0",
+            "kind": "pattern",
+            "label": "double_free",
+            "attributes": {
+              "type": "double_free",
+              "description": "An error path performed an extra `_zip_buffer_free(buffer)` even though buffer ownership was not local to that branch, risking a second free when cleanup occurred elsewhere.",
+              "trigger_conditions": [
+                "Execution reaches the `_zip_dirent_process_winzip_aes(zde, error)` failure branch",
+                "`from_buffer` is false, satisfying the removed conditional free",
+                "The same `buffer` is later released by another cleanup/owner path"
+              ],
+              "fix_patterns": [
+                "Remove branch-local deallocation from failing helper path",
+                "Preserve a single authoritative owner/cleanup path for `buffer` lifetime",
+                "Avoid freeing resources in nested error handling when ownership is ambiguous"
+              ],
+              "affected_functions": [
+                "_zip_buffer_free"
+              ],
+              "cross_file": false,
+              "source": "llm",
+              "confidence": 0.94,
+              "evidence_lines": [
+                "In `lib/zip_dirent.c`, the failure branch for `_zip_dirent_process_winzip_aes(zde, error)` no longer calls `_zip_buffer_free(buffer)`",
+                "Removed code: `if (!from_buffer) { _zip_buffer_free(buffer); }` immediately before `return -1;`"
+              ]
+            }
+          },
+          {
+            "node_id": "func_1",
+            "kind": "function",
+            "label": "_zip_buffer_free",
+            "attributes": {
+              "function": "_zip_buffer_free"
+            }
+          },
+          {
+            "node_id": "guard_1",
+            "kind": "guard",
+            "label": "Execution reaches the `_zip_dirent_process_winzip_aes(zde, error)` failure branch",
+            "attributes": {
+              "condition": "Execution reaches the `_zip_dirent_process_winzip_aes(zde, error)` failure branch"
+            }
+          },
+          {
+            "node_id": "guard_2",
+            "kind": "guard",
+            "label": "`from_buffer` is false, satisfying the removed conditional free",
+            "attributes": {
+              "condition": "`from_buffer` is false, satisfying the removed conditional free"
+            }
+          },
+          {
+            "node_id": "guard_3",
+            "kind": "guard",
+            "label": "The same `buffer` is later released by another cleanup/owner path",
+            "attributes": {
+              "condition": "The same `buffer` is later released by another cleanup/owner path"
+            }
+          },
+          {
+            "node_id": "strategy",
+            "kind": "strategy",
+            "label": "double_free",
+            "attributes": {
+              "primary_pattern": "double_free",
+              "check_types": [
+                "duplicate_deallocation_on_error_paths",
+                "ownership_lifetime_mismatch_for_heap_backed_buffers",
+                "branch_local_cleanup_that_overlaps_with_caller_or_outer_scope_cleanup"
+              ],
+              "entry_points": [
+                "`lib/zip_dirent.c` failure handling around `_zip_dirent_process_winzip_aes`",
+                "Calls to `_zip_buffer_free` in nested error branches"
+              ],
+              "data_flow_tracking": true,
+              "cross_file_analysis": true,
+              "suggestions": [
+                "Track buffer ownership across success and failure paths; flag frees in subordinate error branches when outer cleanup also frees the same object",
+                "Prefer ownership/lifecycle reasoning over null-check reasoning; no null reset was added here",
+                "Look for consumer-side duplicate cleanup on helper failure rather than only same-block consecutive frees",
+                "Treat removed deallocation in a narrow error branch as evidence that cleanup should be centralized in one authoritative path"
+              ]
+            }
+          },
+          {
+            "node_id": "func_2",
+            "kind": "function",
+            "label": "_zip_dirent_read",
+            "attributes": {
+              "function": "_zip_dirent_read",
+              "source": "patch_fact"
+            }
+          },
+          {
+            "node_id": "fix_1",
+            "kind": "fix",
+            "label": "Remove branch-local deallocation from failing helper path",
+            "attributes": {
+              "kind": "fix_patterns",
+              "value": "Remove branch-local deallocation from failing helper path"
+            }
+          },
+          {
+            "node_id": "fix_2",
+            "kind": "fix",
+            "label": "Preserve a single authoritative owner/cleanup path for `buffer` lifetime",
+            "attributes": {
+              "kind": "fix_patterns",
+              "value": "Preserve a single authoritative owner/cleanup path for `buffer` lifetime"
+            }
+          },
+          {
+            "node_id": "fix_3",
+            "kind": "fix",
+            "label": "Avoid freeing resources in nested error handling when ownership is ambiguous",
+            "attributes": {
+              "kind": "fix_patterns",
+              "value": "Avoid freeing resources in nested error handling when ownership is ambiguous"
+            }
+          }
+        ],
+        "edges": [
+          {
+            "source": "patch",
+            "target": "file_0",
+            "relation": "touches",
+            "confidence": 0.95
+          },
+          {
+            "source": "patch",
+            "target": "pattern_0",
+            "relation": "indicates",
+            "confidence": 0.9
+          },
+          {
+            "source": "pattern_0",
+            "target": "func_1",
+            "relation": "affects",
+            "confidence": 0.75
+          },
+          {
+            "source": "pattern_0",
+            "target": "guard_1",
+            "relation": "requires",
+            "confidence": 0.7
+          },
+          {
+            "source": "pattern_0",
+            "target": "guard_2",
+            "relation": "requires",
+            "confidence": 0.7
+          },
+          {
+            "source": "pattern_0",
+            "target": "guard_3",
+            "relation": "requires",
+            "confidence": 0.7
+          },
+          {
+            "source": "patch",
+            "target": "strategy",
+            "relation": "guides",
+            "confidence": 0.85
+          },
+          {
+            "source": "patch",
+            "target": "func_2",
+            "relation": "focuses_on",
+            "confidence": 0.82
+          },
+          {
+            "source": "patch",
+            "target": "fix_1",
+            "relation": "introduces",
+            "confidence": 0.8
+          },
+          {
+            "source": "patch",
+            "target": "fix_2",
+            "relation": "introduces",
+            "confidence": 0.8
+          },
+          {
+            "source": "patch",
+            "target": "fix_3",
+            "relation": "introduces",
+            "confidence": 0.8
+          }
+        ]
+      },
+      "evidence_plan": {
+        "primary_pattern": "double_free",
+        "hypotheses": [
+          "The patch changes a data propagation condition that should generalize beyond the edited lines.",
+          "The vulnerability mechanism crosses file boundaries and should not be captured with local-only reasoning.",
+          "The patch likely changes a resource lifecycle or stale-state transition."
+        ],
+        "requirements": [
+          {
+            "evidence_type": "patch_fact",
+            "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+            "priority": 100,
+            "preferred_analyzers": [],
+            "confidence": 1.0,
+            "mechanism_refs": [
+              "patch"
+            ]
+          },
+          {
+            "evidence_type": "dataflow_candidate",
+            "reason": "Patch analysis requests data-flow tracking.",
+            "priority": 95,
+            "preferred_analyzers": [
+              "codeql"
+            ],
+            "confidence": 0.9,
+            "mechanism_refs": [
+              "strategy"
+            ]
+          },
+          {
+            "evidence_type": "allocation_lifecycle",
+            "reason": "Lifetime-sensitive bug family requires allocation/free reasoning.",
+            "priority": 92,
+            "preferred_analyzers": [
+              "csa"
+            ],
+            "confidence": 0.92,
+            "mechanism_refs": [
+              "pattern_0"
+            ]
+          },
+          {
+            "evidence_type": "state_transition",
+            "reason": "Need local state transitions around free/delete and later uses.",
+            "priority": 89,
+            "preferred_analyzers": [
+              "csa"
+            ],
+            "confidence": 0.88,
+            "mechanism_refs": [
+              "pattern_0"
+            ]
+          },
+          {
+            "evidence_type": "semantic_slice",
+            "reason": "Cross-file patch suggests a verifier-backed semantic slice is needed, not just a project summary.",
+            "priority": 86,
+            "preferred_analyzers": [
+              "csa",
+              "codeql"
+            ],
+            "confidence": 0.83,
+            "mechanism_refs": [
+              "strategy"
+            ]
+          },
+          {
+            "evidence_type": "call_chain",
+            "reason": "Cross-file patch needs interprocedural call edges, not only local edited-line context.",
+            "priority": 82,
+            "preferred_analyzers": [
+              "codeql"
+            ],
+            "confidence": 0.78,
+            "mechanism_refs": [
+              "strategy"
+            ]
+          }
+        ],
+        "recommended_analyzers": [
+          "csa",
+          "codeql"
+        ],
+        "planner_notes": [
+          "Selected analyzers do not cover every planned evidence primitive."
+        ],
+        "coverage_gaps": [
+          "dataflow_candidate is not covered by selected analyzers ['csa']",
+          "call_chain is not covered by selected analyzers ['csa']"
+        ],
+        "uncertainty_budget": "medium",
+        "escalation_triggers": [
+          "cross_file_mechanism",
+          "selected_coverage_gap"
+        ]
+      }
+    }
+  },
+  "artifacts": {
+    "csa": {
+      "analyzer_id": "csa",
+      "checker_name": "WinzipAESBufferOwnershipChecker",
+      "source_path": "csa/WinzipAESBufferOwnershipChecker.cpp",
+      "output_path": "csa/WinzipAESBufferOwnershipChecker.so",
+      "result_path": "csa/result.json",
+      "report_entry": {
+        "success": true,
+        "validation_requested": true,
+        "functional_validation_passed": true,
+        "semantic_target_hit": true,
+        "validation_state": "target_hit",
+        "semantic_acceptance": true,
+        "semantic_acceptance_summary": "命中验证目标并通过功能验证",
+        "checker_name": "WinzipAESBufferOwnershipChecker",
+        "artifact_display_name": "WinzipAESBufferOwnershipChecker",
+        "output_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe415_libzip_cve201712858/primary/csa/20260423_164812_manual/csa/WinzipAESBufferOwnershipChecker.so",
+        "source_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe415_libzip_cve201712858/primary/csa/20260423_164812_manual/csa/WinzipAESBufferOwnershipChecker.cpp",
+        "iterations": 4,
+        "compile_attempts": 1,
+        "error": "",
+        "validation": {
+          "stage": "semantic",
+          "analyzer": "csa",
+          "success": true,
+          "execution_time": 3.3289272785186768,
+          "error_message": "",
+          "diagnostics": [
+            {
+              "file_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe415_libzip_cve201712858/vulnerable/lib/zip_close.c",
+              "line": 522,
+              "column": 10,
+              "severity": "warning",
+              "message": "Although the value stored to 'cd_start' is used in the enclosing expression, the value is never actually read from 'cd_start' [deadcode.DeadStores]",
+              "source": "csa",
+              "code": "",
+              "suggestion": ""
+            },
+            {
+              "file_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe415_libzip_cve201712858/vulnerable/lib/zip_close.c",
+              "line": 526,
+              "column": 10,
+              "severity": "warning",
+              "message": "Although the value stored to 'size' is used in the enclosing expression, the value is never actually read from 'size' [deadcode.DeadStores]",
+              "source": "csa",
+              "code": "",
+              "suggestion": ""
+            },
+            {
+              "file_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe415_libzip_cve201712858/vulnerable/lib/zip_close.c",
+              "line": 530,
+              "column": 10,
+              "severity": "warning",
+              "message": "Although the value stored to 'end' is used in the enclosing expression, the value is never actually read from 'end' [deadcode.DeadStores]",
+              "source": "csa",
+              "code": "",
+              "suggestion": ""
+            },
+            {
+              "file_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe415_libzip_cve201712858/vulnerable/lib/zip_dirent.c",
+              "line": 365,
+              "column": 13,
+              "severity": "warning",
+              "message": "Patch-scoped match: _zip_buffer_free(buffer) appears under if (!from_buffer) inside _zip_dirent_read; this branch-level cleanup is the risky pattern in the vulnerable version [custom.WinzipAESBufferOwnershipChecker]",
+              "source": "csa",
+              "code": "",
+              "suggestion": ""
+            },
+            {
+              "file_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe415_libzip_cve201712858/vulnerable/lib/zip_dirent.c",
+              "line": 410,
+              "column": 13,
+              "severity": "warning",
+              "message": "Patch-scoped match: _zip_buffer_free(buffer) appears under if (!from_buffer) inside _zip_dirent_read; this branch-level cleanup is the risky pattern in the vulnerable version [custom.WinzipAESBufferOwnershipChecker]",
+              "source": "csa",
+              "code": "",
+              "suggestion": ""
+            },
+            {
+              "file_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe415_libzip_cve201712858/vulnerable/lib/zip_dirent.c",
+              "line": 455,
+              "column": 17,
+              "severity": "warning",
+              "message": "Patch-scoped match: _zip_buffer_free(buffer) appears under if (!from_buffer) inside _zip_dirent_read; this branch-level cleanup is the risky pattern in the vulnerable version [custom.WinzipAESBufferOwnershipChecker]",
+              "source": "csa",
+              "code": "",
+              "suggestion": ""
+            },
+            {
+              "file_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe415_libzip_cve201712858/vulnerable/lib/zip_dirent.c",
+              "line": 464,
+              "column": 21,
+              "severity": "warning",
+              "message": "Patch-scoped match: _zip_buffer_free(buffer) appears under if (!from_buffer) inside _zip_dirent_read; this branch-level cleanup is the risky pattern in the vulnerable version [custom.WinzipAESBufferOwnershipChecker]",
+              "source": "csa",
+              "code": "",
+              "suggestion": ""
+            },
+            {
+              "file_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe415_libzip_cve201712858/vulnerable/lib/zip_dirent.c",
+              "line": 476,
+              "column": 17,
+              "severity": "warning",
+              "message": "Patch-scoped match: _zip_buffer_free(buffer) appears under if (!from_buffer) inside _zip_dirent_read; this branch-level cleanup is the risky pattern in the vulnerable version [custom.WinzipAESBufferOwnershipChecker]",
+              "source": "csa",
+              "code": "",
+              "suggestion": ""
+            },
+            {
+              "file_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe415_libzip_cve201712858/vulnerable/lib/zip_dirent.c",
+              "line": 483,
+              "column": 17,
+              "severity": "warning",
+              "message": "Patch-scoped match: _zip_buffer_free(buffer) appears under if (!from_buffer) inside _zip_dirent_read; this branch-level cleanup is the risky pattern in the vulnerable version [custom.WinzipAESBufferOwnershipChecker]",
+              "source": "csa",
+              "code": "",
+              "suggestion": ""
+            },
+            {
+              "file_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe415_libzip_cve201712858/vulnerable/lib/zip_dirent.c",
+              "line": 496,
+              "column": 17,
+              "severity": "warning",
+              "message": "Patch-scoped match: _zip_buffer_free(buffer) appears under if (!from_buffer) inside _zip_dirent_read; this branch-level cleanup is the risky pattern in the vulnerable version [custom.WinzipAESBufferOwnershipChecker]",
+              "source": "csa",
+              "code": "",
+              "suggestion": ""
+            },
+            {
+              "file_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe415_libzip_cve201712858/vulnerable/lib/zip_dirent.c",
+              "line": 504,
+              "column": 21,
+              "severity": "warning",
+              "message": "Patch-scoped match: _zip_buffer_free(buffer) appears under if (!from_buffer) inside _zip_dirent_read; this branch-level cleanup is the risky pattern in the vulnerable version [custom.WinzipAESBufferOwnershipChecker]",
+              "source": "csa",
+              "code": "",
+              "suggestion": ""
+            },
+            {
+              "file_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe415_libzip_cve201712858/vulnerable/lib/zip_dirent.c",
+              "line": 523,
+              "column": 17,
+              "severity": "warning",
+              "message": "Patch-scoped match: _zip_buffer_free(buffer) appears under if (!from_buffer) inside _zip_dirent_read; this branch-level cleanup is the risky pattern in the vulnerable version [custom.WinzipAESBufferOwnershipChecker]",
+              "source": "csa",
+              "code": "",
+              "suggestion": ""
+            },
+            {
+              "file_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe415_libzip_cve201712858/vulnerable/lib/zip_dirent.c",
+              "line": 531,
+              "column": 17,
+              "severity": "warning",
+              "message": "Patch-scoped match: _zip_buffer_free(buffer) appears under if (!from_buffer) inside _zip_dirent_read; this branch-level cleanup is the risky pattern in the vulnerable version [custom.WinzipAESBufferOwnershipChecker]",
+              "source": "csa",
+              "code": "",
+              "suggestion": ""
+            },
+            {
+              "file_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe415_libzip_cve201712858/vulnerable/lib/zip_dirent.c",
+              "line": 556,
+              "column": 17,
+              "severity": "warning",
+              "message": "Patch-scoped match: _zip_buffer_free(buffer) appears under if (!from_buffer) inside _zip_dirent_read; this branch-level cleanup is the risky pattern in the vulnerable version [custom.WinzipAESBufferOwnershipChecker]",
+              "source": "csa",
+              "code": "",
+              "suggestion": ""
+            },
+            {
+              "file_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe415_libzip_cve201712858/vulnerable/lib/zip_dirent.c",
+              "line": 566,
+              "column": 13,
+              "severity": "warning",
+              "message": "Patch-scoped match: _zip_buffer_free(buffer) appears under if (!from_buffer) inside _zip_dirent_read; this branch-level cleanup is the risky pattern in the vulnerable version [custom.WinzipAESBufferOwnershipChecker]",
+              "source": "csa",
+              "code": "",
+              "suggestion": ""
+            },
+            {
+              "file_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe415_libzip_cve201712858/vulnerable/lib/zip_dirent.c",
+              "line": 571,
+              "column": 9,
+              "severity": "warning",
+              "message": "Patch-scoped match: _zip_buffer_free(buffer) appears under if (!from_buffer) inside _zip_dirent_read; this branch-level cleanup is the risky pattern in the vulnerable version [custom.WinzipAESBufferOwnershipChecker]",
+              "source": "csa",
+              "code": "",
+              "suggestion": ""
+            },
+            {
+              "file_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe415_libzip_cve201712858/vulnerable/lib/zip_dirent.c",
+              "line": 582,
+              "column": 6,
+              "severity": "warning",
+              "message": "Patch-scoped match: _zip_buffer_free(buffer) appears under if (!from_buffer) inside _zip_dirent_read; this branch-level cleanup is the risky pattern in the vulnerable version [custom.WinzipAESBufferOwnershipChecker]",
+              "source": "csa",
+              "code": "",
+              "suggestion": ""
+            },
+            {
+              "file_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe415_libzip_cve201712858/vulnerable/lib/zip_extra_field.c",
+              "line": 165,
+              "column": 58,
+              "severity": "warning",
+              "message": "Null pointer passed to 2nd parameter expecting 'nonnull' [core.NonNullParamChecker]",
+              "source": "csa",
+              "code": "",
+              "suggestion": ""
+            }
+          ],
+          "diagnostics_count": 18,
+          "warnings_count": 18,
+          "errors_count": 0,
+          "environment_blocked": false,
+          "environment_block_reason": "",
+          "validation_target": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe415_libzip_cve201712858/vulnerable"
+        },
+        "llm_usage": {
+          "prompt_tokens": 34720,
+          "completion_tokens": 4253,
+          "total_tokens": 38973,
+          "call_count": 4,
+          "available": true,
+          "model": "gpt-5.4-high"
+        },
+        "artifact_metrics": {
+          "path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe415_libzip_cve201712858/primary/csa/20260423_164812_manual/csa/WinzipAESBufferOwnershipChecker.cpp",
+          "total_lines": 148,
+          "nonempty_lines": 121,
+          "char_count": 4568,
+          "byte_count": 4568
+        },
+        "artifact_delta": {},
+        "artifact_review": {
+          "success": true,
+          "error": "",
+          "findings": []
+        },
+        "evidence_records": 0,
+        "missing_evidence": [],
+        "evidence_degraded": false,
+        "semantic_slice_records": 0,
+        "context_summary_records": 0,
+        "slice_coverage": "missing",
+        "verifier_backed_slices": 0,
+        "slice_kinds": {},
+        "evidence_escalation": {},
+        "validation_feedback_records": 1,
+        "validation_feedback_summary": "- validation_outcome @ semantic_validation: semantic validation passed with 18 diagnostics [coverage=full]",
+        "validation_feedback_history": [
+          {
+            "analyzer": "csa",
+            "phase": "manual_validation",
+            "summary": "- validation_outcome @ semantic_validation: semantic validation passed with 18 diagnostics [coverage=full]"
+          }
+        ],
+        "refinement_attempted": false,
+        "refinement_adopted": false,
+        "refinement_iterations_attempted": 0,
+        "refinement_skipped_reason": "",
+        "last_refinement_candidate_success": false,
+        "last_refinement_candidate_error": "",
+        "last_refinement_candidate_artifact_review": {},
+        "last_refinement_candidate_output_path": "",
+        "post_validation_evidence_records": 1,
+        "post_validation_missing_evidence": [],
+        "post_validation_semantic_slice_records": 0,
+        "post_validation_context_summary_records": 0,
+        "post_validation_slice_coverage": "missing",
+        "synthesis_input": {
+          "analyzer_id": "csa",
+          "detector_artifact": "checker_plugin",
+          "primary_pattern": "double_free",
+          "objective": "Synthesize a path-sensitive double_free detector that encodes the same local state, guards, and lifecycle mechanism evidenced by the patch, while still generalizing to semantically equivalent sites.",
+          "mechanism_contract": {
+            "mechanism_family": "resource_lifetime_violation",
+            "semantic_dimensions": [
+              "resource identity or alias",
+              "release event count",
+              "reinitialization or nulling barrier"
+            ],
+            "trigger_invariants": [
+              "the same symbolic resource is released more than once on a feasible path",
+              "no reallocation, rebinding, or nulling separates the release events",
+              "Patch-backed trigger clue: removed risky operation: _zip_buffer_free(buffer);",
+              "Patch-backed trigger clue: detection hints: Track buffer ownership across success and failure paths; flag frees in subordinate error branches when outer cleanup also frees the same object, Prefer ownership/lifecycle reasoning over null-check reasoning; no null reset was added here, Look for consumer-side duplicate cleanup on helper failure rather than only same-block consecutive frees"
+            ],
+            "silence_invariants": [
+              "the resource is nulled, transferred, or rebound after the first release",
+              "a guard prevents the second release on the active path",
+              "patch-introduced barrier pattern: Remove branch-local deallocation from failing helper path",
+              "patch-introduced barrier pattern: Preserve a single authoritative owner/cleanup path for `buffer` lifetime",
+              "patch-introduced barrier pattern: Avoid freeing resources in nested error handling when ownership is ambiguous"
+            ],
+            "transfer_axes": [
+              "equivalent repeated-release sequences for the same resource role",
+              "equivalent ownership handoff patterns across sibling helpers"
+            ],
+            "forbidden_shortcuts": [
+              "bind the detector to fixed file paths, line numbers, or exact patch strings",
+              "broaden into unrelated bug families just to improve hit count",
+              "count free/delete calls without tracking resource identity",
+              "treat unrelated release sites as the same resource lifecycle",
+              "placeholder helper logic or empty ProgramState modeling"
+            ],
+            "evidence_backed_axes": []
+          },
+          "detector_name_hint": "DoubleFreeChecker",
+          "focus_files": [
+            "lib/zip_dirent.c"
+          ],
+          "focus_functions": [
+            "_zip_buffer_free"
+          ],
+          "hypotheses": [
+            "The patch changes a data propagation condition that should generalize beyond the edited lines.",
+            "The vulnerability mechanism crosses file boundaries and should not be captured with local-only reasoning.",
+            "The patch likely changes a resource lifecycle or stale-state transition."
+          ],
+          "required_evidence_types": [
+            "patch_fact",
+            "dataflow_candidate",
+            "allocation_lifecycle",
+            "state_transition",
+            "semantic_slice",
+            "call_chain"
+          ],
+          "missing_evidence_types": [],
+          "evidence_degraded": false,
+          "patch_mechanism_signals": [
+            "removed risky operation: _zip_buffer_free(buffer);",
+            "detection hints: Track buffer ownership across success and failure paths; flag frees in subordinate error branches when outer cleanup also frees the same object, Prefer ownership/lifecycle reasoning over null-check reasoning; no null reset was added here, Look for consumer-side duplicate cleanup on helper failure rather than only same-block consecutive frees"
+          ],
+          "silencing_conditions": [
+            "patch-introduced barrier pattern: Remove branch-local deallocation from failing helper path",
+            "patch-introduced barrier pattern: Preserve a single authoritative owner/cleanup path for `buffer` lifetime",
+            "patch-introduced barrier pattern: Avoid freeing resources in nested error handling when ownership is ambiguous"
+          ],
+          "retry_guidance": [],
+          "selected_evidence_ids": [],
+          "selected_evidence": [],
+          "semantic_slice_count": 0,
+          "context_summary_count": 0,
+          "semantic_slice_coverage": "missing",
+          "selected_semantic_slice_ids": [],
+          "selected_context_summary_ids": [],
+          "selected_semantic_slices": [],
+          "selected_context_summaries": [],
+          "semantic_clause_plan": [
+            {
+              "clause_id": "vulnerable_trigger_clause",
+              "intent": "Trigger on the vulnerable double_free mechanism using evidence-backed path/flow semantics.",
+              "supporting_evidence_ids": [],
+              "repair_when": [
+                "semantic_no_hits"
+              ],
+              "focus_functions": [
+                "_zip_buffer_free"
+              ]
+            },
+            {
+              "clause_id": "patched_silence_clause",
+              "intent": "Stay silent on patched code when patch-added guards, barriers, or safe APIs prove the mechanism is blocked.",
+              "supporting_evidence_ids": [],
+              "repair_when": [],
+              "silencing_conditions": [
+                "patch-introduced barrier pattern: Remove branch-local deallocation from failing helper path",
+                "patch-introduced barrier pattern: Preserve a single authoritative owner/cleanup path for `buffer` lifetime",
+                "patch-introduced barrier pattern: Avoid freeing resources in nested error handling when ownership is ambiguous"
+              ]
+            },
+            {
+              "clause_id": "semantic_transfer_clause",
+              "intent": "Generalize along semantic slices and call-chain evidence rather than patch-local syntax.",
+              "supporting_evidence_ids": [],
+              "repair_when": [],
+              "analyzer_id": "csa"
+            },
+            {
+              "clause_id": "analyzer_interface_clause",
+              "intent": "Preserve valid analyzer-facing syntax and interfaces while keeping semantics unchanged.",
+              "supporting_evidence_ids": [],
+              "repair_when": [
+                "semantic_execution_error"
+              ],
+              "analyzer_id": "csa"
+            }
+          ],
+          "repair_directives": [],
+          "constraints": [
+            {
+              "title": "Generalize beyond patch site",
+              "description": "Do not bind the detector to fixed file paths, line numbers, or exact patch strings.",
+              "priority": "high"
+            },
+            {
+              "title": "Preserve vulnerability semantics",
+              "description": "Keep the detector focused on the vulnerability family implied by the patch and evidence.",
+              "priority": "high"
+            },
+            {
+              "title": "Respect analyzer-native form",
+              "description": "Output must be a valid checker_plugin for csa.",
+              "priority": "high"
+            },
+            {
+              "title": "Stay within proven mechanism scope",
+              "description": "Generalize only along evidence-supported semantic dimensions. Do not broaden the detector into unrelated globals, APIs, or bug families.",
+              "priority": "high"
+            },
+            {
+              "title": "Honor mechanism contract",
+              "description": "Preserve the mechanism family `resource_lifetime_violation` by keeping trigger invariants the same symbolic resource is released more than once on a feasible path; no reallocation, rebinding, or nulling separates the release events; Patch-backed trigger clue: removed risky operation: _zip_buffer_free(buffer);.",
+              "priority": "high"
+            },
+            {
+              "title": "Generalize only on contract axes",
+              "description": "Reuse semantics only along these transfer axes: equivalent repeated-release sequences for the same resource role; equivalent ownership handoff patterns across sibling helpers.",
+              "priority": "high"
+            },
+            {
+              "title": "Anchor on patch-touched scope",
+              "description": "Use patch-touched files/functions as the semantic anchor for synthesis. Only extend beyond them when the same mechanism is explicitly supported by evidence.",
+              "priority": "high"
+            },
+            {
+              "title": "Encode the patch-added barrier",
+              "description": "model the absence of barriers like Remove branch-local deallocation from failing helper path, Preserve a single authoritative owner/cleanup path for `buffer` lifetime, Avoid freeing resources in nested error handling when ownership is ambiguous.",
+              "priority": "high"
+            },
+            {
+              "title": "Respect patched silence",
+              "description": "Use these no-report conditions when they are semantically proven: patch-introduced barrier pattern: Remove branch-local deallocation from failing helper path; patch-introduced barrier pattern: Preserve a single authoritative owner/cleanup path for `buffer` lifetime; patch-introduced barrier pattern: Avoid freeing resources in nested error handling when ownership is ambiguous.",
+              "priority": "high"
+            },
+            {
+              "title": "Track resource identity across lifetime edges",
+              "description": "Model release, reuse, reinitialization, and ownership transfer on the same symbolic resource; do not count frees or uses in isolation.",
+              "priority": "high"
+            },
+            {
+              "title": "Do not key on local identifier names",
+              "description": "Do not define the vulnerable resource role solely by field/variable names such as session/cache/context; infer it from release-use-nulling-relookup semantics and alias continuity.",
+              "priority": "high"
+            },
+            {
+              "title": "Use path-sensitive evidence",
+              "description": "Prefer guards, state transitions, and lifecycle facts over broad textual matching.",
+              "priority": "high"
+            },
+            {
+              "title": "No placeholder helper logic",
+              "description": "Helper predicates must inspect AST/program state and must not be unconditional return-true/return-false stubs.",
+              "priority": "high"
+            }
+          ],
+          "implementation_hints": [
+            "Mechanism family: resource_lifetime_violation",
+            "Mechanism dimensions: resource identity or alias, release event count, reinitialization or nulling barrier",
+            "Trigger invariants: the same symbolic resource is released more than once on a feasible path, no reallocation, rebinding, or nulling separates the release events, Patch-backed trigger clue: removed risky operation: _zip_buffer_free(buffer);",
+            "Silence invariants: the resource is nulled, transferred, or rebound after the first release, a guard prevents the second release on the active path, patch-introduced barrier pattern: Remove branch-local deallocation from failing helper path",
+            "Transfer axes: equivalent repeated-release sequences for the same resource role, equivalent ownership handoff patterns across sibling helpers",
+            "Focus files: lib/zip_dirent.c",
+            "Priority functions: _zip_buffer_free",
+            "Patch-added barriers: Remove branch-local deallocation from failing helper path, Preserve a single authoritative owner/cleanup path for `buffer` lifetime, Avoid freeing resources in nested error handling when ownership is ambiguous"
+          ],
+          "validation_expectations": [
+            "Vulnerable version should trigger a double_free finding.",
+            "Patched version should stay silent for the same mechanism.",
+            "Semantic validation that executes but returns zero hits is not acceptable; recover coverage with evidence-backed semantics.",
+            "Repair phase may fix syntax/interfaces only; it must not simplify away the core detection logic.",
+            "Generalization must stay inside the mechanism contract transfer axes instead of widening to adjacent bug families.",
+            "Sibling variants that preserve the same release-then-use lifecycle should also trigger; patch-local identifier matching is not sufficient.",
+            "Trigger invariant: the same symbolic resource is released more than once on a feasible path.",
+            "Trigger invariant: no reallocation, rebinding, or nulling separates the release events.",
+            "Patched silence depends on: patch-introduced barrier pattern: Remove branch-local deallocation from failing helper path.",
+            "Patched silence depends on: patch-introduced barrier pattern: Preserve a single authoritative owner/cleanup path for `buffer` lifetime."
+          ]
+        },
+        "evidence_effectiveness": {
+          "baseline_records": 0,
+          "post_validation_records": 1,
+          "new_records": 1,
+          "baseline_missing": [],
+          "post_validation_missing": [],
+          "resolved_missing": [],
+          "improved": true,
+          "summary": "新增 1 条反馈后证据"
+        }
+      }
+    }
+  }
+}

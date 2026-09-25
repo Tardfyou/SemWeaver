@@ -1,0 +1,530 @@
+{
+  "records": [
+    {
+      "evidence_id": "pf_000",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "coders/sgi.c",
+        "function": "ReadSGIImage"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "patch_overview",
+        "label": "Patch overview",
+        "attributes": {
+          "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe119_imagemagick_cve20169556/patches/fix.patch",
+          "changed_files": [
+            "coders/sgi.c"
+          ],
+          "changed_file_count": 1,
+          "added_line_count": 2,
+          "deleted_line_count": 0
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "patch_overview",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_001",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "coders/sgi.c",
+        "function": "ReadSGIImage"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "vulnerability_patterns",
+        "label": "Vulnerability patterns inferred from patch",
+        "attributes": {
+          "patterns": [
+            "unknown"
+          ],
+          "descriptions": []
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "vulnerability_patterns",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_002",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "coders/sgi.c",
+        "function": "ReadSGIImage"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "affected_functions",
+        "label": "Functions implicated by removed or fixed code",
+        "attributes": {
+          "functions": [
+            "ReadSGIImage"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "affected_functions",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_003",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "coders/sgi.c",
+        "function": "ReadSGIImage"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "detection_strategy",
+        "label": "Existing patch analysis detection strategy",
+        "attributes": {
+          "primary_pattern": "unknown",
+          "check_types": [
+            "local_ast_guard_difference_detection",
+            "tainted_header_field_validation_check",
+            "range_check_before_use_pattern",
+            "early_error_path_insertion_detection"
+          ],
+          "entry_points": [
+            "coders/sgi.c",
+            "the reader logic around `iris_info.dimension=ReadBlobMSBShort(image);`",
+            "the newly added `ThrowReaderException(CorruptImageError,\"ImproperImageHeader\")` branch"
+          ],
+          "data_flow_tracking": false,
+          "cross_file_analysis": false,
+          "suggestions": [
+            "首稿先命中 patch-local 锚点：读取结构字段 `iris_info.dimension=ReadBlobMSBShort(image)` 后新增范围判断 `dimension == 0 || dimension > 3` 并走 `ThrowReaderException`。",
+            "不要一开始把具体漏洞类型写死成 OOB/overflow；补丁只稳定证明了“未验证的 header 结构值继续被消费”。",
+            "首稿规则可优先找：从输入读取结构/维度/通道类字段后，缺少紧邻的上界和下界检查，却继续读取后续字段或继续解析。",
+            "新增 guard 本身不要作为唯一硬过滤；更重要的是识别“来自输入的结构字段被接受并继续执行”的局部模式，否则容易漏掉同类未修补点。",
+            "辅助收敛条件可用：字段名语义接近 `dimension`、合法值域很小、错误路径使用 `ThrowReaderException(...,\"ImproperImageHeader\")`；这些适合作为二次过滤，不应成为首稿必备条件。",
+            "此补丁不需要跨文件分析；只盯住当前函数内的 header 读取和紧随其后的校验/继续执行关系即可。",
+            "此补丁也不强依赖复杂数据流；局部 AST/CFG 足以表达“读取 -> 无检查继续执行”与“读取 -> 新增 guard -> 提前异常退出”的差异。",
+            "如果后续要扩展到更具体检测，可在同函数中查找 `dimension` 是否参与数组索引、通道数、循环边界、像素平面处理或分配尺寸计算，再做二次归类。"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "detection_strategy",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_004",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "coders/sgi.c",
+        "function": "ReadSGIImage"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "added_guards",
+        "label": "Patch introduces or strengthens guards",
+        "attributes": {
+          "guards": [
+            "if ((iris_info.dimension == 0) || (iris_info.dimension > 3))"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "added_guards",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_005",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "coders/sgi.c",
+        "function": "ReadSGIImage"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "added_api_calls",
+        "label": "Patch introduces or highlights API usage",
+        "attributes": {
+          "apis": [
+            "ThrowReaderException"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "added_api_calls",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "codeql_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "codeql",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "coders/sgi.c",
+        "function": "ReadSGIImage"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "summary": "focus=ReadSGIImage | state=guard((iris_info.dimension == 0) || (iris_info.dimension > 3)) | call_edges=ReadSGIImage -> ThrowReaderException; ReadSGIImage -> ReadBlobMSBShort; ReadSGIImage -> ReadBlobMSBLong | targets=ThrowReaderException, ReadBlobMSBShort, ReadBlobMSBLong, ReadBlob | patch_contracts=ReadSGIImage: barrier `(iris_info.dimension == 0) || (iris_info.dimension > 3)` around LogMagickEvent, GetMagickModule | patched_apis=ThrowReaderException | guards=image_info->debug != MagickFalse; status == MagickFalse | symbols=image_info, exception, image_info->debug, debug | deps=MagickCore/monitor-private.h, MagickCore/pixel-accessor.h, MagickCore/exception.h | apis=LogMagickEvent, GetMagickModule, AcquireImage, OpenBlob",
+        "focus_function": "ReadSGIImage",
+        "call_edges": [
+          "ReadSGIImage -> ThrowReaderException",
+          "ReadSGIImage -> ReadBlobMSBShort",
+          "ReadSGIImage -> ReadBlobMSBLong",
+          "ReadSGIImage -> ReadBlob",
+          "ReadSGIImage -> SetImageProperty",
+          "ReadSGIImage -> MagickMin"
+        ],
+        "call_targets": [
+          "LogMagickEvent",
+          "GetMagickModule",
+          "AcquireImage",
+          "OpenBlob"
+        ],
+        "entry_points": [
+          "image_info",
+          "exception",
+          "image_info->debug",
+          "debug",
+          "image_info->filename",
+          "filename"
+        ],
+        "tracked_symbols": [
+          "iris_info",
+          "dimension",
+          "ThrowReaderException",
+          "CorruptImageError",
+          "ImproperImageHeader"
+        ],
+        "sink_calls": [],
+        "state_transitions": [
+          "guard((iris_info.dimension == 0) || (iris_info.dimension > 3))"
+        ],
+        "statements": [
+          "if ((iris_info.dimension == 0) || (iris_info.dimension > 3))",
+          "ThrowReaderException(CorruptImageError,\"ImproperImageHeader\");"
+        ],
+        "apis": [
+          "LogMagickEvent",
+          "GetMagickModule",
+          "AcquireImage",
+          "OpenBlob",
+          "ThrowReaderException",
+          "ReadBlobMSBShort"
+        ],
+        "dependencies": [
+          "MagickCore/monitor-private.h",
+          "MagickCore/pixel-accessor.h",
+          "MagickCore/exception.h"
+        ],
+        "source_excerpt": "304:   if (image_info->debug != MagickFalse)\n305:     (void) LogMagickEvent(TraceEvent,GetMagickModule(),\"%s\",\n306:       image_info->filename);\n307:   assert(exception != (ExceptionInfo *) NULL);\n308:   assert(exception->signature == MagickCoreSignature);\n309:   image=AcquireImage(image_info,exception);\n310:   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);\n311:   if (status == MagickFalse)\n312:     {\n313:       image=DestroyImageList(image);\n314:       return((Image *) NULL);\n315:     }\n316:   /*\n317:     Read SGI raster header.\n318:   */\n319:   iris_info.magic=ReadBlobMSBShort(image);\n320:   do\n321:   {\n322:     /*\n323:       Verify SGI identifier.\n324:     */\n325:     if (iris_info.magic != 0x01DA)\n326:       ThrowReaderException(CorruptImageError,\"ImproperImageHeader\");\n327:     iris_info.storage=(unsigned char) ReadBlobByte(image);\n328:     switch (iris_info.storage)\n329:     {\n330:       case 0x00: image->compression=NoCompression; break;\n331:       case 0x01: image->compression=RLECompression; break;\n332:       default:\n333:         ThrowReaderException(CorruptImageError,\"ImproperImageHeader\");\n334:     }\n335:     iris_info.bytes_per_pixel=(unsigned char) ReadBlobByte(image);\n336:     if ((iris_info.bytes_per_pixel == 0) || (iris_info.bytes_per_pixel > 2))\n337:       ThrowReaderException(CorruptImageError,\"ImproperImageHeader\");\n338:     iris_info.dimension=ReadBlobMSBShort(image);\n339:     iris_info.columns=ReadBlobMSBShort(image);\n340:     iris_info.rows=ReadBlobMSBShort(image);\n341:     iris_info.depth=ReadBlobMSBShort(image);\n342:     if ((iris_info.depth == 0) || (iris_info.depth > 4))\n343:       ThrowReaderException(CorruptImageError,\"ImproperImageHeader\");\n344:     iris_info.minimum_value=ReadBlobMSBLong(image);\n345:     iris_info.maximum_value=ReadBlobMSBLong(image);\n346:     iris_info.sans=ReadBlobMSBLong(image);\n347:     count=ReadBlob(image,sizeof(iris_info.name),(unsigned char *)\n348:       iris_info.name);\n349:     if ((size_t) count != sizeof(iris_info.name))\n350:       ThrowReaderException(CorruptImageError,\"ImproperImageHeader\");\n351:     iris_info.name[sizeof(iris_info.name)-1]='\\0';\n352:     if (*iris_info.name != '\\0')\n353:       (void) SetImageProperty(image,\"label\",iris_info.name,exception);\n354:     iris_info.pixel_format=ReadBlobMSBLong(image);\n355:     if (iris_info.pixel_format != 0)\n356:       ThrowReaderException(CorruptImageError,\"ImproperImageHeader\");\n357:     count=ReadBlob(image,sizeof(iris_info.filler),iris_info.filler);\n358:     if ((size_t) count != sizeof(iris_info.filler))\n359:       ThrowReaderException(CorruptImageError,\"ImproperImageHeader\");\n360:     image->columns=iris_info.columns;\n361:     image->rows=iris_info.rows;\n362:     image->depth=(size_t) MagickMin(iris_info.depth,MAGICKCORE_QUANTUM_DEPTH);\n363:     if (iris_info.pixel_format == 0)\n364:       image->depth=(size_t) MagickMin((size_t) 8*iris_info.bytes_per_pixel,\n365:         MAGICKCORE_QUANTUM_DEPTH);\n366:     if (iris_info.depth < 3)\n367:       {\n368:         image->storage_class=PseudoClass;",
+        "coverage_status": "partial"
+      },
+      "provenance": {
+        "tool": "codeql",
+        "artifact": "source-window:semantic-slice",
+        "confidence": 0.8
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "coders/sgi.c",
+          "hunk_index": 0,
+          "source_line": 336
+        },
+        "summary": "focus=ReadSGIImage | state=guard((iris_info.dimension == 0) || (iris_info.dimension > 3)) | call_edges=ReadSGIImage -> ThrowReaderException; ReadSGIImage -> ReadBlobMSBShort; ReadSGIImage -> ReadBlobMSBLong | targets=ThrowReaderException, ReadBlobMSBShort, ReadBlobMSBLong, ReadBlob | patch_contracts=ReadSGIImage: barrier `(iris_info.dimension == 0) || (iris_info.dimension > 3)` around LogMagickEvent, GetMagickModule | patched_apis=ThrowReaderException | guards=image_info->debug != MagickFalse; status == MagickFalse | symbols=image_info, exception, image_info->debug, debug | deps=MagickCore/monitor-private.h, MagickCore/pixel-accessor.h, MagickCore/exception.h | apis=LogMagickEvent, GetMagickModule, AcquireImage, OpenBlob",
+        "statements": [
+          "if ((iris_info.dimension == 0) || (iris_info.dimension > 3))",
+          "ThrowReaderException(CorruptImageError,\"ImproperImageHeader\");"
+        ],
+        "guards": [],
+        "call_boundary": [
+          "LogMagickEvent",
+          "GetMagickModule",
+          "AcquireImage",
+          "OpenBlob"
+        ],
+        "call_edges": [
+          "ReadSGIImage -> ThrowReaderException",
+          "ReadSGIImage -> ReadBlobMSBShort",
+          "ReadSGIImage -> ReadBlobMSBLong",
+          "ReadSGIImage -> ReadBlob",
+          "ReadSGIImage -> SetImageProperty",
+          "ReadSGIImage -> MagickMin"
+        ],
+        "state_transitions": [
+          "guard((iris_info.dimension == 0) || (iris_info.dimension > 3))"
+        ],
+        "api_terms": [
+          "LogMagickEvent",
+          "GetMagickModule",
+          "AcquireImage",
+          "OpenBlob",
+          "ThrowReaderException",
+          "ReadBlobMSBShort"
+        ],
+        "related_symbols": [
+          "iris_info",
+          "dimension",
+          "ThrowReaderException",
+          "CorruptImageError",
+          "ImproperImageHeader"
+        ],
+        "verifier": "source-window",
+        "extraction_method": "source_window",
+        "coverage_status": "partial"
+      }
+    },
+    {
+      "evidence_id": "codeql_flow_0",
+      "type": "dataflow_candidate",
+      "analyzer": "codeql",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "coders/sgi.c",
+        "function": "ReadSGIImage"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "source": "iris_info, dimension, ThrowReaderException, CorruptImageError",
+        "sink": "LogMagickEvent, GetMagickModule",
+        "path": [
+          "function:ReadSGIImage",
+          "guard:(iris_info.dimension == 0) || (iris_info.dimension > 3)",
+          "api:LogMagickEvent",
+          "api:GetMagickModule"
+        ],
+        "summary": "ReadSGIImage: barrier `(iris_info.dimension == 0) || (iris_info.dimension > 3)` around LogMagickEvent, GetMagickModule",
+        "focus_function": "ReadSGIImage",
+        "entry_points": [
+          "iris_info",
+          "dimension",
+          "ThrowReaderException",
+          "CorruptImageError",
+          "ImproperImageHeader",
+          "image_info"
+        ],
+        "call_targets": [
+          "LogMagickEvent",
+          "GetMagickModule",
+          "AcquireImage",
+          "OpenBlob"
+        ],
+        "state_transitions": [
+          "guard((iris_info.dimension == 0) || (iris_info.dimension > 3))"
+        ],
+        "source_excerpt": "304:   if (image_info->debug != MagickFalse)\n305:     (void) LogMagickEvent(TraceEvent,GetMagickModule(),\"%s\",\n306:       image_info->filename);\n307:   assert(exception != (ExceptionInfo *) NULL);\n308:   assert(exception->signature == MagickCoreSignature);\n309:   image=AcquireImage(image_info,exception);\n310:   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);\n311:   if (status == MagickFalse)\n312:     {\n313:       image=DestroyImageList(image);\n314:       return((Image *) NULL);\n315:     }\n316:   /*\n317:     Read SGI raster header.\n318:   */\n319:   iris_info.magic=ReadBlobMSBShort(image);\n320:   do\n321:   {\n322:     /*\n323:       Verify SGI identifier.\n324:     */\n325:     if (iris_info.magic != 0x01DA)\n326:       ThrowReaderException(CorruptImageError,\"ImproperImageHeader\");\n327:     iris_info.storage=(unsigned char) ReadBlobByte(image);\n328:     switch (iris_info.storage)\n329:     {\n330:       case 0x00: image->compression=NoCompression; break;\n331:       case 0x01: image->compression=RLECompression; break;\n332:       default:\n333:         ThrowReaderException(CorruptImageError,\"ImproperImageHeader\");\n334:     }\n335:     iris_info.bytes_per_pixel=(unsigned char) ReadBlobByte(image);\n336:     if ((iris_info.bytes_per_pixel == 0) || (iris_info.bytes_per_pixel > 2))\n337:       ThrowReaderException(CorruptImageError,\"ImproperImageHeader\");\n338:     iris_info.dimension=ReadBlobMSBShort(image);\n339:     iris_info.columns=ReadBlobMSBShort(image);\n340:     iris_info.rows=ReadBlobMSBShort(image);\n341:     iris_info.depth=ReadBlobMSBShort(image);\n342:     if ((iris_info.depth == 0) || (iris_info.depth > 4))\n343:       ThrowReaderException(CorruptImageError,\"ImproperImageHeader\");\n344:     iris_info.minimum_value=ReadBlobMSBLong(image);\n345:     iris_info.maximum_value=ReadBlobMSBLong(image);\n346:     iris_info.sans=ReadBlobMSBLong(image);\n347:     count=ReadBlob(image,sizeof(iris_info.name),(unsigned char *)\n348:       iris_info.name);\n349:     if ((size_t) count != sizeof(iris_info.name))\n350:       ThrowReaderException(CorruptImageError,\"ImproperImageHeader\");\n351:     iris_info.name[sizeof(iris_info.name)-1]='\\0';\n352:     if (*iris_info.name != '\\0')\n353:       (void) SetImageProperty(image,\"label\",iris_info.name,exception);\n354:     iris_info.pixel_format=ReadBlobMSBLong(image);\n355:     if (iris_info.pixel_format != 0)\n356:       ThrowReaderException(CorruptImageError,\"ImproperImageHeader\");\n357:     count=ReadBlob(image,sizeof(iris_info.filler),iris_info.filler);\n358:     if ((size_t) count != sizeof(iris_info.filler))\n359:       ThrowReaderException(CorruptImageError,\"ImproperImageHeader\");\n360:     image->columns=iris_info.columns;\n361:     image->rows=iris_info.rows;\n362:     image->depth=(size_t) MagickMin(iris_info.depth,MAGICKCORE_QUANTUM_DEPTH);\n363:     if (iris_info.pixel_format == 0)\n364:       image->depth=(size_t) MagickMin((size_t) 8*iris_info.bytes_per_pixel,\n365:         MAGICKCORE_QUANTUM_DEPTH);\n366:     if (iris_info.depth < 3)\n367:       {\n368:         image->storage_class=PseudoClass;",
+        "live_query_status": "database_missing",
+        "database_status": "missing",
+        "database_create_message": "CodeQL 数据库创建失败: Initializing database at /anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe119_imagemagick_cve20169556/primary/codeql/20260423_104338/codeql/codeql/database.\nRunning build command: [/bin/sh, /anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe119_imagemagick_cve20169556/primary/codeql/20260423_104338/codeql/codeql/codeql_build_wi32ytx6.sh]\nRunning command in /anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe119_imagemagick_cve20169556/vulnerable: [/bin/sh, /anonymous/home/LLM-Native/v2_exper",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "codeql",
+        "artifact": "source-window:data-flow-seed",
+        "confidence": 0.84
+      },
+      "evidence_slice": {
+        "kind": "flow_witness",
+        "anchor": {
+          "patch_file": "coders/sgi.c",
+          "hunk_index": 0,
+          "source_line": 336
+        },
+        "summary": "ReadSGIImage: barrier `(iris_info.dimension == 0) || (iris_info.dimension > 3)` around LogMagickEvent, GetMagickModule",
+        "statements": [
+          "304:   if (image_info->debug != MagickFalse)",
+          "305:     (void) LogMagickEvent(TraceEvent,GetMagickModule(),\"%s\",",
+          "306:       image_info->filename);",
+          "307:   assert(exception != (ExceptionInfo *) NULL);",
+          "308:   assert(exception->signature == MagickCoreSignature);",
+          "309:   image=AcquireImage(image_info,exception);"
+        ],
+        "guards": [],
+        "call_boundary": [
+          "LogMagickEvent, GetMagickModule"
+        ],
+        "call_edges": [
+          "function:ReadSGIImage",
+          "guard:(iris_info.dimension == 0) || (iris_info.dimension > 3)",
+          "api:LogMagickEvent",
+          "api:GetMagickModule"
+        ],
+        "state_transitions": [
+          "guard((iris_info.dimension == 0) || (iris_info.dimension > 3))"
+        ],
+        "api_terms": [
+          "LogMagickEvent",
+          "GetMagickModule",
+          "AcquireImage",
+          "OpenBlob"
+        ],
+        "related_symbols": [
+          "iris_info",
+          "dimension",
+          "ThrowReaderException",
+          "CorruptImageError",
+          "ImproperImageHeader",
+          "image_info"
+        ],
+        "verifier": "source-window",
+        "extraction_method": "source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "codeql_chain_0",
+      "type": "call_chain",
+      "analyzer": "codeql",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "coders/sgi.c",
+        "function": "ReadSGIImage"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": [
+          "ReadSGIImage -> ThrowReaderException",
+          "ReadSGIImage -> ReadBlobMSBShort",
+          "ReadSGIImage -> ReadBlobMSBLong",
+          "ReadSGIImage -> ReadBlob",
+          "ReadSGIImage -> SetImageProperty",
+          "ReadSGIImage -> MagickMin"
+        ],
+        "call_edges": [
+          "ReadSGIImage -> ThrowReaderException",
+          "ReadSGIImage -> ReadBlobMSBShort",
+          "ReadSGIImage -> ReadBlobMSBLong",
+          "ReadSGIImage -> ReadBlob",
+          "ReadSGIImage -> SetImageProperty",
+          "ReadSGIImage -> MagickMin"
+        ],
+        "live_query_status": "database_missing",
+        "database_status": "missing",
+        "database_create_message": "CodeQL 数据库创建失败: Initializing database at /anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe119_imagemagick_cve20169556/primary/codeql/20260423_104338/codeql/codeql/database.\nRunning build command: [/bin/sh, /anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe119_imagemagick_cve20169556/primary/codeql/20260423_104338/codeql/codeql/codeql_build_wi32ytx6.sh]\nRunning command in /anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe119_imagemagick_cve20169556/vulnerable: [/bin/sh, /anonymous/home/LLM-Native/v2_exper",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "codeql",
+        "artifact": "source-window:interprocedural-summary",
+        "confidence": 0.78
+      },
+      "evidence_slice": {
+        "kind": "interprocedural_slice",
+        "anchor": {
+          "patch_file": "coders/sgi.c",
+          "hunk_index": 0,
+          "source_line": 336
+        },
+        "summary": "ReadSGIImage -> ThrowReaderException, ReadSGIImage -> ReadBlobMSBShort, ReadSGIImage -> ReadBlobMSBLong, ReadSGIImage -> ReadBlob",
+        "statements": [
+          "304:   if (image_info->debug != MagickFalse)",
+          "305:     (void) LogMagickEvent(TraceEvent,GetMagickModule(),\"%s\",",
+          "306:       image_info->filename);",
+          "307:   assert(exception != (ExceptionInfo *) NULL);",
+          "308:   assert(exception->signature == MagickCoreSignature);",
+          "309:   image=AcquireImage(image_info,exception);"
+        ],
+        "guards": [],
+        "call_boundary": [
+          "ThrowReaderException",
+          "ReadBlobMSBShort",
+          "ReadBlobMSBLong",
+          "ReadBlob",
+          "SetImageProperty",
+          "MagickMin"
+        ],
+        "call_edges": [
+          "ReadSGIImage -> ThrowReaderException",
+          "ReadSGIImage -> ReadBlobMSBShort",
+          "ReadSGIImage -> ReadBlobMSBLong",
+          "ReadSGIImage -> ReadBlob",
+          "ReadSGIImage -> SetImageProperty",
+          "ReadSGIImage -> MagickMin"
+        ],
+        "state_transitions": [],
+        "api_terms": [
+          "LogMagickEvent",
+          "GetMagickModule",
+          "AcquireImage",
+          "OpenBlob",
+          "DestroyImageList",
+          "ReadBlobMSBShort"
+        ],
+        "related_symbols": [
+          "image_info",
+          "exception",
+          "image_info->debug",
+          "debug",
+          "image_info->filename",
+          "filename"
+        ],
+        "verifier": "source-window",
+        "extraction_method": "source_window",
+        "coverage_status": "full"
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "collected_analyzers": [
+    "codeql",
+    "patch"
+  ]
+}

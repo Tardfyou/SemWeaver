@@ -1,0 +1,665 @@
+{
+  "records": [
+    {
+      "evidence_id": "pf_000",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "jpgfile.c",
+        "function": "process_COM"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "patch_overview",
+        "label": "Patch overview",
+        "attributes": {
+          "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe120_jhead_cve202028840/patches/fix.patch",
+          "changed_files": [
+            "jpgfile.c"
+          ],
+          "changed_file_count": 1,
+          "added_line_count": 1,
+          "deleted_line_count": 1
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "patch_overview",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_001",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "jpgfile.c",
+        "function": "process_COM"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "vulnerability_patterns",
+        "label": "Vulnerability patterns inferred from patch",
+        "attributes": {
+          "patterns": [
+            "out_of_bounds_read",
+            "integer_overflow"
+          ],
+          "descriptions": [
+            "A lookahead array access reads past the end of the input buffer when the loop index reaches the last valid element and the condition still evaluates the next element."
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "vulnerability_patterns",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_002",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "jpgfile.c",
+        "function": "process_COM"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "affected_functions",
+        "label": "Functions implicated by removed or fixed code",
+        "attributes": {
+          "functions": [
+            "process_COM",
+            "unknown"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "affected_functions",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_003",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "jpgfile.c",
+        "function": "process_COM"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "detection_strategy",
+        "label": "Existing patch analysis detection strategy",
+        "attributes": {
+          "primary_pattern": "out_of_bounds_read",
+          "check_types": [
+            "local_ast_pattern_matching",
+            "intra_procedural_bounds_reasoning",
+            "cfg_short_circuit_guard_recognition"
+          ],
+          "entry_points": [
+            "Lookahead reads of the form `buffer[index+1]` inside loops bounded by `index < length`",
+            "Conditions that read `arr[i+1]` after loading `arr[i]` from the same loop index",
+            "Branches where a sentinel/current-byte test gates a next-byte access without an explicit `i < length-1` check"
+          ],
+          "data_flow_tracking": false,
+          "cross_file_analysis": false,
+          "suggestions": [
+            "首稿先命中补丁本地最小锚点：条件表达式中的 `Data[a+1]` lookahead 访问。",
+            "首稿不要把新增的 `a < length-1` 写成必须同时存在/不存在的复杂模板；先抓“循环上界是 `a < length` 但读取了 `a+1`”这一局部模式。",
+            "把 `ch == '\\r'` 当作辅助收敛条件，而不是首要命中条件；真正的危险 sink 是 `Data[a+1]`。",
+            "只需函数内 AST/CFG 即可：识别循环末次迭代可达、以及短路求值前是否有上界 barrier。",
+            "不需要跨文件分析，也不需要复杂数据流；`length`、`a`、`Data` 在同一局部代码片段内已足够。",
+            "二次收敛可加入：同一条件中已有 `arr[i]` 读取、循环变量单调递增、访问偏移为 `+1`、且无先行边界证明。",
+            "生成器应特别避免把“数组非空”或“索引变量在循环里”误当成 `i+1` 已有边界保证。"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "detection_strategy",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_004",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "jpgfile.c",
+        "function": "process_COM"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "added_guards",
+        "label": "Patch introduces or strengthens guards",
+        "attributes": {
+          "guards": [
+            "if (ch == '\\r' && a < length-1 && Data[a+1] == '\\n') continue; // Remove cr followed by lf."
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "added_guards",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_005",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "jpgfile.c",
+        "function": "process_COM"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "fix_patterns",
+        "label": "Patch introduces reusable fix patterns",
+        "attributes": {
+          "patterns": [
+            "Add an explicit upper-bound guard `a < length-1` before evaluating the lookahead access `Data[a+1]`",
+            "Keep the dangerous sink unchanged but place a short-circuit barrier in the same condition so the out-of-bounds read is never evaluated",
+            "overflow-safe accumulator",
+            "overflow bounds check"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "fix_patterns",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "csa_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "jpgfile.c",
+        "function": "process_COM"
+      },
+      "location": {
+        "line": 48,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "process_COM adds patch barrier `ch == '\\r' && a < length-1 && Data[a+1] == '\\n'` around printf, strcpy.",
+        "contract_type": "patch_barrier",
+        "same_call_binding": "tie the guard to the current downstream sink or protected state transition instead of any unrelated if-statement",
+        "trigger_contract": "report when a risky write proceeds without the patch-style barrier",
+        "silence_contract": "stay silent when the nearby guard proves the current write is blocked or bounded",
+        "guard_exprs": [
+          "ch == '\\r' && a < length-1 && Data[a+1] == '\\n'"
+        ],
+        "removed_calls": [],
+        "added_calls": [],
+        "tracked_symbols": [
+          "ch",
+          "r",
+          "a",
+          "length",
+          "Data",
+          "n",
+          "continue",
+          "Remove"
+        ],
+        "widened_variables": [],
+        "state_resets": [],
+        "old_numeric_type": "",
+        "new_numeric_type": "",
+        "numeric_domain_change": "",
+        "arithmetic_operations": [],
+        "sink_calls": [
+          "printf",
+          "strcpy"
+        ],
+        "buffer_fields": [],
+        "source_file": "jpgfile.c",
+        "function": "process_COM",
+        "source_excerpt": "37: static void process_COM (const uchar * Data, int length)\n38: {\n39:     int ch;\n40:     char Comment[MAX_COMMENT_SIZE+1];\n41:     int nch;\n42:     int a;\n43: \n44:     nch = 0;\n45: \n46:     if (length > MAX_COMMENT_SIZE) length = MAX_COMMENT_SIZE; // Truncate if it won't fit in our structure.\n47: \n48:     for (a=2;a<length;a++){\n49:         ch = Data[a];\n50: \n51:         if (ch == '\\r' && Data[a+1] == '\\n') continue; // Remove cr followed by lf.\n52: \n53:         if (ch >= 32 || ch == '\\n' || ch == '\\t'){\n54:             Comment[nch++] = (char)ch;\n55:         }else{\n56:             Comment[nch++] = '?';\n57:         }\n58:     }\n59: \n60:     Comment[nch] = '\\0'; // Null terminate\n61: \n62:     if (ShowTags){\n63:         printf(\"COM marker comment: %s\\n\",Comment);\n64:     }\n65: \n66:     strcpy(ImageInfo.Comments,Comment);\n67: }",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:semantic-contract",
+        "confidence": 0.92
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "jpgfile.c",
+          "hunk_index": 0,
+          "source_line": 48
+        },
+        "summary": "process_COM adds patch barrier `ch == '\\r' && a < length-1 && Data[a+1] == '\\n'` around printf, strcpy.",
+        "statements": [
+          "if (ch == '\\r' && a < length-1 && Data[a+1] == '\\n') continue; // Remove cr followed by lf."
+        ],
+        "guards": [
+          "ch == '\\r' && a < length-1 && Data[a+1] == '\\n'"
+        ],
+        "call_boundary": [
+          "printf",
+          "strcpy"
+        ],
+        "call_edges": [
+          "process_COM -> printf",
+          "process_COM -> strcpy"
+        ],
+        "state_transitions": [
+          "",
+          "report when a risky write proceeds without the patch-style barrier",
+          "stay silent when the nearby guard proves the current write is blocked or bounded"
+        ],
+        "api_terms": [
+          "printf",
+          "strcpy"
+        ],
+        "related_symbols": [
+          "ch",
+          "r",
+          "a",
+          "length",
+          "Data",
+          "n"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "jpgfile.c",
+        "function": "process_COM"
+      },
+      "location": {
+        "line": 48,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "ch == '\\r' && a < length-1 && Data[a+1] == '\\n'",
+        "summary": "process_COM introduces patch guard `ch == '\\r' && a < length-1 && Data[a+1] == '\\n'` before printf, strcpy.",
+        "state_before": [
+          "input(ch)",
+          "input(r)"
+        ],
+        "state_after": [
+          "guard(ch == '\\r' && a < length-1 && Data[a+1] == '\\n')",
+          "current_call(printf)",
+          "current_call(strcpy)"
+        ],
+        "functions": [
+          "process_COM"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "ch",
+          "r",
+          "a",
+          "length",
+          "Data",
+          "n"
+        ],
+        "buffer_fields": [],
+        "call_targets": [
+          "printf",
+          "strcpy"
+        ],
+        "call_edges": [
+          "process_COM -> printf",
+          "process_COM -> strcpy"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "ch == '\\r' && a < length-1 && Data[a+1] == '\\n'"
+        ],
+        "state_statements": [
+          "if (ch == '\\r' && a < length-1 && Data[a+1] == '\\n') continue; // Remove cr followed by lf."
+        ],
+        "compile_command_preview": "",
+        "source_file": "jpgfile.c",
+        "source_excerpt": "37: static void process_COM (const uchar * Data, int length)\n38: {\n39:     int ch;\n40:     char Comment[MAX_COMMENT_SIZE+1];\n41:     int nch;\n42:     int a;\n43: \n44:     nch = 0;\n45: \n46:     if (length > MAX_COMMENT_SIZE) length = MAX_COMMENT_SIZE; // Truncate if it won't fit in our structure.\n47: \n48:     for (a=2;a<length;a++){\n49:         ch = Data[a];\n50: \n51:         if (ch == '\\r' && Data[a+1] == '\\n') continue; // Remove cr followed by lf.\n52: \n53:         if (ch >= 32 || ch == '\\n' || ch == '\\t'){\n54:             Comment[nch++] = (char)ch;\n55:         }else{\n56:             Comment[nch++] = '?';\n57:         }\n58:     }\n59: \n60:     Comment[nch] = '\\0'; // Null terminate\n61: \n62:     if (ShowTags){\n63:         printf(\"COM marker comment: %s\\n\",Comment);\n64:     }\n65: \n66:     strcpy(ImageInfo.Comments,Comment);\n67: }",
+        "summary_line": 48,
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:path-guard",
+        "confidence": 0.92
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "jpgfile.c",
+          "hunk_index": 0,
+          "source_line": 48
+        },
+        "summary": "process_COM introduces patch guard `ch == '\\r' && a < length-1 && Data[a+1] == '\\n'` before printf, strcpy.",
+        "statements": [
+          "if (ch == '\\r' && a < length-1 && Data[a+1] == '\\n') continue; // Remove cr followed by lf."
+        ],
+        "guards": [
+          "ch == '\\r' && a < length-1 && Data[a+1] == '\\n'"
+        ],
+        "call_boundary": [
+          "printf",
+          "strcpy"
+        ],
+        "call_edges": [
+          "process_COM -> printf",
+          "process_COM -> strcpy"
+        ],
+        "state_transitions": [
+          "guard(ch == '\\r' && a < length-1 && Data[a+1] == '\\n')",
+          "current_call(printf)",
+          "current_call(strcpy)"
+        ],
+        "api_terms": [
+          "printf",
+          "strcpy"
+        ],
+        "related_symbols": [
+          "ch",
+          "r",
+          "a",
+          "length",
+          "Data",
+          "n"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "jpgfile.c",
+        "function": "process_COM"
+      },
+      "location": {
+        "line": 48,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "process_COM adds patch barrier `ch == '\\r' && a < length-1 && Data[a+1] == '\\n'` around printf, strcpy.",
+        "state_before": [
+          "input(ch)",
+          "input(r)"
+        ],
+        "state_after": [
+          "guard(ch == '\\r' && a < length-1 && Data[a+1] == '\\n')",
+          "sink(printf)",
+          "sink(strcpy)"
+        ],
+        "functions": [
+          "process_COM"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "ch",
+          "r",
+          "a",
+          "length",
+          "Data",
+          "n"
+        ],
+        "buffer_fields": [],
+        "call_targets": [
+          "printf",
+          "strcpy"
+        ],
+        "call_edges": [
+          "process_COM -> printf",
+          "process_COM -> strcpy"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "ch == '\\r' && a < length-1 && Data[a+1] == '\\n'"
+        ],
+        "state_statements": [
+          "if (ch == '\\r' && a < length-1 && Data[a+1] == '\\n') continue; // Remove cr followed by lf."
+        ],
+        "return_statements": [],
+        "source_file": "jpgfile.c",
+        "source_excerpt": "37: static void process_COM (const uchar * Data, int length)\n38: {\n39:     int ch;\n40:     char Comment[MAX_COMMENT_SIZE+1];\n41:     int nch;\n42:     int a;\n43: \n44:     nch = 0;\n45: \n46:     if (length > MAX_COMMENT_SIZE) length = MAX_COMMENT_SIZE; // Truncate if it won't fit in our structure.\n47: \n48:     for (a=2;a<length;a++){\n49:         ch = Data[a];\n50: \n51:         if (ch == '\\r' && Data[a+1] == '\\n') continue; // Remove cr followed by lf.\n52: \n53:         if (ch >= 32 || ch == '\\n' || ch == '\\t'){\n54:             Comment[nch++] = (char)ch;\n55:         }else{\n56:             Comment[nch++] = '?';\n57:         }\n58:     }\n59: \n60:     Comment[nch] = '\\0'; // Null terminate\n61: \n62:     if (ShowTags){\n63:         printf(\"COM marker comment: %s\\n\",Comment);\n64:     }\n65: \n66:     strcpy(ImageInfo.Comments,Comment);\n67: }",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:guarded-state",
+        "confidence": 0.9
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "jpgfile.c",
+          "hunk_index": 0,
+          "source_line": 48
+        },
+        "summary": "process_COM adds patch barrier `ch == '\\r' && a < length-1 && Data[a+1] == '\\n'` around printf, strcpy.",
+        "statements": [
+          "if (ch == '\\r' && a < length-1 && Data[a+1] == '\\n') continue; // Remove cr followed by lf."
+        ],
+        "guards": [
+          "ch == '\\r' && a < length-1 && Data[a+1] == '\\n'"
+        ],
+        "call_boundary": [
+          "printf",
+          "strcpy"
+        ],
+        "call_edges": [
+          "process_COM -> printf",
+          "process_COM -> strcpy"
+        ],
+        "state_transitions": [
+          "guard(ch == '\\r' && a < length-1 && Data[a+1] == '\\n')",
+          "sink(printf)",
+          "sink(strcpy)"
+        ],
+        "api_terms": [
+          "printf",
+          "strcpy"
+        ],
+        "related_symbols": [
+          "ch",
+          "r",
+          "a",
+          "length",
+          "Data",
+          "n"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_0",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "jpgfile.c",
+        "function": "process_COM"
+      },
+      "location": {
+        "line": 179,
+        "column": 17
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "process_COM in jpgfile.c provides CSA-backed pointer/resource lifecycle context near line 179",
+        "diagnostic_message": "Array access (from variable 'Data') results in a null pointer dereference [core.NullDereference]",
+        "diagnostic_checker": "OutOfBoundsLookaheadReadChecker",
+        "state_before": [
+          "input(Data)",
+          "input(length)",
+          "sinks(printf, strcpy)"
+        ],
+        "state_after": [
+          "operation(strcpy)",
+          "operation(for (a=2;a<length;a++){)",
+          "operation(Comment[nch++] = (char)ch;)",
+          "operation(Comment[nch++] = '?';)",
+          "diagnostic(Array access (from variable 'Data') results in a null pointer dereference [core.NullDereference])"
+        ],
+        "functions": [
+          "process_COM"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "Data",
+          "length",
+          "ch",
+          "r",
+          "a",
+          "n"
+        ],
+        "buffer_fields": [],
+        "call_targets": [
+          "printf",
+          "strcpy"
+        ],
+        "call_edges": [
+          "process_COM -> printf",
+          "process_COM -> strcpy"
+        ],
+        "state_statements": [
+          "for (a=2;a<length;a++){",
+          "Comment[nch++] = (char)ch;",
+          "Comment[nch++] = '?';",
+          "strcpy"
+        ],
+        "source_file": "jpgfile.c",
+        "source_excerpt": "37: static void process_COM (const uchar * Data, int length)\n38: {\n39:     int ch;\n40:     char Comment[MAX_COMMENT_SIZE+1];\n41:     int nch;\n42:     int a;\n43: \n44:     nch = 0;\n45: \n46:     if (length > MAX_COMMENT_SIZE) length = MAX_COMMENT_SIZE; // Truncate if it won't fit in our structure.\n47: \n48:     for (a=2;a<length;a++){\n49:         ch = Data[a];\n50: \n51:         if (ch == '\\r' && Data[a+1] == '\\n') continue; // Remove cr followed by lf.\n52: \n53:         if (ch >= 32 || ch == '\\n' || ch == '\\t'){\n54:             Comment[nch++] = (char)ch;\n55:         }else{\n56:             Comment[nch++] = '?';\n57:         }\n58:     }\n59: \n60:     Comment[nch] = '\\0'; // Null terminate\n61: \n62:     if (ShowTags){\n63:         printf(\"COM marker comment: %s\\n\",Comment);\n64:     }\n65: \n66:     strcpy(ImageInfo.Comments,Comment);\n67: }",
+        "coverage_status": "full",
+        "operations": [
+          "strcpy",
+          "for (a=2;a<length;a++){",
+          "Comment[nch++] = (char)ch;",
+          "Comment[nch++] = '?';"
+        ],
+        "acquisition_ops": [],
+        "release_ops": []
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.86
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "jpgfile.c",
+          "hunk_index": 0,
+          "source_line": 179
+        },
+        "summary": "process_COM in jpgfile.c provides CSA-backed pointer/resource lifecycle context near line 179",
+        "statements": [
+          "37: static void process_COM (const uchar * Data, int length)",
+          "38: {",
+          "39:     int ch;",
+          "40:     char Comment[MAX_COMMENT_SIZE+1];",
+          "41:     int nch;",
+          "42:     int a;"
+        ],
+        "guards": [
+          "length > MAX_COMMENT_SIZE",
+          "a=2;a<length;a++",
+          "ch == '\\r' && Data[a+1] == '\\n'",
+          "ch >= 32 || ch == '\\n' || ch == '\\t'"
+        ],
+        "call_boundary": [
+          "printf",
+          "strcpy"
+        ],
+        "call_edges": [
+          "process_COM -> printf",
+          "process_COM -> strcpy"
+        ],
+        "state_transitions": [
+          "operation(strcpy)",
+          "operation(for (a=2;a<length;a++){)",
+          "operation(Comment[nch++] = (char)ch;)",
+          "operation(Comment[nch++] = '?';)",
+          "diagnostic(Array access (from variable 'Data') results in a null pointer dereference [core.NullDereference])"
+        ],
+        "api_terms": [
+          "strcpy",
+          "for (a=2;a<length;a++){",
+          "Comment[nch++] = (char)ch;",
+          "Comment[nch++] = '?';",
+          "printf"
+        ],
+        "related_symbols": [
+          "Data",
+          "length",
+          "ch",
+          "r",
+          "a",
+          "n"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "full"
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "collected_analyzers": [
+    "csa",
+    "patch"
+  ]
+}

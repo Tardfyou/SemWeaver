@@ -1,0 +1,489 @@
+{
+  "files_changed": [
+    "bfd/elf64-x86-64.c"
+  ],
+  "file_details": [
+    {
+      "path": "bfd/elf64-x86-64.c",
+      "additions": 2,
+      "deletions": 0,
+      "hunks": 1
+    }
+  ],
+  "vulnerability_patterns": [],
+  "cross_file_dependencies": [],
+  "detection_strategy": {
+    "primary_pattern": "unknown",
+    "check_types": [
+      "patch_local_guard_inference",
+      "unchecked_error_code_count_return",
+      "invalid_size_count_argument_to_library_sink",
+      "cfg_error_path_continuation"
+    ],
+    "entry_points": [
+      "`bfd_canonicalize_dynamic_reloc(...)` result assignment to `dynrelcount`",
+      "`qsort(..., dynrelcount, ...)` count argument"
+    ],
+    "data_flow_tracking": false,
+    "cross_file_analysis": false,
+    "suggestions": [
+      "First-draft detector should anchor on a variable assigned from a count-producing call and then used as the `nmemb`/count argument of `qsort` without an intervening negative/error guard.",
+      "Use the sink `qsort(..., dynrelcount, sizeof(...), ...)` as the minimal patch-local anchor; this is more stable than trying to classify the exact memory consequence up front.",
+      "Do not make the newly added `dynrelcount < 0` guard a hard prerequisite for matching; instead detect the pre-fix pattern of direct propagation from call result to count-sensitive sink.",
+      "A good first pass is local AST/CFG within the patched function: assignment from call result, no negative-check barrier, then use in `qsort` count position.",
+      "Treat `dynrelcount` negativity as the key invalid-state relation; non-null `dynrelbuf` or valid comparator does not prove safety.",
+      "As a second-stage filter, prefer cases where the producer function name or surrounding code suggests count/relocation canonicalization, but keep this as ranking rather than mandatory logic.",
+      "No cross-file analysis is needed for the first draft because both source assignment, guard, and sink are visible in the same function hunk."
+    ]
+  },
+  "checker_name_suggestion": "UncheckedNegativeCountToQsortChecker",
+  "affected_functions": [
+    "unknown"
+  ],
+  "key_functions": [
+    "unknown"
+  ],
+  "patch_semantics": {
+    "added_guards": [
+      "if (dynrelcount < 0)"
+    ],
+    "added_api_calls": [],
+    "removed_api_calls": [],
+    "state_resets": [],
+    "lifecycle_changes": []
+  },
+  "analysis_backend": "llm",
+  "analysis_confidence": 0.78,
+  "analysis_rationale": "The patch adds an immediate error-path barrier after `dynrelcount = bfd_canonicalize_dynamic_reloc (abfd, dynrelbuf, dynsyms);`. Before the fix, the returned `dynrelcount` flowed directly into `qsort (dynrelbuf, dynrelcount, sizeof (arelent *), compare_relocs);` with no check. The new `if (dynrelcount < 0) return -1;` shows the dangerous mechanism is continued consumption of a negative/error count as the element count for a sorting operation. The diff does not by itself prove the exact downstream memory-failure class, so the main label should remain `unknown`, but the patch-local semantics clearly indicate missing validation of a count/size value before a memory-manipulating sink.",
+  "llm_usage": {
+    "prompt_tokens": 6724,
+    "completion_tokens": 972,
+    "total_tokens": 7696,
+    "call_count": 1,
+    "available": true,
+    "model": "gpt-5.4"
+  },
+  "patchweaver": {
+    "summary": "Patch suggests unknown semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=0, metadata refs=0.",
+    "patch_facts": [
+      {
+        "fact_type": "patch_overview",
+        "label": "Patch overview",
+        "attributes": {
+          "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe190_binutils_cve201714745/patches/fix.patch",
+          "changed_files": [
+            "bfd/elf64-x86-64.c"
+          ],
+          "changed_file_count": 1,
+          "added_line_count": 2,
+          "deleted_line_count": 0
+        }
+      },
+      {
+        "fact_type": "vulnerability_patterns",
+        "label": "Vulnerability patterns inferred from patch",
+        "attributes": {
+          "patterns": [
+            "unknown"
+          ],
+          "descriptions": []
+        }
+      },
+      {
+        "fact_type": "affected_functions",
+        "label": "Functions implicated by removed or fixed code",
+        "attributes": {
+          "functions": [
+            "elf_section_data"
+          ]
+        }
+      },
+      {
+        "fact_type": "detection_strategy",
+        "label": "Existing patch analysis detection strategy",
+        "attributes": {
+          "primary_pattern": "unknown",
+          "check_types": [
+            "patch_local_guard_inference",
+            "unchecked_error_code_count_return",
+            "invalid_size_count_argument_to_library_sink",
+            "cfg_error_path_continuation"
+          ],
+          "entry_points": [
+            "`bfd_canonicalize_dynamic_reloc(...)` result assignment to `dynrelcount`",
+            "`qsort(..., dynrelcount, ...)` count argument"
+          ],
+          "data_flow_tracking": false,
+          "cross_file_analysis": false,
+          "suggestions": [
+            "First-draft detector should anchor on a variable assigned from a count-producing call and then used as the `nmemb`/count argument of `qsort` without an intervening negative/error guard.",
+            "Use the sink `qsort(..., dynrelcount, sizeof(...), ...)` as the minimal patch-local anchor; this is more stable than trying to classify the exact memory consequence up front.",
+            "Do not make the newly added `dynrelcount < 0` guard a hard prerequisite for matching; instead detect the pre-fix pattern of direct propagation from call result to count-sensitive sink.",
+            "A good first pass is local AST/CFG within the patched function: assignment from call result, no negative-check barrier, then use in `qsort` count position.",
+            "Treat `dynrelcount` negativity as the key invalid-state relation; non-null `dynrelbuf` or valid comparator does not prove safety.",
+            "As a second-stage filter, prefer cases where the producer function name or surrounding code suggests count/relocation canonicalization, but keep this as ranking rather than mandatory logic.",
+            "No cross-file analysis is needed for the first draft because both source assignment, guard, and sink are visible in the same function hunk."
+          ]
+        }
+      },
+      {
+        "fact_type": "added_guards",
+        "label": "Patch introduces or strengthens guards",
+        "attributes": {
+          "guards": [
+            "if (dynrelcount < 0)"
+          ]
+        }
+      }
+    ],
+    "mechanism_graph": {
+      "summary": "Patch suggests unknown semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=0, metadata refs=0.",
+      "primary_patterns": [],
+      "nodes": [
+        {
+          "node_id": "patch",
+          "kind": "patch",
+          "label": "Security patch",
+          "attributes": {
+            "changed_files": [
+              "bfd/elf64-x86-64.c"
+            ]
+          }
+        },
+        {
+          "node_id": "file_0",
+          "kind": "file",
+          "label": "bfd/elf64-x86-64.c",
+          "attributes": {
+            "path": "bfd/elf64-x86-64.c",
+            "additions": 2,
+            "deletions": 0,
+            "hunks": 1
+          }
+        },
+        {
+          "node_id": "strategy",
+          "kind": "strategy",
+          "label": "unknown",
+          "attributes": {
+            "primary_pattern": "unknown",
+            "check_types": [
+              "patch_local_guard_inference",
+              "unchecked_error_code_count_return",
+              "invalid_size_count_argument_to_library_sink",
+              "cfg_error_path_continuation"
+            ],
+            "entry_points": [
+              "`bfd_canonicalize_dynamic_reloc(...)` result assignment to `dynrelcount`",
+              "`qsort(..., dynrelcount, ...)` count argument"
+            ],
+            "data_flow_tracking": false,
+            "cross_file_analysis": false,
+            "suggestions": [
+              "First-draft detector should anchor on a variable assigned from a count-producing call and then used as the `nmemb`/count argument of `qsort` without an intervening negative/error guard.",
+              "Use the sink `qsort(..., dynrelcount, sizeof(...), ...)` as the minimal patch-local anchor; this is more stable than trying to classify the exact memory consequence up front.",
+              "Do not make the newly added `dynrelcount < 0` guard a hard prerequisite for matching; instead detect the pre-fix pattern of direct propagation from call result to count-sensitive sink.",
+              "A good first pass is local AST/CFG within the patched function: assignment from call result, no negative-check barrier, then use in `qsort` count position.",
+              "Treat `dynrelcount` negativity as the key invalid-state relation; non-null `dynrelbuf` or valid comparator does not prove safety.",
+              "As a second-stage filter, prefer cases where the producer function name or surrounding code suggests count/relocation canonicalization, but keep this as ranking rather than mandatory logic.",
+              "No cross-file analysis is needed for the first draft because both source assignment, guard, and sink are visible in the same function hunk."
+            ]
+          }
+        },
+        {
+          "node_id": "func_1",
+          "kind": "function",
+          "label": "elf_section_data",
+          "attributes": {
+            "function": "elf_section_data",
+            "source": "patch_fact"
+          }
+        },
+        {
+          "node_id": "guard_1",
+          "kind": "guard",
+          "label": "if (dynrelcount < 0)",
+          "attributes": {
+            "condition": "if (dynrelcount < 0)",
+            "source": "patch_fact"
+          }
+        }
+      ],
+      "edges": [
+        {
+          "source": "patch",
+          "target": "file_0",
+          "relation": "touches",
+          "confidence": 0.95
+        },
+        {
+          "source": "patch",
+          "target": "strategy",
+          "relation": "guides",
+          "confidence": 0.85
+        },
+        {
+          "source": "patch",
+          "target": "func_1",
+          "relation": "focuses_on",
+          "confidence": 0.82
+        },
+        {
+          "source": "patch",
+          "target": "guard_1",
+          "relation": "adds_guard",
+          "confidence": 0.84
+        }
+      ]
+    },
+    "evidence_plan": {
+      "primary_pattern": "unknown",
+      "hypotheses": [
+        "Patch likely encodes a reusable vulnerability mechanism but available metadata is weak; keep evidence collection broad."
+      ],
+      "requirements": [
+        {
+          "evidence_type": "patch_fact",
+          "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+          "priority": 100,
+          "preferred_analyzers": [],
+          "confidence": 1.0,
+          "mechanism_refs": [
+            "patch"
+          ]
+        }
+      ],
+      "recommended_analyzers": [
+        "csa",
+        "codeql"
+      ],
+      "planner_notes": [
+        "Added guards detected in patch diff; path-sensitive evidence should stay near top priority."
+      ],
+      "coverage_gaps": [],
+      "uncertainty_budget": "medium",
+      "escalation_triggers": [
+        "weak_primary_pattern"
+      ]
+    },
+    "refinement_targets": {
+      "csa": {
+        "checker_name": "UncheckedNegativeCountToSizeChecker",
+        "artifact_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe190_binutils_cve201714745/primary/csa/20260423_133731/csa/UncheckedNegativeCountToSizeChecker.cpp",
+        "artifact_kind": "checker_source",
+        "validation_summary": "命中验证目标并通过功能验证",
+        "refinement_summary": "- validation_outcome @ semantic_validation: semantic validation passed with 140 diagnostics [coverage=full]"
+      }
+    },
+    "validation_feedback_history": [
+      {
+        "analyzer": "csa",
+        "phase": "initial_validation",
+        "summary": "- validation_outcome @ semantic_validation: semantic validation passed with 140 diagnostics [coverage=full]"
+      }
+    ]
+  },
+  "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe190_binutils_cve201714745/patches/fix.patch",
+  "summary": "Patch suggests unknown semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=0, metadata refs=0.",
+  "patch_facts": [
+    {
+      "fact_type": "patch_overview",
+      "label": "Patch overview",
+      "attributes": {
+        "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe190_binutils_cve201714745/patches/fix.patch",
+        "changed_files": [
+          "bfd/elf64-x86-64.c"
+        ],
+        "changed_file_count": 1,
+        "added_line_count": 2,
+        "deleted_line_count": 0
+      }
+    },
+    {
+      "fact_type": "vulnerability_patterns",
+      "label": "Vulnerability patterns inferred from patch",
+      "attributes": {
+        "patterns": [
+          "unknown"
+        ],
+        "descriptions": []
+      }
+    },
+    {
+      "fact_type": "affected_functions",
+      "label": "Functions implicated by removed or fixed code",
+      "attributes": {
+        "functions": [
+          "elf_section_data"
+        ]
+      }
+    },
+    {
+      "fact_type": "detection_strategy",
+      "label": "Existing patch analysis detection strategy",
+      "attributes": {
+        "primary_pattern": "unknown",
+        "check_types": [
+          "patch_local_guard_inference",
+          "unchecked_error_code_count_return",
+          "invalid_size_count_argument_to_library_sink",
+          "cfg_error_path_continuation"
+        ],
+        "entry_points": [
+          "`bfd_canonicalize_dynamic_reloc(...)` result assignment to `dynrelcount`",
+          "`qsort(..., dynrelcount, ...)` count argument"
+        ],
+        "data_flow_tracking": false,
+        "cross_file_analysis": false,
+        "suggestions": [
+          "First-draft detector should anchor on a variable assigned from a count-producing call and then used as the `nmemb`/count argument of `qsort` without an intervening negative/error guard.",
+          "Use the sink `qsort(..., dynrelcount, sizeof(...), ...)` as the minimal patch-local anchor; this is more stable than trying to classify the exact memory consequence up front.",
+          "Do not make the newly added `dynrelcount < 0` guard a hard prerequisite for matching; instead detect the pre-fix pattern of direct propagation from call result to count-sensitive sink.",
+          "A good first pass is local AST/CFG within the patched function: assignment from call result, no negative-check barrier, then use in `qsort` count position.",
+          "Treat `dynrelcount` negativity as the key invalid-state relation; non-null `dynrelbuf` or valid comparator does not prove safety.",
+          "As a second-stage filter, prefer cases where the producer function name or surrounding code suggests count/relocation canonicalization, but keep this as ranking rather than mandatory logic.",
+          "No cross-file analysis is needed for the first draft because both source assignment, guard, and sink are visible in the same function hunk."
+        ]
+      }
+    },
+    {
+      "fact_type": "added_guards",
+      "label": "Patch introduces or strengthens guards",
+      "attributes": {
+        "guards": [
+          "if (dynrelcount < 0)"
+        ]
+      }
+    }
+  ],
+  "mechanism_graph": {
+    "summary": "Patch suggests unknown semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=0, metadata refs=0.",
+    "primary_patterns": [],
+    "nodes": [
+      {
+        "node_id": "patch",
+        "kind": "patch",
+        "label": "Security patch",
+        "attributes": {
+          "changed_files": [
+            "bfd/elf64-x86-64.c"
+          ]
+        }
+      },
+      {
+        "node_id": "file_0",
+        "kind": "file",
+        "label": "bfd/elf64-x86-64.c",
+        "attributes": {
+          "path": "bfd/elf64-x86-64.c",
+          "additions": 2,
+          "deletions": 0,
+          "hunks": 1
+        }
+      },
+      {
+        "node_id": "strategy",
+        "kind": "strategy",
+        "label": "unknown",
+        "attributes": {
+          "primary_pattern": "unknown",
+          "check_types": [
+            "patch_local_guard_inference",
+            "unchecked_error_code_count_return",
+            "invalid_size_count_argument_to_library_sink",
+            "cfg_error_path_continuation"
+          ],
+          "entry_points": [
+            "`bfd_canonicalize_dynamic_reloc(...)` result assignment to `dynrelcount`",
+            "`qsort(..., dynrelcount, ...)` count argument"
+          ],
+          "data_flow_tracking": false,
+          "cross_file_analysis": false,
+          "suggestions": [
+            "First-draft detector should anchor on a variable assigned from a count-producing call and then used as the `nmemb`/count argument of `qsort` without an intervening negative/error guard.",
+            "Use the sink `qsort(..., dynrelcount, sizeof(...), ...)` as the minimal patch-local anchor; this is more stable than trying to classify the exact memory consequence up front.",
+            "Do not make the newly added `dynrelcount < 0` guard a hard prerequisite for matching; instead detect the pre-fix pattern of direct propagation from call result to count-sensitive sink.",
+            "A good first pass is local AST/CFG within the patched function: assignment from call result, no negative-check barrier, then use in `qsort` count position.",
+            "Treat `dynrelcount` negativity as the key invalid-state relation; non-null `dynrelbuf` or valid comparator does not prove safety.",
+            "As a second-stage filter, prefer cases where the producer function name or surrounding code suggests count/relocation canonicalization, but keep this as ranking rather than mandatory logic.",
+            "No cross-file analysis is needed for the first draft because both source assignment, guard, and sink are visible in the same function hunk."
+          ]
+        }
+      },
+      {
+        "node_id": "func_1",
+        "kind": "function",
+        "label": "elf_section_data",
+        "attributes": {
+          "function": "elf_section_data",
+          "source": "patch_fact"
+        }
+      },
+      {
+        "node_id": "guard_1",
+        "kind": "guard",
+        "label": "if (dynrelcount < 0)",
+        "attributes": {
+          "condition": "if (dynrelcount < 0)",
+          "source": "patch_fact"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "patch",
+        "target": "file_0",
+        "relation": "touches",
+        "confidence": 0.95
+      },
+      {
+        "source": "patch",
+        "target": "strategy",
+        "relation": "guides",
+        "confidence": 0.85
+      },
+      {
+        "source": "patch",
+        "target": "func_1",
+        "relation": "focuses_on",
+        "confidence": 0.82
+      },
+      {
+        "source": "patch",
+        "target": "guard_1",
+        "relation": "adds_guard",
+        "confidence": 0.84
+      }
+    ]
+  },
+  "evidence_plan": {
+    "primary_pattern": "unknown",
+    "hypotheses": [
+      "Patch likely encodes a reusable vulnerability mechanism but available metadata is weak; keep evidence collection broad."
+    ],
+    "requirements": [
+      {
+        "evidence_type": "patch_fact",
+        "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+        "priority": 100,
+        "preferred_analyzers": [],
+        "confidence": 1.0,
+        "mechanism_refs": [
+          "patch"
+        ]
+      }
+    ],
+    "recommended_analyzers": [
+      "csa",
+      "codeql"
+    ],
+    "planner_notes": [
+      "Added guards detected in patch diff; path-sensitive evidence should stay near top priority."
+    ],
+    "coverage_gaps": [],
+    "uncertainty_budget": "medium",
+    "escalation_triggers": [
+      "weak_primary_pattern"
+    ]
+  }
+}

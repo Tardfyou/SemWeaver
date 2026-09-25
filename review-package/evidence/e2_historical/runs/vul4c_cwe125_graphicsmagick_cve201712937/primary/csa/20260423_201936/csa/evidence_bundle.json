@@ -1,0 +1,731 @@
+{
+  "records": [
+    {
+      "evidence_id": "pf_000",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "coders/sun.c",
+        "function": "ThrowReaderException"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "patch_overview",
+        "label": "Patch overview",
+        "attributes": {
+          "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe125_graphicsmagick_cve201712937/patches/fix.patch",
+          "changed_files": [
+            "coders/sun.c"
+          ],
+          "changed_file_count": 1,
+          "added_line_count": 2,
+          "deleted_line_count": 0
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "patch_overview",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_001",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "coders/sun.c",
+        "function": "ThrowReaderException"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "vulnerability_patterns",
+        "label": "Vulnerability patterns inferred from patch",
+        "attributes": {
+          "patterns": [
+            "out_of_bounds_read"
+          ],
+          "descriptions": [
+            "Before the patch, `index` derived from bits of `*p` was used to read `image->colormap[index]` directly. If the image colormap is too small or invalid for that index, the palette read can go out of bounds. The patch blocks this by inserting `VerifyColormapIndex(image,index);` immediately before the index is stored and used for the colormap read."
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "vulnerability_patterns",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_002",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "coders/sun.c",
+        "function": "ThrowReaderException"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "affected_functions",
+        "label": "Functions implicated by removed or fixed code",
+        "attributes": {
+          "functions": [
+            "ThrowReaderException",
+            "VerifyColormapIndex"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "affected_functions",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_003",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "coders/sun.c",
+        "function": "ThrowReaderException"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "detection_strategy",
+        "label": "Existing patch analysis detection strategy",
+        "attributes": {
+          "primary_pattern": "out_of_bounds_read",
+          "check_types": [
+            "local_array_subscript_without_palette_validation",
+            "colormap_index_bounds_guard_missing",
+            "adjacent_guard_before_sink"
+          ],
+          "entry_points": [
+            "coders/sun.c",
+            "VerifyColormapIndex"
+          ],
+          "data_flow_tracking": false,
+          "cross_file_analysis": false,
+          "suggestions": [
+            "首稿优先命中 patch-local sink：`image->colormap[index]` 这种 colormap 字段数组访问。",
+            "把 `VerifyColormapIndex(image,index)` 作为缺失 guard 的二次收敛条件，不要首稿只查新增调用本身。",
+            "重点匹配同一基本块或短 CFG 距离内：`index` 赋值后直接流入 `image->colormap[index]`。",
+            "`indexes[x+7-bit]=index` 是辅助锚点，可用于确认这是 palette index 消费路径，但不是主要危险 sink。",
+            "局部 AST/CFG 足够；该补丁没有体现跨文件数据流或复杂生命周期依赖。",
+            "不要把 `index` 只取 0/1 当作安全证明；检测应关注 colormap 容量是否经权威校验。"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "detection_strategy",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_004",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "coders/sun.c",
+        "function": "ThrowReaderException"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "fix_patterns",
+        "label": "Patch introduces reusable fix patterns",
+        "attributes": {
+          "patterns": [
+            "Insert `VerifyColormapIndex(image,index);` after computing `index` and before `image->colormap[index]`",
+            "Keep validation adjacent to the palette read so the checked value is the same value used as the subscript",
+            "Apply the same validation in both the full-byte loop and the partial trailing-pixel loop"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "fix_patterns",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_005",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "coders/sun.c",
+        "function": "ThrowReaderException"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "added_api_calls",
+        "label": "Patch introduces or highlights API usage",
+        "attributes": {
+          "apis": [
+            "VerifyColormapIndex"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "added_api_calls",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "coders/sun.c",
+        "function": "ThrowReaderException"
+      },
+      "location": {
+        "line": 626,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "(((image->columns/8)+(image->columns % 8 ? 1 : 0)) % 2) != 0",
+        "summary": "ThrowReaderException in coders/sun.c guards shared state near line 626",
+        "state_before": [
+          "input(CoderError)",
+          "input(ColormapTypeNotSupported)",
+          "input(image)",
+          "buffer(image->colormap)",
+          "buffer(image->columns)",
+          "sinks(MagickMonitorFormatted, SetImagePixels)"
+        ],
+        "state_after": [
+          "guard((((image->columns/8)+(image->columns % 8 ? 1 : 0)) % 2) != 0)",
+          "transition(p++;)",
+          "transition(for (y=0; y < (long) image->rows; y++))",
+          "transition(for (x=0; x < (long) image->columns; x++))"
+        ],
+        "functions": [
+          "ThrowReaderException"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "CoderError",
+          "ColormapTypeNotSupported",
+          "image",
+          "image->colormap",
+          "image->columns",
+          "image->previous",
+          "image->rows",
+          "image->filename"
+        ],
+        "buffer_fields": [
+          "image->colormap",
+          "image->columns",
+          "image->previous",
+          "image->rows",
+          "image->filename",
+          "image->storage_class"
+        ],
+        "call_targets": [
+          "MagickMonitorFormatted",
+          "SetImagePixels",
+          "AccessMutableIndexes",
+          "VerifyColormapIndex",
+          "or",
+          "ScaleCharToQuantum"
+        ],
+        "call_edges": [],
+        "cfg_branch_kinds": [],
+        "branch_conditions": [],
+        "state_statements": [],
+        "compile_command_preview": "clang -Qunused-arguments -c /anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe125_graphicsmagick_cve201712937/vulnerable/coders/sun.c -o /anonymous/home",
+        "source_file": "coders/sun.c",
+        "source_excerpt": "594:                 index=((*p) & (0x01 << bit) ? 0x01 : 0x00);\n595:                 indexes[x+7-bit]=index;\n596:                 q[x+7-bit]=image->colormap[index];\n597:               }\n598:             p++;\n599:           }\n600:         if ((((image->columns/8)+(image->columns % 8 ? 1 : 0)) % 2) != 0)\n601:           p++;\n602:         if (!SyncImagePixels(image))\n603:           break;\n604:         if (image->previous == (Image *) NULL)\n605:           if (QuantumTick(y,image->rows))\n606:             if (!MagickMonitorFormatted(y,image->rows,exception,\n607:                                         LoadImageText,image->filename,\n608: \t\t\t\t\timage->columns,image->rows))\n609:               break;\n610:       }\n611:     else\n612:       if (image->storage_class == PseudoClass)\n613:         {\n614:           /*\n615:             Colormapped\n616:           */\n617:           for (y=0; y < (long) image->rows; y++)\n618:           {\n619:             q=SetImagePixels(image,0,y,image->columns,1);\n620:             if (q == (PixelPacket *) NULL)\n621:               break;\n622:             indexes=AccessMutableIndexes(image);\n623:             for (x=0; x < (long) image->columns; x++)\n624:               {\n625:                 index=(*p++);\n626:                 VerifyColormapIndex(image,index);\n627:                 indexes[x]=index;\n628:                 q[x]=image->colormap[index];\n629:               }\n630:             if ((image->columns % 2) != 0)\n631:               p++;\n632:             if (!SyncImagePixels(image))\n633:               break;\n634:             if (image->previous == (Image *) NULL)\n635:               if (QuantumTick(y,image->rows))\n636:                 if (!MagickMonitorFormatted(y,image->rows,exception,\n637:                                             LoadImageText,image->filename,\n638: \t\t\t\t\t    image->columns,image->rows))\n639:                   break;\n640:           }\n641: \t}\n642:       else\n643:         {\n644:           /*\n645:             (A)BGR or (A)RGB\n646:           */\n647:           for (y=0; y < (long) image->rows; y++)\n648:           {\n649:             q=SetImagePixels(image,0,y,image->columns,1);\n650:             if (q == (PixelPacket *) NULL)\n651:               break;\n652:             for (x=0; x < (long) image->columns; x++)\n653:             {\n654:               if (image->matte)\n655:                 q->opacity=(Quantum) (MaxRGB-ScaleCharToQuantum(*p++));\n656:               if (sun_info.type == RT_STANDARD)\n657:                 {\n658:                   q->blue=ScaleCharToQuantum(*p++);",
+        "summary_line": 626,
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:debug-cfg",
+        "confidence": 0.84
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "coders/sun.c",
+          "hunk_index": 0,
+          "source_line": 626
+        },
+        "summary": "ThrowReaderException in coders/sun.c guards shared state near line 626",
+        "statements": [
+          "594:                 index=((*p) & (0x01 << bit) ? 0x01 : 0x00);",
+          "595:                 indexes[x+7-bit]=index;",
+          "596:                 q[x+7-bit]=image->colormap[index];",
+          "597:               }",
+          "598:             p++;",
+          "599:           }"
+        ],
+        "guards": [
+          "(((image->columns/8)+(image->columns % 8 ? 1 : 0)) % 2) != 0"
+        ],
+        "call_boundary": [
+          "MagickMonitorFormatted",
+          "SetImagePixels",
+          "AccessMutableIndexes",
+          "VerifyColormapIndex",
+          "or",
+          "ScaleCharToQuantum"
+        ],
+        "call_edges": [],
+        "state_transitions": [
+          "guard((((image->columns/8)+(image->columns % 8 ? 1 : 0)) % 2) != 0)",
+          "transition(p++;)",
+          "transition(for (y=0; y < (long) image->rows; y++))",
+          "transition(for (x=0; x < (long) image->columns; x++))"
+        ],
+        "api_terms": [],
+        "related_symbols": [
+          "CoderError",
+          "ColormapTypeNotSupported",
+          "image",
+          "image->colormap",
+          "image->columns",
+          "image->previous"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "coders/sun.c",
+        "function": "ThrowReaderException"
+      },
+      "location": {
+        "line": 626,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "ThrowReaderException in coders/sun.c: state_ops=p++;; for (y=0; y < (long) image->rows; y++)",
+        "state_before": [
+          "input(CoderError)",
+          "input(ColormapTypeNotSupported)",
+          "input(image)",
+          "buffer(image->colormap)",
+          "buffer(image->columns)",
+          "sinks(MagickMonitorFormatted, SetImagePixels)"
+        ],
+        "state_after": [
+          "transition(p++;)",
+          "transition(for (y=0; y < (long) image->rows; y++))",
+          "transition(for (x=0; x < (long) image->columns; x++))"
+        ],
+        "functions": [
+          "ThrowReaderException"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "CoderError",
+          "ColormapTypeNotSupported",
+          "image",
+          "image->colormap",
+          "image->columns",
+          "image->previous",
+          "image->rows",
+          "image->filename"
+        ],
+        "buffer_fields": [
+          "image->colormap",
+          "image->columns",
+          "image->previous",
+          "image->rows",
+          "image->filename",
+          "image->storage_class"
+        ],
+        "call_targets": [
+          "MagickMonitorFormatted",
+          "SetImagePixels",
+          "AccessMutableIndexes",
+          "VerifyColormapIndex",
+          "or",
+          "ScaleCharToQuantum"
+        ],
+        "call_edges": [],
+        "cfg_branch_kinds": [],
+        "branch_conditions": [],
+        "state_statements": [],
+        "return_statements": [],
+        "source_file": "coders/sun.c",
+        "source_excerpt": "594:                 index=((*p) & (0x01 << bit) ? 0x01 : 0x00);\n595:                 indexes[x+7-bit]=index;\n596:                 q[x+7-bit]=image->colormap[index];\n597:               }\n598:             p++;\n599:           }\n600:         if ((((image->columns/8)+(image->columns % 8 ? 1 : 0)) % 2) != 0)\n601:           p++;\n602:         if (!SyncImagePixels(image))\n603:           break;\n604:         if (image->previous == (Image *) NULL)\n605:           if (QuantumTick(y,image->rows))\n606:             if (!MagickMonitorFormatted(y,image->rows,exception,\n607:                                         LoadImageText,image->filename,\n608: \t\t\t\t\timage->columns,image->rows))\n609:               break;\n610:       }\n611:     else\n612:       if (image->storage_class == PseudoClass)\n613:         {\n614:           /*\n615:             Colormapped\n616:           */\n617:           for (y=0; y < (long) image->rows; y++)\n618:           {\n619:             q=SetImagePixels(image,0,y,image->columns,1);\n620:             if (q == (PixelPacket *) NULL)\n621:               break;\n622:             indexes=AccessMutableIndexes(image);\n623:             for (x=0; x < (long) image->columns; x++)\n624:               {\n625:                 index=(*p++);\n626:                 VerifyColormapIndex(image,index);\n627:                 indexes[x]=index;\n628:                 q[x]=image->colormap[index];\n629:               }\n630:             if ((image->columns % 2) != 0)\n631:               p++;\n632:             if (!SyncImagePixels(image))\n633:               break;\n634:             if (image->previous == (Image *) NULL)\n635:               if (QuantumTick(y,image->rows))\n636:                 if (!MagickMonitorFormatted(y,image->rows,exception,\n637:                                             LoadImageText,image->filename,\n638: \t\t\t\t\t    image->columns,image->rows))\n639:                   break;\n640:           }\n641: \t}\n642:       else\n643:         {\n644:           /*\n645:             (A)BGR or (A)RGB\n646:           */\n647:           for (y=0; y < (long) image->rows; y++)\n648:           {\n649:             q=SetImagePixels(image,0,y,image->columns,1);\n650:             if (q == (PixelPacket *) NULL)\n651:               break;\n652:             for (x=0; x < (long) image->columns; x++)\n653:             {\n654:               if (image->matte)\n655:                 q->opacity=(Quantum) (MaxRGB-ScaleCharToQuantum(*p++));\n656:               if (sun_info.type == RT_STANDARD)\n657:                 {\n658:                   q->blue=ScaleCharToQuantum(*p++);",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:symbolic-state",
+        "confidence": 0.81
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "coders/sun.c",
+          "hunk_index": 0,
+          "source_line": 626
+        },
+        "summary": "ThrowReaderException in coders/sun.c: state_ops=p++;; for (y=0; y < (long) image->rows; y++)",
+        "statements": [
+          "594:                 index=((*p) & (0x01 << bit) ? 0x01 : 0x00);",
+          "595:                 indexes[x+7-bit]=index;",
+          "596:                 q[x+7-bit]=image->colormap[index];",
+          "597:               }",
+          "598:             p++;",
+          "599:           }"
+        ],
+        "guards": [],
+        "call_boundary": [
+          "MagickMonitorFormatted",
+          "SetImagePixels",
+          "AccessMutableIndexes",
+          "VerifyColormapIndex",
+          "or",
+          "ScaleCharToQuantum"
+        ],
+        "call_edges": [],
+        "state_transitions": [
+          "transition(p++;)",
+          "transition(for (y=0; y < (long) image->rows; y++))",
+          "transition(for (x=0; x < (long) image->columns; x++))"
+        ],
+        "api_terms": [],
+        "related_symbols": [
+          "CoderError",
+          "ColormapTypeNotSupported",
+          "image",
+          "image->colormap",
+          "image->columns",
+          "image->previous"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_validation_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "coders/sun.c",
+        "function": "ThrowReaderException"
+      },
+      "location": {
+        "line": 581,
+        "column": 26
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at coders/sun.c:581",
+        "diagnostic_message": "Array read from image->colormap uses an index without a preceding VerifyColormapIndex(image, index) check [custom.ColormapIndexBoundsChecker]",
+        "diagnostic_checker": "ColormapIndexBoundsChecker",
+        "state_before": [
+          "input(CoderError)",
+          "input(ColormapTypeNotSupported)",
+          "input(image)",
+          "buffer(image->colormap)",
+          "buffer(image->columns)",
+          "sinks(MagickMonitorFormatted, SetImagePixels)"
+        ],
+        "state_after": [
+          "diagnostic(Array read from image->colormap uses an index without a preceding VerifyColormapIndex(image, index) check [custom.ColormapIndexBoundsChecker])"
+        ],
+        "functions": [
+          "ThrowReaderException"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "CoderError",
+          "ColormapTypeNotSupported",
+          "image"
+        ],
+        "buffer_fields": [
+          "image->colormap",
+          "image->columns",
+          "image->previous",
+          "image->rows",
+          "image->filename",
+          "image->storage_class"
+        ],
+        "call_targets": [
+          "MagickMonitorFormatted",
+          "SetImagePixels",
+          "AccessMutableIndexes",
+          "VerifyColormapIndex",
+          "or",
+          "ScaleCharToQuantum"
+        ],
+        "call_edges": [],
+        "state_statements": [
+          "p++;",
+          "for (y=0; y < (long) image->rows; y++)",
+          "for (x=0; x < (long) image->columns; x++)",
+          "index=(*p++);",
+          "q->opacity=(Quantum) (MaxRGB-ScaleCharToQuantum(*p++));",
+          "q->blue=ScaleCharToQuantum(*p++);"
+        ],
+        "source_file": "coders/sun.c",
+        "source_excerpt": "594:                 index=((*p) & (0x01 << bit) ? 0x01 : 0x00);\n595:                 indexes[x+7-bit]=index;\n596:                 q[x+7-bit]=image->colormap[index];\n597:               }\n598:             p++;\n599:           }\n600:         if ((((image->columns/8)+(image->columns % 8 ? 1 : 0)) % 2) != 0)\n601:           p++;\n602:         if (!SyncImagePixels(image))\n603:           break;\n604:         if (image->previous == (Image *) NULL)\n605:           if (QuantumTick(y,image->rows))\n606:             if (!MagickMonitorFormatted(y,image->rows,exception,\n607:                                         LoadImageText,image->filename,\n608: \t\t\t\t\timage->columns,image->rows))\n609:               break;\n610:       }\n611:     else\n612:       if (image->storage_class == PseudoClass)\n613:         {\n614:           /*\n615:             Colormapped\n616:           */\n617:           for (y=0; y < (long) image->rows; y++)\n618:           {\n619:             q=SetImagePixels(image,0,y,image->columns,1);\n620:             if (q == (PixelPacket *) NULL)\n621:               break;\n622:             indexes=AccessMutableIndexes(image);\n623:             for (x=0; x < (long) image->columns; x++)\n624:               {\n625:                 index=(*p++);\n626:                 VerifyColormapIndex(image,index);\n627:                 indexes[x]=index;\n628:                 q[x]=image->colormap[index];\n629:               }\n630:             if ((image->columns % 2) != 0)\n631:               p++;\n632:             if (!SyncImagePixels(image))\n633:               break;\n634:             if (image->previous == (Image *) NULL)\n635:               if (QuantumTick(y,image->rows))\n636:                 if (!MagickMonitorFormatted(y,image->rows,exception,\n637:                                             LoadImageText,image->filename,\n638: \t\t\t\t\t    image->columns,image->rows))\n639:                   break;\n640:           }\n641: \t}\n642:       else\n643:         {\n644:           /*\n645:             (A)BGR or (A)RGB\n646:           */\n647:           for (y=0; y < (long) image->rows; y++)\n648:           {\n649:             q=SetImagePixels(image,0,y,image->columns,1);\n650:             if (q == (PixelPacket *) NULL)\n651:               break;\n652:             for (x=0; x < (long) image->columns; x++)\n653:             {\n654:               if (image->matte)\n655:                 q->opacity=(Quantum) (MaxRGB-ScaleCharToQuantum(*p++));\n656:               if (sun_info.type == RT_STANDARD)\n657:                 {\n658:                   q->blue=ScaleCharToQuantum(*p++);",
+        "coverage_status": "full",
+        "contract_type": "",
+        "guard_exprs": [
+          "(((image->columns/8)+(image->columns % 8 ? 1 : 0)) % 2) != 0",
+          "!SyncImagePixels(image)",
+          "image->previous == (Image *) NULL",
+          "QuantumTick(y,image->rows)"
+        ],
+        "sink_calls": [
+          "MagickMonitorFormatted",
+          "SetImagePixels",
+          "AccessMutableIndexes",
+          "VerifyColormapIndex"
+        ]
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.86
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "coders/sun.c",
+          "hunk_index": 0,
+          "source_line": 581
+        },
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at coders/sun.c:581",
+        "statements": [
+          "594:                 index=((*p) & (0x01 << bit) ? 0x01 : 0x00);",
+          "595:                 indexes[x+7-bit]=index;",
+          "596:                 q[x+7-bit]=image->colormap[index];",
+          "597:               }",
+          "598:             p++;",
+          "599:           }"
+        ],
+        "guards": [
+          "(((image->columns/8)+(image->columns % 8 ? 1 : 0)) % 2) != 0",
+          "!SyncImagePixels(image)",
+          "image->previous == (Image *) NULL",
+          "QuantumTick(y,image->rows)"
+        ],
+        "call_boundary": [
+          "MagickMonitorFormatted",
+          "SetImagePixels",
+          "AccessMutableIndexes",
+          "VerifyColormapIndex",
+          "or",
+          "ScaleCharToQuantum"
+        ],
+        "call_edges": [],
+        "state_transitions": [
+          "diagnostic(Array read from image->colormap uses an index without a preceding VerifyColormapIndex(image, index) check [custom.ColormapIndexBoundsChecker])"
+        ],
+        "api_terms": [
+          "p++;",
+          "for (y=0; y < (long) image->rows; y++)",
+          "for (x=0; x < (long) image->columns; x++)",
+          "index=(*p++);",
+          "q->opacity=(Quantum) (MaxRGB-ScaleCharToQuantum(*p++));",
+          "q->blue=ScaleCharToQuantum(*p++);"
+        ],
+        "related_symbols": [
+          "CoderError",
+          "ColormapTypeNotSupported",
+          "image"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_1",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "coders/sun.c",
+        "function": "ThrowReaderException"
+      },
+      "location": {
+        "line": 581,
+        "column": 26
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "ThrowReaderException in coders/sun.c provides CSA-backed pointer/resource lifecycle context near line 581",
+        "diagnostic_message": "Array read from image->colormap uses an index without a preceding VerifyColormapIndex(image, index) check [custom.ColormapIndexBoundsChecker]",
+        "diagnostic_checker": "ColormapIndexBoundsChecker",
+        "state_before": [
+          "input(CoderError)",
+          "input(ColormapTypeNotSupported)",
+          "input(image)",
+          "buffer(image->colormap)",
+          "buffer(image->columns)",
+          "sinks(MagickMonitorFormatted, SetImagePixels)"
+        ],
+        "state_after": [
+          "operation(p++;)",
+          "operation(for (y=0; y < (long) image->rows; y++))",
+          "operation(for (x=0; x < (long) image->columns; x++))",
+          "operation(index=(*p++);)",
+          "diagnostic(Array read from image->colormap uses an index without a preceding VerifyColormapIndex(image, index) check [custom.ColormapIndexBoundsChecker])"
+        ],
+        "functions": [
+          "ThrowReaderException"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "CoderError",
+          "ColormapTypeNotSupported",
+          "image"
+        ],
+        "buffer_fields": [
+          "image->colormap",
+          "image->columns",
+          "image->previous",
+          "image->rows",
+          "image->filename",
+          "image->storage_class"
+        ],
+        "call_targets": [
+          "MagickMonitorFormatted",
+          "SetImagePixels",
+          "AccessMutableIndexes",
+          "VerifyColormapIndex",
+          "or",
+          "ScaleCharToQuantum"
+        ],
+        "call_edges": [],
+        "state_statements": [
+          "p++;",
+          "for (y=0; y < (long) image->rows; y++)",
+          "for (x=0; x < (long) image->columns; x++)",
+          "index=(*p++);",
+          "q->opacity=(Quantum) (MaxRGB-ScaleCharToQuantum(*p++));",
+          "q->blue=ScaleCharToQuantum(*p++);"
+        ],
+        "source_file": "coders/sun.c",
+        "source_excerpt": "594:                 index=((*p) & (0x01 << bit) ? 0x01 : 0x00);\n595:                 indexes[x+7-bit]=index;\n596:                 q[x+7-bit]=image->colormap[index];\n597:               }\n598:             p++;\n599:           }\n600:         if ((((image->columns/8)+(image->columns % 8 ? 1 : 0)) % 2) != 0)\n601:           p++;\n602:         if (!SyncImagePixels(image))\n603:           break;\n604:         if (image->previous == (Image *) NULL)\n605:           if (QuantumTick(y,image->rows))\n606:             if (!MagickMonitorFormatted(y,image->rows,exception,\n607:                                         LoadImageText,image->filename,\n608: \t\t\t\t\timage->columns,image->rows))\n609:               break;\n610:       }\n611:     else\n612:       if (image->storage_class == PseudoClass)\n613:         {\n614:           /*\n615:             Colormapped\n616:           */\n617:           for (y=0; y < (long) image->rows; y++)\n618:           {\n619:             q=SetImagePixels(image,0,y,image->columns,1);\n620:             if (q == (PixelPacket *) NULL)\n621:               break;\n622:             indexes=AccessMutableIndexes(image);\n623:             for (x=0; x < (long) image->columns; x++)\n624:               {\n625:                 index=(*p++);\n626:                 VerifyColormapIndex(image,index);\n627:                 indexes[x]=index;\n628:                 q[x]=image->colormap[index];\n629:               }\n630:             if ((image->columns % 2) != 0)\n631:               p++;\n632:             if (!SyncImagePixels(image))\n633:               break;\n634:             if (image->previous == (Image *) NULL)\n635:               if (QuantumTick(y,image->rows))\n636:                 if (!MagickMonitorFormatted(y,image->rows,exception,\n637:                                             LoadImageText,image->filename,\n638: \t\t\t\t\t    image->columns,image->rows))\n639:                   break;\n640:           }\n641: \t}\n642:       else\n643:         {\n644:           /*\n645:             (A)BGR or (A)RGB\n646:           */\n647:           for (y=0; y < (long) image->rows; y++)\n648:           {\n649:             q=SetImagePixels(image,0,y,image->columns,1);\n650:             if (q == (PixelPacket *) NULL)\n651:               break;\n652:             for (x=0; x < (long) image->columns; x++)\n653:             {\n654:               if (image->matte)\n655:                 q->opacity=(Quantum) (MaxRGB-ScaleCharToQuantum(*p++));\n656:               if (sun_info.type == RT_STANDARD)\n657:                 {\n658:                   q->blue=ScaleCharToQuantum(*p++);",
+        "coverage_status": "full",
+        "operations": [
+          "p++;",
+          "for (y=0; y < (long) image->rows; y++)",
+          "for (x=0; x < (long) image->columns; x++)",
+          "index=(*p++);",
+          "q->opacity=(Quantum) (MaxRGB-ScaleCharToQuantum(*p++));",
+          "q->blue=ScaleCharToQuantum(*p++);"
+        ],
+        "acquisition_ops": [],
+        "release_ops": []
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.86
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "coders/sun.c",
+          "hunk_index": 0,
+          "source_line": 581
+        },
+        "summary": "ThrowReaderException in coders/sun.c provides CSA-backed pointer/resource lifecycle context near line 581",
+        "statements": [
+          "594:                 index=((*p) & (0x01 << bit) ? 0x01 : 0x00);",
+          "595:                 indexes[x+7-bit]=index;",
+          "596:                 q[x+7-bit]=image->colormap[index];",
+          "597:               }",
+          "598:             p++;",
+          "599:           }"
+        ],
+        "guards": [
+          "(((image->columns/8)+(image->columns % 8 ? 1 : 0)) % 2) != 0",
+          "!SyncImagePixels(image)",
+          "image->previous == (Image *) NULL",
+          "QuantumTick(y,image->rows)"
+        ],
+        "call_boundary": [
+          "MagickMonitorFormatted",
+          "SetImagePixels",
+          "AccessMutableIndexes",
+          "VerifyColormapIndex",
+          "or",
+          "ScaleCharToQuantum"
+        ],
+        "call_edges": [],
+        "state_transitions": [
+          "operation(p++;)",
+          "operation(for (y=0; y < (long) image->rows; y++))",
+          "operation(for (x=0; x < (long) image->columns; x++))",
+          "operation(index=(*p++);)",
+          "diagnostic(Array read from image->colormap uses an index without a preceding VerifyColormapIndex(image, index) check [custom.ColormapIndexBoundsChecker])"
+        ],
+        "api_terms": [
+          "p++;",
+          "for (y=0; y < (long) image->rows; y++)",
+          "for (x=0; x < (long) image->columns; x++)",
+          "index=(*p++);",
+          "q->opacity=(Quantum) (MaxRGB-ScaleCharToQuantum(*p++));",
+          "q->blue=ScaleCharToQuantum(*p++);"
+        ],
+        "related_symbols": [
+          "CoderError",
+          "ColormapTypeNotSupported",
+          "image"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "full"
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "collected_analyzers": [
+    "csa",
+    "patch"
+  ]
+}

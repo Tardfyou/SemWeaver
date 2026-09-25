@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "purpose": "Records the regenerable source environment for v2_experiments.",
+  "experiment_root": "v2_experiments",
+  "raw_repositories": [
+    {
+      "name": "SoK-Vul4C",
+      "path": "datasets/raw/SoK-Vul4C",
+      "remote": "https://github.com/SoK-Vul4C/SoK.git",
+      "commit": "88676eb20acfd6dee7678a4614944d3b5f323638",
+      "shallow": true,
+      "required_for": "Vul4C source materialization"
+    },
+    {
+      "name": "CVEfixes",
+      "path": "datasets/raw/CVEfixes",
+      "remote": "https://github.com/secureIT-project/CVEfixes.git",
+      "commit": "9283b50b3f04e3c5b0a17fc419ab0feea23fc438",
+      "shallow": true,
+      "required_for": "raw dataset reference"
+    }
+  ],
+  "raw_archives": [
+    {
+      "name": "Juliet Test Suite v1.3 for C/C++",
+      "path": "datasets/raw/Juliet_Test_Suite_v1.3_for_C_Cpp.zip",
+      "url": "https://zenodo.org/records/4701387/files/Juliet_Test_Suite_v1.3_for_C_Cpp.zip?download=1",
+      "source_record": "https://zenodo.org/records/4701387",
+      "md5": "1a5e794279fe5a85fc8b9afda76a4d4d",
+      "sha256": "ada9d7e1c323d283446df3f55bdee0d00bda1fed786785fe98764d58688f38eb",
+      "required_for": "optional Juliet smoke/reference material"
+    }
+  ],
+  "selection_manifests": [
+    {
+      "path": "manifests/vul4c_seed_selection.csv",
+      "rows": 32
+    },
+    {
+      "path": "manifests/supplement_git_selection.csv",
+      "rows": 5
+    },
+    {
+      "path": "manifests/samples.csv",
+      "rows": 37
+    }
+  ],
+  "materializers": [
+    {
+      "path": "SemWeaverCode/scripts/materialize_vul4c_samples.py",
+      "sha256": "4aec8c3878c7fd8902013f71a8dff0ce1b3341aca1c32c6b1045a25c8c5f2ca4"
+    },
+    {
+      "path": "SemWeaverCode/scripts/materialize_git_commit_samples.py",
+      "sha256": "e40bb9425e4f386e9ee858b0c6da93d3037943e426ac7fabecdb72dddb517e59"
+    }
+  ],
+  "regenerable_paths": [
+    "datasets/cache/vul4c_checkouts",
+    "datasets/cache/git_commit_checkouts",
+    "datasets/raw/Juliet_Test_Suite_v1.3_for_C_Cpp.zip",
+    "datasets/curated/*/vulnerable",
+    "datasets/curated/*/fixed"
+  ],
+  "restore_entrypoint": "scripts/restore_source_environment.sh",
+  "cleanup_entrypoint": "scripts/cleanup_source_environment.sh",
+  "notes": [
+    "Restore uses a temporary main manifest so manifests/samples.csv review status is not overwritten.",
+    "Experiment run outputs under runs/ are not deleted by the default cleanup script."
+  ]
+}

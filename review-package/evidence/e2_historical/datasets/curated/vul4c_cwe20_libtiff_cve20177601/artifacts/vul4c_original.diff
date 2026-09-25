@@ -1,0 +1,16 @@
+--- /SoK-main/Vul4C-Benchmark/libtiff/CVE-2017-7601/CVE-2017-7601_CWE-20_tif_jpeg.c_OLD.c	2025-10-13 01:37:25.310410370 +0000
++++ /SoK-main/Vul4C-Benchmark/libtiff/CVE-2017-7601/CVE-2017-7601_CWE-20_tif_jpeg.c_NEW.c	2025-10-13 01:37:25.310410370 +0000
+@@ -1632,6 +1632,13 @@
+                             "Invalig horizontal/vertical sampling value");
+                     return (0);
+                 }
++                if( td->td_bitspersample > 16 )
++                {
++                    TIFFErrorExt(tif->tif_clientdata, module,
++                                 "BitsPerSample %d not allowed for JPEG",
++                                 td->td_bitspersample);
++                    return (0);
++                }
+ 
+ 		/*
+ 		 * A ReferenceBlackWhite field *must* be present since the

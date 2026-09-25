@@ -1,0 +1,492 @@
+{
+  "records": [
+    {
+      "evidence_id": "pf_000",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "lib/zip_dirent.c",
+        "function": "_zip_buffer_free"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "patch_overview",
+        "label": "Patch overview",
+        "attributes": {
+          "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe415_libzip_cve201712858/patches/fix.patch",
+          "changed_files": [
+            "lib/zip_dirent.c"
+          ],
+          "changed_file_count": 1,
+          "added_line_count": 0,
+          "deleted_line_count": 3
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "patch_overview",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_001",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "lib/zip_dirent.c",
+        "function": "_zip_buffer_free"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "vulnerability_patterns",
+        "label": "Vulnerability patterns inferred from patch",
+        "attributes": {
+          "patterns": [
+            "double_free"
+          ],
+          "descriptions": [
+            "错误返回路径在调用 `_zip_dirent_process_winzip_aes` 失败后，对 `buffer` 执行额外 `_zip_buffer_free(buffer)`，补丁通过删除该释放避免同一缓冲区在别处再次释放。"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "vulnerability_patterns",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_002",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "lib/zip_dirent.c",
+        "function": "_zip_buffer_free"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "affected_functions",
+        "label": "Functions implicated by removed or fixed code",
+        "attributes": {
+          "functions": [
+            "_zip_buffer_free",
+            "_zip_dirent_read"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "affected_functions",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_003",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "lib/zip_dirent.c",
+        "function": "_zip_buffer_free"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "detection_strategy",
+        "label": "Existing patch analysis detection strategy",
+        "attributes": {
+          "primary_pattern": "double_free",
+          "check_types": [
+            "local_ast_match",
+            "intra_procedural_cfg_path_analysis",
+            "resource_lifetime_state_transition_analysis"
+          ],
+          "entry_points": [
+            "`lib/zip_dirent.c` 中 `_zip_dirent_process_winzip_aes(... )` 失败分支附近的 `_zip_buffer_free(buffer)`",
+            "同一函数内错误路径上的 `_zip_buffer_free` / `free` / destroy 类调用"
+          ],
+          "data_flow_tracking": false,
+          "cross_file_analysis": false,
+          "suggestions": [
+            "首稿先命中 patch-local 最小锚点：失败条件 `_zip_dirent_process_winzip_aes(...)` 的分支内对 `buffer` 的 `_zip_buffer_free(buffer)` 调用。",
+            "不要把 `!from_buffer` 当作硬过滤的充分安全条件；它只是旧代码中控制额外释放的辅助条件，不证明对象拥有权正确。",
+            "首稿优先检测“错误路径中的额外释放”这一局部模式，而不是一开始要求证明全局二次释放；可先报可疑点，再用统一 cleanup 路径存在性做二次收敛。",
+            "二次收敛可检查：同一函数后续/外层是否还有对同一 `buffer` 的统一释放或隐式清理；但这不应成为首稿必需条件。",
+            "该补丁不体现跨文件依赖，先用函数内 AST/CFG 即可，不必上跨文件分析。",
+            "若生成 CodeQL/CSA 规则，可围绕‘在错误返回前释放局部资源，但函数整体仍有统一清理职责’这一形态建模。"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "detection_strategy",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_004",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "lib/zip_dirent.c",
+        "function": "_zip_buffer_free"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "removed_risky_operations",
+        "label": "Patch removes risky operations",
+        "attributes": {
+          "operations": [
+            "_zip_buffer_free(buffer);"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "removed_risky_operations",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_005",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "lib/zip_dirent.c",
+        "function": "_zip_buffer_free"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "fix_patterns",
+        "label": "Patch introduces reusable fix patterns",
+        "attributes": {
+          "patterns": [
+            "删除错误路径中的 `_zip_buffer_free(buffer)`，避免额外释放",
+            "将资源回收留给其他统一清理/所有权路径，而不是在该失败分支立即释放"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "fix_patterns",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "codeql_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "codeql",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "lib/zip_dirent.c",
+        "function": "_zip_dirent_read"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "summary": "focus=_zip_dirent_read | call_edges=_zip_dirent_read -> _zip_buffer_free; _zip_dirent_read -> _zip_ef_remove_internal | targets=_zip_buffer_free, _zip_ef_remove_internal | removed_ops=_zip_buffer_free | guards=zde->offset == ZIP_UINT32_MAX; zde->disk_number == ZIP_UINT16_MAX | symbols=zde, src, buffer, local | deps=stdlib.h, sys/stat.h, zipint.h | apis=_zip_buffer_free, _zip_ef_remove_internal, _zip_buffer_get_64, _zip_buffer_get_32",
+        "focus_function": "_zip_dirent_read",
+        "call_edges": [
+          "_zip_dirent_read -> _zip_buffer_free",
+          "_zip_dirent_read -> _zip_ef_remove_internal"
+        ],
+        "call_targets": [
+          "_zip_buffer_free",
+          "_zip_ef_remove_internal"
+        ],
+        "entry_points": [
+          "zde",
+          "src",
+          "buffer",
+          "local",
+          "error",
+          "zde->offset"
+        ],
+        "tracked_symbols": [
+          "zde",
+          "src",
+          "buffer",
+          "local",
+          "error",
+          "zde->offset"
+        ],
+        "sink_calls": [],
+        "state_transitions": [],
+        "statements": [],
+        "apis": [
+          "_zip_buffer_free",
+          "_zip_ef_remove_internal",
+          "_zip_buffer_get_64",
+          "_zip_buffer_get_32",
+          "zip_error_set"
+        ],
+        "dependencies": [
+          "stdlib.h",
+          "sys/stat.h",
+          "zipint.h"
+        ],
+        "source_excerpt": "546: \t    if (zde->offset == ZIP_UINT32_MAX)\n547: \t\tzde->offset = _zip_buffer_get_64(ef_buffer);\n548: \t    if (zde->disk_number == ZIP_UINT16_MAX)\n549: \t\tzde->disk_number = _zip_buffer_get_32(buffer);\n550: \t}\n551: \n552:         if (!_zip_buffer_eof(ef_buffer)) {\n553:             zip_error_set(error, ZIP_ER_INCONS, 0);\n554:             _zip_buffer_free(ef_buffer);\n555:             if (!from_buffer) {\n556:                 _zip_buffer_free(buffer);\n557:             }\n558:             return -1;\n559:         }\n560:         _zip_buffer_free(ef_buffer);\n561:     }\n562: \n563:     if (!_zip_buffer_ok(buffer)) {\n564:         zip_error_set(error, ZIP_ER_INTERNAL, 0);\n565:         if (!from_buffer) {\n566:             _zip_buffer_free(buffer);\n567:         }\n568:         return -1;\n569:     }\n570:     if (!from_buffer) {\n571:         _zip_buffer_free(buffer);\n572:     }\n573: \n574:     /* zip_source_seek / zip_source_tell don't support values > ZIP_INT64_MAX */\n575:     if (zde->offset > ZIP_INT64_MAX) {\n576: \tzip_error_set(error, ZIP_ER_SEEK, EFBIG);\n577: \treturn -1;\n578:     }\n579: \n580:     if (!_zip_dirent_process_winzip_aes(zde, error)) {\n581: \tif (!from_buffer) {\n582: \t    _zip_buffer_free(buffer);\n583: \t}\n584: \treturn -1;\n585:     }\n586: \n587:     zde->extra_fields = _zip_ef_remove_internal(zde->extra_fields);\n588: \n589:     return (zip_int64_t)(size + variable_size);\n590: }",
+        "coverage_status": "partial"
+      },
+      "provenance": {
+        "tool": "codeql",
+        "artifact": "source-window:semantic-slice",
+        "confidence": 0.8
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "lib/zip_dirent.c",
+          "hunk_index": 0,
+          "source_line": 578
+        },
+        "summary": "focus=_zip_dirent_read | call_edges=_zip_dirent_read -> _zip_buffer_free; _zip_dirent_read -> _zip_ef_remove_internal | targets=_zip_buffer_free, _zip_ef_remove_internal | removed_ops=_zip_buffer_free | guards=zde->offset == ZIP_UINT32_MAX; zde->disk_number == ZIP_UINT16_MAX | symbols=zde, src, buffer, local | deps=stdlib.h, sys/stat.h, zipint.h | apis=_zip_buffer_free, _zip_ef_remove_internal, _zip_buffer_get_64, _zip_buffer_get_32",
+        "statements": [
+          "546: \t    if (zde->offset == ZIP_UINT32_MAX)",
+          "547: \t\tzde->offset = _zip_buffer_get_64(ef_buffer);",
+          "548: \t    if (zde->disk_number == ZIP_UINT16_MAX)",
+          "549: \t\tzde->disk_number = _zip_buffer_get_32(buffer);",
+          "550: \t}",
+          "551:"
+        ],
+        "guards": [],
+        "call_boundary": [
+          "_zip_buffer_free",
+          "_zip_ef_remove_internal"
+        ],
+        "call_edges": [
+          "_zip_dirent_read -> _zip_buffer_free",
+          "_zip_dirent_read -> _zip_ef_remove_internal"
+        ],
+        "state_transitions": [],
+        "api_terms": [
+          "_zip_buffer_free",
+          "_zip_ef_remove_internal",
+          "_zip_buffer_get_64",
+          "_zip_buffer_get_32",
+          "zip_error_set"
+        ],
+        "related_symbols": [
+          "zde",
+          "src",
+          "buffer",
+          "local",
+          "error",
+          "zde->offset"
+        ],
+        "verifier": "source-window",
+        "extraction_method": "source_window",
+        "coverage_status": "partial"
+      }
+    },
+    {
+      "evidence_id": "codeql_flow_0",
+      "type": "dataflow_candidate",
+      "analyzer": "codeql",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "lib/zip_dirent.c",
+        "function": "_zip_dirent_read"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "source": "zde, src, buffer, local",
+        "sink": "",
+        "path": [
+          "function:_zip_dirent_read",
+          "_zip_dirent_read -> _zip_buffer_free",
+          "_zip_dirent_read -> _zip_ef_remove_internal"
+        ],
+        "summary": "_zip_dirent_read reaches _zip_buffer_free, _zip_ef_remove_internal after guard zde->offset == ZIP_UINT32_MAX",
+        "focus_function": "_zip_dirent_read",
+        "entry_points": [
+          "zde",
+          "src",
+          "buffer",
+          "local",
+          "error",
+          "zde->offset"
+        ],
+        "call_targets": [
+          "_zip_buffer_free",
+          "_zip_ef_remove_internal"
+        ],
+        "state_transitions": [],
+        "source_excerpt": "546: \t    if (zde->offset == ZIP_UINT32_MAX)\n547: \t\tzde->offset = _zip_buffer_get_64(ef_buffer);\n548: \t    if (zde->disk_number == ZIP_UINT16_MAX)\n549: \t\tzde->disk_number = _zip_buffer_get_32(buffer);\n550: \t}\n551: \n552:         if (!_zip_buffer_eof(ef_buffer)) {\n553:             zip_error_set(error, ZIP_ER_INCONS, 0);\n554:             _zip_buffer_free(ef_buffer);\n555:             if (!from_buffer) {\n556:                 _zip_buffer_free(buffer);\n557:             }\n558:             return -1;\n559:         }\n560:         _zip_buffer_free(ef_buffer);\n561:     }\n562: \n563:     if (!_zip_buffer_ok(buffer)) {\n564:         zip_error_set(error, ZIP_ER_INTERNAL, 0);\n565:         if (!from_buffer) {\n566:             _zip_buffer_free(buffer);\n567:         }\n568:         return -1;\n569:     }\n570:     if (!from_buffer) {\n571:         _zip_buffer_free(buffer);\n572:     }\n573: \n574:     /* zip_source_seek / zip_source_tell don't support values > ZIP_INT64_MAX */\n575:     if (zde->offset > ZIP_INT64_MAX) {\n576: \tzip_error_set(error, ZIP_ER_SEEK, EFBIG);\n577: \treturn -1;\n578:     }\n579: \n580:     if (!_zip_dirent_process_winzip_aes(zde, error)) {\n581: \tif (!from_buffer) {\n582: \t    _zip_buffer_free(buffer);\n583: \t}\n584: \treturn -1;\n585:     }\n586: \n587:     zde->extra_fields = _zip_ef_remove_internal(zde->extra_fields);\n588: \n589:     return (zip_int64_t)(size + variable_size);\n590: }",
+        "live_query_status": "database_missing",
+        "database_status": "missing",
+        "database_create_message": "CodeQL 数据库创建失败: Initializing database at /anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe415_libzip_cve201712858/primary/codeql/20260423_164900_manual/codeql/codeql/database.\nRunning build command: [/opt/codeql/cpp/tools/autobuild.sh]\nRunning command in /anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe415_libzip_cve201712858/vulnerable: [/opt/codeql/cpp/tools/autobuild.sh]\nA fatal error occurred: Exit status 127 from command: [/opt/codeql/cpp/tools/autobuild.sh]\n",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "codeql",
+        "artifact": "source-window:data-flow-seed",
+        "confidence": 0.84
+      },
+      "evidence_slice": {
+        "kind": "flow_witness",
+        "anchor": {
+          "patch_file": "lib/zip_dirent.c",
+          "hunk_index": 0,
+          "source_line": 578
+        },
+        "summary": "_zip_dirent_read reaches _zip_buffer_free, _zip_ef_remove_internal after guard zde->offset == ZIP_UINT32_MAX",
+        "statements": [
+          "546: \t    if (zde->offset == ZIP_UINT32_MAX)",
+          "547: \t\tzde->offset = _zip_buffer_get_64(ef_buffer);",
+          "548: \t    if (zde->disk_number == ZIP_UINT16_MAX)",
+          "549: \t\tzde->disk_number = _zip_buffer_get_32(buffer);",
+          "550: \t}",
+          "551:"
+        ],
+        "guards": [],
+        "call_boundary": [
+          "_zip_buffer_get_64",
+          "_zip_buffer_get_32",
+          "zip_error_set",
+          "_zip_buffer_free",
+          "_zip_ef_remove_internal"
+        ],
+        "call_edges": [
+          "function:_zip_dirent_read",
+          "_zip_dirent_read -> _zip_buffer_free",
+          "_zip_dirent_read -> _zip_ef_remove_internal"
+        ],
+        "state_transitions": [],
+        "api_terms": [
+          "_zip_buffer_free",
+          "_zip_ef_remove_internal"
+        ],
+        "related_symbols": [
+          "zde",
+          "src",
+          "buffer",
+          "local",
+          "error",
+          "zde->offset"
+        ],
+        "verifier": "source-window",
+        "extraction_method": "source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "codeql_chain_0",
+      "type": "call_chain",
+      "analyzer": "codeql",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "lib/zip_dirent.c",
+        "function": "_zip_dirent_read"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": [
+          "_zip_dirent_read -> _zip_buffer_free",
+          "_zip_dirent_read -> _zip_ef_remove_internal"
+        ],
+        "call_edges": [
+          "_zip_dirent_read -> _zip_buffer_free",
+          "_zip_dirent_read -> _zip_ef_remove_internal"
+        ],
+        "live_query_status": "database_missing",
+        "database_status": "missing",
+        "database_create_message": "CodeQL 数据库创建失败: Initializing database at /anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe415_libzip_cve201712858/primary/codeql/20260423_164900_manual/codeql/codeql/database.\nRunning build command: [/opt/codeql/cpp/tools/autobuild.sh]\nRunning command in /anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe415_libzip_cve201712858/vulnerable: [/opt/codeql/cpp/tools/autobuild.sh]\nA fatal error occurred: Exit status 127 from command: [/opt/codeql/cpp/tools/autobuild.sh]\n",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "codeql",
+        "artifact": "source-window:interprocedural-summary",
+        "confidence": 0.78
+      },
+      "evidence_slice": {
+        "kind": "interprocedural_slice",
+        "anchor": {
+          "patch_file": "lib/zip_dirent.c",
+          "hunk_index": 0,
+          "source_line": 578
+        },
+        "summary": "_zip_dirent_read -> _zip_buffer_free, _zip_dirent_read -> _zip_ef_remove_internal",
+        "statements": [
+          "546: \t    if (zde->offset == ZIP_UINT32_MAX)",
+          "547: \t\tzde->offset = _zip_buffer_get_64(ef_buffer);",
+          "548: \t    if (zde->disk_number == ZIP_UINT16_MAX)",
+          "549: \t\tzde->disk_number = _zip_buffer_get_32(buffer);",
+          "550: \t}",
+          "551:"
+        ],
+        "guards": [],
+        "call_boundary": [
+          "_zip_buffer_free",
+          "_zip_ef_remove_internal"
+        ],
+        "call_edges": [
+          "_zip_dirent_read -> _zip_buffer_free",
+          "_zip_dirent_read -> _zip_ef_remove_internal"
+        ],
+        "state_transitions": [],
+        "api_terms": [
+          "_zip_buffer_get_64",
+          "_zip_buffer_get_32",
+          "zip_error_set",
+          "_zip_buffer_free",
+          "_zip_ef_remove_internal"
+        ],
+        "related_symbols": [
+          "zde",
+          "src",
+          "buffer",
+          "local",
+          "error",
+          "zde->offset"
+        ],
+        "verifier": "source-window",
+        "extraction_method": "source_window",
+        "coverage_status": "full"
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "collected_analyzers": [
+    "codeql",
+    "patch"
+  ]
+}

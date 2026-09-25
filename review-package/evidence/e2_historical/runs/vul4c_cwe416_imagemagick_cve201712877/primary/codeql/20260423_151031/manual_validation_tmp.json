@@ -1,0 +1,87 @@
+{
+  "query_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe416_imagemagick_cve201712877/primary/codeql/20260423_151031/codeql/refinements/20260424_125840/codeql/ImageListDeletedAliasUseAfterFree.ql",
+  "patch_targets": [
+    "coders/mat.c"
+  ],
+  "vuln": {
+    "success": true,
+    "error_message": "",
+    "execution_time": 8.038271427154541,
+    "diagnostics_count": 2,
+    "warnings_count": 2,
+    "errors_count": 0,
+    "scoped_diagnostics_count": 2,
+    "diagnostics": [
+      {
+        "file_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe416_imagemagick_cve201712877/vulnerable/coders/mat.c",
+        "line": 1342,
+        "column": 9,
+        "severity": "warning",
+        "message": "This empty-image pruning branch advances to the previous node without invalidating image2 first, so a stale alias may survive deletion of the pruned node.",
+        "source": "codeql"
+      },
+      {
+        "file_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe416_imagemagick_cve201712877/vulnerable/coders/mat.c",
+        "line": 1374,
+        "column": 7,
+        "severity": "warning",
+        "message": "image2 reaches a later DestroyImage cleanup sink after an earlier prune branch deleted an aliased node without first nulling the alias.",
+        "source": "codeql"
+      }
+    ],
+    "metadata": {
+      "output_file": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe416_imagemagick_cve201712877/primary/codeql/20260423_151031/codeql/refinements/20260424_125840/codeql/manual_results.bqrs",
+      "bugs_found": 2,
+      "database_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe416_imagemagick_cve201712877/primary/codeql/20260423_151031/codeql/database/vulnerable_cpp",
+      "database_resolution": null,
+      "query_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe416_imagemagick_cve201712877/primary/codeql/20260423_151031/codeql/refinements/20260424_125840/codeql/ImageListDeletedAliasUseAfterFree.ql",
+      "decoded_results": {
+        "text": {
+          "path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe416_imagemagick_cve201712877/primary/codeql/20260423_151031/codeql/refinements/20260424_125840/codeql/manual_results.text",
+          "preview": "| ID of site |     site      |                                                               URL for site                                                               |                                                                          message                                                                           |\n+------------+---------------+------------------------------------------------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+\n|  -15732986 | if (...) ...  | file:///anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe416_imagemagick_cve201712877/vulnerable/coders/mat.c:1342:9:1348:9  | This empty-image pruning branch advances to the previous node without invalidating image2 first, so a stale alias may survive deletion of the pruned node. |\n|  -15732729 | ... ",
+          "content": null
+        },
+        "json": {
+          "path": "",
+          "preview": "{\"#select\":{\"columns\":[\n   {\"name\":\"site\",\"kind\":\"Entity\"}\n  ,{\"name\":\"message\",\"kind\":\"String\"}]\n ,\"tuples\":[\n   [{\"id\":-15732986,\"label\":\"if (...) ... \",\"url\":{\"uri\":\"file:/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe416_imagemagick_cve201712877/vulnerable/coders/mat.c\",\"startLine\":1342,\"startColumn\":9,\"endLine\":1348,\"endColumn\":9}},\"This empty-image pruning branch advances to the previous node without invalidating image2 first, so a stale alias may survive deletion of the pruned node.\"]\n  ,[{\"id\":-15732729,\"label\":\"... = ...\",\"url\":{\"uri\":\"file:/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe416_imagemagick_cve201712877/vulnerable/coders/mat.c\",\"startLine\":1374,\"startColumn\":7,\"endLine\":1374,\"endColumn\":33}},\"image2 reaches a later DestroyImage cleanup sink after an earlier prune branch deleted an aliased node without first nulling the alias.\"]]\n }}\n",
+          "content": "{\"#select\":{\"columns\":[\n   {\"name\":\"site\",\"kind\":\"Entity\"}\n  ,{\"name\":\"message\",\"kind\":\"String\"}]\n ,\"tuples\":[\n   [{\"id\":-15732986,\"label\":\"if (...) ... \",\"url\":{\"uri\":\"file:/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe416_imagemagick_cve201712877/vulnerable/coders/mat.c\",\"startLine\":1342,\"startColumn\":9,\"endLine\":1348,\"endColumn\":9}},\"This empty-image pruning branch advances to the previous node without invalidating image2 first, so a stale alias may survive deletion of the pruned node.\"]\n  ,[{\"id\":-15732729,\"label\":\"... = ...\",\"url\":{\"uri\":\"file:/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe416_imagemagick_cve201712877/vulnerable/coders/mat.c\",\"startLine\":1374,\"startColumn\":7,\"endLine\":1374,\"endColumn\":33}},\"image2 reaches a later DestroyImage cleanup sink after an earlier prune branch deleted an aliased node without first nulling the alias.\"]]\n }}\n"
+        }
+      },
+      "environment_blocked": false,
+      "environment_block_reason": "",
+      "validation_target": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe416_imagemagick_cve201712877/vulnerable"
+    }
+  },
+  "fixed": {
+    "success": true,
+    "error_message": "",
+    "execution_time": 10.104986190795898,
+    "diagnostics_count": 0,
+    "warnings_count": 0,
+    "errors_count": 0,
+    "scoped_diagnostics_count": 0,
+    "diagnostics": [],
+    "metadata": {
+      "output_file": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe416_imagemagick_cve201712877/primary/codeql/20260423_151031/codeql/refinements/20260424_125840/codeql/manual_fixed_results.bqrs",
+      "bugs_found": 0,
+      "database_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe416_imagemagick_cve201712877/primary/codeql/20260423_151031/fixed_version_codeql_db",
+      "database_resolution": null,
+      "query_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe416_imagemagick_cve201712877/primary/codeql/20260423_151031/codeql/refinements/20260424_125840/codeql/ImageListDeletedAliasUseAfterFree.ql",
+      "decoded_results": {
+        "text": {
+          "path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe416_imagemagick_cve201712877/primary/codeql/20260423_151031/codeql/refinements/20260424_125840/codeql/manual_fixed_results.text",
+          "preview": "| ID of site | site | URL for site | message |\n+------------+------+--------------+---------+\n",
+          "content": null
+        },
+        "json": {
+          "path": "",
+          "preview": "{\"#select\":{\"columns\":[\n   {\"name\":\"site\",\"kind\":\"Entity\"}\n  ,{\"name\":\"message\",\"kind\":\"String\"}]\n ,\"tuples\":[]\n }}\n",
+          "content": "{\"#select\":{\"columns\":[\n   {\"name\":\"site\",\"kind\":\"Entity\"}\n  ,{\"name\":\"message\",\"kind\":\"String\"}]\n ,\"tuples\":[]\n }}\n"
+        }
+      },
+      "environment_blocked": false,
+      "environment_block_reason": "",
+      "validation_target": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe416_imagemagick_cve201712877/fixed"
+    }
+  }
+}

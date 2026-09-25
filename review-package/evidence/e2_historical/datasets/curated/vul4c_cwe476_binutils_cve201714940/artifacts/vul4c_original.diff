@@ -1,0 +1,12 @@
+--- /SoK-main/Vul4C-Benchmark/binutils/CVE-2017-14940/CVE-2017-14940_CWE-476_dwarf2.c_OLD.c	2025-10-13 01:35:41.594552105 +0000
++++ /SoK-main/Vul4C-Benchmark/binutils/CVE-2017-14940/CVE-2017-14940_CWE-476_dwarf2.c_NEW.c	2025-10-13 01:35:41.542552175 +0000
+@@ -3210,7 +3210,8 @@
+ 		    case DW_FORM_block2:
+ 		    case DW_FORM_block4:
+ 		    case DW_FORM_exprloc:
+-		      if (*attr.u.blk->data == DW_OP_addr)
++		      if (attr.u.blk->data != NULL
++			  && *attr.u.blk->data == DW_OP_addr)
+ 			{
+ 			  var->stack = 0;
+ 

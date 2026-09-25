@@ -1,0 +1,40 @@
+diff --git a/binutils/readelf.c b/binutils/readelf.c
+--- a/binutils/readelf.c
++++ b/binutils/readelf.c
+@@ -16932,11 +16932,19 @@
+     {
+     case GNU_BUILD_ATTRIBUTE_TYPE_NUMERIC:
+       {
+-	unsigned int   bytes = pnote->namesz - (name - pnote->namedata);
+-	unsigned long  val = 0;
+-	unsigned int   shift = 0;
+-	char *         decoded = NULL;
+-
++	unsigned int        bytes = pnote->namesz - (name - pnote->namedata);
++	unsigned long long  val = 0;
++	unsigned int        shift = 0;
++	char *              decoded = NULL;
++
++	/* PR 21378 */
++	if (bytes > sizeof (val))
++	  {
++	    error (_("corrupt name field: namesz of %lu is too large for a numeric value\n"),
++		   pnote->namesz);
++	    return FALSE;
++	  }	
++	  
+ 	while (bytes --)
+ 	  {
+ 	    unsigned long byte = (* name ++) & 0xff;
+@@ -16979,9 +16987,9 @@
+ 	else
+ 	  {
+ 	    if (do_wide)
+-	      left -= printf ("0x%llx", val);
++	      left -= printf ("0x%lx", val);
+ 	    else
+-	      left -= printf ("0x%-.*lx", left, val);
++	      left -= printf ("0x%-.*llx", left, val);
+ 	  }
+       }
+       break;

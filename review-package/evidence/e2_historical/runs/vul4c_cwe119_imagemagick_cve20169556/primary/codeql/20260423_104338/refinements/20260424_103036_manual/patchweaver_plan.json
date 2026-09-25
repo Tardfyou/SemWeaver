@@ -1,0 +1,549 @@
+{
+  "files_changed": [
+    "coders/sgi.c"
+  ],
+  "file_details": [
+    {
+      "path": "coders/sgi.c",
+      "additions": 2,
+      "deletions": 0,
+      "hunks": 1
+    }
+  ],
+  "vulnerability_patterns": [],
+  "cross_file_dependencies": [],
+  "detection_strategy": {
+    "primary_pattern": "unknown",
+    "check_types": [
+      "local_ast_guard_difference_detection",
+      "tainted_header_field_validation_check",
+      "range_check_before_use_pattern",
+      "early_error_path_insertion_detection"
+    ],
+    "entry_points": [
+      "coders/sgi.c",
+      "the reader logic around `iris_info.dimension=ReadBlobMSBShort(image);`",
+      "the newly added `ThrowReaderException(CorruptImageError,\"ImproperImageHeader\")` branch"
+    ],
+    "data_flow_tracking": false,
+    "cross_file_analysis": false,
+    "suggestions": [
+      "首稿先命中 patch-local 锚点：读取结构字段 `iris_info.dimension=ReadBlobMSBShort(image)` 后新增范围判断 `dimension == 0 || dimension > 3` 并走 `ThrowReaderException`。",
+      "不要一开始把具体漏洞类型写死成 OOB/overflow；补丁只稳定证明了“未验证的 header 结构值继续被消费”。",
+      "首稿规则可优先找：从输入读取结构/维度/通道类字段后，缺少紧邻的上界和下界检查，却继续读取后续字段或继续解析。",
+      "新增 guard 本身不要作为唯一硬过滤；更重要的是识别“来自输入的结构字段被接受并继续执行”的局部模式，否则容易漏掉同类未修补点。",
+      "辅助收敛条件可用：字段名语义接近 `dimension`、合法值域很小、错误路径使用 `ThrowReaderException(...,\"ImproperImageHeader\")`；这些适合作为二次过滤，不应成为首稿必备条件。",
+      "此补丁不需要跨文件分析；只盯住当前函数内的 header 读取和紧随其后的校验/继续执行关系即可。",
+      "此补丁也不强依赖复杂数据流；局部 AST/CFG 足以表达“读取 -> 无检查继续执行”与“读取 -> 新增 guard -> 提前异常退出”的差异。",
+      "如果后续要扩展到更具体检测，可在同函数中查找 `dimension` 是否参与数组索引、通道数、循环边界、像素平面处理或分配尺寸计算，再做二次归类。"
+    ]
+  },
+  "checker_name_suggestion": "InvalidHeaderFieldRangeChecker",
+  "affected_functions": [
+    "ThrowReaderException"
+  ],
+  "key_functions": [
+    "ThrowReaderException"
+  ],
+  "patch_semantics": {
+    "added_guards": [
+      "if ((iris_info.dimension == 0) || (iris_info.dimension > 3))"
+    ],
+    "added_api_calls": [
+      "ThrowReaderException"
+    ],
+    "removed_api_calls": [],
+    "state_resets": [],
+    "lifecycle_changes": []
+  },
+  "analysis_backend": "llm",
+  "analysis_confidence": 0.67,
+  "analysis_rationale": "The patch adds a new header-field validity guard immediately after `iris_info.dimension=ReadBlobMSBShort(image);` and before subsequent header fields are read and the image is further processed. The concrete change is `if ((iris_info.dimension == 0) || (iris_info.dimension > 3)) ThrowReaderException(CorruptImageError,\"ImproperImageHeader\");`. This shows the pre-patch risk came from accepting an out-of-range `iris_info.dimension` value from untrusted file input and continuing execution with that invalid state. The diff does not show the later sink, so the exact vulnerability class is not proven from the patch alone.",
+  "llm_usage": {
+    "prompt_tokens": 6775,
+    "completion_tokens": 1082,
+    "total_tokens": 7857,
+    "call_count": 1,
+    "available": true,
+    "model": "gpt-5.4"
+  },
+  "patchweaver": {
+    "summary": "Patch suggests unknown semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=0, metadata refs=0.",
+    "patch_facts": [
+      {
+        "fact_type": "patch_overview",
+        "label": "Patch overview",
+        "attributes": {
+          "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe119_imagemagick_cve20169556/patches/fix.patch",
+          "changed_files": [
+            "coders/sgi.c"
+          ],
+          "changed_file_count": 1,
+          "added_line_count": 2,
+          "deleted_line_count": 0
+        }
+      },
+      {
+        "fact_type": "vulnerability_patterns",
+        "label": "Vulnerability patterns inferred from patch",
+        "attributes": {
+          "patterns": [
+            "unknown"
+          ],
+          "descriptions": []
+        }
+      },
+      {
+        "fact_type": "affected_functions",
+        "label": "Functions implicated by removed or fixed code",
+        "attributes": {
+          "functions": [
+            "ReadSGIImage"
+          ]
+        }
+      },
+      {
+        "fact_type": "detection_strategy",
+        "label": "Existing patch analysis detection strategy",
+        "attributes": {
+          "primary_pattern": "unknown",
+          "check_types": [
+            "local_ast_guard_difference_detection",
+            "tainted_header_field_validation_check",
+            "range_check_before_use_pattern",
+            "early_error_path_insertion_detection"
+          ],
+          "entry_points": [
+            "coders/sgi.c",
+            "the reader logic around `iris_info.dimension=ReadBlobMSBShort(image);`",
+            "the newly added `ThrowReaderException(CorruptImageError,\"ImproperImageHeader\")` branch"
+          ],
+          "data_flow_tracking": false,
+          "cross_file_analysis": false,
+          "suggestions": [
+            "首稿先命中 patch-local 锚点：读取结构字段 `iris_info.dimension=ReadBlobMSBShort(image)` 后新增范围判断 `dimension == 0 || dimension > 3` 并走 `ThrowReaderException`。",
+            "不要一开始把具体漏洞类型写死成 OOB/overflow；补丁只稳定证明了“未验证的 header 结构值继续被消费”。",
+            "首稿规则可优先找：从输入读取结构/维度/通道类字段后，缺少紧邻的上界和下界检查，却继续读取后续字段或继续解析。",
+            "新增 guard 本身不要作为唯一硬过滤；更重要的是识别“来自输入的结构字段被接受并继续执行”的局部模式，否则容易漏掉同类未修补点。",
+            "辅助收敛条件可用：字段名语义接近 `dimension`、合法值域很小、错误路径使用 `ThrowReaderException(...,\"ImproperImageHeader\")`；这些适合作为二次过滤，不应成为首稿必备条件。",
+            "此补丁不需要跨文件分析；只盯住当前函数内的 header 读取和紧随其后的校验/继续执行关系即可。",
+            "此补丁也不强依赖复杂数据流；局部 AST/CFG 足以表达“读取 -> 无检查继续执行”与“读取 -> 新增 guard -> 提前异常退出”的差异。",
+            "如果后续要扩展到更具体检测，可在同函数中查找 `dimension` 是否参与数组索引、通道数、循环边界、像素平面处理或分配尺寸计算，再做二次归类。"
+          ]
+        }
+      },
+      {
+        "fact_type": "added_guards",
+        "label": "Patch introduces or strengthens guards",
+        "attributes": {
+          "guards": [
+            "if ((iris_info.dimension == 0) || (iris_info.dimension > 3))"
+          ]
+        }
+      },
+      {
+        "fact_type": "added_api_calls",
+        "label": "Patch introduces or highlights API usage",
+        "attributes": {
+          "apis": [
+            "ThrowReaderException"
+          ]
+        }
+      }
+    ],
+    "mechanism_graph": {
+      "summary": "Patch suggests unknown semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=0, metadata refs=0.",
+      "primary_patterns": [],
+      "nodes": [
+        {
+          "node_id": "patch",
+          "kind": "patch",
+          "label": "Security patch",
+          "attributes": {
+            "changed_files": [
+              "coders/sgi.c"
+            ]
+          }
+        },
+        {
+          "node_id": "file_0",
+          "kind": "file",
+          "label": "coders/sgi.c",
+          "attributes": {
+            "path": "coders/sgi.c",
+            "additions": 2,
+            "deletions": 0,
+            "hunks": 1
+          }
+        },
+        {
+          "node_id": "strategy",
+          "kind": "strategy",
+          "label": "unknown",
+          "attributes": {
+            "primary_pattern": "unknown",
+            "check_types": [
+              "local_ast_guard_difference_detection",
+              "tainted_header_field_validation_check",
+              "range_check_before_use_pattern",
+              "early_error_path_insertion_detection"
+            ],
+            "entry_points": [
+              "coders/sgi.c",
+              "the reader logic around `iris_info.dimension=ReadBlobMSBShort(image);`",
+              "the newly added `ThrowReaderException(CorruptImageError,\"ImproperImageHeader\")` branch"
+            ],
+            "data_flow_tracking": false,
+            "cross_file_analysis": false,
+            "suggestions": [
+              "首稿先命中 patch-local 锚点：读取结构字段 `iris_info.dimension=ReadBlobMSBShort(image)` 后新增范围判断 `dimension == 0 || dimension > 3` 并走 `ThrowReaderException`。",
+              "不要一开始把具体漏洞类型写死成 OOB/overflow；补丁只稳定证明了“未验证的 header 结构值继续被消费”。",
+              "首稿规则可优先找：从输入读取结构/维度/通道类字段后，缺少紧邻的上界和下界检查，却继续读取后续字段或继续解析。",
+              "新增 guard 本身不要作为唯一硬过滤；更重要的是识别“来自输入的结构字段被接受并继续执行”的局部模式，否则容易漏掉同类未修补点。",
+              "辅助收敛条件可用：字段名语义接近 `dimension`、合法值域很小、错误路径使用 `ThrowReaderException(...,\"ImproperImageHeader\")`；这些适合作为二次过滤，不应成为首稿必备条件。",
+              "此补丁不需要跨文件分析；只盯住当前函数内的 header 读取和紧随其后的校验/继续执行关系即可。",
+              "此补丁也不强依赖复杂数据流；局部 AST/CFG 足以表达“读取 -> 无检查继续执行”与“读取 -> 新增 guard -> 提前异常退出”的差异。",
+              "如果后续要扩展到更具体检测，可在同函数中查找 `dimension` 是否参与数组索引、通道数、循环边界、像素平面处理或分配尺寸计算，再做二次归类。"
+            ]
+          }
+        },
+        {
+          "node_id": "func_1",
+          "kind": "function",
+          "label": "ReadSGIImage",
+          "attributes": {
+            "function": "ReadSGIImage",
+            "source": "patch_fact"
+          }
+        },
+        {
+          "node_id": "guard_1",
+          "kind": "guard",
+          "label": "if ((iris_info.dimension == 0) || (iris_info.dimension > 3))",
+          "attributes": {
+            "condition": "if ((iris_info.dimension == 0) || (iris_info.dimension > 3))",
+            "source": "patch_fact"
+          }
+        },
+        {
+          "node_id": "fix_1",
+          "kind": "fix",
+          "label": "ThrowReaderException",
+          "attributes": {
+            "kind": "added_api_calls",
+            "value": "ThrowReaderException"
+          }
+        }
+      ],
+      "edges": [
+        {
+          "source": "patch",
+          "target": "file_0",
+          "relation": "touches",
+          "confidence": 0.95
+        },
+        {
+          "source": "patch",
+          "target": "strategy",
+          "relation": "guides",
+          "confidence": 0.85
+        },
+        {
+          "source": "patch",
+          "target": "func_1",
+          "relation": "focuses_on",
+          "confidence": 0.82
+        },
+        {
+          "source": "patch",
+          "target": "guard_1",
+          "relation": "adds_guard",
+          "confidence": 0.84
+        },
+        {
+          "source": "patch",
+          "target": "fix_1",
+          "relation": "introduces",
+          "confidence": 0.8
+        }
+      ]
+    },
+    "evidence_plan": {
+      "primary_pattern": "unknown",
+      "hypotheses": [
+        "Patch likely encodes a reusable vulnerability mechanism but available metadata is weak; keep evidence collection broad."
+      ],
+      "requirements": [
+        {
+          "evidence_type": "patch_fact",
+          "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+          "priority": 100,
+          "preferred_analyzers": [],
+          "confidence": 1.0,
+          "mechanism_refs": [
+            "patch"
+          ]
+        }
+      ],
+      "recommended_analyzers": [
+        "csa",
+        "codeql"
+      ],
+      "planner_notes": [
+        "Added guards detected in patch diff; path-sensitive evidence should stay near top priority."
+      ],
+      "coverage_gaps": [],
+      "uncertainty_budget": "medium",
+      "escalation_triggers": [
+        "weak_primary_pattern"
+      ]
+    },
+    "refinement_targets": {
+      "codeql": {
+        "checker_name": "SgiHeaderDimensionRangeValidation",
+        "artifact_path": "/anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe119_imagemagick_cve20169556/primary/codeql/20260423_104338/codeql/SgiHeaderDimensionRangeValidation.ql",
+        "artifact_kind": "query",
+        "validation_summary": "命中验证目标并通过功能验证",
+        "refinement_summary": "- validation_outcome @ semantic_validation: semantic validation passed with 2 diagnostics [coverage=full]"
+      }
+    },
+    "validation_feedback_history": [
+      {
+        "analyzer": "codeql",
+        "phase": "initial_validation",
+        "summary": "- validation_outcome @ semantic_validation: semantic validation passed with 2 diagnostics [coverage=full]"
+      }
+    ]
+  },
+  "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe119_imagemagick_cve20169556/patches/fix.patch",
+  "summary": "Patch suggests unknown semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=0, metadata refs=0.",
+  "patch_facts": [
+    {
+      "fact_type": "patch_overview",
+      "label": "Patch overview",
+      "attributes": {
+        "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe119_imagemagick_cve20169556/patches/fix.patch",
+        "changed_files": [
+          "coders/sgi.c"
+        ],
+        "changed_file_count": 1,
+        "added_line_count": 2,
+        "deleted_line_count": 0
+      }
+    },
+    {
+      "fact_type": "vulnerability_patterns",
+      "label": "Vulnerability patterns inferred from patch",
+      "attributes": {
+        "patterns": [
+          "unknown"
+        ],
+        "descriptions": []
+      }
+    },
+    {
+      "fact_type": "affected_functions",
+      "label": "Functions implicated by removed or fixed code",
+      "attributes": {
+        "functions": [
+          "ReadSGIImage"
+        ]
+      }
+    },
+    {
+      "fact_type": "detection_strategy",
+      "label": "Existing patch analysis detection strategy",
+      "attributes": {
+        "primary_pattern": "unknown",
+        "check_types": [
+          "local_ast_guard_difference_detection",
+          "tainted_header_field_validation_check",
+          "range_check_before_use_pattern",
+          "early_error_path_insertion_detection"
+        ],
+        "entry_points": [
+          "coders/sgi.c",
+          "the reader logic around `iris_info.dimension=ReadBlobMSBShort(image);`",
+          "the newly added `ThrowReaderException(CorruptImageError,\"ImproperImageHeader\")` branch"
+        ],
+        "data_flow_tracking": false,
+        "cross_file_analysis": false,
+        "suggestions": [
+          "首稿先命中 patch-local 锚点：读取结构字段 `iris_info.dimension=ReadBlobMSBShort(image)` 后新增范围判断 `dimension == 0 || dimension > 3` 并走 `ThrowReaderException`。",
+          "不要一开始把具体漏洞类型写死成 OOB/overflow；补丁只稳定证明了“未验证的 header 结构值继续被消费”。",
+          "首稿规则可优先找：从输入读取结构/维度/通道类字段后，缺少紧邻的上界和下界检查，却继续读取后续字段或继续解析。",
+          "新增 guard 本身不要作为唯一硬过滤；更重要的是识别“来自输入的结构字段被接受并继续执行”的局部模式，否则容易漏掉同类未修补点。",
+          "辅助收敛条件可用：字段名语义接近 `dimension`、合法值域很小、错误路径使用 `ThrowReaderException(...,\"ImproperImageHeader\")`；这些适合作为二次过滤，不应成为首稿必备条件。",
+          "此补丁不需要跨文件分析；只盯住当前函数内的 header 读取和紧随其后的校验/继续执行关系即可。",
+          "此补丁也不强依赖复杂数据流；局部 AST/CFG 足以表达“读取 -> 无检查继续执行”与“读取 -> 新增 guard -> 提前异常退出”的差异。",
+          "如果后续要扩展到更具体检测，可在同函数中查找 `dimension` 是否参与数组索引、通道数、循环边界、像素平面处理或分配尺寸计算，再做二次归类。"
+        ]
+      }
+    },
+    {
+      "fact_type": "added_guards",
+      "label": "Patch introduces or strengthens guards",
+      "attributes": {
+        "guards": [
+          "if ((iris_info.dimension == 0) || (iris_info.dimension > 3))"
+        ]
+      }
+    },
+    {
+      "fact_type": "added_api_calls",
+      "label": "Patch introduces or highlights API usage",
+      "attributes": {
+        "apis": [
+          "ThrowReaderException"
+        ]
+      }
+    }
+  ],
+  "mechanism_graph": {
+    "summary": "Patch suggests unknown semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=0, metadata refs=0.",
+    "primary_patterns": [],
+    "nodes": [
+      {
+        "node_id": "patch",
+        "kind": "patch",
+        "label": "Security patch",
+        "attributes": {
+          "changed_files": [
+            "coders/sgi.c"
+          ]
+        }
+      },
+      {
+        "node_id": "file_0",
+        "kind": "file",
+        "label": "coders/sgi.c",
+        "attributes": {
+          "path": "coders/sgi.c",
+          "additions": 2,
+          "deletions": 0,
+          "hunks": 1
+        }
+      },
+      {
+        "node_id": "strategy",
+        "kind": "strategy",
+        "label": "unknown",
+        "attributes": {
+          "primary_pattern": "unknown",
+          "check_types": [
+            "local_ast_guard_difference_detection",
+            "tainted_header_field_validation_check",
+            "range_check_before_use_pattern",
+            "early_error_path_insertion_detection"
+          ],
+          "entry_points": [
+            "coders/sgi.c",
+            "the reader logic around `iris_info.dimension=ReadBlobMSBShort(image);`",
+            "the newly added `ThrowReaderException(CorruptImageError,\"ImproperImageHeader\")` branch"
+          ],
+          "data_flow_tracking": false,
+          "cross_file_analysis": false,
+          "suggestions": [
+            "首稿先命中 patch-local 锚点：读取结构字段 `iris_info.dimension=ReadBlobMSBShort(image)` 后新增范围判断 `dimension == 0 || dimension > 3` 并走 `ThrowReaderException`。",
+            "不要一开始把具体漏洞类型写死成 OOB/overflow；补丁只稳定证明了“未验证的 header 结构值继续被消费”。",
+            "首稿规则可优先找：从输入读取结构/维度/通道类字段后，缺少紧邻的上界和下界检查，却继续读取后续字段或继续解析。",
+            "新增 guard 本身不要作为唯一硬过滤；更重要的是识别“来自输入的结构字段被接受并继续执行”的局部模式，否则容易漏掉同类未修补点。",
+            "辅助收敛条件可用：字段名语义接近 `dimension`、合法值域很小、错误路径使用 `ThrowReaderException(...,\"ImproperImageHeader\")`；这些适合作为二次过滤，不应成为首稿必备条件。",
+            "此补丁不需要跨文件分析；只盯住当前函数内的 header 读取和紧随其后的校验/继续执行关系即可。",
+            "此补丁也不强依赖复杂数据流；局部 AST/CFG 足以表达“读取 -> 无检查继续执行”与“读取 -> 新增 guard -> 提前异常退出”的差异。",
+            "如果后续要扩展到更具体检测，可在同函数中查找 `dimension` 是否参与数组索引、通道数、循环边界、像素平面处理或分配尺寸计算，再做二次归类。"
+          ]
+        }
+      },
+      {
+        "node_id": "func_1",
+        "kind": "function",
+        "label": "ReadSGIImage",
+        "attributes": {
+          "function": "ReadSGIImage",
+          "source": "patch_fact"
+        }
+      },
+      {
+        "node_id": "guard_1",
+        "kind": "guard",
+        "label": "if ((iris_info.dimension == 0) || (iris_info.dimension > 3))",
+        "attributes": {
+          "condition": "if ((iris_info.dimension == 0) || (iris_info.dimension > 3))",
+          "source": "patch_fact"
+        }
+      },
+      {
+        "node_id": "fix_1",
+        "kind": "fix",
+        "label": "ThrowReaderException",
+        "attributes": {
+          "kind": "added_api_calls",
+          "value": "ThrowReaderException"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "patch",
+        "target": "file_0",
+        "relation": "touches",
+        "confidence": 0.95
+      },
+      {
+        "source": "patch",
+        "target": "strategy",
+        "relation": "guides",
+        "confidence": 0.85
+      },
+      {
+        "source": "patch",
+        "target": "func_1",
+        "relation": "focuses_on",
+        "confidence": 0.82
+      },
+      {
+        "source": "patch",
+        "target": "guard_1",
+        "relation": "adds_guard",
+        "confidence": 0.84
+      },
+      {
+        "source": "patch",
+        "target": "fix_1",
+        "relation": "introduces",
+        "confidence": 0.8
+      }
+    ]
+  },
+  "evidence_plan": {
+    "primary_pattern": "unknown",
+    "hypotheses": [
+      "Patch likely encodes a reusable vulnerability mechanism but available metadata is weak; keep evidence collection broad."
+    ],
+    "requirements": [
+      {
+        "evidence_type": "patch_fact",
+        "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+        "priority": 100,
+        "preferred_analyzers": [],
+        "confidence": 1.0,
+        "mechanism_refs": [
+          "patch"
+        ]
+      }
+    ],
+    "recommended_analyzers": [
+      "csa",
+      "codeql"
+    ],
+    "planner_notes": [
+      "Added guards detected in patch diff; path-sensitive evidence should stay near top priority."
+    ],
+    "coverage_gaps": [],
+    "uncertainty_budget": "medium",
+    "escalation_triggers": [
+      "weak_primary_pattern"
+    ]
+  }
+}

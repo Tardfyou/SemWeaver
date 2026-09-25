@@ -1,0 +1,837 @@
+{
+  "files_changed": [
+    "bfd/opncls.c"
+  ],
+  "file_details": [
+    {
+      "path": "bfd/opncls.c",
+      "additions": 1,
+      "deletions": 1,
+      "hunks": 1
+    }
+  ],
+  "vulnerability_patterns": [
+    {
+      "type": "out_of_bounds_read",
+      "description": "A size check validated only the starting offset, not the full width of a subsequent 4-byte read, allowing reads beyond the section buffer end.",
+      "trigger_conditions": [
+        "`name` length and alignment produce a `crc_offset` that is less than the section size but greater than `section_size - 4`",
+        "Execution reaches `bfd_get_32 (abfd, contents + crc_offset)` with insufficient remaining bytes in the section buffer"
+      ],
+      "fix_patterns": [
+        "Replace start-offset-only validation with width-aware bounds check for the exact read size",
+        "Guard `offset + read_width > buffer_size` before dereferencing or decoding multi-byte values"
+      ],
+      "affected_functions": [
+        "bfd_get_section_size"
+      ],
+      "cross_file": false,
+      "source": "llm",
+      "confidence": 0.98,
+      "evidence_lines": [
+        "Comment states intent: `avoid reading off the end of the buffer.`",
+        "Old check: `if (crc_offset >= bfd_get_section_size (sect))`",
+        "New check: `if (crc_offset + 4 > bfd_get_section_size (sect))`",
+        "Protected read: `*crc32 = bfd_get_32 (abfd, contents + crc_offset);`"
+      ]
+    }
+  ],
+  "cross_file_dependencies": [],
+  "detection_strategy": {
+    "primary_pattern": "out_of_bounds_read",
+    "check_types": [
+      "buffer_boundary_analysis",
+      "offset_plus_width_validation",
+      "multi_byte_read_sink_checking",
+      "integer_range_reasoning_on_aligned_offsets"
+    ],
+    "entry_points": [
+      "`bfd_get_32 (abfd, contents + crc_offset)` in `bfd/opncls.c`",
+      "Call sites computing offsets from `strnlen(...)`, alignment arithmetic, or section-size-derived bounds"
+    ],
+    "data_flow_tracking": true,
+    "cross_file_analysis": false,
+    "suggestions": [
+      "Prefer sink-aware checks that compare `offset + access_width` against authoritative buffer length, not just `offset < size`.",
+      "Model decoder helpers like `bfd_get_32` as fixed-width reads requiring 4 available bytes.",
+      "Track transformations such as `strnlen(...) + 1` and alignment rounding `(x + 3) & ~3` because they can move an offset from safe to near-end positions.",
+      "Prefer missing full-span validation over plain null-check reasoning.",
+      "Flag cases where a buffer length from `bfd_get_section_size` is reused for string scanning and then for later structured reads without revalidating the read width."
+    ]
+  },
+  "checker_name_suggestion": "OutOfBoundsReadChecker",
+  "affected_functions": [
+    "bfd_get_section_size"
+  ],
+  "key_functions": [
+    "bfd_get_section_size"
+  ],
+  "patch_semantics": {
+    "added_guards": [
+      "if (crc_offset + 4 > bfd_get_section_size (sect))"
+    ],
+    "added_api_calls": [
+      "bfd_get_section_size"
+    ],
+    "removed_api_calls": [
+      "bfd_get_section_size"
+    ],
+    "state_resets": [],
+    "lifecycle_changes": []
+  },
+  "analysis_backend": "llm",
+  "analysis_confidence": 0.98,
+  "analysis_rationale": "The patch tightens the bounds check in `bfd_get_section_size` usage before reading a 4-byte CRC from `contents + crc_offset`. Previously it only rejected `crc_offset >= bfd_get_section_size (sect)`, which still allowed `crc_offset` values near the end of the section where `bfd_get_32 (abfd, contents + crc_offset)` would read past the buffer. The fix changes this to `if (crc_offset + 4 > bfd_get_section_size (sect)) return NULL;`, directly guarding the full 4-byte read width.",
+  "llm_usage": {
+    "prompt_tokens": 5499,
+    "completion_tokens": 639,
+    "total_tokens": 6138,
+    "call_count": 1,
+    "available": true,
+    "model": "gpt-5.4"
+  },
+  "patchweaver": {
+    "summary": "Patch suggests out_of_bounds_read semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=2, metadata refs=0.",
+    "patch_facts": [
+      {
+        "fact_type": "patch_overview",
+        "label": "Patch overview",
+        "attributes": {
+          "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe125_binutils_cve201715021/patches/fix.patch",
+          "changed_files": [
+            "bfd/opncls.c"
+          ],
+          "changed_file_count": 1,
+          "added_line_count": 1,
+          "deleted_line_count": 1
+        }
+      },
+      {
+        "fact_type": "vulnerability_patterns",
+        "label": "Vulnerability patterns inferred from patch",
+        "attributes": {
+          "patterns": [
+            "out_of_bounds_read"
+          ],
+          "descriptions": [
+            "A size check validated only the starting offset, not the full width of a subsequent 4-byte read, allowing reads beyond the section buffer end."
+          ]
+        }
+      },
+      {
+        "fact_type": "affected_functions",
+        "label": "Functions implicated by removed or fixed code",
+        "attributes": {
+          "functions": [
+            "bfd_get_debug_link_info_1",
+            "bfd_get_section_size"
+          ]
+        }
+      },
+      {
+        "fact_type": "detection_strategy",
+        "label": "Existing patch analysis detection strategy",
+        "attributes": {
+          "primary_pattern": "out_of_bounds_read",
+          "check_types": [
+            "buffer_boundary_analysis",
+            "offset_plus_width_validation",
+            "multi_byte_read_sink_checking",
+            "integer_range_reasoning_on_aligned_offsets"
+          ],
+          "entry_points": [
+            "`bfd_get_32 (abfd, contents + crc_offset)` in `bfd/opncls.c`",
+            "Call sites computing offsets from `strnlen(...)`, alignment arithmetic, or section-size-derived bounds"
+          ],
+          "data_flow_tracking": true,
+          "cross_file_analysis": false,
+          "suggestions": [
+            "Prefer sink-aware checks that compare `offset + access_width` against authoritative buffer length, not just `offset < size`.",
+            "Model decoder helpers like `bfd_get_32` as fixed-width reads requiring 4 available bytes.",
+            "Track transformations such as `strnlen(...) + 1` and alignment rounding `(x + 3) & ~3` because they can move an offset from safe to near-end positions.",
+            "Prefer missing full-span validation over plain null-check reasoning.",
+            "Flag cases where a buffer length from `bfd_get_section_size` is reused for string scanning and then for later structured reads without revalidating the read width."
+          ]
+        }
+      },
+      {
+        "fact_type": "added_guards",
+        "label": "Patch introduces or strengthens guards",
+        "attributes": {
+          "guards": [
+            "if (crc_offset + 4 > bfd_get_section_size (sect))"
+          ]
+        }
+      },
+      {
+        "fact_type": "fix_patterns",
+        "label": "Patch introduces reusable fix patterns",
+        "attributes": {
+          "patterns": [
+            "Replace start-offset-only validation with width-aware bounds check for the exact read size",
+            "Guard `offset + read_width > buffer_size` before dereferencing or decoding multi-byte values"
+          ]
+        }
+      },
+      {
+        "fact_type": "added_api_calls",
+        "label": "Patch introduces or highlights API usage",
+        "attributes": {
+          "apis": [
+            "bfd_get_section_size"
+          ]
+        }
+      }
+    ],
+    "mechanism_graph": {
+      "summary": "Patch suggests out_of_bounds_read semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=2, metadata refs=0.",
+      "primary_patterns": [
+        "out_of_bounds_read"
+      ],
+      "nodes": [
+        {
+          "node_id": "patch",
+          "kind": "patch",
+          "label": "Security patch",
+          "attributes": {
+            "changed_files": [
+              "bfd/opncls.c"
+            ]
+          }
+        },
+        {
+          "node_id": "file_0",
+          "kind": "file",
+          "label": "bfd/opncls.c",
+          "attributes": {
+            "path": "bfd/opncls.c",
+            "additions": 1,
+            "deletions": 1,
+            "hunks": 1
+          }
+        },
+        {
+          "node_id": "pattern_0",
+          "kind": "pattern",
+          "label": "out_of_bounds_read",
+          "attributes": {
+            "type": "out_of_bounds_read",
+            "description": "A size check validated only the starting offset, not the full width of a subsequent 4-byte read, allowing reads beyond the section buffer end.",
+            "trigger_conditions": [
+              "`name` length and alignment produce a `crc_offset` that is less than the section size but greater than `section_size - 4`",
+              "Execution reaches `bfd_get_32 (abfd, contents + crc_offset)` with insufficient remaining bytes in the section buffer"
+            ],
+            "fix_patterns": [
+              "Replace start-offset-only validation with width-aware bounds check for the exact read size",
+              "Guard `offset + read_width > buffer_size` before dereferencing or decoding multi-byte values"
+            ],
+            "affected_functions": [
+              "bfd_get_section_size"
+            ],
+            "cross_file": false,
+            "source": "llm",
+            "confidence": 0.98,
+            "evidence_lines": [
+              "Comment states intent: `avoid reading off the end of the buffer.`",
+              "Old check: `if (crc_offset >= bfd_get_section_size (sect))`",
+              "New check: `if (crc_offset + 4 > bfd_get_section_size (sect))`",
+              "Protected read: `*crc32 = bfd_get_32 (abfd, contents + crc_offset);`"
+            ]
+          }
+        },
+        {
+          "node_id": "func_1",
+          "kind": "function",
+          "label": "bfd_get_section_size",
+          "attributes": {
+            "function": "bfd_get_section_size"
+          }
+        },
+        {
+          "node_id": "guard_1",
+          "kind": "guard",
+          "label": "`name` length and alignment produce a `crc_offset` that is less than the section size but greater than `section_size - 4`",
+          "attributes": {
+            "condition": "`name` length and alignment produce a `crc_offset` that is less than the section size but greater than `section_size - 4`"
+          }
+        },
+        {
+          "node_id": "guard_2",
+          "kind": "guard",
+          "label": "Execution reaches `bfd_get_32 (abfd, contents + crc_offset)` with insufficient remaining bytes in the section buffer",
+          "attributes": {
+            "condition": "Execution reaches `bfd_get_32 (abfd, contents + crc_offset)` with insufficient remaining bytes in the section buffer"
+          }
+        },
+        {
+          "node_id": "strategy",
+          "kind": "strategy",
+          "label": "out_of_bounds_read",
+          "attributes": {
+            "primary_pattern": "out_of_bounds_read",
+            "check_types": [
+              "buffer_boundary_analysis",
+              "offset_plus_width_validation",
+              "multi_byte_read_sink_checking",
+              "integer_range_reasoning_on_aligned_offsets"
+            ],
+            "entry_points": [
+              "`bfd_get_32 (abfd, contents + crc_offset)` in `bfd/opncls.c`",
+              "Call sites computing offsets from `strnlen(...)`, alignment arithmetic, or section-size-derived bounds"
+            ],
+            "data_flow_tracking": true,
+            "cross_file_analysis": false,
+            "suggestions": [
+              "Prefer sink-aware checks that compare `offset + access_width` against authoritative buffer length, not just `offset < size`.",
+              "Model decoder helpers like `bfd_get_32` as fixed-width reads requiring 4 available bytes.",
+              "Track transformations such as `strnlen(...) + 1` and alignment rounding `(x + 3) & ~3` because they can move an offset from safe to near-end positions.",
+              "Prefer missing full-span validation over plain null-check reasoning.",
+              "Flag cases where a buffer length from `bfd_get_section_size` is reused for string scanning and then for later structured reads without revalidating the read width."
+            ]
+          }
+        },
+        {
+          "node_id": "func_2",
+          "kind": "function",
+          "label": "bfd_get_debug_link_info_1",
+          "attributes": {
+            "function": "bfd_get_debug_link_info_1",
+            "source": "patch_fact"
+          }
+        },
+        {
+          "node_id": "guard_3",
+          "kind": "guard",
+          "label": "if (crc_offset + 4 > bfd_get_section_size (sect))",
+          "attributes": {
+            "condition": "if (crc_offset + 4 > bfd_get_section_size (sect))",
+            "source": "patch_fact"
+          }
+        },
+        {
+          "node_id": "fix_1",
+          "kind": "fix",
+          "label": "Replace start-offset-only validation with width-aware bounds check for the exact read size",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "Replace start-offset-only validation with width-aware bounds check for the exact read size"
+          }
+        },
+        {
+          "node_id": "fix_2",
+          "kind": "fix",
+          "label": "Guard `offset + read_width > buffer_size` before dereferencing or decoding multi-byte values",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "Guard `offset + read_width > buffer_size` before dereferencing or decoding multi-byte values"
+          }
+        },
+        {
+          "node_id": "fix_3",
+          "kind": "fix",
+          "label": "bfd_get_section_size",
+          "attributes": {
+            "kind": "added_api_calls",
+            "value": "bfd_get_section_size"
+          }
+        }
+      ],
+      "edges": [
+        {
+          "source": "patch",
+          "target": "file_0",
+          "relation": "touches",
+          "confidence": 0.95
+        },
+        {
+          "source": "patch",
+          "target": "pattern_0",
+          "relation": "indicates",
+          "confidence": 0.9
+        },
+        {
+          "source": "pattern_0",
+          "target": "func_1",
+          "relation": "affects",
+          "confidence": 0.75
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_1",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_2",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "patch",
+          "target": "strategy",
+          "relation": "guides",
+          "confidence": 0.85
+        },
+        {
+          "source": "patch",
+          "target": "func_2",
+          "relation": "focuses_on",
+          "confidence": 0.82
+        },
+        {
+          "source": "patch",
+          "target": "guard_3",
+          "relation": "adds_guard",
+          "confidence": 0.84
+        },
+        {
+          "source": "patch",
+          "target": "fix_1",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_2",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_3",
+          "relation": "introduces",
+          "confidence": 0.8
+        }
+      ]
+    },
+    "evidence_plan": {
+      "primary_pattern": "out_of_bounds_read",
+      "hypotheses": [
+        "The patch changes a data propagation condition that should generalize beyond the edited lines."
+      ],
+      "requirements": [
+        {
+          "evidence_type": "patch_fact",
+          "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+          "priority": 100,
+          "preferred_analyzers": [],
+          "confidence": 1.0,
+          "mechanism_refs": [
+            "patch"
+          ]
+        },
+        {
+          "evidence_type": "dataflow_candidate",
+          "reason": "Patch analysis requests data-flow tracking.",
+          "priority": 95,
+          "preferred_analyzers": [
+            "codeql"
+          ],
+          "confidence": 0.9,
+          "mechanism_refs": [
+            "strategy"
+          ]
+        },
+        {
+          "evidence_type": "call_chain",
+          "reason": "Interprocedural call-chain context is needed to generalize the fix pattern.",
+          "priority": 78,
+          "preferred_analyzers": [
+            "codeql"
+          ],
+          "confidence": 0.78,
+          "mechanism_refs": [
+            "strategy"
+          ]
+        }
+      ],
+      "recommended_analyzers": [
+        "codeql"
+      ],
+      "planner_notes": [
+        "Added guards detected in patch diff; path-sensitive evidence should stay near top priority.",
+        "Selected analyzers do not cover every planned evidence primitive."
+      ],
+      "coverage_gaps": [
+        "dataflow_candidate is not covered by selected analyzers ['csa']",
+        "call_chain is not covered by selected analyzers ['csa']"
+      ],
+      "uncertainty_budget": "low",
+      "escalation_triggers": [
+        "selected_coverage_gap"
+      ]
+    }
+  },
+  "summary": "Patch suggests out_of_bounds_read semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=2, metadata refs=0.",
+  "patch_facts": [
+    {
+      "fact_type": "patch_overview",
+      "label": "Patch overview",
+      "attributes": {
+        "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe125_binutils_cve201715021/patches/fix.patch",
+        "changed_files": [
+          "bfd/opncls.c"
+        ],
+        "changed_file_count": 1,
+        "added_line_count": 1,
+        "deleted_line_count": 1
+      }
+    },
+    {
+      "fact_type": "vulnerability_patterns",
+      "label": "Vulnerability patterns inferred from patch",
+      "attributes": {
+        "patterns": [
+          "out_of_bounds_read"
+        ],
+        "descriptions": [
+          "A size check validated only the starting offset, not the full width of a subsequent 4-byte read, allowing reads beyond the section buffer end."
+        ]
+      }
+    },
+    {
+      "fact_type": "affected_functions",
+      "label": "Functions implicated by removed or fixed code",
+      "attributes": {
+        "functions": [
+          "bfd_get_debug_link_info_1",
+          "bfd_get_section_size"
+        ]
+      }
+    },
+    {
+      "fact_type": "detection_strategy",
+      "label": "Existing patch analysis detection strategy",
+      "attributes": {
+        "primary_pattern": "out_of_bounds_read",
+        "check_types": [
+          "buffer_boundary_analysis",
+          "offset_plus_width_validation",
+          "multi_byte_read_sink_checking",
+          "integer_range_reasoning_on_aligned_offsets"
+        ],
+        "entry_points": [
+          "`bfd_get_32 (abfd, contents + crc_offset)` in `bfd/opncls.c`",
+          "Call sites computing offsets from `strnlen(...)`, alignment arithmetic, or section-size-derived bounds"
+        ],
+        "data_flow_tracking": true,
+        "cross_file_analysis": false,
+        "suggestions": [
+          "Prefer sink-aware checks that compare `offset + access_width` against authoritative buffer length, not just `offset < size`.",
+          "Model decoder helpers like `bfd_get_32` as fixed-width reads requiring 4 available bytes.",
+          "Track transformations such as `strnlen(...) + 1` and alignment rounding `(x + 3) & ~3` because they can move an offset from safe to near-end positions.",
+          "Prefer missing full-span validation over plain null-check reasoning.",
+          "Flag cases where a buffer length from `bfd_get_section_size` is reused for string scanning and then for later structured reads without revalidating the read width."
+        ]
+      }
+    },
+    {
+      "fact_type": "added_guards",
+      "label": "Patch introduces or strengthens guards",
+      "attributes": {
+        "guards": [
+          "if (crc_offset + 4 > bfd_get_section_size (sect))"
+        ]
+      }
+    },
+    {
+      "fact_type": "fix_patterns",
+      "label": "Patch introduces reusable fix patterns",
+      "attributes": {
+        "patterns": [
+          "Replace start-offset-only validation with width-aware bounds check for the exact read size",
+          "Guard `offset + read_width > buffer_size` before dereferencing or decoding multi-byte values"
+        ]
+      }
+    },
+    {
+      "fact_type": "added_api_calls",
+      "label": "Patch introduces or highlights API usage",
+      "attributes": {
+        "apis": [
+          "bfd_get_section_size"
+        ]
+      }
+    }
+  ],
+  "mechanism_graph": {
+    "summary": "Patch suggests out_of_bounds_read semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=2, metadata refs=0.",
+    "primary_patterns": [
+      "out_of_bounds_read"
+    ],
+    "nodes": [
+      {
+        "node_id": "patch",
+        "kind": "patch",
+        "label": "Security patch",
+        "attributes": {
+          "changed_files": [
+            "bfd/opncls.c"
+          ]
+        }
+      },
+      {
+        "node_id": "file_0",
+        "kind": "file",
+        "label": "bfd/opncls.c",
+        "attributes": {
+          "path": "bfd/opncls.c",
+          "additions": 1,
+          "deletions": 1,
+          "hunks": 1
+        }
+      },
+      {
+        "node_id": "pattern_0",
+        "kind": "pattern",
+        "label": "out_of_bounds_read",
+        "attributes": {
+          "type": "out_of_bounds_read",
+          "description": "A size check validated only the starting offset, not the full width of a subsequent 4-byte read, allowing reads beyond the section buffer end.",
+          "trigger_conditions": [
+            "`name` length and alignment produce a `crc_offset` that is less than the section size but greater than `section_size - 4`",
+            "Execution reaches `bfd_get_32 (abfd, contents + crc_offset)` with insufficient remaining bytes in the section buffer"
+          ],
+          "fix_patterns": [
+            "Replace start-offset-only validation with width-aware bounds check for the exact read size",
+            "Guard `offset + read_width > buffer_size` before dereferencing or decoding multi-byte values"
+          ],
+          "affected_functions": [
+            "bfd_get_section_size"
+          ],
+          "cross_file": false,
+          "source": "llm",
+          "confidence": 0.98,
+          "evidence_lines": [
+            "Comment states intent: `avoid reading off the end of the buffer.`",
+            "Old check: `if (crc_offset >= bfd_get_section_size (sect))`",
+            "New check: `if (crc_offset + 4 > bfd_get_section_size (sect))`",
+            "Protected read: `*crc32 = bfd_get_32 (abfd, contents + crc_offset);`"
+          ]
+        }
+      },
+      {
+        "node_id": "func_1",
+        "kind": "function",
+        "label": "bfd_get_section_size",
+        "attributes": {
+          "function": "bfd_get_section_size"
+        }
+      },
+      {
+        "node_id": "guard_1",
+        "kind": "guard",
+        "label": "`name` length and alignment produce a `crc_offset` that is less than the section size but greater than `section_size - 4`",
+        "attributes": {
+          "condition": "`name` length and alignment produce a `crc_offset` that is less than the section size but greater than `section_size - 4`"
+        }
+      },
+      {
+        "node_id": "guard_2",
+        "kind": "guard",
+        "label": "Execution reaches `bfd_get_32 (abfd, contents + crc_offset)` with insufficient remaining bytes in the section buffer",
+        "attributes": {
+          "condition": "Execution reaches `bfd_get_32 (abfd, contents + crc_offset)` with insufficient remaining bytes in the section buffer"
+        }
+      },
+      {
+        "node_id": "strategy",
+        "kind": "strategy",
+        "label": "out_of_bounds_read",
+        "attributes": {
+          "primary_pattern": "out_of_bounds_read",
+          "check_types": [
+            "buffer_boundary_analysis",
+            "offset_plus_width_validation",
+            "multi_byte_read_sink_checking",
+            "integer_range_reasoning_on_aligned_offsets"
+          ],
+          "entry_points": [
+            "`bfd_get_32 (abfd, contents + crc_offset)` in `bfd/opncls.c`",
+            "Call sites computing offsets from `strnlen(...)`, alignment arithmetic, or section-size-derived bounds"
+          ],
+          "data_flow_tracking": true,
+          "cross_file_analysis": false,
+          "suggestions": [
+            "Prefer sink-aware checks that compare `offset + access_width` against authoritative buffer length, not just `offset < size`.",
+            "Model decoder helpers like `bfd_get_32` as fixed-width reads requiring 4 available bytes.",
+            "Track transformations such as `strnlen(...) + 1` and alignment rounding `(x + 3) & ~3` because they can move an offset from safe to near-end positions.",
+            "Prefer missing full-span validation over plain null-check reasoning.",
+            "Flag cases where a buffer length from `bfd_get_section_size` is reused for string scanning and then for later structured reads without revalidating the read width."
+          ]
+        }
+      },
+      {
+        "node_id": "func_2",
+        "kind": "function",
+        "label": "bfd_get_debug_link_info_1",
+        "attributes": {
+          "function": "bfd_get_debug_link_info_1",
+          "source": "patch_fact"
+        }
+      },
+      {
+        "node_id": "guard_3",
+        "kind": "guard",
+        "label": "if (crc_offset + 4 > bfd_get_section_size (sect))",
+        "attributes": {
+          "condition": "if (crc_offset + 4 > bfd_get_section_size (sect))",
+          "source": "patch_fact"
+        }
+      },
+      {
+        "node_id": "fix_1",
+        "kind": "fix",
+        "label": "Replace start-offset-only validation with width-aware bounds check for the exact read size",
+        "attributes": {
+          "kind": "fix_patterns",
+          "value": "Replace start-offset-only validation with width-aware bounds check for the exact read size"
+        }
+      },
+      {
+        "node_id": "fix_2",
+        "kind": "fix",
+        "label": "Guard `offset + read_width > buffer_size` before dereferencing or decoding multi-byte values",
+        "attributes": {
+          "kind": "fix_patterns",
+          "value": "Guard `offset + read_width > buffer_size` before dereferencing or decoding multi-byte values"
+        }
+      },
+      {
+        "node_id": "fix_3",
+        "kind": "fix",
+        "label": "bfd_get_section_size",
+        "attributes": {
+          "kind": "added_api_calls",
+          "value": "bfd_get_section_size"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "patch",
+        "target": "file_0",
+        "relation": "touches",
+        "confidence": 0.95
+      },
+      {
+        "source": "patch",
+        "target": "pattern_0",
+        "relation": "indicates",
+        "confidence": 0.9
+      },
+      {
+        "source": "pattern_0",
+        "target": "func_1",
+        "relation": "affects",
+        "confidence": 0.75
+      },
+      {
+        "source": "pattern_0",
+        "target": "guard_1",
+        "relation": "requires",
+        "confidence": 0.7
+      },
+      {
+        "source": "pattern_0",
+        "target": "guard_2",
+        "relation": "requires",
+        "confidence": 0.7
+      },
+      {
+        "source": "patch",
+        "target": "strategy",
+        "relation": "guides",
+        "confidence": 0.85
+      },
+      {
+        "source": "patch",
+        "target": "func_2",
+        "relation": "focuses_on",
+        "confidence": 0.82
+      },
+      {
+        "source": "patch",
+        "target": "guard_3",
+        "relation": "adds_guard",
+        "confidence": 0.84
+      },
+      {
+        "source": "patch",
+        "target": "fix_1",
+        "relation": "introduces",
+        "confidence": 0.8
+      },
+      {
+        "source": "patch",
+        "target": "fix_2",
+        "relation": "introduces",
+        "confidence": 0.8
+      },
+      {
+        "source": "patch",
+        "target": "fix_3",
+        "relation": "introduces",
+        "confidence": 0.8
+      }
+    ]
+  },
+  "evidence_plan": {
+    "primary_pattern": "out_of_bounds_read",
+    "hypotheses": [
+      "The patch changes a data propagation condition that should generalize beyond the edited lines."
+    ],
+    "requirements": [
+      {
+        "evidence_type": "patch_fact",
+        "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+        "priority": 100,
+        "preferred_analyzers": [],
+        "confidence": 1.0,
+        "mechanism_refs": [
+          "patch"
+        ]
+      },
+      {
+        "evidence_type": "dataflow_candidate",
+        "reason": "Patch analysis requests data-flow tracking.",
+        "priority": 95,
+        "preferred_analyzers": [
+          "codeql"
+        ],
+        "confidence": 0.9,
+        "mechanism_refs": [
+          "strategy"
+        ]
+      },
+      {
+        "evidence_type": "call_chain",
+        "reason": "Interprocedural call-chain context is needed to generalize the fix pattern.",
+        "priority": 78,
+        "preferred_analyzers": [
+          "codeql"
+        ],
+        "confidence": 0.78,
+        "mechanism_refs": [
+          "strategy"
+        ]
+      }
+    ],
+    "recommended_analyzers": [
+      "codeql"
+    ],
+    "planner_notes": [
+      "Added guards detected in patch diff; path-sensitive evidence should stay near top priority.",
+      "Selected analyzers do not cover every planned evidence primitive."
+    ],
+    "coverage_gaps": [
+      "dataflow_candidate is not covered by selected analyzers ['csa']",
+      "call_chain is not covered by selected analyzers ['csa']"
+    ],
+    "uncertainty_budget": "low",
+    "escalation_triggers": [
+      "selected_coverage_gap"
+    ]
+  }
+}

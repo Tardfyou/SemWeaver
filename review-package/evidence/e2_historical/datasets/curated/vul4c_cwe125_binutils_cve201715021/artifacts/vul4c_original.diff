@@ -1,0 +1,11 @@
+--- /SoK-main/Vul4C-Benchmark/binutils/CVE-2017-15021/CVE-2017-15021_CWE-125_opncls.c_OLD.c	2025-10-13 01:35:41.638552046 +0000
++++ /SoK-main/Vul4C-Benchmark/binutils/CVE-2017-15021/CVE-2017-15021_CWE-125_opncls.c_NEW.c	2025-10-13 01:35:41.638552046 +0000
+@@ -1200,7 +1200,7 @@
+   /* PR 17597: avoid reading off the end of the buffer.  */
+   crc_offset = strnlen (name, bfd_get_section_size (sect)) + 1;
+   crc_offset = (crc_offset + 3) & ~3;
+-  if (crc_offset >= bfd_get_section_size (sect))
++  if (crc_offset + 4 > bfd_get_section_size (sect))
+     return NULL;
+ 
+   *crc32 = bfd_get_32 (abfd, contents + crc_offset);

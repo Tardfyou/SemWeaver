@@ -1,0 +1,46 @@
+{
+  "cache_key": {
+    "cache_version": 6,
+    "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe120_jhead_cve202028840/patches/fix.patch",
+    "evidence_dir": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe120_jhead_cve202028840/vulnerable",
+    "validate_path": "",
+    "source_files": [
+      "jpgfile.c"
+    ]
+  },
+  "data": {
+    "available": true,
+    "clang_path": "/usr/lib/llvm-18/bin/clang",
+    "cfg_snapshots": [
+      {
+        "source_file": "jpgfile.c",
+        "function_name": "process_COM",
+        "anchor_line": 51,
+        "branch_kinds": [],
+        "branch_conditions": [],
+        "call_edges": [
+          "process_COM -> printf",
+          "process_COM -> strcpy"
+        ],
+        "call_targets": [
+          "printf",
+          "strcpy"
+        ],
+        "state_statements": [
+          "strcpy"
+        ],
+        "field_accesses": [],
+        "return_statements": [],
+        "dump_excerpt": " --- Call graph Dump --- \n  Function: < root > calls: __bswap_16 __bswap_32 __bswap_64 __uint16_identity __uint32_identity __uint64_identity Get16m process_COM printf strcpy process_SOFn CheckSectionsAllocated ErrFatal realloc ReadJpegSections fgetc ErrNonfatal malloc fread ftell fseek process_DQT process_DHT fprintf free memcmp process_EXIF ShowXmp DiscardData memset ReadJpegFile fopen fclose SaveThumbnail strcmp FindSection fwrite ReplaceThumbnail Put32u DiscardAllButExif WriteJpegFile fputc RemoveSectionType memmove RemoveUnknownSections CreateSection ResetJpgfile \n  Function: ResetJpgfile calls: malloc \n  Function: CreateSection calls: ErrFatal CheckSectionsAllocated \n  Function: RemoveUnknownSections calls: free memmove \n  Function: RemoveSectionType calls: free memmove \n  Function: memmove calls: \n  Function: WriteJpegFile calls: ErrFatal fopen ErrFatal fputc fputc fwrite fputc fputc fwrite fwrite fclose \n  Function: fputc calls: \n  Function: DiscardAllButExif calls: memset memset memset memset free CheckSectionsAllocated CheckSectionsAllocated CheckSectionsAllocated CheckSectionsAllocated \n  Function: ReplaceThumbnail calls: fprintf fopen ErrFatal fseek ftell fseek ErrFatal FindSection realloc fread fclose Put32u \n  Function: Put32u calls: \n  Function: SaveThumbnail calls: fprintf strcmp fopen FindSection fwrite fclose ErrFatal \n  Function: fwrite calls: \n  Function: FindSection calls: \n  Function: strcmp calls: \n  Function: ReadJpegFile calls: fopen fprintf ReadJpegSections fprintf fclose DiscardData \n  Function: fclose calls: \n  Function: fopen calls: \n  Function: DiscardData calls: free memset \n  Function: memset calls: \n  Function: ReadJpegSections calls: fgetc fgetc CheckSectionsAllocated fgetc ErrFatal ErrNonfatal fgetc fgetc ErrFatal ErrFatal malloc ErrFatal fread ErrFatal ftell fseek ftell fseek malloc ErrFatal fread ErrFatal CheckSectionsAllocated process_DQT process_DHT fprintf free process_COM fprintf memcmp fprintf printf printf printf printf printf printf fprintf free memcmp process_EXIF memcmp printf ShowXmp free printf free fprintf process_SOFn printf \n  Function: ShowXmp calls: \n  Function: process_EXIF calls: \n  Function: memcmp calls: \n  Function: free calls: \n  Function: fprintf calls: \n  Function: process_DHT calls: \n  Function: process_DQT calls: \n  Function: fseek calls: \n  Function: ftell calls: \n  Function: fread calls: \n  Function: malloc calls: \n  Function: ErrNonfatal calls: \n  Function: fgetc calls: \n  Function: CheckSectionsAllocated calls: ErrFatal realloc ErrFatal \n  Function: realloc calls: \n  Function: ErrFatal calls: \n  Function: process_SOFn calls: Get16m Get16m printf \n  Function: process_COM calls: printf strcpy \n  Function: strcpy calls: \n  Function: printf calls: \n  Function: Get16m calls: \n  Function: __uint64_identity calls: \n  Function: __uint32_identity calls: \n  Function: __uint16_identity calls: \n  Function: __bswap_64 calls: \n  Function: __bswap_32 calls: \n  Function: __bswap_16 calls: \nstatic int Get16m(const void *Short)\n [B2 (ENTRY)]\n   Succs (1): B1\n\n [B1]\n   1: Short\n   2: [B1.1] (ImplicitCastExpr, LValueToRValue, const void *)\n   3: (uchar *)[B1.2] (CStyleCastExpr, BitCast, uchar *)\n   4: 0\n   5: ([B1.3])[[B1.4]]\n   6: [B1.5] (ImplicitCastExpr, LValueToRValue, uchar)\n   7: [B1.6] (ImplicitCastExpr, IntegralCast, int)\n   8: 8\n   9: [B1.7] << [B1.8]\n  10: Short\n  11: [B1.10] (ImplicitCastExpr, LValueToRValue, const void *)\n  12: (uchar *)[B1.11] (CStyleCastExpr, BitCast, uchar *)\n  13: 1\n  14: ([B1.12])[[B1.13]]\n  15: [B1.14] (ImplicitCastExpr, LValueToRValue, uchar)\n  16: [B1.15] (ImplicitCastExpr, IntegralCast, int)\n  17: ([B1.9]) | [B1.16]\n  18: return [B1.17];\n   Preds (1): B2\n   Succs (1): B0\n\n [B0 (EXIT)]\n   Preds (1): B1\n\nstatic void process_COM(const uchar *Data, int length)\n [B17 (ENTRY)]",
+        "error": "",
+        "clang_command_preview": "/usr/lib/llvm-18/bin/clang --analyze -Xanalyzer -analyzer-checker=debug.DumpCFG -Xanalyzer -analyzer-checker=debug.DumpCallGraph /anonymous/home/LLM-Native/v2_experiments/datasets/cur...",
+        "return_code": 0
+      }
+    ],
+    "call_edges": [
+      "process_COM -> printf",
+      "process_COM -> strcpy"
+    ],
+    "error": ""
+  }
+}

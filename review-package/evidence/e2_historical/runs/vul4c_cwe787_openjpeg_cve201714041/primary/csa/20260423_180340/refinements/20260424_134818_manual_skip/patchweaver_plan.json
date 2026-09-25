@@ -1,0 +1,731 @@
+{
+  "files_changed": [
+    "src/bin/jp2/convert.c"
+  ],
+  "file_details": [
+    {
+      "path": "src/bin/jp2/convert.c",
+      "additions": 1,
+      "deletions": 1,
+      "hunks": 1
+    }
+  ],
+  "vulnerability_patterns": [
+    {
+      "type": "stack_overflow",
+      "description": "Before the patch, `fscanf` used unbounded scanset specifiers to store whitespace/sign runs into caller-provided character arrays, allowing input longer than the destination buffers to overflow stack memory. The fix constrains each scanset write with an explicit field width, so the same sink becomes bounded.",
+      "trigger_conditions": [
+        "A call to `fscanf` or related scanf-family APIs uses `%[` conversion without an explicit width in the format string",
+        "The corresponding argument is a fixed-size character buffer such as `temp` or `signtmp`",
+        "Attacker-controlled file content contains a long run of characters accepted by the scanset, such as many spaces, tabs, or sign characters",
+        "The scanset conversion writes directly into the buffer before any later validation"
+      ],
+      "fix_patterns": [
+        "Replace `%[` with width-limited `%31[` in the same `fscanf` format string",
+        "Constrain each scanset sink at the parsing site instead of relying on later checks",
+        "Keep the existing parse-failure branch (`!= 9`) but add a write bound before the dangerous write occurs"
+      ],
+      "affected_functions": [
+        "fscanf"
+      ],
+      "cross_file": false,
+      "source": "llm",
+      "confidence": 0.96,
+      "evidence_lines": [
+        "Removed: `fscanf(f, \"PG%[ \\t]%c%c%[ \\t+-]%d%[ \\t]%d%[ \\t]%d\", temp, &endian1,`",
+        "Added: `fscanf(f, \"PG%31[ \\t]%c%c%31[ \\t+-]%d%31[ \\t]%d%31[ \\t]%d\", temp, &endian1,`",
+        "The same call passes string buffers `temp` and `signtmp` to scanset conversions with no other local bound argument"
+      ]
+    }
+  ],
+  "cross_file_dependencies": [],
+  "detection_strategy": {
+    "primary_pattern": "stack_overflow",
+    "check_types": [
+      "format_string_sink_audit",
+      "local_ast_pattern_matching",
+      "boundedness_check_on_scanf_family_scansets"
+    ],
+    "entry_points": [
+      "Calls to `fscanf`",
+      "Calls to scanf-family functions using `%[` conversions in format literals",
+      "Patch-local callsite in `src/bin/jp2/convert.c`"
+    ],
+    "data_flow_tracking": false,
+    "cross_file_analysis": false,
+    "suggestions": [
+      "首稿先命中 patch-local 最小锚点：`fscanf` format literal containing `%[` without a numeric width.",
+      "优先把危险操作本身作为命中条件：未限定宽度的 scanset 写入，而不是先要求证明缓冲区精确大小。",
+      "不要把补丁中的 `!= 9` 失败检查写成硬过滤；它只处理解析失败，不阻断扫描时已经发生的越界写。",
+      "辅助收敛条件可检查对应实参是否为 `char *`/字符数组，但首稿不必强依赖跨过程求得数组容量。",
+      "局部 AST 即可覆盖此补丁语义；只需解析格式串并识别 `%[` 是否带宽度，无需复杂数据流。",
+      "若做二次收敛，可优先关注目标实参为局部数组或固定栈缓冲区的场景。",
+      "不要把普通 `%s`/`%c` 规则混入首稿；此补丁的稳定锚点是 scanset `%[` specifically."
+    ]
+  },
+  "checker_name_suggestion": "ScanfUnboundedScansetChecker",
+  "affected_functions": [
+    "fscanf"
+  ],
+  "key_functions": [
+    "fscanf"
+  ],
+  "patch_semantics": {
+    "added_guards": [
+      "if (fscanf(f, \"PG%31[ \\t]%c%c%31[ \\t+-]%d%31[ \\t]%d%31[ \\t]%d\", temp, &endian1,"
+    ],
+    "added_api_calls": [
+      "fscanf"
+    ],
+    "removed_api_calls": [
+      "fscanf"
+    ],
+    "state_resets": [],
+    "lifecycle_changes": []
+  },
+  "analysis_backend": "llm",
+  "analysis_confidence": 0.96,
+  "analysis_rationale": "The only semantic change is in `src/bin/jp2/convert.c` at the `fscanf` call: several scanset conversions `%[ ... ]` were replaced with width-limited forms `%31[ ... ]`. In the old code, `fscanf` could write an unbounded number of matched characters into `temp` or `signtmp` before the `%d` fields were parsed, because scanset `%[` has no implicit bound. The patch adds explicit width barriers directly inside the format string, blocking overflow at the input sink itself rather than changing later logic.",
+  "llm_usage": {
+    "prompt_tokens": 6841,
+    "completion_tokens": 978,
+    "total_tokens": 7819,
+    "call_count": 1,
+    "available": true,
+    "model": "gpt-5.4"
+  },
+  "patchweaver": {
+    "summary": "Patch suggests stack_overflow semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=3, metadata refs=0.",
+    "patch_facts": [
+      {
+        "fact_type": "patch_overview",
+        "label": "Patch overview",
+        "attributes": {
+          "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe787_openjpeg_cve201714041/patches/fix.patch",
+          "changed_files": [
+            "src/bin/jp2/convert.c"
+          ],
+          "changed_file_count": 1,
+          "added_line_count": 1,
+          "deleted_line_count": 1
+        }
+      },
+      {
+        "fact_type": "vulnerability_patterns",
+        "label": "Vulnerability patterns inferred from patch",
+        "attributes": {
+          "patterns": [
+            "stack_overflow"
+          ],
+          "descriptions": [
+            "Before the patch, `fscanf` used unbounded scanset specifiers to store whitespace/sign runs into caller-provided character arrays, allowing input longer than the destination buffers to overflow stack memory. The fix constrains each scanset write with an explicit field width, so the same sink becomes bounded."
+          ]
+        }
+      },
+      {
+        "fact_type": "affected_functions",
+        "label": "Functions implicated by removed or fixed code",
+        "attributes": {
+          "functions": [
+            "fscanf",
+            "pgxtoimage"
+          ]
+        }
+      },
+      {
+        "fact_type": "detection_strategy",
+        "label": "Existing patch analysis detection strategy",
+        "attributes": {
+          "primary_pattern": "stack_overflow",
+          "check_types": [
+            "format_string_sink_audit",
+            "local_ast_pattern_matching",
+            "boundedness_check_on_scanf_family_scansets"
+          ],
+          "entry_points": [
+            "Calls to `fscanf`",
+            "Calls to scanf-family functions using `%[` conversions in format literals",
+            "Patch-local callsite in `src/bin/jp2/convert.c`"
+          ],
+          "data_flow_tracking": false,
+          "cross_file_analysis": false,
+          "suggestions": [
+            "首稿先命中 patch-local 最小锚点：`fscanf` format literal containing `%[` without a numeric width.",
+            "优先把危险操作本身作为命中条件：未限定宽度的 scanset 写入，而不是先要求证明缓冲区精确大小。",
+            "不要把补丁中的 `!= 9` 失败检查写成硬过滤；它只处理解析失败，不阻断扫描时已经发生的越界写。",
+            "辅助收敛条件可检查对应实参是否为 `char *`/字符数组，但首稿不必强依赖跨过程求得数组容量。",
+            "局部 AST 即可覆盖此补丁语义；只需解析格式串并识别 `%[` 是否带宽度，无需复杂数据流。",
+            "若做二次收敛，可优先关注目标实参为局部数组或固定栈缓冲区的场景。",
+            "不要把普通 `%s`/`%c` 规则混入首稿；此补丁的稳定锚点是 scanset `%[` specifically."
+          ]
+        }
+      },
+      {
+        "fact_type": "added_guards",
+        "label": "Patch introduces or strengthens guards",
+        "attributes": {
+          "guards": [
+            "if (fscanf(f, \"PG%31[ \\t]%c%c%31[ \\t+-]%d%31[ \\t]%d%31[ \\t]%d\", temp, &endian1,"
+          ]
+        }
+      },
+      {
+        "fact_type": "fix_patterns",
+        "label": "Patch introduces reusable fix patterns",
+        "attributes": {
+          "patterns": [
+            "Replace `%[` with width-limited `%31[` in the same `fscanf` format string",
+            "Constrain each scanset sink at the parsing site instead of relying on later checks",
+            "Keep the existing parse-failure branch (`!= 9`) but add a write bound before the dangerous write occurs"
+          ]
+        }
+      },
+      {
+        "fact_type": "added_api_calls",
+        "label": "Patch introduces or highlights API usage",
+        "attributes": {
+          "apis": [
+            "fscanf"
+          ]
+        }
+      }
+    ],
+    "mechanism_graph": {
+      "summary": "Patch suggests stack_overflow semantics across 1 file(s); added guards=1, removed risky operations=0, fix patterns=3, metadata refs=0.",
+      "primary_patterns": [
+        "stack_overflow"
+      ],
+      "nodes": [
+        {
+          "node_id": "patch",
+          "kind": "patch",
+          "label": "Security patch",
+          "attributes": {
+            "changed_files": [
+              "src/bin/jp2/convert.c"
+            ]
+          }
+        },
+        {
+          "node_id": "file_0",
+          "kind": "file",
+          "label": "src/bin/jp2/convert.c",
+          "attributes": {
+            "path": "src/bin/jp2/convert.c",
+            "additions": 1,
+            "deletions": 1,
+            "hunks": 1
+          }
+        },
+        {
+          "node_id": "pattern_0",
+          "kind": "pattern",
+          "label": "stack_overflow",
+          "attributes": {
+            "type": "stack_overflow",
+            "description": "Before the patch, `fscanf` used unbounded scanset specifiers to store whitespace/sign runs into caller-provided character arrays, allowing input longer than the destination buffers to overflow stack memory. The fix constrains each scanset write with an explicit field width, so the same sink becomes bounded.",
+            "trigger_conditions": [
+              "A call to `fscanf` or related scanf-family APIs uses `%[` conversion without an explicit width in the format string",
+              "The corresponding argument is a fixed-size character buffer such as `temp` or `signtmp`",
+              "Attacker-controlled file content contains a long run of characters accepted by the scanset, such as many spaces, tabs, or sign characters",
+              "The scanset conversion writes directly into the buffer before any later validation"
+            ],
+            "fix_patterns": [
+              "Replace `%[` with width-limited `%31[` in the same `fscanf` format string",
+              "Constrain each scanset sink at the parsing site instead of relying on later checks",
+              "Keep the existing parse-failure branch (`!= 9`) but add a write bound before the dangerous write occurs"
+            ],
+            "affected_functions": [
+              "fscanf"
+            ],
+            "cross_file": false,
+            "source": "llm",
+            "confidence": 0.96,
+            "evidence_lines": [
+              "Removed: `fscanf(f, \"PG%[ \\t]%c%c%[ \\t+-]%d%[ \\t]%d%[ \\t]%d\", temp, &endian1,`",
+              "Added: `fscanf(f, \"PG%31[ \\t]%c%c%31[ \\t+-]%d%31[ \\t]%d%31[ \\t]%d\", temp, &endian1,`",
+              "The same call passes string buffers `temp` and `signtmp` to scanset conversions with no other local bound argument"
+            ]
+          }
+        },
+        {
+          "node_id": "func_1",
+          "kind": "function",
+          "label": "fscanf",
+          "attributes": {
+            "function": "fscanf"
+          }
+        },
+        {
+          "node_id": "guard_1",
+          "kind": "guard",
+          "label": "A call to `fscanf` or related scanf-family APIs uses `%[` conversion without an explicit width in the format string",
+          "attributes": {
+            "condition": "A call to `fscanf` or related scanf-family APIs uses `%[` conversion without an explicit width in the format string"
+          }
+        },
+        {
+          "node_id": "guard_2",
+          "kind": "guard",
+          "label": "The corresponding argument is a fixed-size character buffer such as `temp` or `signtmp`",
+          "attributes": {
+            "condition": "The corresponding argument is a fixed-size character buffer such as `temp` or `signtmp`"
+          }
+        },
+        {
+          "node_id": "guard_3",
+          "kind": "guard",
+          "label": "Attacker-controlled file content contains a long run of characters accepted by the scanset, such as many spaces, tabs, or sign characters",
+          "attributes": {
+            "condition": "Attacker-controlled file content contains a long run of characters accepted by the scanset, such as many spaces, tabs, or sign characters"
+          }
+        },
+        {
+          "node_id": "guard_4",
+          "kind": "guard",
+          "label": "The scanset conversion writes directly into the buffer before any later validation",
+          "attributes": {
+            "condition": "The scanset conversion writes directly into the buffer before any later validation"
+          }
+        },
+        {
+          "node_id": "strategy",
+          "kind": "strategy",
+          "label": "stack_overflow",
+          "attributes": {
+            "primary_pattern": "stack_overflow",
+            "check_types": [
+              "format_string_sink_audit",
+              "local_ast_pattern_matching",
+              "boundedness_check_on_scanf_family_scansets"
+            ],
+            "entry_points": [
+              "Calls to `fscanf`",
+              "Calls to scanf-family functions using `%[` conversions in format literals",
+              "Patch-local callsite in `src/bin/jp2/convert.c`"
+            ],
+            "data_flow_tracking": false,
+            "cross_file_analysis": false,
+            "suggestions": [
+              "首稿先命中 patch-local 最小锚点：`fscanf` format literal containing `%[` without a numeric width.",
+              "优先把危险操作本身作为命中条件：未限定宽度的 scanset 写入，而不是先要求证明缓冲区精确大小。",
+              "不要把补丁中的 `!= 9` 失败检查写成硬过滤；它只处理解析失败，不阻断扫描时已经发生的越界写。",
+              "辅助收敛条件可检查对应实参是否为 `char *`/字符数组，但首稿不必强依赖跨过程求得数组容量。",
+              "局部 AST 即可覆盖此补丁语义；只需解析格式串并识别 `%[` 是否带宽度，无需复杂数据流。",
+              "若做二次收敛，可优先关注目标实参为局部数组或固定栈缓冲区的场景。",
+              "不要把普通 `%s`/`%c` 规则混入首稿；此补丁的稳定锚点是 scanset `%[` specifically."
+            ]
+          }
+        },
+        {
+          "node_id": "func_2",
+          "kind": "function",
+          "label": "pgxtoimage",
+          "attributes": {
+            "function": "pgxtoimage",
+            "source": "patch_fact"
+          }
+        },
+        {
+          "node_id": "guard_5",
+          "kind": "guard",
+          "label": "if (fscanf(f, \"PG%31[ \\t]%c%c%31[ \\t+-]%d%31[ \\t]%d%31[ \\t]%d\", temp, &endian1,",
+          "attributes": {
+            "condition": "if (fscanf(f, \"PG%31[ \\t]%c%c%31[ \\t+-]%d%31[ \\t]%d%31[ \\t]%d\", temp, &endian1,",
+            "source": "patch_fact"
+          }
+        },
+        {
+          "node_id": "fix_1",
+          "kind": "fix",
+          "label": "Replace `%[` with width-limited `%31[` in the same `fscanf` format string",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "Replace `%[` with width-limited `%31[` in the same `fscanf` format string"
+          }
+        },
+        {
+          "node_id": "fix_2",
+          "kind": "fix",
+          "label": "Constrain each scanset sink at the parsing site instead of relying on later checks",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "Constrain each scanset sink at the parsing site instead of relying on later checks"
+          }
+        },
+        {
+          "node_id": "fix_3",
+          "kind": "fix",
+          "label": "Keep the existing parse-failure branch (`!= 9`) but add a write bound before the dangerous write occurs",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "Keep the existing parse-failure branch (`!= 9`) but add a write bound before the dangerous write occurs"
+          }
+        },
+        {
+          "node_id": "fix_4",
+          "kind": "fix",
+          "label": "fscanf",
+          "attributes": {
+            "kind": "added_api_calls",
+            "value": "fscanf"
+          }
+        }
+      ],
+      "edges": [
+        {
+          "source": "patch",
+          "target": "file_0",
+          "relation": "touches",
+          "confidence": 0.95
+        },
+        {
+          "source": "patch",
+          "target": "pattern_0",
+          "relation": "indicates",
+          "confidence": 0.9
+        },
+        {
+          "source": "pattern_0",
+          "target": "func_1",
+          "relation": "affects",
+          "confidence": 0.75
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_1",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_2",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_3",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "pattern_0",
+          "target": "guard_4",
+          "relation": "requires",
+          "confidence": 0.7
+        },
+        {
+          "source": "patch",
+          "target": "strategy",
+          "relation": "guides",
+          "confidence": 0.85
+        },
+        {
+          "source": "patch",
+          "target": "func_2",
+          "relation": "focuses_on",
+          "confidence": 0.82
+        },
+        {
+          "source": "patch",
+          "target": "guard_5",
+          "relation": "adds_guard",
+          "confidence": 0.84
+        },
+        {
+          "source": "patch",
+          "target": "fix_1",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_2",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_3",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_4",
+          "relation": "introduces",
+          "confidence": 0.8
+        }
+      ]
+    },
+    "evidence_plan": {
+      "primary_pattern": "stack_overflow",
+      "hypotheses": [
+        "Patch likely encodes a reusable vulnerability mechanism but available metadata is weak; keep evidence collection broad."
+      ],
+      "requirements": [
+        {
+          "evidence_type": "patch_fact",
+          "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+          "priority": 100,
+          "preferred_analyzers": [],
+          "confidence": 1.0,
+          "mechanism_refs": [
+            "patch"
+          ]
+        }
+      ],
+      "recommended_analyzers": [
+        "csa",
+        "codeql"
+      ],
+      "planner_notes": [
+        "Added guards detected in patch diff; path-sensitive evidence should stay near top priority."
+      ],
+      "coverage_gaps": [],
+      "uncertainty_budget": "low",
+      "escalation_triggers": []
+    },
+    "evidence_bundle": {
+      "records": [
+        {
+          "evidence_id": "pf_000",
+          "type": "patch_fact",
+          "analyzer": "patch",
+          "scope": {
+            "repo": "fix.patch",
+            "file": "src/bin/jp2/convert.c",
+            "function": "fscanf"
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "fact_type": "patch_overview",
+            "label": "Patch overview",
+            "attributes": {
+              "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe787_openjpeg_cve201714041/patches/fix.patch",
+              "changed_files": [
+                "src/bin/jp2/convert.c"
+              ],
+              "changed_file_count": 1,
+              "added_line_count": 1,
+              "deleted_line_count": 1
+            }
+          },
+          "provenance": {
+            "tool": "patch-analysis",
+            "artifact": "patch_overview",
+            "confidence": 0.95
+          },
+          "evidence_slice": {}
+        },
+        {
+          "evidence_id": "pf_001",
+          "type": "patch_fact",
+          "analyzer": "patch",
+          "scope": {
+            "repo": "fix.patch",
+            "file": "src/bin/jp2/convert.c",
+            "function": "fscanf"
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "fact_type": "vulnerability_patterns",
+            "label": "Vulnerability patterns inferred from patch",
+            "attributes": {
+              "patterns": [
+                "stack_overflow"
+              ],
+              "descriptions": [
+                "Before the patch, `fscanf` used unbounded scanset specifiers to store whitespace/sign runs into caller-provided character arrays, allowing input longer than the destination buffers to overflow stack memory. The fix constrains each scanset write with an explicit field width, so the same sink becomes bounded."
+              ]
+            }
+          },
+          "provenance": {
+            "tool": "patch-analysis",
+            "artifact": "vulnerability_patterns",
+            "confidence": 0.95
+          },
+          "evidence_slice": {}
+        },
+        {
+          "evidence_id": "pf_002",
+          "type": "patch_fact",
+          "analyzer": "patch",
+          "scope": {
+            "repo": "fix.patch",
+            "file": "src/bin/jp2/convert.c",
+            "function": "fscanf"
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "fact_type": "affected_functions",
+            "label": "Functions implicated by removed or fixed code",
+            "attributes": {
+              "functions": [
+                "fscanf",
+                "pgxtoimage"
+              ]
+            }
+          },
+          "provenance": {
+            "tool": "patch-analysis",
+            "artifact": "affected_functions",
+            "confidence": 0.95
+          },
+          "evidence_slice": {}
+        },
+        {
+          "evidence_id": "pf_003",
+          "type": "patch_fact",
+          "analyzer": "patch",
+          "scope": {
+            "repo": "fix.patch",
+            "file": "src/bin/jp2/convert.c",
+            "function": "fscanf"
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "fact_type": "detection_strategy",
+            "label": "Existing patch analysis detection strategy",
+            "attributes": {
+              "primary_pattern": "stack_overflow",
+              "check_types": [
+                "format_string_sink_audit",
+                "local_ast_pattern_matching",
+                "boundedness_check_on_scanf_family_scansets"
+              ],
+              "entry_points": [
+                "Calls to `fscanf`",
+                "Calls to scanf-family functions using `%[` conversions in format literals",
+                "Patch-local callsite in `src/bin/jp2/convert.c`"
+              ],
+              "data_flow_tracking": false,
+              "cross_file_analysis": false,
+              "suggestions": [
+                "首稿先命中 patch-local 最小锚点：`fscanf` format literal containing `%[` without a numeric width.",
+                "优先把危险操作本身作为命中条件：未限定宽度的 scanset 写入，而不是先要求证明缓冲区精确大小。",
+                "不要把补丁中的 `!= 9` 失败检查写成硬过滤；它只处理解析失败，不阻断扫描时已经发生的越界写。",
+                "辅助收敛条件可检查对应实参是否为 `char *`/字符数组，但首稿不必强依赖跨过程求得数组容量。",
+                "局部 AST 即可覆盖此补丁语义；只需解析格式串并识别 `%[` 是否带宽度，无需复杂数据流。",
+                "若做二次收敛，可优先关注目标实参为局部数组或固定栈缓冲区的场景。",
+                "不要把普通 `%s`/`%c` 规则混入首稿；此补丁的稳定锚点是 scanset `%[` specifically."
+              ]
+            }
+          },
+          "provenance": {
+            "tool": "patch-analysis",
+            "artifact": "detection_strategy",
+            "confidence": 0.95
+          },
+          "evidence_slice": {}
+        },
+        {
+          "evidence_id": "pf_004",
+          "type": "patch_fact",
+          "analyzer": "patch",
+          "scope": {
+            "repo": "fix.patch",
+            "file": "src/bin/jp2/convert.c",
+            "function": "fscanf"
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "fact_type": "added_guards",
+            "label": "Patch introduces or strengthens guards",
+            "attributes": {
+              "guards": [
+                "if (fscanf(f, \"PG%31[ \\t]%c%c%31[ \\t+-]%d%31[ \\t]%d%31[ \\t]%d\", temp, &endian1,"
+              ]
+            }
+          },
+          "provenance": {
+            "tool": "patch-analysis",
+            "artifact": "added_guards",
+            "confidence": 0.95
+          },
+          "evidence_slice": {}
+        },
+        {
+          "evidence_id": "pf_005",
+          "type": "patch_fact",
+          "analyzer": "patch",
+          "scope": {
+            "repo": "fix.patch",
+            "file": "src/bin/jp2/convert.c",
+            "function": "fscanf"
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "fact_type": "fix_patterns",
+            "label": "Patch introduces reusable fix patterns",
+            "attributes": {
+              "patterns": [
+                "Replace `%[` with width-limited `%31[` in the same `fscanf` format string",
+                "Constrain each scanset sink at the parsing site instead of relying on later checks",
+                "Keep the existing parse-failure branch (`!= 9`) but add a write bound before the dangerous write occurs"
+              ]
+            }
+          },
+          "provenance": {
+            "tool": "patch-analysis",
+            "artifact": "fix_patterns",
+            "confidence": 0.95
+          },
+          "evidence_slice": {}
+        },
+        {
+          "evidence_id": "pf_006",
+          "type": "patch_fact",
+          "analyzer": "patch",
+          "scope": {
+            "repo": "fix.patch",
+            "file": "src/bin/jp2/convert.c",
+            "function": "fscanf"
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "fact_type": "added_api_calls",
+            "label": "Patch introduces or highlights API usage",
+            "attributes": {
+              "apis": [
+                "fscanf"
+              ]
+            }
+          },
+          "provenance": {
+            "tool": "patch-analysis",
+            "artifact": "added_api_calls",
+            "confidence": 0.95
+          },
+          "evidence_slice": {}
+        }
+      ],
+      "missing_evidence": [],
+      "collected_analyzers": [
+        "patch"
+      ]
+    }
+  }
+}

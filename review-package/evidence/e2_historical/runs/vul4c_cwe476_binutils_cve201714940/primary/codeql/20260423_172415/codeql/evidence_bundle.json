@@ -1,0 +1,469 @@
+{
+  "records": [
+    {
+      "evidence_id": "pf_000",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "bfd/dwarf2.c",
+        "function": "scan_unit_for_symbols"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "patch_overview",
+        "label": "Patch overview",
+        "attributes": {
+          "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe476_binutils_cve201714940/patches/fix.patch",
+          "changed_files": [
+            "bfd/dwarf2.c"
+          ],
+          "changed_file_count": 1,
+          "added_line_count": 2,
+          "deleted_line_count": 1
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "patch_overview",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_001",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "bfd/dwarf2.c",
+        "function": "scan_unit_for_symbols"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "vulnerability_patterns",
+        "label": "Vulnerability patterns inferred from patch",
+        "attributes": {
+          "patterns": [
+            "null_dereference"
+          ],
+          "descriptions": [
+            "Before the patch, block-like DWARF attribute forms consumed `attr.u.blk->data` by dereferencing it to compare the first byte with `DW_OP_addr` without checking whether the data pointer was NULL. After the patch, the dereference is only reached when `attr.u.blk->data != NULL` is true."
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "vulnerability_patterns",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_002",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "bfd/dwarf2.c",
+        "function": "scan_unit_for_symbols"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "affected_functions",
+        "label": "Functions implicated by removed or fixed code",
+        "attributes": {
+          "functions": [
+            "scan_unit_for_symbols",
+            "unknown"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "affected_functions",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_003",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "bfd/dwarf2.c",
+        "function": "scan_unit_for_symbols"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "detection_strategy",
+        "label": "Existing patch analysis detection strategy",
+        "attributes": {
+          "primary_pattern": "null_dereference",
+          "check_types": [
+            "local_ast",
+            "intra_procedural_cfg",
+            "nullability_guard_dominance"
+          ],
+          "entry_points": [
+            "bfd/dwarf2.c around the DW_FORM_block/DW_FORM_exprloc case handling",
+            "conditions that dereference `attr.u.blk->data`"
+          ],
+          "data_flow_tracking": false,
+          "cross_file_analysis": false,
+          "suggestions": [
+            "First-draft checker should anchor on the patch-local sink `*attr.u.blk->data` in a condition.",
+            "Require that the dereference is not dominated by a local `attr.u.blk->data != NULL` guard or equivalent short-circuit check.",
+            "Do not make the specific constant `DW_OP_addr` the only hard filter; it is useful for precision but the core sink is dereferencing a possibly NULL `blk->data` pointer.",
+            "The surrounding `DW_FORM_block*` and `DW_FORM_exprloc` cases are good secondary filters for convergence.",
+            "Local AST plus intra-procedural CFG dominance is sufficient for an initial detector; cross-file analysis is not indicated by this patch."
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "detection_strategy",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_004",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "bfd/dwarf2.c",
+        "function": "scan_unit_for_symbols"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "added_guards",
+        "label": "Patch introduces or strengthens guards",
+        "attributes": {
+          "guards": [
+            "if (attr.u.blk->data != NULL"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "added_guards",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_005",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "bfd/dwarf2.c",
+        "function": "scan_unit_for_symbols"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "fix_patterns",
+        "label": "Patch introduces reusable fix patterns",
+        "attributes": {
+          "patterns": [
+            "Add a local guard `attr.u.blk->data != NULL` directly dominating the dereference.",
+            "Keep the sink expression `*attr.u.blk->data == DW_OP_addr` but make it the right-hand side of a short-circuit `&&` condition.",
+            "Prevent the `var->stack = 0` path from depending on a dereference of a NULL block-data pointer.",
+            "null check"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "fix_patterns",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "codeql_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "codeql",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "bfd/dwarf2.c",
+        "function": "scan_unit_for_symbols"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "summary": "focus=scan_unit_for_symbols | call_edges=scan_unit_for_symbols -> bfd_get | targets=bfd_get | patch_guards=if (attr.u.blk->data != NULL | patch_fix=null check | guards=var; attr.u.val != 0 | symbols=unit, var->name, name, var->file | deps=bfd.h, dwarf2.h, elf-bfd.h | apis=bfd_get, concat_filename",
+        "focus_function": "scan_unit_for_symbols",
+        "call_edges": [
+          "scan_unit_for_symbols -> bfd_get"
+        ],
+        "call_targets": [
+          "bfd_get"
+        ],
+        "entry_points": [
+          "unit",
+          "var->name",
+          "name",
+          "var->file",
+          "file",
+          "unit->line_table"
+        ],
+        "tracked_symbols": [
+          "unit",
+          "var->name",
+          "name",
+          "var->file",
+          "file",
+          "unit->line_table"
+        ],
+        "sink_calls": [],
+        "state_transitions": [],
+        "statements": [],
+        "apis": [
+          "bfd_get",
+          "concat_filename"
+        ],
+        "dependencies": [
+          "bfd.h",
+          "dwarf2.h",
+          "elf-bfd.h"
+        ],
+        "source_excerpt": "3181: \t\t}\n3182: \t    }\n3183: \t  else if (var)\n3184: \t    {\n3185: \t      switch (attr.name)\n3186: \t\t{\n3187: \t\tcase DW_AT_name:\n3188: \t\t  var->name = attr.u.str;\n3189: \t\t  break;\n3190: \n3191: \t\tcase DW_AT_decl_file:\n3192: \t\t  var->file = concat_filename (unit->line_table,\n3193: \t\t\t\t\t       attr.u.val);\n3194: \t\t  break;\n3195: \n3196: \t\tcase DW_AT_decl_line:\n3197: \t\t  var->line = attr.u.val;\n3198: \t\t  break;\n3199: \n3200: \t\tcase DW_AT_external:\n3201: \t\t  if (attr.u.val != 0)\n3202: \t\t    var->stack = 0;\n3203: \t\t  break;\n3204: \n3205: \t\tcase DW_AT_location:\n3206: \t\t  switch (attr.form)\n3207: \t\t    {\n3208: \t\t    case DW_FORM_block:\n3209: \t\t    case DW_FORM_block1:\n3210: \t\t    case DW_FORM_block2:\n3211: \t\t    case DW_FORM_block4:\n3212: \t\t    case DW_FORM_exprloc:\n3213: \t\t      if (*attr.u.blk->data == DW_OP_addr)\n3214: \t\t\t{\n3215: \t\t\t  var->stack = 0;\n3216: \n3217: \t\t\t  /* Verify that DW_OP_addr is the only opcode in the\n3218: \t\t\t     location, in which case the block size will be 1\n3219: \t\t\t     plus the address size.  */\n3220: \t\t\t  /* ??? For TLS variables, gcc can emit\n3221: \t\t\t     DW_OP_addr <addr> DW_OP_GNU_push_tls_address\n3222: \t\t\t     which we don't handle here yet.  */\n3223: \t\t\t  if (attr.u.blk->size == unit->addr_size + 1U)\n3224: \t\t\t    var->addr = bfd_get (unit->addr_size * 8,\n3225: \t\t\t\t\t\t unit->abfd,\n3226: \t\t\t\t\t\t attr.u.blk->data + 1);\n3227: \t\t\t}\n3228: \t\t      break;\n3229: \n3230: \t\t    default:\n3231: \t\t      break;\n3232: \t\t    }\n3233: \t\t  break;\n3234: \n3235: \t\tdefault:\n3236: \t\t  break;\n3237: \t\t}\n3238: \t    }\n3239: \t}\n3240: \n3241:       if (high_pc_relative)\n3242: \thigh_pc += low_pc;\n3243: \n3244:       if (func && high_pc != 0)\n3245: \t{",
+        "coverage_status": "partial"
+      },
+      "provenance": {
+        "tool": "codeql",
+        "artifact": "source-window:semantic-slice",
+        "confidence": 0.8
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "bfd/dwarf2.c",
+          "hunk_index": 0,
+          "source_line": 3213
+        },
+        "summary": "focus=scan_unit_for_symbols | call_edges=scan_unit_for_symbols -> bfd_get | targets=bfd_get | patch_guards=if (attr.u.blk->data != NULL | patch_fix=null check | guards=var; attr.u.val != 0 | symbols=unit, var->name, name, var->file | deps=bfd.h, dwarf2.h, elf-bfd.h | apis=bfd_get, concat_filename",
+        "statements": [
+          "3181: \t\t}",
+          "3182: \t    }",
+          "3183: \t  else if (var)",
+          "3184: \t    {",
+          "3185: \t      switch (attr.name)",
+          "3186: \t\t{"
+        ],
+        "guards": [],
+        "call_boundary": [
+          "bfd_get"
+        ],
+        "call_edges": [
+          "scan_unit_for_symbols -> bfd_get"
+        ],
+        "state_transitions": [],
+        "api_terms": [
+          "bfd_get",
+          "concat_filename"
+        ],
+        "related_symbols": [
+          "unit",
+          "var->name",
+          "name",
+          "var->file",
+          "file",
+          "unit->line_table"
+        ],
+        "verifier": "source-window",
+        "extraction_method": "source_window",
+        "coverage_status": "partial"
+      }
+    },
+    {
+      "evidence_id": "codeql_flow_0",
+      "type": "dataflow_candidate",
+      "analyzer": "codeql",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "bfd/dwarf2.c",
+        "function": "scan_unit_for_symbols"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "source": "unit, var->name, name, var->file",
+        "sink": "",
+        "path": [
+          "function:scan_unit_for_symbols",
+          "scan_unit_for_symbols -> bfd_get"
+        ],
+        "summary": "Patch adds guard `if (attr.u.blk->data != NULL` before bfd_get.",
+        "focus_function": "scan_unit_for_symbols",
+        "entry_points": [
+          "unit",
+          "var->name",
+          "name",
+          "var->file",
+          "file",
+          "unit->line_table"
+        ],
+        "call_targets": [
+          "bfd_get"
+        ],
+        "state_transitions": [],
+        "source_excerpt": "3181: \t\t}\n3182: \t    }\n3183: \t  else if (var)\n3184: \t    {\n3185: \t      switch (attr.name)\n3186: \t\t{\n3187: \t\tcase DW_AT_name:\n3188: \t\t  var->name = attr.u.str;\n3189: \t\t  break;\n3190: \n3191: \t\tcase DW_AT_decl_file:\n3192: \t\t  var->file = concat_filename (unit->line_table,\n3193: \t\t\t\t\t       attr.u.val);\n3194: \t\t  break;\n3195: \n3196: \t\tcase DW_AT_decl_line:\n3197: \t\t  var->line = attr.u.val;\n3198: \t\t  break;\n3199: \n3200: \t\tcase DW_AT_external:\n3201: \t\t  if (attr.u.val != 0)\n3202: \t\t    var->stack = 0;\n3203: \t\t  break;\n3204: \n3205: \t\tcase DW_AT_location:\n3206: \t\t  switch (attr.form)\n3207: \t\t    {\n3208: \t\t    case DW_FORM_block:\n3209: \t\t    case DW_FORM_block1:\n3210: \t\t    case DW_FORM_block2:\n3211: \t\t    case DW_FORM_block4:\n3212: \t\t    case DW_FORM_exprloc:\n3213: \t\t      if (*attr.u.blk->data == DW_OP_addr)\n3214: \t\t\t{\n3215: \t\t\t  var->stack = 0;\n3216: \n3217: \t\t\t  /* Verify that DW_OP_addr is the only opcode in the\n3218: \t\t\t     location, in which case the block size will be 1\n3219: \t\t\t     plus the address size.  */\n3220: \t\t\t  /* ??? For TLS variables, gcc can emit\n3221: \t\t\t     DW_OP_addr <addr> DW_OP_GNU_push_tls_address\n3222: \t\t\t     which we don't handle here yet.  */\n3223: \t\t\t  if (attr.u.blk->size == unit->addr_size + 1U)\n3224: \t\t\t    var->addr = bfd_get (unit->addr_size * 8,\n3225: \t\t\t\t\t\t unit->abfd,\n3226: \t\t\t\t\t\t attr.u.blk->data + 1);\n3227: \t\t\t}\n3228: \t\t      break;\n3229: \n3230: \t\t    default:\n3231: \t\t      break;\n3232: \t\t    }\n3233: \t\t  break;\n3234: \n3235: \t\tdefault:\n3236: \t\t  break;\n3237: \t\t}\n3238: \t    }\n3239: \t}\n3240: \n3241:       if (high_pc_relative)\n3242: \thigh_pc += low_pc;\n3243: \n3244:       if (func && high_pc != 0)\n3245: \t{",
+        "live_query_status": "database_missing",
+        "database_status": "missing",
+        "database_create_message": "CodeQL 数据库创建失败: Initializing database at /anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe476_binutils_cve201714940/primary/codeql/20260423_172415/codeql/codeql/database.\nRunning build command: [/bin/sh, /anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe476_binutils_cve201714940/primary/codeql/20260423_172415/codeql/codeql/codeql_build_noiefju8.sh]\nRunning command in /anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe476_binutils_cve201714940/vulnerable: [/bin/sh, /anonymous/home/LLM-Native/v2_experiments",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "codeql",
+        "artifact": "source-window:data-flow-seed",
+        "confidence": 0.84
+      },
+      "evidence_slice": {
+        "kind": "flow_witness",
+        "anchor": {
+          "patch_file": "bfd/dwarf2.c",
+          "hunk_index": 0,
+          "source_line": 3213
+        },
+        "summary": "Patch adds guard `if (attr.u.blk->data != NULL` before bfd_get.",
+        "statements": [
+          "3181: \t\t}",
+          "3182: \t    }",
+          "3183: \t  else if (var)",
+          "3184: \t    {",
+          "3185: \t      switch (attr.name)",
+          "3186: \t\t{"
+        ],
+        "guards": [],
+        "call_boundary": [
+          "concat_filename",
+          "bfd_get"
+        ],
+        "call_edges": [
+          "function:scan_unit_for_symbols",
+          "scan_unit_for_symbols -> bfd_get"
+        ],
+        "state_transitions": [],
+        "api_terms": [
+          "bfd_get"
+        ],
+        "related_symbols": [
+          "unit",
+          "var->name",
+          "name",
+          "var->file",
+          "file",
+          "unit->line_table"
+        ],
+        "verifier": "source-window",
+        "extraction_method": "source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "codeql_chain_0",
+      "type": "call_chain",
+      "analyzer": "codeql",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "bfd/dwarf2.c",
+        "function": "scan_unit_for_symbols"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": [
+          "scan_unit_for_symbols -> bfd_get"
+        ],
+        "call_edges": [
+          "scan_unit_for_symbols -> bfd_get"
+        ],
+        "live_query_status": "database_missing",
+        "database_status": "missing",
+        "database_create_message": "CodeQL 数据库创建失败: Initializing database at /anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe476_binutils_cve201714940/primary/codeql/20260423_172415/codeql/codeql/database.\nRunning build command: [/bin/sh, /anonymous/home/LLM-Native/v2_experiments/runs/vul4c_cwe476_binutils_cve201714940/primary/codeql/20260423_172415/codeql/codeql/codeql_build_noiefju8.sh]\nRunning command in /anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe476_binutils_cve201714940/vulnerable: [/bin/sh, /anonymous/home/LLM-Native/v2_experiments",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "codeql",
+        "artifact": "source-window:interprocedural-summary",
+        "confidence": 0.78
+      },
+      "evidence_slice": {
+        "kind": "interprocedural_slice",
+        "anchor": {
+          "patch_file": "bfd/dwarf2.c",
+          "hunk_index": 0,
+          "source_line": 3213
+        },
+        "summary": "scan_unit_for_symbols -> bfd_get",
+        "statements": [
+          "3181: \t\t}",
+          "3182: \t    }",
+          "3183: \t  else if (var)",
+          "3184: \t    {",
+          "3185: \t      switch (attr.name)",
+          "3186: \t\t{"
+        ],
+        "guards": [],
+        "call_boundary": [
+          "bfd_get"
+        ],
+        "call_edges": [
+          "scan_unit_for_symbols -> bfd_get"
+        ],
+        "state_transitions": [],
+        "api_terms": [
+          "concat_filename",
+          "bfd_get"
+        ],
+        "related_symbols": [
+          "unit",
+          "var->name",
+          "name",
+          "var->file",
+          "file",
+          "unit->line_table"
+        ],
+        "verifier": "source-window",
+        "extraction_method": "source_window",
+        "coverage_status": "full"
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "collected_analyzers": [
+    "codeql",
+    "patch"
+  ]
+}

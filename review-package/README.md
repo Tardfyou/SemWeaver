@@ -73,8 +73,14 @@ cases. The exact within-repeat paired tests are not significant.
   candidates. Every original `checker-final.cpp` was empty, so the
   hash-bound `checker-repaired.cpp` substitution is explicit. This screen is
   **not** silently added to the primary 39/12 comparison denominator.
-- `evidence/e2_legacy_audit_v1/`: provenance audit of the old CSA/CodeQL
-  table, which contains manual-path rows and is not an automatic-effect result.
+- `evidence/e2_historical/` and `evidence/e2_legacy_audit_v1/`: available
+  historical CSA/CodeQL checker and query sources, selected per-run outputs,
+  patch/sample metadata and tables, plus the provenance audit. Seven of the
+  20 result rows contain manual-path markers and two have zero model calls;
+  the raw table's baseline-PDS count is 7 rather than the old figure's 8.
+  These records are for transparency, **not** an automatic-effect result;
+  original generator prompt lineage is not fully recoverable. See the English
+  `evidence/e2_historical/README.md` for navigation and provenance caveats.
 - `evidence/repeats_v7/case19_patch_local_probe/`: post-hoc, development-
   informed fixture probe. The candidate passes unrelated-statement insertion
   and enclosing-function rename, but misses a consistently renamed cleanup

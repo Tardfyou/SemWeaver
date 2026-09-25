@@ -1,0 +1,719 @@
+{
+  "records": [
+    {
+      "evidence_id": "pf_000",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "src/bin/jp2/convert.c",
+        "function": "fscanf"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "patch_overview",
+        "label": "Patch overview",
+        "attributes": {
+          "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe787_openjpeg_cve201714041/patches/fix.patch",
+          "changed_files": [
+            "src/bin/jp2/convert.c"
+          ],
+          "changed_file_count": 1,
+          "added_line_count": 1,
+          "deleted_line_count": 1
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "patch_overview",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_001",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "src/bin/jp2/convert.c",
+        "function": "fscanf"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "vulnerability_patterns",
+        "label": "Vulnerability patterns inferred from patch",
+        "attributes": {
+          "patterns": [
+            "stack_overflow"
+          ],
+          "descriptions": [
+            "Before the patch, `fscanf` used unbounded scanset specifiers to store whitespace/sign runs into caller-provided character arrays, allowing input longer than the destination buffers to overflow stack memory. The fix constrains each scanset write with an explicit field width, so the same sink becomes bounded."
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "vulnerability_patterns",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_002",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "src/bin/jp2/convert.c",
+        "function": "fscanf"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "affected_functions",
+        "label": "Functions implicated by removed or fixed code",
+        "attributes": {
+          "functions": [
+            "fscanf",
+            "pgxtoimage"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "affected_functions",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_003",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "src/bin/jp2/convert.c",
+        "function": "fscanf"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "detection_strategy",
+        "label": "Existing patch analysis detection strategy",
+        "attributes": {
+          "primary_pattern": "stack_overflow",
+          "check_types": [
+            "format_string_sink_audit",
+            "local_ast_pattern_matching",
+            "boundedness_check_on_scanf_family_scansets"
+          ],
+          "entry_points": [
+            "Calls to `fscanf`",
+            "Calls to scanf-family functions using `%[` conversions in format literals",
+            "Patch-local callsite in `src/bin/jp2/convert.c`"
+          ],
+          "data_flow_tracking": false,
+          "cross_file_analysis": false,
+          "suggestions": [
+            "首稿先命中 patch-local 最小锚点：`fscanf` format literal containing `%[` without a numeric width.",
+            "优先把危险操作本身作为命中条件：未限定宽度的 scanset 写入，而不是先要求证明缓冲区精确大小。",
+            "不要把补丁中的 `!= 9` 失败检查写成硬过滤；它只处理解析失败，不阻断扫描时已经发生的越界写。",
+            "辅助收敛条件可检查对应实参是否为 `char *`/字符数组，但首稿不必强依赖跨过程求得数组容量。",
+            "局部 AST 即可覆盖此补丁语义；只需解析格式串并识别 `%[` 是否带宽度，无需复杂数据流。",
+            "若做二次收敛，可优先关注目标实参为局部数组或固定栈缓冲区的场景。",
+            "不要把普通 `%s`/`%c` 规则混入首稿；此补丁的稳定锚点是 scanset `%[` specifically."
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "detection_strategy",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_004",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "src/bin/jp2/convert.c",
+        "function": "fscanf"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "added_guards",
+        "label": "Patch introduces or strengthens guards",
+        "attributes": {
+          "guards": [
+            "if (fscanf(f, \"PG%31[ \\t]%c%c%31[ \\t+-]%d%31[ \\t]%d%31[ \\t]%d\", temp, &endian1,"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "added_guards",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_005",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "src/bin/jp2/convert.c",
+        "function": "fscanf"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "fix_patterns",
+        "label": "Patch introduces reusable fix patterns",
+        "attributes": {
+          "patterns": [
+            "Replace `%[` with width-limited `%31[` in the same `fscanf` format string",
+            "Constrain each scanset sink at the parsing site instead of relying on later checks",
+            "Keep the existing parse-failure branch (`!= 9`) but add a write bound before the dangerous write occurs"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "fix_patterns",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_006",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "src/bin/jp2/convert.c",
+        "function": "fscanf"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "added_api_calls",
+        "label": "Patch introduces or highlights API usage",
+        "attributes": {
+          "apis": [
+            "fscanf"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "added_api_calls",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "src/bin/jp2/convert.c",
+        "function": "pgxtoimage"
+      },
+      "location": {
+        "line": 1170,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "pgxtoimage in src/bin/jp2/convert.c: state_ops=i++;",
+        "state_before": [
+          "input(filename)",
+          "input(parameters)",
+          "buffer(parameters->image_offset_x0)",
+          "buffer(parameters->image_offset_y0)",
+          "sinks(memset, fopen)"
+        ],
+        "state_after": [
+          "transition(i++;)"
+        ],
+        "functions": [
+          "pgxtoimage"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "filename",
+          "parameters",
+          "parameters->image_offset_x0",
+          "parameters->image_offset_y0",
+          "parameters->subsampling_dx"
+        ],
+        "buffer_fields": [
+          "parameters->image_offset_x0",
+          "parameters->image_offset_y0",
+          "parameters->subsampling_dx"
+        ],
+        "call_targets": [
+          "memset",
+          "fopen",
+          "fprintf",
+          "fseek",
+          "fscanf",
+          "fclose",
+          "fgetc"
+        ],
+        "call_edges": [],
+        "cfg_branch_kinds": [],
+        "branch_conditions": [],
+        "state_statements": [],
+        "return_statements": [],
+        "source_file": "src/bin/jp2/convert.c",
+        "source_excerpt": "1139: opj_image_t* pgxtoimage(const char *filename, opj_cparameters_t *parameters)\n1140: {\n1141:     FILE *f = NULL;\n1142:     int w, h, prec;\n1143:     int i, numcomps, max;\n1144:     OPJ_COLOR_SPACE color_space;\n1145:     opj_image_cmptparm_t cmptparm;  /* maximum of 1 component  */\n1146:     opj_image_t * image = NULL;\n1147:     int adjustS, ushift, dshift, force8;\n1148: \n1149:     char endian1, endian2, sign;\n1150:     char signtmp[32];\n1151: \n1152:     char temp[32];\n1153:     int bigendian;\n1154:     opj_image_comp_t *comp = NULL;\n1155: \n1156:     numcomps = 1;\n1157:     color_space = OPJ_CLRSPC_GRAY;\n1158: \n1159:     memset(&cmptparm, 0, sizeof(opj_image_cmptparm_t));\n1160: \n1161:     max = 0;\n1162: \n1163:     f = fopen(filename, \"rb\");\n1164:     if (!f) {\n1165:         fprintf(stderr, \"Failed to open %s for reading !\\n\", filename);\n1166:         return NULL;\n1167:     }\n1168: \n1169:     fseek(f, 0, SEEK_SET);\n1170:     if (fscanf(f, \"PG%[ \\t]%c%c%[ \\t+-]%d%[ \\t]%d%[ \\t]%d\", temp, &endian1,\n1171:                &endian2, signtmp, &prec, temp, &w, temp, &h) != 9) {\n1172:         fclose(f);\n1173:         fprintf(stderr,\n1174:                 \"ERROR: Failed to read the right number of element from the fscanf() function!\\n\");\n1175:         return NULL;\n1176:     }\n1177: \n1178:     i = 0;\n1179:     sign = '+';\n1180:     while (signtmp[i] != '\\0') {\n1181:         if (signtmp[i] == '-') {\n1182:             sign = '-';\n1183:         }\n1184:         i++;\n1185:     }\n1186: \n1187:     fgetc(f);\n1188:     if (endian1 == 'M' && endian2 == 'L') {\n1189:         bigendian = 1;\n1190:     } else if (endian2 == 'M' && endian1 == 'L') {\n1191:         bigendian = 0;\n1192:     } else {\n1193:         fclose(f);\n1194:         fprintf(stderr, \"Bad pgx header, please check input file\\n\");\n1195:         return NULL;\n1196:     }\n1197: \n1198:     /* initialize image component */\n1199: \n1200:     cmptparm.x0 = (OPJ_UINT32)parameters->image_offset_x0;\n1201:     cmptparm.y0 = (OPJ_UINT32)parameters->image_offset_y0;\n1202:     cmptparm.w = !cmptparm.x0 ? (OPJ_UINT32)((w - 1) * parameters->subsampling_dx +",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:symbolic-state",
+        "confidence": 0.81
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "src/bin/jp2/convert.c",
+          "hunk_index": 0,
+          "source_line": 1170
+        },
+        "summary": "pgxtoimage in src/bin/jp2/convert.c: state_ops=i++;",
+        "statements": [
+          "1139: opj_image_t* pgxtoimage(const char *filename, opj_cparameters_t *parameters)",
+          "1140: {",
+          "1141:     FILE *f = NULL;",
+          "1142:     int w, h, prec;",
+          "1143:     int i, numcomps, max;",
+          "1144:     OPJ_COLOR_SPACE color_space;"
+        ],
+        "guards": [],
+        "call_boundary": [
+          "memset",
+          "fopen",
+          "fprintf",
+          "fseek",
+          "fscanf",
+          "fclose"
+        ],
+        "call_edges": [],
+        "state_transitions": [
+          "transition(i++;)"
+        ],
+        "api_terms": [],
+        "related_symbols": [
+          "filename",
+          "parameters",
+          "parameters->image_offset_x0",
+          "parameters->image_offset_y0",
+          "parameters->subsampling_dx"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_validation_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "src/bin/jp2/convert.c",
+        "function": "pgxtoimage"
+      },
+      "location": {
+        "line": 1170,
+        "column": 9
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at src/bin/jp2/convert.c:1170",
+        "diagnostic_message": "Formatted input uses an unbounded %[ scanset that may overflow the destination character buffer [custom.FormattedInputWidthBoundChecker]",
+        "diagnostic_checker": "FormattedInputWidthBoundChecker",
+        "state_before": [
+          "input(filename)",
+          "input(parameters)",
+          "buffer(parameters->image_offset_x0)",
+          "buffer(parameters->image_offset_y0)",
+          "sinks(memset, fopen)"
+        ],
+        "state_after": [
+          "diagnostic(Formatted input uses an unbounded %[ scanset that may overflow the destination character buffer [custom.FormattedInputWidthBoundChecker])"
+        ],
+        "functions": [
+          "pgxtoimage"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "filename",
+          "parameters"
+        ],
+        "buffer_fields": [
+          "parameters->image_offset_x0",
+          "parameters->image_offset_y0",
+          "parameters->subsampling_dx"
+        ],
+        "call_targets": [
+          "memset",
+          "fopen",
+          "fprintf",
+          "fseek",
+          "fscanf",
+          "fclose"
+        ],
+        "call_edges": [],
+        "state_statements": [
+          "i++;"
+        ],
+        "source_file": "src/bin/jp2/convert.c",
+        "source_excerpt": "1139: opj_image_t* pgxtoimage(const char *filename, opj_cparameters_t *parameters)\n1140: {\n1141:     FILE *f = NULL;\n1142:     int w, h, prec;\n1143:     int i, numcomps, max;\n1144:     OPJ_COLOR_SPACE color_space;\n1145:     opj_image_cmptparm_t cmptparm;  /* maximum of 1 component  */\n1146:     opj_image_t * image = NULL;\n1147:     int adjustS, ushift, dshift, force8;\n1148: \n1149:     char endian1, endian2, sign;\n1150:     char signtmp[32];\n1151: \n1152:     char temp[32];\n1153:     int bigendian;\n1154:     opj_image_comp_t *comp = NULL;\n1155: \n1156:     numcomps = 1;\n1157:     color_space = OPJ_CLRSPC_GRAY;\n1158: \n1159:     memset(&cmptparm, 0, sizeof(opj_image_cmptparm_t));\n1160: \n1161:     max = 0;\n1162: \n1163:     f = fopen(filename, \"rb\");\n1164:     if (!f) {\n1165:         fprintf(stderr, \"Failed to open %s for reading !\\n\", filename);\n1166:         return NULL;\n1167:     }\n1168: \n1169:     fseek(f, 0, SEEK_SET);\n1170:     if (fscanf(f, \"PG%[ \\t]%c%c%[ \\t+-]%d%[ \\t]%d%[ \\t]%d\", temp, &endian1,\n1171:                &endian2, signtmp, &prec, temp, &w, temp, &h) != 9) {\n1172:         fclose(f);\n1173:         fprintf(stderr,\n1174:                 \"ERROR: Failed to read the right number of element from the fscanf() function!\\n\");\n1175:         return NULL;\n1176:     }\n1177: \n1178:     i = 0;\n1179:     sign = '+';\n1180:     while (signtmp[i] != '\\0') {\n1181:         if (signtmp[i] == '-') {\n1182:             sign = '-';\n1183:         }\n1184:         i++;\n1185:     }\n1186: \n1187:     fgetc(f);\n1188:     if (endian1 == 'M' && endian2 == 'L') {\n1189:         bigendian = 1;\n1190:     } else if (endian2 == 'M' && endian1 == 'L') {\n1191:         bigendian = 0;\n1192:     } else {\n1193:         fclose(f);\n1194:         fprintf(stderr, \"Bad pgx header, please check input file\\n\");\n1195:         return NULL;\n1196:     }\n1197: \n1198:     /* initialize image component */\n1199: \n1200:     cmptparm.x0 = (OPJ_UINT32)parameters->image_offset_x0;\n1201:     cmptparm.y0 = (OPJ_UINT32)parameters->image_offset_y0;\n1202:     cmptparm.w = !cmptparm.x0 ? (OPJ_UINT32)((w - 1) * parameters->subsampling_dx +",
+        "coverage_status": "full",
+        "contract_type": "",
+        "guard_exprs": [
+          "!f",
+          "signtmp[i] != '\\0'",
+          "signtmp[i] == '-'",
+          "endian1 == 'M' && endian2 == 'L'"
+        ],
+        "sink_calls": [
+          "memset",
+          "fopen",
+          "fprintf",
+          "fseek"
+        ]
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.86
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "src/bin/jp2/convert.c",
+          "hunk_index": 0,
+          "source_line": 1170
+        },
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at src/bin/jp2/convert.c:1170",
+        "statements": [
+          "1139: opj_image_t* pgxtoimage(const char *filename, opj_cparameters_t *parameters)",
+          "1140: {",
+          "1141:     FILE *f = NULL;",
+          "1142:     int w, h, prec;",
+          "1143:     int i, numcomps, max;",
+          "1144:     OPJ_COLOR_SPACE color_space;"
+        ],
+        "guards": [
+          "!f",
+          "signtmp[i] != '\\0'",
+          "signtmp[i] == '-'",
+          "endian1 == 'M' && endian2 == 'L'"
+        ],
+        "call_boundary": [
+          "memset",
+          "fopen",
+          "fprintf",
+          "fseek",
+          "fscanf",
+          "fclose"
+        ],
+        "call_edges": [],
+        "state_transitions": [
+          "diagnostic(Formatted input uses an unbounded %[ scanset that may overflow the destination character buffer [custom.FormattedInputWidthBoundChecker])"
+        ],
+        "api_terms": [
+          "i++;",
+          "memset",
+          "fopen",
+          "fprintf",
+          "fseek",
+          "fscanf"
+        ],
+        "related_symbols": [
+          "filename",
+          "parameters"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_validation_path_guard_1",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "src/bin/jp2/convert.c",
+        "function": "pgxtoimage"
+      },
+      "location": {
+        "line": 1170,
+        "column": 9
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "CSA validation reaches src/bin/jp2/convert.c:1170 in pgxtoimage with guards !f, signtmp[i] != '\\0'",
+        "diagnostic_message": "Formatted input uses an unbounded %[ scanset that may overflow the destination character buffer [custom.FormattedInputWidthBoundChecker]",
+        "diagnostic_checker": "FormattedInputWidthBoundChecker",
+        "state_before": [
+          "input(filename)",
+          "input(parameters)",
+          "buffer(parameters->image_offset_x0)",
+          "buffer(parameters->image_offset_y0)",
+          "sinks(memset, fopen)"
+        ],
+        "state_after": [
+          "guard(!f)",
+          "guard(signtmp[i] != '\\0')",
+          "diagnostic(Formatted input uses an unbounded %[ scanset that may overflow the destination character buffer [custom.FormattedInputWidthBoundChecker])"
+        ],
+        "functions": [
+          "pgxtoimage"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "filename",
+          "parameters"
+        ],
+        "buffer_fields": [
+          "parameters->image_offset_x0",
+          "parameters->image_offset_y0",
+          "parameters->subsampling_dx"
+        ],
+        "call_targets": [
+          "memset",
+          "fopen",
+          "fprintf",
+          "fseek",
+          "fscanf",
+          "fclose"
+        ],
+        "call_edges": [],
+        "state_statements": [
+          "i++;"
+        ],
+        "source_file": "src/bin/jp2/convert.c",
+        "source_excerpt": "1139: opj_image_t* pgxtoimage(const char *filename, opj_cparameters_t *parameters)\n1140: {\n1141:     FILE *f = NULL;\n1142:     int w, h, prec;\n1143:     int i, numcomps, max;\n1144:     OPJ_COLOR_SPACE color_space;\n1145:     opj_image_cmptparm_t cmptparm;  /* maximum of 1 component  */\n1146:     opj_image_t * image = NULL;\n1147:     int adjustS, ushift, dshift, force8;\n1148: \n1149:     char endian1, endian2, sign;\n1150:     char signtmp[32];\n1151: \n1152:     char temp[32];\n1153:     int bigendian;\n1154:     opj_image_comp_t *comp = NULL;\n1155: \n1156:     numcomps = 1;\n1157:     color_space = OPJ_CLRSPC_GRAY;\n1158: \n1159:     memset(&cmptparm, 0, sizeof(opj_image_cmptparm_t));\n1160: \n1161:     max = 0;\n1162: \n1163:     f = fopen(filename, \"rb\");\n1164:     if (!f) {\n1165:         fprintf(stderr, \"Failed to open %s for reading !\\n\", filename);\n1166:         return NULL;\n1167:     }\n1168: \n1169:     fseek(f, 0, SEEK_SET);\n1170:     if (fscanf(f, \"PG%[ \\t]%c%c%[ \\t+-]%d%[ \\t]%d%[ \\t]%d\", temp, &endian1,\n1171:                &endian2, signtmp, &prec, temp, &w, temp, &h) != 9) {\n1172:         fclose(f);\n1173:         fprintf(stderr,\n1174:                 \"ERROR: Failed to read the right number of element from the fscanf() function!\\n\");\n1175:         return NULL;\n1176:     }\n1177: \n1178:     i = 0;\n1179:     sign = '+';\n1180:     while (signtmp[i] != '\\0') {\n1181:         if (signtmp[i] == '-') {\n1182:             sign = '-';\n1183:         }\n1184:         i++;\n1185:     }\n1186: \n1187:     fgetc(f);\n1188:     if (endian1 == 'M' && endian2 == 'L') {\n1189:         bigendian = 1;\n1190:     } else if (endian2 == 'M' && endian1 == 'L') {\n1191:         bigendian = 0;\n1192:     } else {\n1193:         fclose(f);\n1194:         fprintf(stderr, \"Bad pgx header, please check input file\\n\");\n1195:         return NULL;\n1196:     }\n1197: \n1198:     /* initialize image component */\n1199: \n1200:     cmptparm.x0 = (OPJ_UINT32)parameters->image_offset_x0;\n1201:     cmptparm.y0 = (OPJ_UINT32)parameters->image_offset_y0;\n1202:     cmptparm.w = !cmptparm.x0 ? (OPJ_UINT32)((w - 1) * parameters->subsampling_dx +",
+        "coverage_status": "full",
+        "guard_expr": "!f",
+        "cfg_branch_kinds": [],
+        "branch_conditions": [
+          "!f",
+          "signtmp[i] != '\\0'",
+          "signtmp[i] == '-'",
+          "endian1 == 'M' && endian2 == 'L'"
+        ]
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.86
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "src/bin/jp2/convert.c",
+          "hunk_index": 0,
+          "source_line": 1170
+        },
+        "summary": "CSA validation reaches src/bin/jp2/convert.c:1170 in pgxtoimage with guards !f, signtmp[i] != '\\0'",
+        "statements": [
+          "1139: opj_image_t* pgxtoimage(const char *filename, opj_cparameters_t *parameters)",
+          "1140: {",
+          "1141:     FILE *f = NULL;",
+          "1142:     int w, h, prec;",
+          "1143:     int i, numcomps, max;",
+          "1144:     OPJ_COLOR_SPACE color_space;"
+        ],
+        "guards": [
+          "!f",
+          "signtmp[i] != '\\0'",
+          "signtmp[i] == '-'",
+          "endian1 == 'M' && endian2 == 'L'"
+        ],
+        "call_boundary": [
+          "memset",
+          "fopen",
+          "fprintf",
+          "fseek",
+          "fscanf",
+          "fclose"
+        ],
+        "call_edges": [],
+        "state_transitions": [
+          "guard(!f)",
+          "guard(signtmp[i] != '\\0')",
+          "diagnostic(Formatted input uses an unbounded %[ scanset that may overflow the destination character buffer [custom.FormattedInputWidthBoundChecker])"
+        ],
+        "api_terms": [
+          "i++;",
+          "memset",
+          "fopen",
+          "fprintf",
+          "fseek",
+          "fscanf"
+        ],
+        "related_symbols": [
+          "filename",
+          "parameters"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_2",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "src/bin/jp2/convert.c",
+        "function": "pgxtoimage"
+      },
+      "location": {
+        "line": 1170,
+        "column": 9
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "pgxtoimage in src/bin/jp2/convert.c provides CSA-backed pointer/resource lifecycle context near line 1170",
+        "diagnostic_message": "Formatted input uses an unbounded %[ scanset that may overflow the destination character buffer [custom.FormattedInputWidthBoundChecker]",
+        "diagnostic_checker": "FormattedInputWidthBoundChecker",
+        "state_before": [
+          "input(filename)",
+          "input(parameters)",
+          "buffer(parameters->image_offset_x0)",
+          "buffer(parameters->image_offset_y0)",
+          "sinks(memset, fopen)"
+        ],
+        "state_after": [
+          "operation(i++;)",
+          "diagnostic(Formatted input uses an unbounded %[ scanset that may overflow the destination character buffer [custom.FormattedInputWidthBoundChecker])"
+        ],
+        "functions": [
+          "pgxtoimage"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "filename",
+          "parameters"
+        ],
+        "buffer_fields": [
+          "parameters->image_offset_x0",
+          "parameters->image_offset_y0",
+          "parameters->subsampling_dx"
+        ],
+        "call_targets": [
+          "memset",
+          "fopen",
+          "fprintf",
+          "fseek",
+          "fscanf",
+          "fclose"
+        ],
+        "call_edges": [],
+        "state_statements": [
+          "i++;"
+        ],
+        "source_file": "src/bin/jp2/convert.c",
+        "source_excerpt": "1139: opj_image_t* pgxtoimage(const char *filename, opj_cparameters_t *parameters)\n1140: {\n1141:     FILE *f = NULL;\n1142:     int w, h, prec;\n1143:     int i, numcomps, max;\n1144:     OPJ_COLOR_SPACE color_space;\n1145:     opj_image_cmptparm_t cmptparm;  /* maximum of 1 component  */\n1146:     opj_image_t * image = NULL;\n1147:     int adjustS, ushift, dshift, force8;\n1148: \n1149:     char endian1, endian2, sign;\n1150:     char signtmp[32];\n1151: \n1152:     char temp[32];\n1153:     int bigendian;\n1154:     opj_image_comp_t *comp = NULL;\n1155: \n1156:     numcomps = 1;\n1157:     color_space = OPJ_CLRSPC_GRAY;\n1158: \n1159:     memset(&cmptparm, 0, sizeof(opj_image_cmptparm_t));\n1160: \n1161:     max = 0;\n1162: \n1163:     f = fopen(filename, \"rb\");\n1164:     if (!f) {\n1165:         fprintf(stderr, \"Failed to open %s for reading !\\n\", filename);\n1166:         return NULL;\n1167:     }\n1168: \n1169:     fseek(f, 0, SEEK_SET);\n1170:     if (fscanf(f, \"PG%[ \\t]%c%c%[ \\t+-]%d%[ \\t]%d%[ \\t]%d\", temp, &endian1,\n1171:                &endian2, signtmp, &prec, temp, &w, temp, &h) != 9) {\n1172:         fclose(f);\n1173:         fprintf(stderr,\n1174:                 \"ERROR: Failed to read the right number of element from the fscanf() function!\\n\");\n1175:         return NULL;\n1176:     }\n1177: \n1178:     i = 0;\n1179:     sign = '+';\n1180:     while (signtmp[i] != '\\0') {\n1181:         if (signtmp[i] == '-') {\n1182:             sign = '-';\n1183:         }\n1184:         i++;\n1185:     }\n1186: \n1187:     fgetc(f);\n1188:     if (endian1 == 'M' && endian2 == 'L') {\n1189:         bigendian = 1;\n1190:     } else if (endian2 == 'M' && endian1 == 'L') {\n1191:         bigendian = 0;\n1192:     } else {\n1193:         fclose(f);\n1194:         fprintf(stderr, \"Bad pgx header, please check input file\\n\");\n1195:         return NULL;\n1196:     }\n1197: \n1198:     /* initialize image component */\n1199: \n1200:     cmptparm.x0 = (OPJ_UINT32)parameters->image_offset_x0;\n1201:     cmptparm.y0 = (OPJ_UINT32)parameters->image_offset_y0;\n1202:     cmptparm.w = !cmptparm.x0 ? (OPJ_UINT32)((w - 1) * parameters->subsampling_dx +",
+        "coverage_status": "full",
+        "operations": [
+          "i++;"
+        ],
+        "acquisition_ops": [],
+        "release_ops": []
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.86
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "src/bin/jp2/convert.c",
+          "hunk_index": 0,
+          "source_line": 1170
+        },
+        "summary": "pgxtoimage in src/bin/jp2/convert.c provides CSA-backed pointer/resource lifecycle context near line 1170",
+        "statements": [
+          "1139: opj_image_t* pgxtoimage(const char *filename, opj_cparameters_t *parameters)",
+          "1140: {",
+          "1141:     FILE *f = NULL;",
+          "1142:     int w, h, prec;",
+          "1143:     int i, numcomps, max;",
+          "1144:     OPJ_COLOR_SPACE color_space;"
+        ],
+        "guards": [
+          "!f",
+          "signtmp[i] != '\\0'",
+          "signtmp[i] == '-'",
+          "endian1 == 'M' && endian2 == 'L'"
+        ],
+        "call_boundary": [
+          "memset",
+          "fopen",
+          "fprintf",
+          "fseek",
+          "fscanf",
+          "fclose"
+        ],
+        "call_edges": [],
+        "state_transitions": [
+          "operation(i++;)",
+          "diagnostic(Formatted input uses an unbounded %[ scanset that may overflow the destination character buffer [custom.FormattedInputWidthBoundChecker])"
+        ],
+        "api_terms": [
+          "i++;",
+          "memset",
+          "fopen",
+          "fprintf",
+          "fseek",
+          "fscanf"
+        ],
+        "related_symbols": [
+          "filename",
+          "parameters"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "full"
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "collected_analyzers": [
+    "csa",
+    "patch"
+  ]
+}

@@ -1,0 +1,11 @@
+--- /SoK-main/Vul4C-Benchmark/imagemagick/CVE-2016-9556/CVE-2016-9556_CWE-119_sgi.c_OLD.c	2025-10-13 01:36:54.866452292 +0000
++++ /SoK-main/Vul4C-Benchmark/imagemagick/CVE-2016-9556/CVE-2016-9556_CWE-119_sgi.c_NEW.c	2025-10-13 01:36:54.866452292 +0000
+@@ -332,6 +332,8 @@
+     if ((iris_info.bytes_per_pixel == 0) || (iris_info.bytes_per_pixel > 2))
+       ThrowReaderException(CorruptImageError,"ImproperImageHeader");
+     iris_info.dimension=ReadBlobMSBShort(image);
++    if ((iris_info.dimension == 0) || (iris_info.dimension > 3)) 
++      ThrowReaderException(CorruptImageError,"ImproperImageHeader");
+     iris_info.columns=ReadBlobMSBShort(image);
+     iris_info.rows=ReadBlobMSBShort(image);
+     iris_info.depth=ReadBlobMSBShort(image);

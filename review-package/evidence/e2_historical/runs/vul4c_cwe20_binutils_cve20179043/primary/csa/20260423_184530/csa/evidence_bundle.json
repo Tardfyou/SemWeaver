@@ -1,0 +1,755 @@
+{
+  "records": [
+    {
+      "evidence_id": "pf_000",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "binutils/readelf.c",
+        "function": "binutils/readelf.c numeric GNU build attribute decoding block"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "patch_overview",
+        "label": "Patch overview",
+        "attributes": {
+          "patch_path": "/anonymous/home/LLM-Native/v2_experiments/datasets/curated/vul4c_cwe20_binutils_cve20179043/patches/fix.patch",
+          "changed_files": [
+            "binutils/readelf.c"
+          ],
+          "changed_file_count": 1,
+          "added_line_count": 15,
+          "deleted_line_count": 7
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "patch_overview",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_001",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "binutils/readelf.c",
+        "function": "binutils/readelf.c numeric GNU build attribute decoding block"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "vulnerability_patterns",
+        "label": "Vulnerability patterns inferred from patch",
+        "attributes": {
+          "patterns": [
+            "improper_input_validation"
+          ],
+          "descriptions": [
+            "Before the patch, a length derived from the note name field was used directly as the byte count for numeric decoding, causing the loop to keep reading bytes from `name` and shifting/accumulating them into a fixed-width integer without first proving that the encoded numeric value fits. After the patch, oversized numeric encodings are rejected before the loop."
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "vulnerability_patterns",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_002",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "binutils/readelf.c",
+        "function": "binutils/readelf.c numeric GNU build attribute decoding block"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "affected_functions",
+        "label": "Functions implicated by removed or fixed code",
+        "attributes": {
+          "functions": [
+            "binutils/readelf.c numeric GNU build attribute decoding block",
+            "print_gnu_build_attribute_name"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "affected_functions",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_003",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "binutils/readelf.c",
+        "function": "binutils/readelf.c numeric GNU build attribute decoding block"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "detection_strategy",
+        "label": "Existing patch analysis detection strategy",
+        "attributes": {
+          "primary_pattern": "improper_input_validation",
+          "check_types": [
+            "local_ast",
+            "local_cfg",
+            "bounded_integer_decode",
+            "length_guard_presence"
+          ],
+          "entry_points": [
+            "binutils/readelf.c numeric GNU build attribute decoding block",
+            "case GNU_BUILD_ATTRIBUTE_TYPE_NUMERIC"
+          ],
+          "data_flow_tracking": true,
+          "cross_file_analysis": false,
+          "suggestions": [
+            "首稿优先命中 patch-local 锚点：`bytes = pnote->namesz - (name - pnote->namedata)` 后进入 `while (bytes --)` 并读取 `* name ++`。",
+            "核心 sink 是 unchecked length 驱动的 numeric decode loop，而不是新增的 `error` 或 `printf`。",
+            "首稿不要把 `if (bytes > sizeof (val)) return FALSE` 写成必须存在的硬过滤；应先找缺少该 barrier 的旧形态。",
+            "`bytes <= sizeof(val)`、`return FALSE`、错误日志内容适合作为二次收敛条件，用于确认这是 oversized numeric field 防护。",
+            "需要局部数据流追踪 `bytes` 从 `pnote->namesz` 到 loop bound，以及 `val` 的固定宽度；通常不需要跨文件分析。",
+            "同时可辅助检查循环体内是否存在按 `shift` 组装整数的模式，但不要要求完整跨过程语义。"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "detection_strategy",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_004",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "binutils/readelf.c",
+        "function": "binutils/readelf.c numeric GNU build attribute decoding block"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "added_guards",
+        "label": "Patch introduces or strengthens guards",
+        "attributes": {
+          "guards": [
+            "if (bytes > sizeof (val))"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "added_guards",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_005",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "binutils/readelf.c",
+        "function": "binutils/readelf.c numeric GNU build attribute decoding block"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "fix_patterns",
+        "label": "Patch introduces reusable fix patterns",
+        "attributes": {
+          "patterns": [
+            "widen the numeric accumulator from `unsigned long` to `unsigned long long`",
+            "add a pre-loop barrier `if (bytes > sizeof (val))`",
+            "on guard failure, report the corrupt `namesz` and `return FALSE` before consuming `name`",
+            "keep the numeric decode loop reachable only when the byte count fits the accumulator width",
+            "bounds check"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "fix_patterns",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "pf_006",
+      "type": "patch_fact",
+      "analyzer": "patch",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "binutils/readelf.c",
+        "function": "binutils/readelf.c numeric GNU build attribute decoding block"
+      },
+      "location": {
+        "line": 0,
+        "column": 0
+      },
+      "semantic_payload": {
+        "fact_type": "added_api_calls",
+        "label": "Patch introduces or highlights API usage",
+        "attributes": {
+          "apis": [
+            "error",
+            "_",
+            "printf"
+          ]
+        }
+      },
+      "provenance": {
+        "tool": "patch-analysis",
+        "artifact": "added_api_calls",
+        "confidence": 0.95
+      },
+      "evidence_slice": {}
+    },
+    {
+      "evidence_id": "csa_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "binutils/readelf.c",
+        "function": "print_gnu_build_attribute_name"
+      },
+      "location": {
+        "line": 16932,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "print_gnu_build_attribute_name adds patch barrier `bytes > sizeof (val)` around error, _.",
+        "contract_type": "patch_barrier",
+        "same_call_binding": "tie the guard to the current downstream sink or protected state transition instead of any unrelated if-statement",
+        "trigger_contract": "report when a risky write proceeds without the patch-style barrier",
+        "silence_contract": "stay silent when the nearby guard proves the current write is blocked or bounded",
+        "guard_exprs": [
+          "bytes > sizeof (val)"
+        ],
+        "removed_calls": [],
+        "added_calls": [
+          "error",
+          "_"
+        ],
+        "tracked_symbols": [
+          "bytes",
+          "val",
+          "pnote",
+          "namesz",
+          "name",
+          "namedata",
+          "shift",
+          "decoded"
+        ],
+        "widened_variables": [],
+        "state_resets": [],
+        "old_numeric_type": "",
+        "new_numeric_type": "",
+        "numeric_domain_change": "",
+        "arithmetic_operations": [],
+        "sink_calls": [
+          "error",
+          "_",
+          "print_symbol",
+          "printf"
+        ],
+        "buffer_fields": [
+          "pnote->namesz",
+          "pnote->namedata"
+        ],
+        "source_file": "binutils/readelf.c",
+        "function": "print_gnu_build_attribute_name",
+        "source_excerpt": "16903: \t  error (_(\"unexpected character in name field\\n\"));\n16904: \t  print_symbol (- left, _(\"<unknown attribute>\"));\n16905: \t  return 0;\n16906: \t}\n16907:       expected_types = \"*$!+\";\n16908:       break;\n16909:     }\n16910: \n16911:   if (text)\n16912:     {\n16913:       printf (\"%s\", text);\n16914:       left -= strlen (text);\n16915:     }\n16916: \n16917:   if (strchr (expected_types, name_type) == NULL)\n16918:     warn (_(\"attribute does not have an expected type (%c)\\n\"), name_type);\n16919: \n16920:   if ((unsigned long)(name - pnote->namedata) > pnote->namesz)\n16921:     {\n16922:       error (_(\"corrupt name field: namesz: %lu but parsing gets to %ld\\n\"),\n16923: \t     (unsigned long) pnote->namesz,\n16924: \t     (long) (name - pnote->namedata));\n16925:       return FALSE;\n16926:     }\n16927: \n16928:   if (left < 1 && ! do_wide)\n16929:     return TRUE;\n16930: \n16931:   switch (name_type)\n16932:     {\n16933:     case GNU_BUILD_ATTRIBUTE_TYPE_NUMERIC:\n16934:       {\n16935: \tunsigned int   bytes = pnote->namesz - (name - pnote->namedata);\n16936: \tunsigned long  val = 0;\n16937: \tunsigned int   shift = 0;\n16938: \tchar *         decoded = NULL;\n16939: \n16940: \twhile (bytes --)\n16941: \t  {\n16942: \t    unsigned long byte = (* name ++) & 0xff;\n16943: \n16944: \t    val |= byte << shift;\n16945: \t    shift += 8;\n16946: \t  }\n16947: \n16948: \tswitch (name_attribute)\n16949: \t  {\n16950: \t  case GNU_BUILD_ATTRIBUTE_PIC:\n16951: \t    switch (val)\n16952: \t      {\n16953: \t      case 0: decoded = \"static\"; break;\n16954: \t      case 1: decoded = \"pic\"; break;\n16955: \t      case 2: decoded = \"PIC\"; break;\n16956: \t      case 3: decoded = \"pie\"; break;\n16957: \t      case 4: decoded = \"PIE\"; break;\n16958: \t      default: break;\n16959: \t      }\n16960: \t    break;\n16961: \t  case GNU_BUILD_ATTRIBUTE_STACK_PROT:\n16962: \t    switch (val)\n16963: \t      {\n16964: \t\t/* Based upon the SPCT_FLAG_xxx enum values in gcc/cfgexpand.c.  */\n16965: \t      case 0: decoded = \"off\"; break;\n16966: \t      case 1: decoded = \"on\"; break;\n16967: \t      case 2: decoded = \"all\"; break;",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:semantic-contract",
+        "confidence": 0.92
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "binutils/readelf.c",
+          "hunk_index": 0,
+          "source_line": 16932
+        },
+        "summary": "print_gnu_build_attribute_name adds patch barrier `bytes > sizeof (val)` around error, _.",
+        "statements": [
+          "unsigned int        bytes = pnote->namesz - (name - pnote->namedata);",
+          "unsigned long long  val = 0;",
+          "unsigned int        shift = 0;",
+          "char *              decoded = NULL;",
+          "/* PR 21378 */",
+          "if (bytes > sizeof (val))"
+        ],
+        "guards": [
+          "bytes > sizeof (val)"
+        ],
+        "call_boundary": [
+          "error",
+          "_",
+          "print_symbol",
+          "printf"
+        ],
+        "call_edges": [
+          "print_gnu_build_attribute_name -> error",
+          "print_gnu_build_attribute_name -> _",
+          "print_gnu_build_attribute_name -> print_symbol"
+        ],
+        "state_transitions": [
+          "",
+          "report when a risky write proceeds without the patch-style barrier",
+          "stay silent when the nearby guard proves the current write is blocked or bounded"
+        ],
+        "api_terms": [
+          "error",
+          "_",
+          "print_symbol",
+          "error",
+          "_"
+        ],
+        "related_symbols": [
+          "bytes",
+          "val",
+          "pnote",
+          "namesz",
+          "name",
+          "namedata"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "binutils/readelf.c",
+        "function": "print_gnu_build_attribute_name"
+      },
+      "location": {
+        "line": 16932,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "bytes > sizeof (val)",
+        "summary": "print_gnu_build_attribute_name introduces patch guard `bytes > sizeof (val)` before error, _.",
+        "state_before": [
+          "input(bytes)",
+          "input(val)",
+          "buffer(pnote->namesz)",
+          "buffer(pnote->namedata)"
+        ],
+        "state_after": [
+          "guard(bytes > sizeof (val))",
+          "current_call(error)",
+          "current_call(_)"
+        ],
+        "functions": [
+          "print_gnu_build_attribute_name"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "bytes",
+          "val",
+          "pnote",
+          "namesz",
+          "name",
+          "namedata"
+        ],
+        "buffer_fields": [
+          "pnote->namesz",
+          "pnote->namedata"
+        ],
+        "call_targets": [
+          "error",
+          "_",
+          "print_symbol",
+          "printf"
+        ],
+        "call_edges": [
+          "print_gnu_build_attribute_name -> error",
+          "print_gnu_build_attribute_name -> _",
+          "print_gnu_build_attribute_name -> print_symbol"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "bytes > sizeof (val)"
+        ],
+        "state_statements": [
+          "unsigned int        bytes = pnote->namesz - (name - pnote->namedata);",
+          "unsigned long long  val = 0;",
+          "unsigned int        shift = 0;",
+          "char *              decoded = NULL;",
+          "/* PR 21378 */",
+          "if (bytes > sizeof (val))"
+        ],
+        "compile_command_preview": "",
+        "source_file": "binutils/readelf.c",
+        "source_excerpt": "16903: \t  error (_(\"unexpected character in name field\\n\"));\n16904: \t  print_symbol (- left, _(\"<unknown attribute>\"));\n16905: \t  return 0;\n16906: \t}\n16907:       expected_types = \"*$!+\";\n16908:       break;\n16909:     }\n16910: \n16911:   if (text)\n16912:     {\n16913:       printf (\"%s\", text);\n16914:       left -= strlen (text);\n16915:     }\n16916: \n16917:   if (strchr (expected_types, name_type) == NULL)\n16918:     warn (_(\"attribute does not have an expected type (%c)\\n\"), name_type);\n16919: \n16920:   if ((unsigned long)(name - pnote->namedata) > pnote->namesz)\n16921:     {\n16922:       error (_(\"corrupt name field: namesz: %lu but parsing gets to %ld\\n\"),\n16923: \t     (unsigned long) pnote->namesz,\n16924: \t     (long) (name - pnote->namedata));\n16925:       return FALSE;\n16926:     }\n16927: \n16928:   if (left < 1 && ! do_wide)\n16929:     return TRUE;\n16930: \n16931:   switch (name_type)\n16932:     {\n16933:     case GNU_BUILD_ATTRIBUTE_TYPE_NUMERIC:\n16934:       {\n16935: \tunsigned int   bytes = pnote->namesz - (name - pnote->namedata);\n16936: \tunsigned long  val = 0;\n16937: \tunsigned int   shift = 0;\n16938: \tchar *         decoded = NULL;\n16939: \n16940: \twhile (bytes --)\n16941: \t  {\n16942: \t    unsigned long byte = (* name ++) & 0xff;\n16943: \n16944: \t    val |= byte << shift;\n16945: \t    shift += 8;\n16946: \t  }\n16947: \n16948: \tswitch (name_attribute)\n16949: \t  {\n16950: \t  case GNU_BUILD_ATTRIBUTE_PIC:\n16951: \t    switch (val)\n16952: \t      {\n16953: \t      case 0: decoded = \"static\"; break;\n16954: \t      case 1: decoded = \"pic\"; break;\n16955: \t      case 2: decoded = \"PIC\"; break;\n16956: \t      case 3: decoded = \"pie\"; break;\n16957: \t      case 4: decoded = \"PIE\"; break;\n16958: \t      default: break;\n16959: \t      }\n16960: \t    break;\n16961: \t  case GNU_BUILD_ATTRIBUTE_STACK_PROT:\n16962: \t    switch (val)\n16963: \t      {\n16964: \t\t/* Based upon the SPCT_FLAG_xxx enum values in gcc/cfgexpand.c.  */\n16965: \t      case 0: decoded = \"off\"; break;\n16966: \t      case 1: decoded = \"on\"; break;\n16967: \t      case 2: decoded = \"all\"; break;",
+        "summary_line": 16932,
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:path-guard",
+        "confidence": 0.92
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "binutils/readelf.c",
+          "hunk_index": 0,
+          "source_line": 16932
+        },
+        "summary": "print_gnu_build_attribute_name introduces patch guard `bytes > sizeof (val)` before error, _.",
+        "statements": [
+          "unsigned int        bytes = pnote->namesz - (name - pnote->namedata);",
+          "unsigned long long  val = 0;",
+          "unsigned int        shift = 0;",
+          "char *              decoded = NULL;",
+          "/* PR 21378 */",
+          "if (bytes > sizeof (val))"
+        ],
+        "guards": [
+          "bytes > sizeof (val)"
+        ],
+        "call_boundary": [
+          "error",
+          "_",
+          "print_symbol",
+          "printf"
+        ],
+        "call_edges": [
+          "print_gnu_build_attribute_name -> error",
+          "print_gnu_build_attribute_name -> _",
+          "print_gnu_build_attribute_name -> print_symbol"
+        ],
+        "state_transitions": [
+          "guard(bytes > sizeof (val))",
+          "current_call(error)",
+          "current_call(_)"
+        ],
+        "api_terms": [
+          "error",
+          "_",
+          "print_symbol"
+        ],
+        "related_symbols": [
+          "bytes",
+          "val",
+          "pnote",
+          "namesz",
+          "name",
+          "namedata"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "binutils/readelf.c",
+        "function": "print_gnu_build_attribute_name"
+      },
+      "location": {
+        "line": 16932,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "print_gnu_build_attribute_name adds patch barrier `bytes > sizeof (val)` around error, _.",
+        "state_before": [
+          "input(bytes)",
+          "input(val)",
+          "buffer(pnote->namesz)",
+          "buffer(pnote->namedata)"
+        ],
+        "state_after": [
+          "guard(bytes > sizeof (val))",
+          "sink(error)",
+          "sink(_)"
+        ],
+        "functions": [
+          "print_gnu_build_attribute_name"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "bytes",
+          "val",
+          "pnote",
+          "namesz",
+          "name",
+          "namedata"
+        ],
+        "buffer_fields": [
+          "pnote->namesz",
+          "pnote->namedata"
+        ],
+        "call_targets": [
+          "error",
+          "_",
+          "print_symbol",
+          "printf"
+        ],
+        "call_edges": [
+          "print_gnu_build_attribute_name -> error",
+          "print_gnu_build_attribute_name -> _",
+          "print_gnu_build_attribute_name -> print_symbol"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "bytes > sizeof (val)"
+        ],
+        "state_statements": [
+          "unsigned int        bytes = pnote->namesz - (name - pnote->namedata);",
+          "unsigned long long  val = 0;",
+          "unsigned int        shift = 0;",
+          "char *              decoded = NULL;",
+          "/* PR 21378 */",
+          "if (bytes > sizeof (val))"
+        ],
+        "return_statements": [],
+        "source_file": "binutils/readelf.c",
+        "source_excerpt": "16903: \t  error (_(\"unexpected character in name field\\n\"));\n16904: \t  print_symbol (- left, _(\"<unknown attribute>\"));\n16905: \t  return 0;\n16906: \t}\n16907:       expected_types = \"*$!+\";\n16908:       break;\n16909:     }\n16910: \n16911:   if (text)\n16912:     {\n16913:       printf (\"%s\", text);\n16914:       left -= strlen (text);\n16915:     }\n16916: \n16917:   if (strchr (expected_types, name_type) == NULL)\n16918:     warn (_(\"attribute does not have an expected type (%c)\\n\"), name_type);\n16919: \n16920:   if ((unsigned long)(name - pnote->namedata) > pnote->namesz)\n16921:     {\n16922:       error (_(\"corrupt name field: namesz: %lu but parsing gets to %ld\\n\"),\n16923: \t     (unsigned long) pnote->namesz,\n16924: \t     (long) (name - pnote->namedata));\n16925:       return FALSE;\n16926:     }\n16927: \n16928:   if (left < 1 && ! do_wide)\n16929:     return TRUE;\n16930: \n16931:   switch (name_type)\n16932:     {\n16933:     case GNU_BUILD_ATTRIBUTE_TYPE_NUMERIC:\n16934:       {\n16935: \tunsigned int   bytes = pnote->namesz - (name - pnote->namedata);\n16936: \tunsigned long  val = 0;\n16937: \tunsigned int   shift = 0;\n16938: \tchar *         decoded = NULL;\n16939: \n16940: \twhile (bytes --)\n16941: \t  {\n16942: \t    unsigned long byte = (* name ++) & 0xff;\n16943: \n16944: \t    val |= byte << shift;\n16945: \t    shift += 8;\n16946: \t  }\n16947: \n16948: \tswitch (name_attribute)\n16949: \t  {\n16950: \t  case GNU_BUILD_ATTRIBUTE_PIC:\n16951: \t    switch (val)\n16952: \t      {\n16953: \t      case 0: decoded = \"static\"; break;\n16954: \t      case 1: decoded = \"pic\"; break;\n16955: \t      case 2: decoded = \"PIC\"; break;\n16956: \t      case 3: decoded = \"pie\"; break;\n16957: \t      case 4: decoded = \"PIE\"; break;\n16958: \t      default: break;\n16959: \t      }\n16960: \t    break;\n16961: \t  case GNU_BUILD_ATTRIBUTE_STACK_PROT:\n16962: \t    switch (val)\n16963: \t      {\n16964: \t\t/* Based upon the SPCT_FLAG_xxx enum values in gcc/cfgexpand.c.  */\n16965: \t      case 0: decoded = \"off\"; break;\n16966: \t      case 1: decoded = \"on\"; break;\n16967: \t      case 2: decoded = \"all\"; break;",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:guarded-state",
+        "confidence": 0.9
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "binutils/readelf.c",
+          "hunk_index": 0,
+          "source_line": 16932
+        },
+        "summary": "print_gnu_build_attribute_name adds patch barrier `bytes > sizeof (val)` around error, _.",
+        "statements": [
+          "unsigned int        bytes = pnote->namesz - (name - pnote->namedata);",
+          "unsigned long long  val = 0;",
+          "unsigned int        shift = 0;",
+          "char *              decoded = NULL;",
+          "/* PR 21378 */",
+          "if (bytes > sizeof (val))"
+        ],
+        "guards": [
+          "bytes > sizeof (val)"
+        ],
+        "call_boundary": [
+          "error",
+          "_",
+          "print_symbol",
+          "printf"
+        ],
+        "call_edges": [
+          "print_gnu_build_attribute_name -> error",
+          "print_gnu_build_attribute_name -> _",
+          "print_gnu_build_attribute_name -> print_symbol"
+        ],
+        "state_transitions": [
+          "guard(bytes > sizeof (val))",
+          "sink(error)",
+          "sink(_)"
+        ],
+        "api_terms": [
+          "error",
+          "_",
+          "print_symbol"
+        ],
+        "related_symbols": [
+          "bytes",
+          "val",
+          "pnote",
+          "namesz",
+          "name",
+          "namedata"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_0",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "fix.patch",
+        "file": "binutils/readelf.c",
+        "function": "print_gnu_build_attribute_name"
+      },
+      "location": {
+        "line": 16935,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "print_gnu_build_attribute_name in binutils/readelf.c provides CSA-backed pointer/resource lifecycle context near line 16935",
+        "diagnostic_message": "",
+        "diagnostic_checker": "",
+        "state_before": [
+          "input(pnote)",
+          "buffer(pnote->namedata)",
+          "buffer(pnote->namesz)",
+          "sinks(error, _)"
+        ],
+        "state_after": [
+          "operation(while (bytes --))",
+          "operation(unsigned long byte = (* name ++) & 0xff;)"
+        ],
+        "functions": [
+          "print_gnu_build_attribute_name"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "pnote",
+          "bytes",
+          "val",
+          "namesz",
+          "name",
+          "namedata"
+        ],
+        "buffer_fields": [
+          "pnote->namedata",
+          "pnote->namesz"
+        ],
+        "call_targets": [
+          "error",
+          "_",
+          "print_symbol",
+          "printf",
+          "strlen",
+          "warn"
+        ],
+        "call_edges": [],
+        "state_statements": [
+          "while (bytes --)",
+          "unsigned long byte = (* name ++) & 0xff;"
+        ],
+        "source_file": "binutils/readelf.c",
+        "source_excerpt": "16903: \t  error (_(\"unexpected character in name field\\n\"));\n16904: \t  print_symbol (- left, _(\"<unknown attribute>\"));\n16905: \t  return 0;\n16906: \t}\n16907:       expected_types = \"*$!+\";\n16908:       break;\n16909:     }\n16910: \n16911:   if (text)\n16912:     {\n16913:       printf (\"%s\", text);\n16914:       left -= strlen (text);\n16915:     }\n16916: \n16917:   if (strchr (expected_types, name_type) == NULL)\n16918:     warn (_(\"attribute does not have an expected type (%c)\\n\"), name_type);\n16919: \n16920:   if ((unsigned long)(name - pnote->namedata) > pnote->namesz)\n16921:     {\n16922:       error (_(\"corrupt name field: namesz: %lu but parsing gets to %ld\\n\"),\n16923: \t     (unsigned long) pnote->namesz,\n16924: \t     (long) (name - pnote->namedata));\n16925:       return FALSE;\n16926:     }\n16927: \n16928:   if (left < 1 && ! do_wide)\n16929:     return TRUE;\n16930: \n16931:   switch (name_type)\n16932:     {\n16933:     case GNU_BUILD_ATTRIBUTE_TYPE_NUMERIC:\n16934:       {\n16935: \tunsigned int   bytes = pnote->namesz - (name - pnote->namedata);\n16936: \tunsigned long  val = 0;\n16937: \tunsigned int   shift = 0;\n16938: \tchar *         decoded = NULL;\n16939: \n16940: \twhile (bytes --)\n16941: \t  {\n16942: \t    unsigned long byte = (* name ++) & 0xff;\n16943: \n16944: \t    val |= byte << shift;\n16945: \t    shift += 8;\n16946: \t  }\n16947: \n16948: \tswitch (name_attribute)\n16949: \t  {\n16950: \t  case GNU_BUILD_ATTRIBUTE_PIC:\n16951: \t    switch (val)\n16952: \t      {\n16953: \t      case 0: decoded = \"static\"; break;\n16954: \t      case 1: decoded = \"pic\"; break;\n16955: \t      case 2: decoded = \"PIC\"; break;\n16956: \t      case 3: decoded = \"pie\"; break;\n16957: \t      case 4: decoded = \"PIE\"; break;\n16958: \t      default: break;\n16959: \t      }\n16960: \t    break;\n16961: \t  case GNU_BUILD_ATTRIBUTE_STACK_PROT:\n16962: \t    switch (val)\n16963: \t      {\n16964: \t\t/* Based upon the SPCT_FLAG_xxx enum values in gcc/cfgexpand.c.  */\n16965: \t      case 0: decoded = \"off\"; break;\n16966: \t      case 1: decoded = \"on\"; break;\n16967: \t      case 2: decoded = \"all\"; break;",
+        "coverage_status": "partial",
+        "operations": [
+          "while (bytes --)",
+          "unsigned long byte = (* name ++) & 0xff;"
+        ],
+        "acquisition_ops": [],
+        "release_ops": []
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.72
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "binutils/readelf.c",
+          "hunk_index": 0,
+          "source_line": 16935
+        },
+        "summary": "print_gnu_build_attribute_name in binutils/readelf.c provides CSA-backed pointer/resource lifecycle context near line 16935",
+        "statements": [
+          "16903: \t  error (_(\"unexpected character in name field\\n\"));",
+          "16904: \t  print_symbol (- left, _(\"<unknown attribute>\"));",
+          "16905: \t  return 0;",
+          "16906: \t}",
+          "16907:       expected_types = \"*$!+\";",
+          "16908:       break;"
+        ],
+        "guards": [
+          "text",
+          "strchr (expected_types, name_type) == NULL",
+          "(unsigned long)(name - pnote->namedata) > pnote->namesz",
+          "left < 1 && ! do_wide"
+        ],
+        "call_boundary": [
+          "error",
+          "_",
+          "print_symbol",
+          "printf",
+          "strlen",
+          "warn"
+        ],
+        "call_edges": [],
+        "state_transitions": [
+          "operation(while (bytes --))",
+          "operation(unsigned long byte = (* name ++) & 0xff;)"
+        ],
+        "api_terms": [
+          "while (bytes --)",
+          "unsigned long byte = (* name ++) & 0xff;",
+          "error",
+          "_",
+          "print_symbol",
+          "printf"
+        ],
+        "related_symbols": [
+          "pnote",
+          "bytes",
+          "val",
+          "namesz",
+          "name",
+          "namedata"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "collected_analyzers": [
+    "csa",
+    "patch"
+  ]
+}
