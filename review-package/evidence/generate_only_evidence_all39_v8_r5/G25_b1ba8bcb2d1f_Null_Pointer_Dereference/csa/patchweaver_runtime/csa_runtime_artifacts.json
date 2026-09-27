@@ -1,0 +1,132 @@
+{
+  "cache_key": {
+    "cache_version": 16,
+    "patch_path": "/work/artifacts/fse_revision/generate_only_materialized_v1/cases/G25_b1ba8bcb2d1f_Null_Pointer_Dereference/patches/commit.patch",
+    "evidence_dir": "/work/SemWeaver/artifacts/external/linux-evidence-clone-v8b",
+    "validate_path": "",
+    "source_files": [
+      "drivers/video/backlight/hx8357.c"
+    ],
+    "compile_commands_sha256": "b2ef826fe6ca45b8663f660e9dc2a045edd261cc1aecb2b7cc92ead706fad51f"
+  },
+  "data": {
+    "available": true,
+    "clang_path": "/usr/lib/llvm-18/bin/clang",
+    "cfg_snapshots": [
+      {
+        "source_file": "drivers/video/backlight/hx8357.c",
+        "function_name": "hx8357_probe",
+        "anchor_line": 617,
+        "branch_kinds": [
+          "if",
+          "for"
+        ],
+        "branch_conditions": [
+          "do ... while [B2.1]",
+          "static init _entry_ptr",
+          "[B8.15] ? ... : ...",
+          "[B11.5] ? ... : ...",
+          "static init _entry",
+          "if [B14.5] && [B13.5]",
+          "[B14.5] && ...",
+          "do ... while [B17.1]"
+        ],
+        "resolved_branch_conditions": [
+          "if lcd (ImplicitCastExpr, LValueToRValue, struct hx8357_data *)->im_pins (ImplicitCastExpr, LValueToRValue, struct gpio_descs *)->ndescs (ImplicitCastExpr, LValueToRValue, unsigned int) < 3 (ImplicitCastExpr, IntegralCast, unsigned int)",
+          "if IS_ERR (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const void *))(lcd (ImplicitCastExpr, LValueToRValue, struct hx8357_data *)->im_pins (ImplicitCastExpr, LValueToRValue, struct gpio_descs *) (ImplicitCastExpr, BitCast, const void *))",
+          "if IS_ERR (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const void *))(lcd (ImplicitCastExpr, LValueToRValue, struct hx8357_data *)->reset (ImplicitCastExpr, LValueToRValue, struct gpio_desc *) (ImplicitCastExpr, BitCast, const void *))",
+          "if !lcd (ImplicitCastExpr, LValueToRValue, struct hx8357_data *)",
+          "do ... while 0",
+          "static init _entry_ptr",
+          "__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"\\0016\" (ImplicitCastExpr, ArrayToPointerDecay, char *)) ? ... : ...",
+          "__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"Panel probed\\n\" (ImplicitCastExpr, ArrayToPointerDecay, char *)) ? ... : ..."
+        ],
+        "cfg_value_bindings": [
+          "lcd = devm_kzalloc (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(struct device *, size_t, gfp_t))(&spi (ImplicitCastExpr, LValueToRValue, struct spi_device *)->dev, sizeof (*lcd), (((gfp_t)(1024U | 2048U) (CStyleCastExpr, NoOp, gfp_t)) | ((gfp_t)64U (CStyleCastExpr, NoOp, gfp_t)) | ((gfp_t)128U (CStyleCastExpr, NoOp, gfp_t)))) (ImplicitCastExpr, BitCast, struct hx8357_data *)",
+          "lcd (ImplicitCastExpr, LValueToRValue, struct hx8357_data *)->reset = devm_gpiod_get (ImplicitCastExpr, FunctionToPointerDecay, struct gpio_desc *(*)(struct device *, const char *, enum gpiod_flags))(dev (ImplicitCastExpr, LValueToRValue, struct device *), \"reset\" (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *), GPIOD_OUT_LOW (ImplicitCastExpr, IntegralCast, enum gpiod_flags))",
+          "lcd (ImplicitCastExpr, LValueToRValue, struct hx8357_data *)->im_pins = devm_gpiod_get_array_optional (ImplicitCastExpr, FunctionToPointerDecay, struct gpio_descs *(*)(struct device *, const char *, enum gpiod_flags))(dev (ImplicitCastExpr, LValueToRValue, struct device *), \"im\" (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *), GPIOD_OUT_LOW (ImplicitCastExpr, IntegralCast, enum gpiod_flags))",
+          "lcdev = devm_lcd_device_register (ImplicitCastExpr, FunctionToPointerDecay, struct lcd_device *(*)(struct device *, const char *, struct device *, void *, struct lcd_ops *))(&spi (ImplicitCastExpr, LValueToRValue, struct spi_device *)->dev, \"mxsfb\" (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *), &spi (ImplicitCastExpr, LValueToRValue, struct spi_device *)->dev, lcd (ImplicitCastExpr, LValueToRValue, struct hx8357_data *) (ImplicitCastExpr, BitCast, void *), &hx8357_ops)",
+          "lcd (ImplicitCastExpr, LValueToRValue, struct hx8357_data *)->spi = spi (ImplicitCastExpr, LValueToRValue, struct spi_device *)",
+          "ret = spi_setup (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct spi_device *))(spi (ImplicitCastExpr, LValueToRValue, struct spi_device *))",
+          "match = of_match_device (ImplicitCastExpr, FunctionToPointerDecay, const struct of_device_id *(*)(const struct of_device_id *, const struct device *))(hx8357_dt_ids (ImplicitCastExpr, ArrayToPointerDecay, const struct of_device_id *), &spi (ImplicitCastExpr, LValueToRValue, struct spi_device *)->dev (ImplicitCastExpr, NoOp, const struct device *))",
+          "i = 0"
+        ],
+        "call_edges": [
+          "hx8357_probe -> devm_kzalloc",
+          "hx8357_probe -> spi_setup",
+          "hx8357_probe -> __builtin_constant_p",
+          "hx8357_probe -> _dev_err",
+          "hx8357_probe -> of_match_device",
+          "hx8357_probe -> devm_gpiod_get",
+          "hx8357_probe -> IS_ERR",
+          "hx8357_probe -> dev_err_probe",
+          "hx8357_probe -> PTR_ERR",
+          "hx8357_probe -> gpiod_set_consumer_name",
+          "hx8357_probe -> devm_gpiod_get_array_optional",
+          "hx8357_probe -> devm_lcd_device_register"
+        ],
+        "call_targets": [
+          "devm_kzalloc",
+          "spi_setup",
+          "__builtin_constant_p",
+          "_dev_err",
+          "of_match_device",
+          "devm_gpiod_get",
+          "IS_ERR",
+          "dev_err_probe",
+          "PTR_ERR",
+          "gpiod_set_consumer_name"
+        ],
+        "state_statements": [
+          "[B1.4]->dev",
+          "return [B1.13];",
+          "static const struct pi_entry *_entry_ptr __attribute__((used)) __attribute__((section(\".printk_index\"))) = &_entry;",
+          "{.fmt = [B8.2], .func = [B8.5], .file = [B8.8], .line = [B8.10], .level = [B5.2], .subsys_fmt_prefix = [B5.5]}",
+          "static const struct pi_entry _entry __attribute__((used)) = {.fmt = __builtin_constant_p(\"Panel probed\\n\") ? (\"Panel probed\\n\") : ((void *)0), .func = __func__, .file = \"/work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/video/backlight/hx8357.c\", .line = 634, .level = __builtin_constant_p(\"\\0016\") ? (\"\\0016\") : ((void *)0), .subsys_fmt_prefix = \"%s %s: \"};",
+          "[B16.4]->dev",
+          "return [B16.14];",
+          "{.fmt = [B23.2], .func = [B23.5], .file = [B23.8], .line = [B23.10], .level = [B20.2], .subsys_fmt_prefix = [B20.5]}",
+          "static const struct pi_entry _entry __attribute__((used)) = {.fmt = __builtin_constant_p(\"Couldn't initialize panel\\n\") ? (\"Couldn't initialize panel\\n\") : ((void *)0), .func = __func__, .file = \"/work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/video/backlight/hx8357.c\", .line = 630, .level = __builtin_constant_p(\"\\0013\") ? (\"\\0013\") : ((void *)0), .subsys_fmt_prefix = \"%s %s: \"};",
+          "[B31.15]->data",
+          "[B31.22] = [B31.21]",
+          "[B32.8] = [B32.7]"
+        ],
+        "field_accesses": [
+          "spi->dev"
+        ],
+        "return_statements": [
+          "return [B1.13];",
+          "return [B16.14];",
+          "return [B32.11];",
+          "return [B38.11];",
+          "return [B40.18];",
+          "return [B42.18];"
+        ],
+        "dump_excerpt": " --- Call graph Dump --- \n  Function: < root > calls: offset_to_ptr __kasan_check_read __kasan_check_write kasan_check_read kasan_check_write __read_once_word_nocheck read_word_at_a_time mul_u64_u64_div_u64 mul_u64_u32_div reciprocal_scale int_sqrt64 int_sqrt gen_endbr gen_endbr_poison is_endbr x86_this_cpu_constant_test_bit x86_this_cpu_variable_test_bit get_current __bad_size_call_parameter initcall_from_entry sme_get_me_mask vdso_encode_cpunode vdso_read_cpunode __loadsegment_fs get_max_mapped gate_offset gate_segment pgprot_nx native_make_pgd native_pgd_val pgd_flags native_make_p4d native_p4d_val native_make_pud native_pud_val native_make_pmd native_pmd_val p4d_pfn_mask p4d_flags_mask p4d_flags pud_pfn_mask pud_flags_mask pud_flags pmd_pfn_mask pmd_flags_mask pmd_flags native_make_pte native_pte_val pte_flags protval_4k_2_large pgprot_4k_2_large protval_large_2_4k pgprot_large_2_4k arch_static_branch arch_static_branch_jump jump_entry_code jump_entry_target jump_entry_key jump_entry_is_branch jump_entry_is_init jump_entry_set_init jump_entry_size arch_jump_entry_size static_key_false static_key_true __arch_swab32 __arch_swab64 __fswab16 __fswab32 __fswab64 __fswahw32 __fswahb32 __swab __builtin_bswap64 __swab16p __builtin_bswap16 __swab32p __builtin_bswap32 __swab64p __swahw32p __builtin_constant_p __swahb32p __swab16s __swab32s __swab64s __swahw32s __swahb32s swab16_array swab32_array swab64_array __cpu_to_le64p __le64_to_cpup __cpu_to_le32p __le32_to_cpup __cpu_to_le16p __le16_to_cpup __cpu_to_be64p __be64_to_cpup __cpu_to_be32p __be32_to_cpup __cpu_to_be16p __be16_to_cpup le16_add_cpu le32_add_cpu le64_add_cpu le32_to_cpu_array cpu_to_le32_array be16_add_cpu be32_add_cpu be64_add_cpu cpu_to_be32_array be32_to_cpu_array alternative_msr_write indirect_branch_prediction_barrier mds_clear_cpu_buffers mds_user_clear_cpu_buffers ____wrong_branch_error __builtin_expect mds_idle_clear_cpu_buffers regs_return_value regs_set_return_value user_mode v8086_mode user_64bit_mode any_64bit_mode ip_within_syscall_gap kernel_stack_pointer instruction_pointer instruction_pointer_set frame_pointer user_stack_pointer user_stack_pointer_set regs_irqs_disabled regs_get_register regs_within_kernel_stack regs_get_kernel_stack_nth_addr regs_get_kernel_stack_nth copy_from_kernel_nofault regs_get_kernel_argument memset16 memset32 memset64 memcpy_flushcache __memcpy_flushcache have_cpuid_p native_cpuid native_cpuid_eax native_cpuid_ebx native_cpuid_ecx native_cpuid_edx set_arch_panic_timeout printk_get_level printk_skip_level printk_skip_headers is_warning_bug check_data_corruption array_index_mask_nospec generic___set_bit generic___clear_bit generic___change_bit generic___test_and_set_bit generic___test_and_clear_bit generic___test_and_change_bit generic_test_bit generic_test_bit_acquire __compiletime_assert_0 __compiletime_assert_1 const_test_bit arch_set_bit arch___set_bit arch_clear_bit arch_clear_bit_unlock arch___clear_bit arch_xor_unlock_is_negative_byte arch___clear_bit_unlock arch___change_bit arch_change_bit arch_test_and_set_bit arch_test_and_set_bit_lock arch___test_and_set_bit arch_test_and_clear_bit arch___test_and_clear_bit arch___test_and_change_bit arch_test_and_change_bit constant_test_bit constant_test_bit_acquire variable_test_bit arch_test_bit arch_test_bit_acquire variable__ffs variable_ffz __fls __builtin_clzl variable_ffs fls __builtin_clz fls64 __builtin_clzll sched_find_first_bit __builtin_ctzl __arch_hweight32 __arch_hweight16 __arch_hweight8 __arch_hweight64 kmsan_poison_memory kmsan_unpoison_memory kmsan_check_memory kmsan_copy_to_user instrument_read __kcsan_check_access instrument_write instrument_read_write instrument_atomic_read instrument_atomic_write instrument_atomic_read_write instrument_copy_to_user instrument_copy_from_user_before instrument_copy_from_user_after set_bit clear_bit change_bit test_and_set_bit __atomic_signal_fence test_and_clear_bit test_and_change_bit ___set_bit ___clear_bit ___change_bit __in",
+        "error": "",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/generate_only_evidence_all39_v8_r5/G25_b1ba8bcb2d1f_Null_Pointer_Dereference/csa/patchweaver_runtime/csa_raw/drivers-video-backlight-hx8357.c-hx8357_probe.txt",
+        "raw_output_sha256": "f2af7f4fdcdfe36588c284de33d5c7b11da0ab1780f38c8a046a71a0b071df18",
+        "command_sha256": "3e8a1c98c6806a79f9842f9da08e88d2fa785d19aa8e7052854298f02668193b",
+        "clang_command_preview": "/usr/lib/llvm-18/bin/clang --analyze -nostdinc -I./arch/x86/include -I./arch/x86/include/generated -I./include -I./arch/x86/include/uapi -I./arch/x86/include/generated/uapi -I./...",
+        "return_code": 0
+      }
+    ],
+    "call_edges": [
+      "hx8357_probe -> devm_kzalloc",
+      "hx8357_probe -> spi_setup",
+      "hx8357_probe -> __builtin_constant_p",
+      "hx8357_probe -> _dev_err",
+      "hx8357_probe -> of_match_device",
+      "hx8357_probe -> devm_gpiod_get",
+      "hx8357_probe -> IS_ERR",
+      "hx8357_probe -> dev_err_probe",
+      "hx8357_probe -> PTR_ERR",
+      "hx8357_probe -> gpiod_set_consumer_name",
+      "hx8357_probe -> devm_gpiod_get_array_optional",
+      "hx8357_probe -> devm_lcd_device_register"
+    ],
+    "error": ""
+  }
+}

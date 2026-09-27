@@ -1,0 +1,547 @@
+#include "clang/StaticAnalyzer/Core/BugReporter/BugReporter.h"
+#include "clang/StaticAnalyzer/Core/BugReporter/BugType.h"
+#include "clang/StaticAnalyzer/Core/Checker.h"
+#include "clang/StaticAnalyzer/Frontend/CheckerRegistry.h"
+#include "clang/AST/RecursiveASTVisitor.h"
+#include "clang/AST/StmtVisitor.h"
+#include "llvm/Support/raw_ostream.h"
+#include "clang/StaticAnalyzer/Checkers/utility.h"
+#include "clang/AST/ASTContext.h"
+#include "clang/AST/Expr.h"
+#include "clang/AST/Stmt.h"
+#include "clang/AST/Decl.h"
+#include "clang/AST/ParentMapContext.h"
+#include "clang/AST/OperationKinds.h"
+#include "clang/Lex/Lexer.h"
+#include <memory>
+
+using namespace clang;
+using namespace ento;
+
+namespace {
+/* The checker callbacks are to be decided. */
+class SAGenTestChecker : public Checker<check::ASTCodeBody> {
+   mutable std::unique_ptr<BugType> BT;
+
+   public:
+      SAGenTestChecker() : BT(new BugType(this, "Off-by-one look-ahead array access", "Array bounds")) {}
+
+      void checkASTCodeBody(const Decl *D, AnalysisManager &Mgr, BugReporter &BR) const;
+
+   private:
+
+      // Helper: try to extract loop induction variable and upper bound from a for-statement condition
+      bool getLoopVarAndBound(const ForStmt *FS, const VarDecl *&IVar, const Expr *&UB, bool &Inclusive) const;
+
+      // Helper: check if increment updates the same induction variable (i++, ++i, i += 1)
+      bool isIncrementOfVar(const Stmt *Inc, const VarDecl *IVar, ASTContext &AC) const;
+
+      // Helper: check if expression is DeclRef to given VarDecl
+      static bool isDeclRefToVar(const Expr *E, const VarDecl *VD);
+
+      // Helper: evaluate expression as integer constant
+      static bool evalAsInt(const Expr *E, ASTContext &AC, llvm::APSInt &Res);
+
+      // Helper: check whether an index expression is (i + 1) or (1 + i)
+      bool isIPlusOne(const Expr *Idx, const VarDecl *IVar, ASTContext &AC) const;
+
+      // Helper: check whether expression is (X - 1), RHS constant 1 (we don't care about X)
+      bool isMinusOneExpr(const Expr *E, ASTContext &AC) const;
+
+      // Prove that the selected truth value of a condition bounds this access
+      // within the accessed array's declared capacity.
+      bool conditionProvesAccessInBounds(const Expr *Cond, const VarDecl *IVar,
+                                         uint64_t Cap, bool Truth,
+                                         ASTContext &AC) const;
+
+      static bool containsStmt(const Stmt *Root, const Stmt *Needle);
+      bool statementAlwaysExitsLoop(const Stmt *S, const ForStmt *FS,
+                                    ASTContext &AC) const;
+      bool isProtectedByPriorLoopExit(const ArraySubscriptExpr *ASE,
+                                      const ForStmt *FS, const VarDecl *IVar,
+                                      uint64_t Cap, ASTContext &AC) const;
+
+      // Helper: find nearest enclosing IfStmt by walking AST parents
+      const IfStmt *findNearestEnclosingIf(const Stmt *S, ASTContext &AC) const;
+
+      // Analyze a ForStmt and possibly emit a report
+      void analyzeForStmt(const ForStmt *FS, ASTContext &AC, BugReporter &BR) const;
+
+      // Helper: resolve the declared element count of the array backing a
+      // subscript base (member or declared array), if statically known
+      static bool getIndexedArrayCapacity(const ArraySubscriptExpr *ASE,
+                                          ASTContext &AC, uint64_t &Cap);
+};
+
+bool SAGenTestChecker::isDeclRefToVar(const Expr *E, const VarDecl *VD) {
+  if (!E || !VD) return false;
+  E = E->IgnoreParenImpCasts();
+  if (const auto *DRE = dyn_cast<DeclRefExpr>(E)) {
+    return DRE->getDecl() == VD;
+  }
+  return false;
+}
+
+bool SAGenTestChecker::evalAsInt(const Expr *E, ASTContext &AC, llvm::APSInt &Res) {
+  if (!E) return false;
+  Expr::EvalResult ER;
+  if (E->EvaluateAsInt(ER, AC)) {
+    Res = ER.Val.getInt();
+    return true;
+  }
+  return false;
+}
+
+bool SAGenTestChecker::isIPlusOne(const Expr *Idx, const VarDecl *IVar, ASTContext &AC) const {
+  if (!Idx || !IVar) return false;
+  Idx = Idx->IgnoreParenImpCasts();
+  const auto *BO = dyn_cast<BinaryOperator>(Idx);
+  if (!BO || BO->getOpcode() != BO_Add)
+    return false;
+
+  const Expr *L = BO->getLHS()->IgnoreParenImpCasts();
+  const Expr *R = BO->getRHS()->IgnoreParenImpCasts();
+
+  // Pattern: i + 1
+  if (isDeclRefToVar(L, IVar)) {
+    llvm::APSInt V;
+    if (evalAsInt(R, AC, V) && V == 1)
+      return true;
+    if (const auto *IL = dyn_cast<IntegerLiteral>(R))
+      return IL->getValue() == 1;
+  }
+
+  // Pattern: 1 + i
+  if (isDeclRefToVar(R, IVar)) {
+    llvm::APSInt V;
+    if (evalAsInt(L, AC, V) && V == 1)
+      return true;
+    if (const auto *IL = dyn_cast<IntegerLiteral>(L))
+      return IL->getValue() == 1;
+  }
+
+  return false;
+}
+
+bool SAGenTestChecker::isMinusOneExpr(const Expr *E, ASTContext &AC) const {
+  if (!E) return false;
+  E = E->IgnoreParenImpCasts();
+  const auto *BO = dyn_cast<BinaryOperator>(E);
+  if (!BO || BO->getOpcode() != BO_Sub)
+    return false;
+
+  const Expr *RHS = BO->getRHS()->IgnoreParenImpCasts();
+
+  llvm::APSInt V;
+  if (evalAsInt(RHS, AC, V))
+    return V == 1;
+
+  if (const auto *IL = dyn_cast<IntegerLiteral>(RHS))
+    return IL->getValue() == 1;
+
+  return false;
+}
+
+bool SAGenTestChecker::conditionProvesAccessInBounds(const Expr *Cond,
+                                                        const VarDecl *IVar,
+                                                        uint64_t Cap, bool Truth,
+                                                        ASTContext &AC) const {
+  if (!Cond || !IVar || Cap == 0) return false;
+  Cond = Cond->IgnoreParenImpCasts();
+
+  if (const auto *UO = dyn_cast<UnaryOperator>(Cond)) {
+    if (UO->getOpcode() == UO_LNot)
+      return conditionProvesAccessInBounds(UO->getSubExpr(), IVar, Cap,
+                                           !Truth, AC);
+  }
+
+  if (const auto *BO = dyn_cast<BinaryOperator>(Cond)) {
+    if (BO->isLogicalOp()) {
+      bool L = conditionProvesAccessInBounds(BO->getLHS(), IVar, Cap,
+                                              Truth, AC);
+      bool R = conditionProvesAccessInBounds(BO->getRHS(), IVar, Cap,
+                                              Truth, AC);
+      if ((BO->getOpcode() == BO_LAnd) == Truth)
+        return L || R;
+      return L && R;
+    }
+
+    BinaryOperatorKind Op = BO->getOpcode();
+    if (!Truth) {
+      switch (Op) {
+      case BO_LT: Op = BO_GE; break;
+      case BO_LE: Op = BO_GT; break;
+      case BO_GT: Op = BO_LE; break;
+      case BO_GE: Op = BO_LT; break;
+      default: break;
+      }
+    }
+
+    const Expr *L = BO->getLHS()->IgnoreParenImpCasts();
+    const Expr *R = BO->getRHS()->IgnoreParenImpCasts();
+    bool AccessOnLeft = isIPlusOne(L, IVar, AC);
+    bool AccessOnRight = isIPlusOne(R, IVar, AC);
+    if (AccessOnRight) {
+      std::swap(L, R);
+      AccessOnLeft = true;
+      switch (Op) {
+      case BO_LT: Op = BO_GT; break;
+      case BO_LE: Op = BO_GE; break;
+      case BO_GT: Op = BO_LT; break;
+      case BO_GE: Op = BO_LE; break;
+      default: break;
+      }
+    }
+
+    if (AccessOnLeft && (Op == BO_LT || Op == BO_LE)) {
+      llvm::APSInt Limit;
+      if (evalAsInt(R, AC, Limit) && !Limit.isNegative()) {
+        uint64_t V = Limit.getZExtValue();
+        return Op == BO_LT ? V <= Cap : V < Cap;
+      }
+    }
+
+    // i < (limit - 1) is a bound on the look-ahead only when limit itself
+    // does not exceed the accessed array's capacity.
+    if (Op == BO_LT && isDeclRefToVar(L, IVar) && isMinusOneExpr(R, AC)) {
+      const auto *Sub = dyn_cast<BinaryOperator>(R);
+      llvm::APSInt Limit;
+      if (Sub && evalAsInt(Sub->getLHS(), AC, Limit) && !Limit.isNegative())
+        return Limit.getZExtValue() <= Cap;
+    }
+  }
+  return false;
+}
+
+bool SAGenTestChecker::containsStmt(const Stmt *Root, const Stmt *Needle) {
+  if (!Root || !Needle) return false;
+  class Finder : public RecursiveASTVisitor<Finder> {
+    const Stmt *Needle;
+  public:
+    bool Found = false;
+    explicit Finder(const Stmt *N) : Needle(N) {}
+    bool TraverseStmt(Stmt *S) {
+      if (!S || Found) return !Found;
+      if (S == Needle) { Found = true; return false; }
+      return RecursiveASTVisitor<Finder>::TraverseStmt(S);
+    }
+  } F(Needle);
+  F.TraverseStmt(const_cast<Stmt *>(Root));
+  return F.Found;
+}
+
+bool SAGenTestChecker::statementAlwaysExitsLoop(const Stmt *S,
+                                                const ForStmt *FS,
+                                                ASTContext &AC) const {
+  if (!S || !FS) return false;
+  if (isa<ContinueStmt>(S) || isa<BreakStmt>(S)) {
+    const bool IsContinue = isa<ContinueStmt>(S);
+    const Stmt *Cur = S;
+    for (;;) {
+      auto Parents = AC.getParents(DynTypedNode::create(*Cur));
+      if (Parents.empty()) return false;
+      const Stmt *Parent = Parents[0].get<Stmt>();
+      if (!Parent) return false;
+      if (isa<ForStmt>(Parent) || isa<WhileStmt>(Parent) ||
+          isa<DoStmt>(Parent) || isa<CXXForRangeStmt>(Parent))
+        return Parent == FS;
+      if (!IsContinue && isa<SwitchStmt>(Parent)) return false;
+      Cur = Parent;
+    }
+  }
+  if (const auto *CS = dyn_cast<CompoundStmt>(S)) {
+    for (const Stmt *Child : CS->body())
+      if (statementAlwaysExitsLoop(Child, FS, AC)) return true;
+    return false;
+  }
+  if (const auto *IS = dyn_cast<IfStmt>(S))
+    return IS->getElse() && statementAlwaysExitsLoop(IS->getThen(), FS, AC) &&
+           statementAlwaysExitsLoop(IS->getElse(), FS, AC);
+  return false;
+}
+
+bool SAGenTestChecker::isProtectedByPriorLoopExit(
+    const ArraySubscriptExpr *ASE, const ForStmt *FS, const VarDecl *IVar,
+    uint64_t Cap, ASTContext &AC) const {
+  if (!ASE || !FS || !IVar || !Cap) return false;
+  const Stmt *Cur = ASE;
+  while (Cur != FS) {
+    auto Parents = AC.getParents(DynTypedNode::create(*Cur));
+    if (Parents.empty()) return false;
+    const Stmt *Parent = Parents[0].get<Stmt>();
+    if (!Parent) return false;
+    if (const auto *CS = dyn_cast<CompoundStmt>(Parent)) {
+      bool FoundPathChild = false;
+      for (const Stmt *Sibling : CS->body()) {
+        if (containsStmt(Sibling, Cur)) {
+          FoundPathChild = true;
+          break;
+        }
+        const auto *IS = dyn_cast<IfStmt>(Sibling);
+        if (!IS) continue;
+        const bool ThenExits = statementAlwaysExitsLoop(IS->getThen(), FS, AC);
+        const bool ElseExits = IS->getElse() &&
+            statementAlwaysExitsLoop(IS->getElse(), FS, AC);
+        if (ThenExits != ElseExits &&
+            conditionProvesAccessInBounds(IS->getCond(), IVar, Cap,
+                                          ElseExits, AC))
+          return true;
+      }
+      if (!FoundPathChild) return false;
+    }
+    if (Parent == FS) break;
+    Cur = Parent;
+  }
+  return false;
+}
+
+const IfStmt *SAGenTestChecker::findNearestEnclosingIf(const Stmt *S, ASTContext &AC) const {
+  if (!S) return nullptr;
+  const Stmt *Cur = S;
+  for (;;) {
+    DynTypedNode Node = DynTypedNode::create(*Cur);
+    auto Parents = AC.getParents(Node);
+    if (Parents.empty())
+      break;
+
+    // Look across parents: return first IfStmt if present, else continue upward using the first Stmt parent.
+    for (const auto &P : Parents) {
+      if (const auto *IS = P.get<IfStmt>())
+        return IS;
+    }
+
+    // Default to continue with the first Stmt parent if any.
+    const Stmt *Next = nullptr;
+    for (const auto &P : Parents) {
+      if (const auto *PS = P.get<Stmt>()) {
+        Next = PS;
+        break;
+      }
+    }
+    if (!Next)
+      break;
+    Cur = Next;
+  }
+  return nullptr;
+}
+
+bool SAGenTestChecker::getLoopVarAndBound(const ForStmt *FS, const VarDecl *&IVar, const Expr *&UB, bool &Inclusive) const {
+  IVar = nullptr;
+  UB = nullptr;
+  Inclusive = false;
+  if (!FS) return false;
+  const Expr *Cond = FS->getCond();
+  if (!Cond) return false;
+  Cond = Cond->IgnoreParenImpCasts();
+
+  const auto *BO = dyn_cast<BinaryOperator>(Cond);
+  if (!BO) return false;
+
+  BinaryOperatorKind Op = BO->getOpcode();
+  const Expr *L = BO->getLHS()->IgnoreParenImpCasts();
+  const Expr *R = BO->getRHS()->IgnoreParenImpCasts();
+
+  // Normalize i < bound, i <= bound, and their reversed forms.
+  if (Op == BO_LT || Op == BO_LE) {
+    if (const auto *DRE = dyn_cast<DeclRefExpr>(L)) {
+      if (const auto *VD = dyn_cast<VarDecl>(DRE->getDecl())) {
+        IVar = VD;
+        UB = R;
+        Inclusive = Op == BO_LE;
+      }
+    }
+  } else if (Op == BO_GT || Op == BO_GE) {
+    if (const auto *DRE = dyn_cast<DeclRefExpr>(R)) {
+      if (const auto *VD = dyn_cast<VarDecl>(DRE->getDecl())) {
+        IVar = VD;
+        UB = L;
+        Inclusive = Op == BO_GE;
+      }
+    }
+  }
+
+  return IVar && UB;
+}
+
+bool SAGenTestChecker::isIncrementOfVar(const Stmt *Inc, const VarDecl *IVar, ASTContext &AC) const {
+  if (!Inc || !IVar) return false;
+
+  if (const auto *UO = dyn_cast<UnaryOperator>(Inc)) {
+    if (UO->getOpcode() == UO_PostInc || UO->getOpcode() == UO_PreInc) {
+      return isDeclRefToVar(UO->getSubExpr(), IVar);
+    }
+    return false;
+  }
+
+  if (const auto *BO = dyn_cast<BinaryOperator>(Inc)) {
+    // Handle i += 1
+    if (BO->getOpcode() == BO_AddAssign) {
+      if (isDeclRefToVar(BO->getLHS(), IVar)) {
+        llvm::APSInt V;
+        if (evalAsInt(BO->getRHS(), AC, V) && V == 1)
+          return true;
+        if (const auto *IL = dyn_cast<IntegerLiteral>(BO->getRHS()->IgnoreParenImpCasts()))
+          return IL->getValue() == 1;
+      }
+    }
+    return false;
+  }
+
+  return false;
+}
+
+bool SAGenTestChecker::getIndexedArrayCapacity(const ArraySubscriptExpr *ASE,
+                                               ASTContext &AC, uint64_t &Cap) {
+  Cap = 0;
+  if (!ASE) return false;
+
+  const Expr *Base = ASE->getBase()->IgnoreParenImpCasts();
+  const ValueDecl *Backing = nullptr;
+  if (const auto *ME = dyn_cast<MemberExpr>(Base))
+    Backing = ME->getMemberDecl();
+  else if (const auto *DRE = dyn_cast<DeclRefExpr>(Base))
+    Backing = DRE->getDecl();
+
+  if (!Backing) return false;
+
+  const auto *CAT = AC.getAsConstantArrayType(Backing->getType());
+  if (!CAT) return false;
+
+  Cap = CAT->getSize().getZExtValue();
+  return Cap > 0;
+}
+
+void SAGenTestChecker::analyzeForStmt(const ForStmt *FS, ASTContext &AC, BugReporter &BR) const {
+  const VarDecl *IVar = nullptr;
+  const Expr *UB = nullptr;
+  bool Inclusive = false;
+
+  // Normalize strict and inclusive loop bounds, including reversed comparisons.
+  if (!getLoopVarAndBound(FS, IVar, UB, Inclusive))
+    return;
+
+  // 2) Ensure increment updates IVar in a straightforward manner
+  if (!isIncrementOfVar(FS->getInc(), IVar, AC))
+    return;
+
+  // 3) Traverse the loop body to find arr[i + 1]
+  const Stmt *Body = FS->getBody();
+  if (!Body)
+    return;
+
+  const ArraySubscriptExpr *OffendingASE = nullptr;
+
+  class AccessFinder : public RecursiveASTVisitor<AccessFinder> {
+    const VarDecl *IVar;
+    ASTContext &AC;
+    const SAGenTestChecker &Chk;
+    const ArraySubscriptExpr *&Found;
+    const ForStmt *FS;
+  public:
+    AccessFinder(const VarDecl *IV, ASTContext &Ctx, const SAGenTestChecker &C,
+                 const ForStmt *F, const ArraySubscriptExpr *&Out)
+      : IVar(IV), AC(Ctx), Chk(C), Found(Out), FS(F) {}
+
+    bool VisitArraySubscriptExpr(ArraySubscriptExpr *ASE) {
+      if (Found) return true; // already found one, keep scanning but no need to re-check
+      const Expr *Idx = ASE->getIdx();
+      if (!Idx) return true;
+      if (!Chk.isIPlusOne(Idx, IVar, AC))
+        return true;
+
+      // A body condition suppresses the report only on the arm containing
+      // this access and only when it proves the index fits the actual array.
+      const IfStmt *IS = Chk.findNearestEnclosingIf(ASE, AC);
+      uint64_t Cap = 0;
+      bool Guarded = false;
+      if (IS && Chk.getIndexedArrayCapacity(ASE, AC, Cap)) {
+        bool InThen = Chk.containsStmt(IS->getThen(), ASE);
+        bool InElse = IS->getElse() && Chk.containsStmt(IS->getElse(), ASE);
+        if (InThen || InElse)
+          Guarded = Chk.conditionProvesAccessInBounds(
+              IS->getCond(), IVar, Cap, InThen, AC);
+      }
+      if (!Guarded && Chk.getIndexedArrayCapacity(ASE, AC, Cap))
+        Guarded = Chk.isProtectedByPriorLoopExit(ASE, FS, IVar, Cap, AC);
+
+      if (!Guarded) {
+        Found = ASE;
+      }
+      return true;
+    }
+  };
+
+  AccessFinder Finder(IVar, AC, *this, FS, OffendingASE);
+  Finder.TraverseStmt(const_cast<Stmt*>(Body));
+
+  if (!OffendingASE)
+    return;
+
+  // The fix moves the look-ahead guard into the loop condition itself:
+  // 'i < capacity - 1' makes the last visited iteration (i == UB - 1) access
+  // index UB - 1 + 1 = UB - 1, which stays inside the indexed array. Prove
+  // that numeric relation when both the loop bound and the destination
+  // capacity are statically known; otherwise accept a loop bound already
+  // reduced by one as the same look-ahead guard that a body-level
+  // 'if (i + 1 < bound)' condition would provide. With neither relation,
+  // the unguarded 'arr[i + 1]' look-ahead stays reported.
+  llvm::APSInt BoundV;
+  if (evalAsInt(UB, AC, BoundV)) {
+    uint64_t Cap = 0;
+    if (getIndexedArrayCapacity(OffendingASE, AC, Cap)) {
+      int64_t Bound = BoundV.isSigned() ? BoundV.getSExtValue()
+                                        : (int64_t)BoundV.getZExtValue();
+      // The largest accessed index is the largest permitted induction value
+      // plus the look-ahead offset, not the loop bound itself.
+      int64_t MaxIndex = Bound + (Inclusive ? 1 : 0);
+      if (Bound >= 0 && MaxIndex < (int64_t)Cap)
+        return; // the look-ahead index remains within the declared capacity
+    }
+  }
+
+  // 4) Report once per offending loop
+  PathDiagnosticLocation ELoc =
+      PathDiagnosticLocation::createBegin(OffendingASE, BR.getSourceManager(), nullptr);
+  auto R = std::make_unique<BasicBugReport>(
+      *BT,
+      "Off-by-one: loop uses 'i < bound' but accesses element at 'i + 1'. "
+      "Use 'i < bound - 1' or guard the access.",
+      ELoc);
+  R->addRange(OffendingASE->getSourceRange());
+  BR.emitReport(std::move(R));
+}
+
+void SAGenTestChecker::checkASTCodeBody(const Decl *D, AnalysisManager &Mgr, BugReporter &BR) const {
+  const auto *FD = dyn_cast<FunctionDecl>(D);
+  if (!FD) return;
+  const Stmt *Body = FD->getBody();
+  if (!Body) return;
+
+  ASTContext &AC = Mgr.getASTContext();
+
+  class ForFinder : public RecursiveASTVisitor<ForFinder> {
+    ASTContext &AC;
+    BugReporter &BR;
+    const SAGenTestChecker &Chk;
+  public:
+    ForFinder(ASTContext &Ctx, BugReporter &B, const SAGenTestChecker &C) : AC(Ctx), BR(B), Chk(C) {}
+    bool VisitForStmt(ForStmt *FS) {
+      Chk.analyzeForStmt(FS, AC, BR);
+      return true;
+    }
+  } Visitor(AC, BR, *this);
+
+  Visitor.TraverseStmt(const_cast<Stmt*>(Body));
+}
+
+} // end anonymous namespace
+
+extern "C" void clang_registerCheckers(CheckerRegistry &registry) {
+  registry.addChecker<SAGenTestChecker>(
+      "custom.SAGenTestChecker",
+      "Detects off-by-one loops that access arr[i+1] while using i < bound",
+      "");
+}
+
+extern "C" const char clang_analyzerAPIVersionString[] =
+    CLANG_ANALYZER_API_VERSION_STRING;

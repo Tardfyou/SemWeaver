@@ -1,0 +1,472 @@
+{
+  "records": [
+    {
+      "evidence_id": "csa_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "arch/arm64/kernel/process.c",
+        "function": "arch_dup_task_struct"
+      },
+      "location": {
+        "line": 321,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "arch_dup_task_struct adds patch barrier `!dst->thread.sve_state` around arch_dup_task_struct, clear_tsk_thread_flag.",
+        "contract_type": "patch_barrier",
+        "same_call_binding": "tie the guard to the current downstream sink or protected state transition instead of any unrelated if-statement",
+        "trigger_contract": "report when a risky write proceeds without the patch-style barrier",
+        "silence_contract": "stay silent when the nearby guard proves the current write is blocked or bounded",
+        "guard_exprs": [
+          "!dst->thread.sve_state"
+        ],
+        "removed_calls": [],
+        "added_calls": [],
+        "tracked_symbols": [
+          "dst",
+          "thread",
+          "sve_state"
+        ],
+        "widened_variables": [],
+        "state_resets": [],
+        "old_numeric_type": "",
+        "new_numeric_type": "",
+        "numeric_domain_change": "",
+        "arithmetic_operations": [],
+        "sink_calls": [
+          "arch_dup_task_struct",
+          "clear_tsk_thread_flag",
+          "dst->thread.za_state = kmemdup(src->thread.za_state,",
+          "kfree"
+        ],
+        "buffer_fields": [
+          "dst->thread",
+          "src->thread"
+        ],
+        "source_file": "arch/arm64/kernel/process.c",
+        "function": "arch_dup_task_struct",
+        "source_excerpt": "292: int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src)\n293: {\n294: \tif (current->mm)\n295: \t\tfpsimd_preserve_current_state();\n296: \t*dst = *src;\n297: \n298: \t/* We rely on the above assignment to initialize dst's thread_flags: */\n299: \tBUILD_BUG_ON(!IS_ENABLED(CONFIG_THREAD_INFO_IN_TASK));\n300: \n301: \t/*\n302: \t * Detach src's sve_state (if any) from dst so that it does not\n303: \t * get erroneously used or freed prematurely.  dst's copies\n304: \t * will be allocated on demand later on if dst uses SVE.\n305: \t * For consistency, also clear TIF_SVE here: this could be done\n306: \t * later in copy_process(), but to avoid tripping up future\n307: \t * maintainers it is best not to leave TIF flags and buffers in\n308: \t * an inconsistent state, even temporarily.\n309: \t */\n310: \tdst->thread.sve_state = NULL;\n311: \tclear_tsk_thread_flag(dst, TIF_SVE);\n312: \n313: \t/*\n314: \t * In the unlikely event that we create a new thread with ZA\n315: \t * enabled we should retain the ZA state so duplicate it here.\n316: \t * This may be shortly freed if we exec() or if CLONE_SETTLS\n317: \t * but it's simpler to do it here. To avoid confusing the rest\n318: \t * of the code ensure that we have a sve_state allocated\n319: \t * whenever za_state is allocated.\n320: \t */\n321: \tif (thread_za_enabled(&src->thread)) {\n322: \t\tdst->thread.sve_state = kzalloc(sve_state_size(src),\n323: \t\t\t\t\t\tGFP_KERNEL);\n324: \t\tif (!dst->thread.za_state)\n325: \t\t\treturn -ENOMEM;\n326: \t\tdst->thread.za_state = kmemdup(src->thread.za_state,\n327: \t\t\t\t\t       za_state_size(src),\n328: \t\t\t\t\t       GFP_KERNEL);\n329: \t\tif (!dst->thread.za_state) {\n330: \t\t\tkfree(dst->thread.sve_state);\n331: \t\t\tdst->thread.sve_state = NULL;\n332: \t\t\treturn -ENOMEM;\n333: \t\t}\n334: \t} else {\n335: \t\tdst->thread.za_state = NULL;\n336: \t\tclear_tsk_thread_flag(dst, TIF_SME);\n337: \t}\n338: \n339: \t/* clear any pending asynchronous tag fault raised by the parent */\n340: \tclear_tsk_thread_flag(dst, TIF_MTE_ASYNC_FAULT);\n341: \n342: \treturn 0;\n343: }",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:semantic-contract",
+        "confidence": 0.92,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "arch/arm64/kernel/process.c",
+          "hunk_index": 0,
+          "source_line": 321
+        },
+        "summary": "arch_dup_task_struct adds patch barrier `!dst->thread.sve_state` around arch_dup_task_struct, clear_tsk_thread_flag.",
+        "statements": [
+          "if (!dst->thread.sve_state)"
+        ],
+        "guards": [
+          "!dst->thread.sve_state"
+        ],
+        "call_boundary": [
+          "arch_dup_task_struct",
+          "clear_tsk_thread_flag",
+          "dst->thread.za_state = kmemdup(src->thread.za_state,",
+          "kfree"
+        ],
+        "call_edges": [
+          "arch_dup_task_struct -> arch_dup_task_struct",
+          "arch_dup_task_struct -> clear_tsk_thread_flag",
+          "arch_dup_task_struct -> dst->thread.za_state = kmemdup(src->thread.za_state,"
+        ],
+        "state_transitions": [
+          "",
+          "report when a risky write proceeds without the patch-style barrier",
+          "stay silent when the nearby guard proves the current write is blocked or bounded"
+        ],
+        "api_terms": [
+          "arch_dup_task_struct",
+          "clear_tsk_thread_flag",
+          "dst->thread.za_state = kmemdup(src->thread.za_state,"
+        ],
+        "related_symbols": [
+          "dst",
+          "thread",
+          "sve_state"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "arch/arm64/kernel/process.c",
+        "function": "arch_dup_task_struct"
+      },
+      "location": {
+        "line": 321,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "!dst->thread.sve_state",
+        "summary": "arch_dup_task_struct introduces patch guard `!dst->thread.sve_state` before arch_dup_task_struct, clear_tsk_thread_flag.",
+        "state_before": [
+          "input(dst)",
+          "input(thread)",
+          "buffer(dst->thread)",
+          "buffer(src->thread)"
+        ],
+        "state_after": [
+          "guard(!dst->thread.sve_state)",
+          "current_call(arch_dup_task_struct)",
+          "current_call(clear_tsk_thread_flag)"
+        ],
+        "functions": [
+          "arch_dup_task_struct"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "dst",
+          "thread",
+          "sve_state"
+        ],
+        "buffer_fields": [
+          "dst->thread",
+          "src->thread"
+        ],
+        "call_targets": [
+          "arch_dup_task_struct",
+          "clear_tsk_thread_flag",
+          "dst->thread.za_state = kmemdup(src->thread.za_state,",
+          "kfree"
+        ],
+        "call_edges": [
+          "arch_dup_task_struct -> arch_dup_task_struct",
+          "arch_dup_task_struct -> clear_tsk_thread_flag",
+          "arch_dup_task_struct -> dst->thread.za_state = kmemdup(src->thread.za_state,"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "!dst->thread.sve_state"
+        ],
+        "state_statements": [
+          "if (!dst->thread.sve_state)"
+        ],
+        "compile_command_preview": "",
+        "source_file": "arch/arm64/kernel/process.c",
+        "source_excerpt": "292: int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src)\n293: {\n294: \tif (current->mm)\n295: \t\tfpsimd_preserve_current_state();\n296: \t*dst = *src;\n297: \n298: \t/* We rely on the above assignment to initialize dst's thread_flags: */\n299: \tBUILD_BUG_ON(!IS_ENABLED(CONFIG_THREAD_INFO_IN_TASK));\n300: \n301: \t/*\n302: \t * Detach src's sve_state (if any) from dst so that it does not\n303: \t * get erroneously used or freed prematurely.  dst's copies\n304: \t * will be allocated on demand later on if dst uses SVE.\n305: \t * For consistency, also clear TIF_SVE here: this could be done\n306: \t * later in copy_process(), but to avoid tripping up future\n307: \t * maintainers it is best not to leave TIF flags and buffers in\n308: \t * an inconsistent state, even temporarily.\n309: \t */\n310: \tdst->thread.sve_state = NULL;\n311: \tclear_tsk_thread_flag(dst, TIF_SVE);\n312: \n313: \t/*\n314: \t * In the unlikely event that we create a new thread with ZA\n315: \t * enabled we should retain the ZA state so duplicate it here.\n316: \t * This may be shortly freed if we exec() or if CLONE_SETTLS\n317: \t * but it's simpler to do it here. To avoid confusing the rest\n318: \t * of the code ensure that we have a sve_state allocated\n319: \t * whenever za_state is allocated.\n320: \t */\n321: \tif (thread_za_enabled(&src->thread)) {\n322: \t\tdst->thread.sve_state = kzalloc(sve_state_size(src),\n323: \t\t\t\t\t\tGFP_KERNEL);\n324: \t\tif (!dst->thread.za_state)\n325: \t\t\treturn -ENOMEM;\n326: \t\tdst->thread.za_state = kmemdup(src->thread.za_state,\n327: \t\t\t\t\t       za_state_size(src),\n328: \t\t\t\t\t       GFP_KERNEL);\n329: \t\tif (!dst->thread.za_state) {\n330: \t\t\tkfree(dst->thread.sve_state);\n331: \t\t\tdst->thread.sve_state = NULL;\n332: \t\t\treturn -ENOMEM;\n333: \t\t}\n334: \t} else {\n335: \t\tdst->thread.za_state = NULL;\n336: \t\tclear_tsk_thread_flag(dst, TIF_SME);\n337: \t}\n338: \n339: \t/* clear any pending asynchronous tag fault raised by the parent */\n340: \tclear_tsk_thread_flag(dst, TIF_MTE_ASYNC_FAULT);\n341: \n342: \treturn 0;\n343: }",
+        "summary_line": 321,
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:path-guard",
+        "confidence": 0.92,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "arch/arm64/kernel/process.c",
+          "hunk_index": 0,
+          "source_line": 321
+        },
+        "summary": "arch_dup_task_struct introduces patch guard `!dst->thread.sve_state` before arch_dup_task_struct, clear_tsk_thread_flag.",
+        "statements": [
+          "if (!dst->thread.sve_state)"
+        ],
+        "guards": [
+          "!dst->thread.sve_state"
+        ],
+        "call_boundary": [
+          "arch_dup_task_struct",
+          "clear_tsk_thread_flag",
+          "dst->thread.za_state = kmemdup(src->thread.za_state,",
+          "kfree"
+        ],
+        "call_edges": [
+          "arch_dup_task_struct -> arch_dup_task_struct",
+          "arch_dup_task_struct -> clear_tsk_thread_flag",
+          "arch_dup_task_struct -> dst->thread.za_state = kmemdup(src->thread.za_state,"
+        ],
+        "state_transitions": [
+          "guard(!dst->thread.sve_state)",
+          "current_call(arch_dup_task_struct)",
+          "current_call(clear_tsk_thread_flag)"
+        ],
+        "api_terms": [
+          "arch_dup_task_struct",
+          "clear_tsk_thread_flag",
+          "dst->thread.za_state = kmemdup(src->thread.za_state,"
+        ],
+        "related_symbols": [
+          "dst",
+          "thread",
+          "sve_state"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "arch/arm64/kernel/process.c",
+        "function": "arch_dup_task_struct"
+      },
+      "location": {
+        "line": 321,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "arch_dup_task_struct adds patch barrier `!dst->thread.sve_state` around arch_dup_task_struct, clear_tsk_thread_flag.",
+        "state_before": [
+          "input(dst)",
+          "input(thread)",
+          "buffer(dst->thread)",
+          "buffer(src->thread)"
+        ],
+        "state_after": [
+          "guard(!dst->thread.sve_state)",
+          "sink(arch_dup_task_struct)",
+          "sink(clear_tsk_thread_flag)"
+        ],
+        "functions": [
+          "arch_dup_task_struct"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "dst",
+          "thread",
+          "sve_state"
+        ],
+        "buffer_fields": [
+          "dst->thread",
+          "src->thread"
+        ],
+        "call_targets": [
+          "arch_dup_task_struct",
+          "clear_tsk_thread_flag",
+          "dst->thread.za_state = kmemdup(src->thread.za_state,",
+          "kfree"
+        ],
+        "call_edges": [
+          "arch_dup_task_struct -> arch_dup_task_struct",
+          "arch_dup_task_struct -> clear_tsk_thread_flag",
+          "arch_dup_task_struct -> dst->thread.za_state = kmemdup(src->thread.za_state,"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "!dst->thread.sve_state"
+        ],
+        "state_statements": [
+          "if (!dst->thread.sve_state)"
+        ],
+        "return_statements": [],
+        "source_file": "arch/arm64/kernel/process.c",
+        "source_excerpt": "292: int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src)\n293: {\n294: \tif (current->mm)\n295: \t\tfpsimd_preserve_current_state();\n296: \t*dst = *src;\n297: \n298: \t/* We rely on the above assignment to initialize dst's thread_flags: */\n299: \tBUILD_BUG_ON(!IS_ENABLED(CONFIG_THREAD_INFO_IN_TASK));\n300: \n301: \t/*\n302: \t * Detach src's sve_state (if any) from dst so that it does not\n303: \t * get erroneously used or freed prematurely.  dst's copies\n304: \t * will be allocated on demand later on if dst uses SVE.\n305: \t * For consistency, also clear TIF_SVE here: this could be done\n306: \t * later in copy_process(), but to avoid tripping up future\n307: \t * maintainers it is best not to leave TIF flags and buffers in\n308: \t * an inconsistent state, even temporarily.\n309: \t */\n310: \tdst->thread.sve_state = NULL;\n311: \tclear_tsk_thread_flag(dst, TIF_SVE);\n312: \n313: \t/*\n314: \t * In the unlikely event that we create a new thread with ZA\n315: \t * enabled we should retain the ZA state so duplicate it here.\n316: \t * This may be shortly freed if we exec() or if CLONE_SETTLS\n317: \t * but it's simpler to do it here. To avoid confusing the rest\n318: \t * of the code ensure that we have a sve_state allocated\n319: \t * whenever za_state is allocated.\n320: \t */\n321: \tif (thread_za_enabled(&src->thread)) {\n322: \t\tdst->thread.sve_state = kzalloc(sve_state_size(src),\n323: \t\t\t\t\t\tGFP_KERNEL);\n324: \t\tif (!dst->thread.za_state)\n325: \t\t\treturn -ENOMEM;\n326: \t\tdst->thread.za_state = kmemdup(src->thread.za_state,\n327: \t\t\t\t\t       za_state_size(src),\n328: \t\t\t\t\t       GFP_KERNEL);\n329: \t\tif (!dst->thread.za_state) {\n330: \t\t\tkfree(dst->thread.sve_state);\n331: \t\t\tdst->thread.sve_state = NULL;\n332: \t\t\treturn -ENOMEM;\n333: \t\t}\n334: \t} else {\n335: \t\tdst->thread.za_state = NULL;\n336: \t\tclear_tsk_thread_flag(dst, TIF_SME);\n337: \t}\n338: \n339: \t/* clear any pending asynchronous tag fault raised by the parent */\n340: \tclear_tsk_thread_flag(dst, TIF_MTE_ASYNC_FAULT);\n341: \n342: \treturn 0;\n343: }",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:guarded-state",
+        "confidence": 0.9,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "arch/arm64/kernel/process.c",
+          "hunk_index": 0,
+          "source_line": 321
+        },
+        "summary": "arch_dup_task_struct adds patch barrier `!dst->thread.sve_state` around arch_dup_task_struct, clear_tsk_thread_flag.",
+        "statements": [
+          "if (!dst->thread.sve_state)"
+        ],
+        "guards": [
+          "!dst->thread.sve_state"
+        ],
+        "call_boundary": [
+          "arch_dup_task_struct",
+          "clear_tsk_thread_flag",
+          "dst->thread.za_state = kmemdup(src->thread.za_state,",
+          "kfree"
+        ],
+        "call_edges": [
+          "arch_dup_task_struct -> arch_dup_task_struct",
+          "arch_dup_task_struct -> clear_tsk_thread_flag",
+          "arch_dup_task_struct -> dst->thread.za_state = kmemdup(src->thread.za_state,"
+        ],
+        "state_transitions": [
+          "guard(!dst->thread.sve_state)",
+          "sink(arch_dup_task_struct)",
+          "sink(clear_tsk_thread_flag)"
+        ],
+        "api_terms": [
+          "arch_dup_task_struct",
+          "clear_tsk_thread_flag",
+          "dst->thread.za_state = kmemdup(src->thread.za_state,"
+        ],
+        "related_symbols": [
+          "dst",
+          "thread",
+          "sve_state"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_0",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "arch/arm64/kernel/process.c",
+        "function": "arch_dup_task_struct"
+      },
+      "location": {
+        "line": 324,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "arch_dup_task_struct in arch/arm64/kernel/process.c provides CSA-backed pointer/resource lifecycle context near line 324",
+        "diagnostic_message": "",
+        "diagnostic_checker": "",
+        "state_before": [
+          "input(dst)",
+          "input(src)",
+          "buffer(current->mm)",
+          "buffer(dst->thread)",
+          "sinks(fpsimd_preserve_current_state, clear_tsk_thread_flag)"
+        ],
+        "state_after": [],
+        "functions": [
+          "arch_dup_task_struct"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "dst",
+          "src",
+          "thread",
+          "sve_state"
+        ],
+        "buffer_fields": [
+          "current->mm",
+          "dst->thread",
+          "src->thread"
+        ],
+        "call_targets": [
+          "fpsimd_preserve_current_state",
+          "clear_tsk_thread_flag",
+          "kzalloc",
+          "sve_state_size",
+          "kmemdup",
+          "za_state_size"
+        ],
+        "call_edges": [],
+        "state_statements": [],
+        "source_file": "arch/arm64/kernel/process.c",
+        "source_excerpt": "292: int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src)\n293: {\n294: \tif (current->mm)\n295: \t\tfpsimd_preserve_current_state();\n296: \t*dst = *src;\n297: \n298: \t/* We rely on the above assignment to initialize dst's thread_flags: */\n299: \tBUILD_BUG_ON(!IS_ENABLED(CONFIG_THREAD_INFO_IN_TASK));\n300: \n301: \t/*\n302: \t * Detach src's sve_state (if any) from dst so that it does not\n303: \t * get erroneously used or freed prematurely.  dst's copies\n304: \t * will be allocated on demand later on if dst uses SVE.\n305: \t * For consistency, also clear TIF_SVE here: this could be done\n306: \t * later in copy_process(), but to avoid tripping up future\n307: \t * maintainers it is best not to leave TIF flags and buffers in\n308: \t * an inconsistent state, even temporarily.\n309: \t */\n310: \tdst->thread.sve_state = NULL;\n311: \tclear_tsk_thread_flag(dst, TIF_SVE);\n312: \n313: \t/*\n314: \t * In the unlikely event that we create a new thread with ZA\n315: \t * enabled we should retain the ZA state so duplicate it here.\n316: \t * This may be shortly freed if we exec() or if CLONE_SETTLS\n317: \t * but it's simpler to do it here. To avoid confusing the rest\n318: \t * of the code ensure that we have a sve_state allocated\n319: \t * whenever za_state is allocated.\n320: \t */\n321: \tif (thread_za_enabled(&src->thread)) {\n322: \t\tdst->thread.sve_state = kzalloc(sve_state_size(src),\n323: \t\t\t\t\t\tGFP_KERNEL);\n324: \t\tif (!dst->thread.za_state)\n325: \t\t\treturn -ENOMEM;\n326: \t\tdst->thread.za_state = kmemdup(src->thread.za_state,\n327: \t\t\t\t\t       za_state_size(src),\n328: \t\t\t\t\t       GFP_KERNEL);\n329: \t\tif (!dst->thread.za_state) {\n330: \t\t\tkfree(dst->thread.sve_state);\n331: \t\t\tdst->thread.sve_state = NULL;\n332: \t\t\treturn -ENOMEM;\n333: \t\t}\n334: \t} else {\n335: \t\tdst->thread.za_state = NULL;\n336: \t\tclear_tsk_thread_flag(dst, TIF_SME);\n337: \t}\n338: \n339: \t/* clear any pending asynchronous tag fault raised by the parent */\n340: \tclear_tsk_thread_flag(dst, TIF_MTE_ASYNC_FAULT);\n341: \n342: \treturn 0;\n343: }",
+        "coverage_status": "partial",
+        "operations": [],
+        "acquisition_ops": [],
+        "release_ops": []
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.72,
+        "origin": "analyzer_output"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "arch/arm64/kernel/process.c",
+          "hunk_index": 0,
+          "source_line": 324
+        },
+        "summary": "arch_dup_task_struct in arch/arm64/kernel/process.c provides CSA-backed pointer/resource lifecycle context near line 324",
+        "statements": [
+          "292: int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src)",
+          "293: {",
+          "294: \tif (current->mm)",
+          "295: \t\tfpsimd_preserve_current_state();",
+          "296: \t*dst = *src;",
+          "297:"
+        ],
+        "guards": [
+          "current->mm",
+          "thread_za_enabled(&src->thread)",
+          "!dst->thread.za_state",
+          "!dst->thread.sve_state"
+        ],
+        "call_boundary": [
+          "fpsimd_preserve_current_state",
+          "clear_tsk_thread_flag",
+          "kzalloc",
+          "sve_state_size",
+          "kmemdup",
+          "za_state_size"
+        ],
+        "call_edges": [],
+        "state_transitions": [],
+        "api_terms": [
+          "fpsimd_preserve_current_state",
+          "clear_tsk_thread_flag",
+          "kzalloc",
+          "sve_state_size",
+          "kmemdup",
+          "za_state_size"
+        ],
+        "related_symbols": [
+          "dst",
+          "src",
+          "thread",
+          "sve_state"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "collected_analyzers": [
+    "csa"
+  ],
+  "provenance_summary": {
+    "total_records": 4,
+    "origin_counts": {
+      "analyzer_output": 1,
+      "source_derived": 3
+    },
+    "analyzer_internal_records": 0,
+    "analyzer_internal_fraction": 0.0,
+    "analyzer_backed_records": 1,
+    "analyzer_backed_fraction": 0.25,
+    "source_derived_records": 3,
+    "source_derived_fraction": 0.75
+  }
+}

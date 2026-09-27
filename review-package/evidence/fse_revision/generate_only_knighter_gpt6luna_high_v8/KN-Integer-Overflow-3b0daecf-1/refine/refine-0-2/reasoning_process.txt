@@ -1,0 +1,10 @@
+Refinement Plan:
+- The checker currently reports every `sizeof` multiplication passed to a matching allocator. It does not distinguish a user-controlled count from an internally maintained count such as `p->n_pdds`, which is the source of this false positive.
+- Keep the syntactic allocation-pattern check, but report only when the count is tainted or can be traced through a local alias to an opaque `void *` function parameter. In the target buggy function, `args->num_of_nodes` traces through `args = data`; `p->n_pdds` does not.
+- Match allocator names exactly, and continue ignoring overflow-safe array allocators and size helpers.
+
+This preserves detection of the target buggy code without assuming that every symbolic count is dangerous. The input-provenance check is intentionally conservative: it recognizes the ioctl-style `void *data` alias in the target, while avoiding a report for the internally maintained device count.
+
+Refined Code:
+```cpp
+```

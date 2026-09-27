@@ -1,0 +1,10 @@
+**Refinement Plan:**
+The false positive occurs because the checker treats only known allocator calls and NULL assignments as pointer reinitializations. It misses `utf16_path = cifs_convert_path_to_utf16(...)`, which overwrites the freed value on every retry before any path reaches cleanup.
+
+I would track pointer assignments whose right-hand side does not reference the pointer being assigned. Use the earliest such assignment after the replay label as the reinitialization boundary. In the reported case, that boundary is before any cleanup path, so no warning is emitted for `utf16_path`. For the target `ea` bug, the early error goto still precedes its allocation, so the warning remains. A NULL reset at the replay label also suppresses the warning, as in the fix patch.
+
+This remains a source-order AST heuristic, not a path-sensitive proof: assignments inside conditional control flow can require CFG analysis to establish that they execute on every path. The self-reference check avoids treating `ptr = ptr` as a reinitialization. The checker below keeps the existing includes and uses Clang-18-compatible AST APIs.
+
+**Refined Code:**
+```cpp
+```

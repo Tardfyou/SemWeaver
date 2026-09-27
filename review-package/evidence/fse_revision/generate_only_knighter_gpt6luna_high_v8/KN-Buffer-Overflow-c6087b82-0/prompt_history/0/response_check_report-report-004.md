@@ -1,0 +1,2 @@
+- Decision: NotABug
+- Reason: The reported function, `lpfc_debugfs_nvmestat_write()`, clamps `nbytes` to `sizeof(mybuf) - 1` before calling `copy_from_user()`. Since `mybuf` is 64 bytes, the copy length is at most 63 bytes, so it cannot overflow the buffer. Although this is the same kind of buffer-copy pattern as the target bug, the reported code already has the bounds check; it does not demonstrate the target bug’s root cause.

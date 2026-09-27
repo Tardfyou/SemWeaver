@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "method": "semweaver_provenance_gated_csa_treatment",
+  "objective": "precision_refine",
+  "evidence_mode": "native",
+  "origin_gate_enabled": true,
+  "case_id": "G06_3b0daecfeac0_Integer_Overflow",
+  "model": "glm-5.3",
+  "provider": "openai_compatible",
+  "wire_api": "chat_completions",
+  "reasoning_effort": "",
+  "max_iterations": 2,
+  "max_tokens_per_call": 65536,
+  "max_model_calls": 2,
+  "temperature": 0.0,
+  "request_timeout_seconds": 3000,
+  "wrapper_max_retries": 0,
+  "inline_semantic_validation": false,
+  "external_paired_validation_required": true,
+  "internal_evidence_preloaded": true,
+  "evidence_requests_disabled": true,
+  "compile_after_each_edit": true,
+  "budget_finalized_candidate_ready": false,
+  "llm_exchange_log": "/work/artifacts/fse_revision/e4_all39_glm_53_precision_v11_r2/G06_3b0daecfeac0_Integer_Overflow/attempt-01/llm_exchanges.jsonl",
+  "llm_exchange_log_sha256": "c36d72e305f9c7719635e77ea4216594030f0ad242fdd8cbfa86c136aaa6a7b9",
+  "preloaded_internal_evidence_ids": [
+    "csa_guard_0",
+    "csa_state_0"
+  ],
+  "patch_sha256": "4591097f9f872fe48ae03b3970449e27d1c0a7ce4081357e65fd9d9861a33adc",
+  "original_checker_sha256": "b634318d14c43a58911a59c154364657cf29292ed7575796880c264dc8e0dbab",
+  "starting_checker_sha256": "b634318d14c43a58911a59c154364657cf29292ed7575796880c264dc8e0dbab",
+  "evidence_bundle_sha256": "13411d8c5f0998b396b51e2bc2cafcf087aadac67720a19397e49ef738d22d77",
+  "fixed_report_bindings": [
+    {
+      "id": "report-001",
+      "sha256": "ef338da4123b9dcd0d3ddeb3f8e8983ddabc074597474930b5deedc8b8285b94"
+    },
+    {
+      "id": "report-002",
+      "sha256": "99c8e77e053bb7d191b271676697841ac091b2e11ac50462d18f70ede0edad23"
+    },
+    {
+      "id": "report-003",
+      "sha256": "e9412eacb587c729703a8b8f82b4cf5856980423dd54d3d80bdf92eb3aabe241"
+    },
+    {
+      "id": "report-004",
+      "sha256": "7392c264c990d860a228c0defef64736dbff6691ba7d95aac5ee6d656deb3172"
+    }
+  ],
+  "fixed_report_feedback_sha256": "d5b2eef64c85766d75af71b6dd555ee6e0e4ee6f4c7a72047f3d2c215f148df8",
+  "visible_evidence_sha256": "5aeac8717f759b7f920078512911fdf7ffdc71d8d1630d1b3c76decf78e57c78",
+  "visible_evidence_record_count": 4,
+  "frozen_source_revision": "3b0daecfeac0103aba8b293df07a0cbaf8b43f29^",
+  "frozen_source_hashes": {
+    "drivers/gpu/drm/amd/amdkfd/kfd_chardev.c": "1746b63cb04ad75ff0557fbb0f8938788937dcda911aa7f6e6c4d2cfec7086e8"
+  },
+  "feedback_result_sha256": null,
+  "feedback_run_manifest_sha256": null,
+  "feedback_candidate_sha256": null,
+  "feedback_kind": null,
+  "candidate_sha256": "ccc58eb1283e445f897de596c227dcc076992f87127b6c1d86a7fe5e8ab34c2e",
+  "candidate_changed": true,
+  "success": true,
+  "agent_success": true,
+  "iterations": 2,
+  "compile_attempts": 2,
+  "error_message": "",
+  "final_message": "机制链已完整：载荷参数字段直达的 count 与 sizeof 的未检查乘积进入单一总尺寸分配器报警，kcalloc/array_size 等受检乘法保持静默，且已编译通过，进入验证。",
+  "output_path": "/work/artifacts/fse_revision/e4_all39_glm_53_precision_v11_r2/G06_3b0daecfeac0_Integer_Overflow/attempt-01/SAGenTestChecker.so",
+  "elapsed_seconds": 430.16310119628906,
+  "llm_usage": {
+    "prompt_tokens": 16292,
+    "completion_tokens": 31483,
+    "total_tokens": 47775,
+    "call_count": 2,
+    "available": true,
+    "model": "glm-5.3",
+    "phases": 1
+  },
+  "model_calls_used": 2,
+  "model_call_budget_exhausted": false,
+  "llm_usage_by_phase": {
+    "decide": {
+      "prompt_tokens": 16292,
+      "completion_tokens": 31483,
+      "total_tokens": 47775,
+      "call_count": 2,
+      "available": true,
+      "model": "glm-5.3"
+    }
+  },
+  "artifact_review": {
+    "artifact_path": "/work/artifacts/fse_revision/e4_all39_glm_53_precision_v11_r2/G06_3b0daecfeac0_Integer_Overflow/attempt-01/SAGenTestChecker.cpp",
+    "analyzer": "csa",
+    "review_mode": "refine",
+    "findings": [],
+    "warnings": [
+      "CSA 代码引入了 `ProgramState` / 路径敏感相关符号或说明，但实现里没有对应的状态读写、约束传播或 guard 绑定。 如果当前路线本来就是 AST/实参/guard 建模，应删掉这类 stateful 话术；只有显式声明了状态建模却完全未落地时才应继续升级处理。"
+    ]
+  },
+  "failure_type": "",
+  "latest_failure_title": "",
+  "latest_failure_text": "",
+  "event_count": 38,
+  "model_rate_limit_retries": 0
+}

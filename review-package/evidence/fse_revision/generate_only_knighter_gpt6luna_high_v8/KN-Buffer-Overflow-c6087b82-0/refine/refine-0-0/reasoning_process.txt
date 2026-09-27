@@ -1,0 +1,8 @@
+Refinement Plan:
+- The checker reports based on parameter names and source text, but never asks the analyzer whether the length is already bounded on the current path. In `lpfc_debugfs_hdwqstat_write()`, the branch and assignment constrain `nbytes` before the call, so the warning is a false positive.
+- Before applying the name-based heuristic, query the current path’s symbolic maximum for the copy length. Suppress the warning only when that maximum is proven to be no greater than the destination array size.
+- Leave the constant-length check in place and retain the unbounded-parameter heuristic when the analyzer cannot prove a bound. This preserves detection of the target buggy code, where `nbytes` remains unconstrained.
+
+Refined Code:
+```cpp
+```

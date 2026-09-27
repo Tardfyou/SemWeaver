@@ -1,24 +1,20 @@
-# SemWeaver: FSE 2027 anonymous review artifact
+# SemWeaver — anonymous review artifact
 
-The current replication package is in [review-package/](review-package/README.md).
-It contains the pinned SemWeaver source, the FSE-format manuscript and PDF,
-frozen checker/patch inputs, raw and derived evidence, three matched repeats
-against KNighter's actual refinement loop, a ten-candidate extension screen,
-historical mixed-provenance CSA/CodeQL records, and English instructions for
-offline verification.
+This repository contains the final FSE 2027 review package for **SemWeaver: Provenance-Guided Refinement of LLM-Generated Vulnerability Checkers**.
 
-```bash
+- [Paper](review-package/paper/main.pdf)
+- [Artifact guide and reproduction requirements](review-package/README.md)
+- [Corrected 39-case results](review-package/results/corrected/SUMMARY.csv)
+- [Evidence scope and limitations](review-package/docs/EVIDENCE_SCOPE.md)
+- [Automatic motivating example and redraw materials](review-package/evidence/motivating_example/)
+
+From a fresh checkout, verify the package without model calls:
+
+~~~bash
 cd review-package
-python3 scripts/verify_v7_review_package.py .
-```
+python3 scripts/verify_corrected_review_package.py .
+~~~
 
-The verifier requires no model API, Linux build, or network connection. The
-package manifest binds every file by SHA-256, and `REDACTIONS.json` records
-path-only anonymization without changing outcome labels. The full method,
-denominators, and limitations are described in the package README and paper.
+The current results use all 39 frozen generated CSA subjects, the actual KNighter refinement loop, a matched 15-case noise-reduction comparison, full-cohort ablation, three editor configurations and three decodes on a retained 12-subject subset. PDS/F1 are **patch-version warning metrics**, not exhaustive target-vulnerability localization or deployment precision. Superseded raw records remain for audit; only `results/corrected/` defines the current effectiveness totals.
 
-This repository's former source-only snapshot was removed from the current
-tree to avoid confusing it with the reviewed version; it remains recoverable
-from earlier Git commits. The included KNighter baseline retains its upstream
-Apache-2.0 license and attribution. No project-level SemWeaver reuse license
-is granted by this review snapshot.
+All explanatory material is English. No project-level license is granted; this material is supplied for review. Upstream license notices remain in force.

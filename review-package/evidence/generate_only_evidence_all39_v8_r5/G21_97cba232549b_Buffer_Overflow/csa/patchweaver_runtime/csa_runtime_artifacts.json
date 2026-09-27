@@ -1,0 +1,96 @@
+{
+  "cache_key": {
+    "cache_version": 16,
+    "patch_path": "/work/artifacts/fse_revision/generate_only_materialized_v1/cases/G21_97cba232549b_Buffer_Overflow/patches/commit.patch",
+    "evidence_dir": "/work/SemWeaver/artifacts/external/linux-evidence-clone-v8b",
+    "validate_path": "",
+    "source_files": [
+      "drivers/gpu/drm/amd/display/dc/link/protocols/link_dp_dpia_bw.c"
+    ],
+    "compile_commands_sha256": "aa3027411577489a3c914634be5512f4375240efb62d7c4fc46bba037dd57862"
+  },
+  "data": {
+    "available": true,
+    "clang_path": "/usr/lib/llvm-18/bin/clang",
+    "cfg_snapshots": [
+      {
+        "source_file": "drivers/gpu/drm/amd/display/dc/link/protocols/link_dp_dpia_bw.c",
+        "function_name": "get_host_router_total_dp_tunnel_bw",
+        "anchor_line": 199,
+        "branch_kinds": [
+          "if",
+          "for"
+        ],
+        "branch_conditions": [
+          "break;",
+          "if [B6.5] && [B5.6]",
+          "[B6.5] && ...",
+          "if [B9.5] && [B8.6]",
+          "[B9.5] && ...",
+          "if ([B14.28] && [B13.6]) && ([B12.5] && [B11.6])",
+          "[B12.5] && ...",
+          "([B14.28] && [B13.6]) && ..."
+        ],
+        "resolved_branch_conditions": [
+          "if hr_index_temp (ImplicitCastExpr, LValueToRValue, uint8_t) (ImplicitCastExpr, IntegralCast, int) == hr_index (ImplicitCastExpr, LValueToRValue, uint8_t) (ImplicitCastExpr, IntegralCast, int)",
+          "if !dc (ImplicitCastExpr, LValueToRValue, const struct dc *)->links (ImplicitCastExpr, ArrayToPointerDecay, struct dc_link *const *)[i (ImplicitCastExpr, LValueToRValue, uint8_t)] (ImplicitCastExpr, LValueToRValue, struct dc_link *) || [B17.2]->links (ImplicitCastExpr, ArrayToPointerDecay, struct dc_link *const *)[i (ImplicitCastExpr, LValueToRValue, uint8_t)] (ImplicitCastExpr, LValueToRValue, struct dc_link *)->ep_type (ImplicitCastExpr, LValueToRValue, enum display_endpoint_type) (ImplicitCastExpr, IntegralCast, int) != DISPLAY_ENDPOINT_USB4_DPIA",
+          "!dc (ImplicitCastExpr, LValueToRValue, const struct dc *)->links (ImplicitCastExpr, ArrayToPointerDecay, struct dc_link *const *)[i (ImplicitCastExpr, LValueToRValue, uint8_t)] (ImplicitCastExpr, LValueToRValue, struct dc_link *) || ...",
+          "for (...; i (ImplicitCastExpr, LValueToRValue, uint8_t) (ImplicitCastExpr, IntegralCast, int) < 6 * 2; ...)",
+          "break;",
+          "if link_dpia_secondary (ImplicitCastExpr, LValueToRValue, struct dc_link *)->hpd_status (ImplicitCastExpr, LValueToRValue, bool) (ImplicitCastExpr, IntegralCast, int) && link_dpia_secondary (ImplicitCastExpr, LValueToRValue, struct dc_link *)->dpia_bw_alloc_config.bw_alloc_enabled (ImplicitCastExpr, LValueToRValue, bool) (ImplicitCastExpr, IntegralCast, int)",
+          "link_dpia_secondary (ImplicitCastExpr, LValueToRValue, struct dc_link *)->hpd_status (ImplicitCastExpr, LValueToRValue, bool) (ImplicitCastExpr, IntegralCast, int) && ...",
+          "if link_dpia_primary (ImplicitCastExpr, LValueToRValue, struct dc_link *)->hpd_status (ImplicitCastExpr, LValueToRValue, bool) (ImplicitCastExpr, IntegralCast, int) && link_dpia_primary (ImplicitCastExpr, LValueToRValue, struct dc_link *)->dpia_bw_alloc_config.bw_alloc_enabled (ImplicitCastExpr, LValueToRValue, bool) (ImplicitCastExpr, IntegralCast, int)"
+        ],
+        "cfg_value_bindings": [
+          "uint8_t lowest_dpia_index = get_lowest_dpia_index(dc->links[0]);",
+          "uint8_t i = 0;",
+          "uint8_t hr_index_temp = 0;",
+          "hr_index_temp (ImplicitCastExpr, LValueToRValue, uint8_t) (ImplicitCastExpr, IntegralCast, int) == hr_index (ImplicitCastExpr, LValueToRValue, uint8_t) (ImplicitCastExpr, IntegralCast, int)",
+          "link_dpia_primary = dc (ImplicitCastExpr, LValueToRValue, const struct dc *)->links (ImplicitCastExpr, ArrayToPointerDecay, struct dc_link *const *)[i (ImplicitCastExpr, LValueToRValue, uint8_t)] (ImplicitCastExpr, LValueToRValue, struct dc_link *)",
+          "link_dpia_secondary = dc (ImplicitCastExpr, LValueToRValue, const struct dc *)->links (ImplicitCastExpr, ArrayToPointerDecay, struct dc_link *const *)[i (ImplicitCastExpr, LValueToRValue, uint8_t) (ImplicitCastExpr, IntegralCast, int) + 1] (ImplicitCastExpr, LValueToRValue, struct dc_link *)",
+          "[B17.1] (ImplicitCastExpr, LValueToRValue, const struct dc *)->links (ImplicitCastExpr, ArrayToPointerDecay, struct dc_link *const *)[i (ImplicitCastExpr, LValueToRValue, uint8_t)] (ImplicitCastExpr, LValueToRValue, struct dc_link *)->ep_type (ImplicitCastExpr, LValueToRValue, enum display_endpoint_type) (ImplicitCastExpr, IntegralCast, int) != DISPLAY_ENDPOINT_USB4_DPIA",
+          "hr_index_temp = ([B15.3] (ImplicitCastExpr, ArrayToPointerDecay, struct dc_link *const *)[[B15.5] (ImplicitCastExpr, LValueToRValue, uint8_t)] (ImplicitCastExpr, LValueToRValue, struct dc_link *)->link_index (ImplicitCastExpr, LValueToRValue, unsigned int) - lowest_dpia_index (ImplicitCastExpr, LValueToRValue, uint8_t) (ImplicitCastExpr, IntegralCast, unsigned int)) / 2 (ImplicitCastExpr, IntegralCast, unsigned int) (ImplicitCastExpr, IntegralCast, uint8_t)"
+        ],
+        "call_edges": [
+          "get_host_router_total_dp_tunnel_bw -> get_lowest_dpia_index"
+        ],
+        "call_targets": [
+          "get_lowest_dpia_index"
+        ],
+        "state_statements": [
+          "return [B1.2];",
+          "++[B2.1]",
+          "[B4.3]->dpia_bw_alloc_config",
+          "[B4.1] += [B4.6]",
+          "[B5.2]->dpia_bw_alloc_config",
+          "[B6.2]->hpd_status",
+          "[B7.2]->dpia_bw_alloc_config",
+          "[B7.6] = [B7.5]",
+          "[B8.2]->dpia_bw_alloc_config",
+          "[B9.2]->hpd_status",
+          "[B10.3]->dpia_bw_alloc_config",
+          "[B10.8]->dpia_bw_alloc_config"
+        ],
+        "field_accesses": [
+          "dc->links"
+        ],
+        "return_statements": [
+          "return [B1.2];"
+        ],
+        "dump_excerpt": " --- Call graph Dump --- \n  Function: < root > calls: offset_to_ptr __kasan_check_read __kasan_check_write kasan_check_read kasan_check_write __read_once_word_nocheck read_word_at_a_time gen_endbr gen_endbr_poison is_endbr __must_check_fn x86_this_cpu_constant_test_bit x86_this_cpu_variable_test_bit get_current __bad_size_call_parameter preempt_count preempt_count_set __builtin_expect set_preempt_need_resched clear_preempt_need_resched test_preempt_need_resched __preempt_count_add __builtin_constant_p __preempt_count_sub __preempt_count_dec_and_test should_resched interrupt_context_level preempt_notifier_init preempt_enable_nested preempt_count_sub class_preempt_destructor class_preempt_lock_ptr class_preempt_constructor preempt_count_add class_preempt_notrace_destructor class_preempt_notrace_lock_ptr class_preempt_notrace_constructor class_migrate_destructor migrate_enable class_migrate_lock_ptr class_migrate_constructor migrate_disable initcall_from_entry sme_get_me_mask arch_static_branch arch_static_branch_jump jump_entry_code jump_entry_target jump_entry_key jump_entry_is_branch jump_entry_is_init jump_entry_set_init jump_entry_size arch_jump_entry_size static_key_false static_key_true __arch_swab32 __arch_swab64 __fswab16 __fswab32 __fswab64 __fswahw32 __fswahb32 __swab __builtin_bswap64 __swab16p __builtin_bswap16 __swab32p __builtin_bswap32 __swab64p __swahw32p __swahb32p __swab16s __swab32s __swab64s __swahw32s __swahb32s swab16_array swab32_array swab64_array __cpu_to_le64p __le64_to_cpup __cpu_to_le32p __le32_to_cpup __cpu_to_le16p __le16_to_cpup __cpu_to_be64p __be64_to_cpup __cpu_to_be32p __be32_to_cpup __cpu_to_be16p __be16_to_cpup le16_add_cpu le32_add_cpu le64_add_cpu le32_to_cpu_array cpu_to_le32_array be16_add_cpu be32_add_cpu be64_add_cpu cpu_to_be32_array be32_to_cpu_array alternative_msr_write indirect_branch_prediction_barrier vdso_encode_cpunode vdso_read_cpunode __loadsegment_fs mds_clear_cpu_buffers mds_user_clear_cpu_buffers ____wrong_branch_error mds_idle_clear_cpu_buffers native_save_fl native_irq_disable native_irq_enable native_safe_halt native_halt gate_offset gate_segment get_max_mapped pgprot_nx native_make_pgd native_pgd_val pgd_flags native_make_p4d native_p4d_val native_make_pud native_pud_val native_make_pmd native_pmd_val p4d_pfn_mask p4d_flags_mask p4d_flags pud_pfn_mask pud_flags_mask pud_flags pmd_pfn_mask pmd_flags_mask pmd_flags native_make_pte native_pte_val pte_flags protval_4k_2_large pgprot_4k_2_large protval_large_2_4k pgprot_large_2_4k set_arch_panic_timeout printk_get_level printk_skip_level printk_skip_headers is_warning_bug check_data_corruption array_index_mask_nospec generic___set_bit generic___clear_bit generic___change_bit generic___test_and_set_bit generic___test_and_clear_bit generic___test_and_change_bit generic_test_bit generic_test_bit_acquire __compiletime_assert_3 __compiletime_assert_4 const_test_bit arch_set_bit arch___set_bit arch_clear_bit arch_clear_bit_unlock arch___clear_bit arch_xor_unlock_is_negative_byte arch___clear_bit_unlock arch___change_bit arch_change_bit arch_test_and_set_bit arch_test_and_set_bit_lock arch___test_and_set_bit arch_test_and_clear_bit arch___test_and_clear_bit arch___test_and_change_bit arch_test_and_change_bit constant_test_bit constant_test_bit_acquire variable_test_bit arch_test_bit arch_test_bit_acquire variable__ffs variable_ffz __fls __builtin_clzl variable_ffs fls __builtin_clz fls64 __builtin_clzll sched_find_first_bit __builtin_ctzl __arch_hweight32 __arch_hweight16 __arch_hweight8 __arch_hweight64 kmsan_poison_memory kmsan_unpoison_memory kmsan_check_memory kmsan_copy_to_user instrument_read __kcsan_check_access instrument_write instrument_read_write instrument_atomic_read instrument_atomic_write instrument_atomic_read_write instrument_copy_to_user instrument_copy_from_user_before instrument_copy_from_user_after set_bit clear_bit change_bit test_and_set_bit __atomic_signal_fence test_and_clear_bit test_and_change_bit ___set",
+        "error": "",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/generate_only_evidence_all39_v8_r5/G21_97cba232549b_Buffer_Overflow/csa/patchweaver_runtime/csa_raw/drivers-gpu-drm-amd-display-dc-link-protocols-link_dp_dpia_bw.c-get_host_router_total_dp_tunnel_bw.txt",
+        "raw_output_sha256": "3fea2b959d347b5ce04fc8eb50072034673534c1466cd825002df9f8ce7241b8",
+        "command_sha256": "490b46fb48a3b0f5ecd00083319f96c1231c709bab1508a4d5b64f87d49ce3fb",
+        "clang_command_preview": "/usr/lib/llvm-18/bin/clang --analyze -nostdinc -I./arch/x86/include -I./arch/x86/include/generated -I./include -I./arch/x86/include/uapi -I./arch/x86/include/generated/uapi -I./...",
+        "return_code": 0
+      }
+    ],
+    "call_edges": [
+      "get_host_router_total_dp_tunnel_bw -> get_lowest_dpia_index"
+    ],
+    "error": ""
+  }
+}

@@ -1,0 +1,701 @@
+{
+  "records": [
+    {
+      "evidence_id": "csa_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/spi/spi-pci1xxxx.c",
+        "function": "pci1xxxx_spi_probe"
+      },
+      "location": {
+        "line": 725,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "pci1xxxx_spi_probe adds patch barrier `!spi_bus->spi_int[iter]` around struct_size, spi_sub_ptr->parent = spi_bus.",
+        "contract_type": "patch_barrier",
+        "same_call_binding": "tie the guard to the current downstream sink or protected state transition instead of any unrelated if-statement",
+        "trigger_contract": "report when a risky write proceeds without the patch-style barrier",
+        "silence_contract": "stay silent when the nearby guard proves the current write is blocked or bounded",
+        "guard_exprs": [
+          "!spi_bus->spi_int[iter]"
+        ],
+        "removed_calls": [],
+        "added_calls": [],
+        "tracked_symbols": [
+          "spi_bus",
+          "spi_int",
+          "iter",
+          "ENOMEM"
+        ],
+        "widened_variables": [],
+        "state_resets": [],
+        "old_numeric_type": "",
+        "new_numeric_type": "",
+        "numeric_domain_change": "",
+        "arithmetic_operations": [],
+        "sink_calls": [
+          "struct_size",
+          "spi_sub_ptr->parent = spi_bus"
+        ],
+        "buffer_fields": [
+          "spi_bus->spi_int",
+          "spi_sub_ptr->parent"
+        ],
+        "source_file": "drivers/spi/spi-pci1xxxx.c",
+        "function": "pci1xxxx_spi_probe",
+        "source_excerpt": "697: static int pci1xxxx_spi_probe(struct pci_dev *pdev, const struct pci_device_id *ent)\n698: {\n699: \tu8 hw_inst_cnt, iter, start, only_sec_inst;\n700: \tstruct pci1xxxx_spi_internal *spi_sub_ptr;\n701: \tstruct device *dev = &pdev->dev;\n702: \tstruct pci1xxxx_spi *spi_bus;\n703: \tstruct spi_controller *spi_host;\n704: \tu32 regval;\n705: \tint ret;\n706: \n707: \thw_inst_cnt = ent->driver_data & 0x0f;\n708: \tstart = (ent->driver_data & 0xf0) >> 4;\n709: \tif (start == 1)\n710: \t\tonly_sec_inst = 1;\n711: \telse\n712: \t\tonly_sec_inst = 0;\n713: \n714: \tspi_bus = devm_kzalloc(&pdev->dev,\n715: \t\t\t       struct_size(spi_bus, spi_int, hw_inst_cnt),\n716: \t\t\t       GFP_KERNEL);\n717: \tif (!spi_bus)\n718: \t\treturn -ENOMEM;\n719: \n720: \tspi_bus->dev = pdev;\n721: \tspi_bus->total_hw_instances = hw_inst_cnt;\n722: \tpci_set_master(pdev);\n723: \n724: \tfor (iter = 0; iter < hw_inst_cnt; iter++) {\n725: \t\tspi_bus->spi_int[iter] = devm_kzalloc(&pdev->dev,\n726: \t\t\t\t\t\t      sizeof(struct pci1xxxx_spi_internal),\n727: \t\t\t\t\t\t      GFP_KERNEL);\n728: \t\tspi_sub_ptr = spi_bus->spi_int[iter];\n729: \t\tspi_sub_ptr->spi_host = devm_spi_alloc_host(dev, sizeof(struct spi_controller));\n730: \t\tif (!spi_sub_ptr->spi_host)\n731: \t\t\treturn -ENOMEM;\n732: \n733: \t\tspi_sub_ptr->parent = spi_bus;\n734: \t\tspi_sub_ptr->spi_xfer_in_progress = false;\n735: \n736: \t\tif (!iter) {\n737: \t\t\tret = pcim_enable_device(pdev);\n738: \t\t\tif (ret)\n739: \t\t\t\treturn -ENOMEM;\n740: \n741: \t\t\tret = pci_request_regions(pdev, DRV_NAME);\n742: \t\t\tif (ret)\n743: \t\t\t\treturn -ENOMEM;\n744: \n745: \t\t\tspi_bus->reg_base = pcim_iomap(pdev, 0, pci_resource_len(pdev, 0));\n746: \t\t\tif (!spi_bus->reg_base) {\n747: \t\t\t\tret = -EINVAL;\n748: \t\t\t\tgoto error;\n749: \t\t\t}\n750: \n751: \t\t\tret = pci_alloc_irq_vectors(pdev, hw_inst_cnt, hw_inst_cnt,\n752: \t\t\t\t\t\t    PCI_IRQ_ALL_TYPES);\n753: \t\t\tif (ret < 0) {\n754: \t\t\t\tdev_err(&pdev->dev, \"Error allocating MSI vectors\\n\");\n755: \t\t\t\tgoto error;\n756: \t\t\t}\n757: ",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:semantic-contract",
+        "confidence": 0.92,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "drivers/spi/spi-pci1xxxx.c",
+          "hunk_index": 0,
+          "source_line": 725
+        },
+        "summary": "pci1xxxx_spi_probe adds patch barrier `!spi_bus->spi_int[iter]` around struct_size, spi_sub_ptr->parent = spi_bus.",
+        "statements": [
+          "if (!spi_bus->spi_int[iter])",
+          "return -ENOMEM;"
+        ],
+        "guards": [
+          "!spi_bus->spi_int[iter]"
+        ],
+        "call_boundary": [
+          "struct_size",
+          "spi_sub_ptr->parent = spi_bus"
+        ],
+        "call_edges": [
+          "pci1xxxx_spi_probe -> struct_size",
+          "pci1xxxx_spi_probe -> spi_sub_ptr->parent = spi_bus"
+        ],
+        "state_transitions": [
+          "",
+          "report when a risky write proceeds without the patch-style barrier",
+          "stay silent when the nearby guard proves the current write is blocked or bounded"
+        ],
+        "api_terms": [
+          "struct_size",
+          "spi_sub_ptr->parent = spi_bus"
+        ],
+        "related_symbols": [
+          "spi_bus",
+          "spi_int",
+          "iter",
+          "ENOMEM"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/spi/spi-pci1xxxx.c",
+        "function": "pci1xxxx_spi_probe"
+      },
+      "location": {
+        "line": 725,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "!spi_bus->spi_int[iter]",
+        "summary": "pci1xxxx_spi_probe introduces patch guard `!spi_bus->spi_int[iter]` before struct_size, spi_sub_ptr->parent = spi_bus.",
+        "state_before": [
+          "input(spi_bus)",
+          "input(spi_int)",
+          "buffer(spi_bus->spi_int)",
+          "buffer(spi_sub_ptr->parent)"
+        ],
+        "state_after": [
+          "guard(!spi_bus->spi_int[iter])",
+          "current_call(struct_size)",
+          "current_call(spi_sub_ptr->parent = spi_bus)"
+        ],
+        "functions": [
+          "pci1xxxx_spi_probe"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "spi_bus",
+          "spi_int",
+          "iter",
+          "ENOMEM"
+        ],
+        "buffer_fields": [
+          "spi_bus->spi_int",
+          "spi_sub_ptr->parent"
+        ],
+        "call_targets": [
+          "struct_size",
+          "spi_sub_ptr->parent = spi_bus"
+        ],
+        "call_edges": [
+          "pci1xxxx_spi_probe -> struct_size",
+          "pci1xxxx_spi_probe -> spi_sub_ptr->parent = spi_bus"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "!spi_bus->spi_int[iter]"
+        ],
+        "state_statements": [
+          "if (!spi_bus->spi_int[iter])",
+          "return -ENOMEM;"
+        ],
+        "compile_command_preview": "",
+        "source_file": "drivers/spi/spi-pci1xxxx.c",
+        "source_excerpt": "697: static int pci1xxxx_spi_probe(struct pci_dev *pdev, const struct pci_device_id *ent)\n698: {\n699: \tu8 hw_inst_cnt, iter, start, only_sec_inst;\n700: \tstruct pci1xxxx_spi_internal *spi_sub_ptr;\n701: \tstruct device *dev = &pdev->dev;\n702: \tstruct pci1xxxx_spi *spi_bus;\n703: \tstruct spi_controller *spi_host;\n704: \tu32 regval;\n705: \tint ret;\n706: \n707: \thw_inst_cnt = ent->driver_data & 0x0f;\n708: \tstart = (ent->driver_data & 0xf0) >> 4;\n709: \tif (start == 1)\n710: \t\tonly_sec_inst = 1;\n711: \telse\n712: \t\tonly_sec_inst = 0;\n713: \n714: \tspi_bus = devm_kzalloc(&pdev->dev,\n715: \t\t\t       struct_size(spi_bus, spi_int, hw_inst_cnt),\n716: \t\t\t       GFP_KERNEL);\n717: \tif (!spi_bus)\n718: \t\treturn -ENOMEM;\n719: \n720: \tspi_bus->dev = pdev;\n721: \tspi_bus->total_hw_instances = hw_inst_cnt;\n722: \tpci_set_master(pdev);\n723: \n724: \tfor (iter = 0; iter < hw_inst_cnt; iter++) {\n725: \t\tspi_bus->spi_int[iter] = devm_kzalloc(&pdev->dev,\n726: \t\t\t\t\t\t      sizeof(struct pci1xxxx_spi_internal),\n727: \t\t\t\t\t\t      GFP_KERNEL);\n728: \t\tspi_sub_ptr = spi_bus->spi_int[iter];\n729: \t\tspi_sub_ptr->spi_host = devm_spi_alloc_host(dev, sizeof(struct spi_controller));\n730: \t\tif (!spi_sub_ptr->spi_host)\n731: \t\t\treturn -ENOMEM;\n732: \n733: \t\tspi_sub_ptr->parent = spi_bus;\n734: \t\tspi_sub_ptr->spi_xfer_in_progress = false;\n735: \n736: \t\tif (!iter) {\n737: \t\t\tret = pcim_enable_device(pdev);\n738: \t\t\tif (ret)\n739: \t\t\t\treturn -ENOMEM;\n740: \n741: \t\t\tret = pci_request_regions(pdev, DRV_NAME);\n742: \t\t\tif (ret)\n743: \t\t\t\treturn -ENOMEM;\n744: \n745: \t\t\tspi_bus->reg_base = pcim_iomap(pdev, 0, pci_resource_len(pdev, 0));\n746: \t\t\tif (!spi_bus->reg_base) {\n747: \t\t\t\tret = -EINVAL;\n748: \t\t\t\tgoto error;\n749: \t\t\t}\n750: \n751: \t\t\tret = pci_alloc_irq_vectors(pdev, hw_inst_cnt, hw_inst_cnt,\n752: \t\t\t\t\t\t    PCI_IRQ_ALL_TYPES);\n753: \t\t\tif (ret < 0) {\n754: \t\t\t\tdev_err(&pdev->dev, \"Error allocating MSI vectors\\n\");\n755: \t\t\t\tgoto error;\n756: \t\t\t}\n757: ",
+        "summary_line": 725,
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:path-guard",
+        "confidence": 0.92,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/spi/spi-pci1xxxx.c",
+          "hunk_index": 0,
+          "source_line": 725
+        },
+        "summary": "pci1xxxx_spi_probe introduces patch guard `!spi_bus->spi_int[iter]` before struct_size, spi_sub_ptr->parent = spi_bus.",
+        "statements": [
+          "if (!spi_bus->spi_int[iter])",
+          "return -ENOMEM;"
+        ],
+        "guards": [
+          "!spi_bus->spi_int[iter]"
+        ],
+        "call_boundary": [
+          "struct_size",
+          "spi_sub_ptr->parent = spi_bus"
+        ],
+        "call_edges": [
+          "pci1xxxx_spi_probe -> struct_size",
+          "pci1xxxx_spi_probe -> spi_sub_ptr->parent = spi_bus"
+        ],
+        "state_transitions": [
+          "guard(!spi_bus->spi_int[iter])",
+          "current_call(struct_size)",
+          "current_call(spi_sub_ptr->parent = spi_bus)"
+        ],
+        "api_terms": [
+          "struct_size",
+          "spi_sub_ptr->parent = spi_bus"
+        ],
+        "related_symbols": [
+          "spi_bus",
+          "spi_int",
+          "iter",
+          "ENOMEM"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_guard_1",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/spi/spi-pci1xxxx.c",
+        "function": "pci1xxxx_spi_probe"
+      },
+      "location": {
+        "line": 725,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "if start (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int) == 1",
+        "summary": "Analyzer CFG for pci1xxxx_spi_probe in drivers/spi/spi-pci1xxxx.c: bindings: start (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int) == 1; spi_sub_ptr (ImplicitCastExpr, LValueToRValue, struct pci1xxxx_spi_internal *)->hw_inst = start++ | branches: if start (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int) == 1; goto error; | calls: pci1xxxx_spi_probe -> devm_kzalloc; pci1xxxx_spi_probe -> size_mul",
+        "state_before": [
+          "input(pdev)",
+          "input(ent)",
+          "buffer(pdev->dev)",
+          "buffer(ent->driver_data)",
+          "sinks(devm_kzalloc, struct_size)"
+        ],
+        "state_after": [
+          "cfg_binding(start (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int) == 1)",
+          "cfg_binding(spi_sub_ptr (ImplicitCastExpr, LValueToRValue, struct pci1xxxx_spi_internal *)->hw_inst = start++)",
+          "cfg_branch(if start (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int) == 1)",
+          "cfg_branch(goto error;)"
+        ],
+        "functions": [
+          "pci1xxxx_spi_probe"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "pdev",
+          "ent",
+          "pdev->dev",
+          "ent->driver_data",
+          "spi_bus->dev",
+          "spi_bus->total_hw_instances",
+          "spi_bus->spi_int",
+          "spi_sub_ptr->spi_host"
+        ],
+        "buffer_fields": [
+          "pdev->dev",
+          "ent->driver_data",
+          "spi_bus->dev",
+          "spi_bus->total_hw_instances",
+          "spi_bus->spi_int",
+          "spi_sub_ptr->spi_host"
+        ],
+        "call_targets": [
+          "devm_kzalloc",
+          "struct_size",
+          "pci_set_master",
+          "devm_spi_alloc_host",
+          "pcim_enable_device",
+          "pci_request_regions",
+          "pcim_iomap",
+          "pci_resource_len"
+        ],
+        "call_edges": [
+          "pci1xxxx_spi_probe -> devm_kzalloc",
+          "pci1xxxx_spi_probe -> size_mul",
+          "pci1xxxx_spi_probe -> size_add",
+          "pci1xxxx_spi_probe -> pci_set_master",
+          "pci1xxxx_spi_probe -> devm_spi_alloc_host",
+          "pci1xxxx_spi_probe -> pcim_enable_device"
+        ],
+        "cfg_branch_kinds": [
+          "if",
+          "for"
+        ],
+        "branch_conditions": [
+          "goto error;",
+          "if [B5.108]",
+          "do ... while [B7.1]",
+          "static init _entry_ptr",
+          "[B13.15] ? ... : ...",
+          "[B16.5] ? ... : ..."
+        ],
+        "resolved_branch_conditions": [
+          "if start (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int) == 1",
+          "goto error;",
+          "if ret (ImplicitCastExpr, LValueToRValue, int)",
+          "do ... while 0",
+          "static init _entry_ptr",
+          "__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"\\0013\" (ImplicitCastExpr, ArrayToPointerDecay, char *)) ? ... : ..."
+        ],
+        "cfg_value_bindings": [
+          "start (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int) == 1",
+          "spi_sub_ptr (ImplicitCastExpr, LValueToRValue, struct pci1xxxx_spi_internal *)->hw_inst = start++",
+          "start = (ent (ImplicitCastExpr, LValueToRValue, const struct pci_device_id *)->driver_data (ImplicitCastExpr, LValueToRValue, kernel_ulong_t) & 240 (ImplicitCastExpr, IntegralCast, kernel_ulong_t)) >> 4 (ImplicitCastExpr, IntegralCast, u8)",
+          "ret = pcim_enable_device (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct pci_dev *))(pdev (ImplicitCastExpr, LValueToRValue, struct pci_dev *))",
+          "ret = pci_request_regions (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct pci_dev *, const char *))(pdev (ImplicitCastExpr, LValueToRValue, struct pci_dev *), \"spi-pci1xxxx\" (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *))",
+          "spi_sub_ptr (ImplicitCastExpr, LValueToRValue, struct pci1xxxx_spi_internal *)->spi_host = devm_spi_alloc_host (ImplicitCastExpr, FunctionToPointerDecay, struct spi_controller *(*)(struct device *, unsigned int))(dev (ImplicitCastExpr, LValueToRValue, struct device *), sizeof(struct spi_controller) (ImplicitCastExpr, IntegralCast, unsigned int))"
+        ],
+        "state_statements": [
+          "return [B1.7];",
+          "return [B2.9];",
+          "[B3.1]++",
+          "[B5.2]->spi_host",
+          "[B5.5] = [B5.4]",
+          "[B5.10]->num_chipselect"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,drivers/spi/.spi-pci1xxxx.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/uapi -I./arch/x8...",
+        "source_file": "drivers/spi/spi-pci1xxxx.c",
+        "source_excerpt": "697: static int pci1xxxx_spi_probe(struct pci_dev *pdev, const struct pci_device_id *ent)\n698: {\n699: \tu8 hw_inst_cnt, iter, start, only_sec_inst;\n700: \tstruct pci1xxxx_spi_internal *spi_sub_ptr;\n701: \tstruct device *dev = &pdev->dev;\n702: \tstruct pci1xxxx_spi *spi_bus;\n703: \tstruct spi_controller *spi_host;\n704: \tu32 regval;\n705: \tint ret;\n706: \n707: \thw_inst_cnt = ent->driver_data & 0x0f;\n708: \tstart = (ent->driver_data & 0xf0) >> 4;\n709: \tif (start == 1)\n710: \t\tonly_sec_inst = 1;\n711: \telse\n712: \t\tonly_sec_inst = 0;\n713: \n714: \tspi_bus = devm_kzalloc(&pdev->dev,\n715: \t\t\t       struct_size(spi_bus, spi_int, hw_inst_cnt),\n716: \t\t\t       GFP_KERNEL);\n717: \tif (!spi_bus)\n718: \t\treturn -ENOMEM;\n719: \n720: \tspi_bus->dev = pdev;\n721: \tspi_bus->total_hw_instances = hw_inst_cnt;\n722: \tpci_set_master(pdev);\n723: \n724: \tfor (iter = 0; iter < hw_inst_cnt; iter++) {\n725: \t\tspi_bus->spi_int[iter] = devm_kzalloc(&pdev->dev,\n726: \t\t\t\t\t\t      sizeof(struct pci1xxxx_spi_internal),\n727: \t\t\t\t\t\t      GFP_KERNEL);\n728: \t\tspi_sub_ptr = spi_bus->spi_int[iter];\n729: \t\tspi_sub_ptr->spi_host = devm_spi_alloc_host(dev, sizeof(struct spi_controller));\n730: \t\tif (!spi_sub_ptr->spi_host)\n731: \t\t\treturn -ENOMEM;\n732: \n733: \t\tspi_sub_ptr->parent = spi_bus;\n734: \t\tspi_sub_ptr->spi_xfer_in_progress = false;\n735: \n736: \t\tif (!iter) {\n737: \t\t\tret = pcim_enable_device(pdev);\n738: \t\t\tif (ret)\n739: \t\t\t\treturn -ENOMEM;\n740: \n741: \t\t\tret = pci_request_regions(pdev, DRV_NAME);\n742: \t\t\tif (ret)\n743: \t\t\t\treturn -ENOMEM;\n744: \n745: \t\t\tspi_bus->reg_base = pcim_iomap(pdev, 0, pci_resource_len(pdev, 0));\n746: \t\t\tif (!spi_bus->reg_base) {\n747: \t\t\t\tret = -EINVAL;\n748: \t\t\t\tgoto error;\n749: \t\t\t}\n750: \n751: \t\t\tret = pci_alloc_irq_vectors(pdev, hw_inst_cnt, hw_inst_cnt,\n752: \t\t\t\t\t\t    PCI_IRQ_ALL_TYPES);\n753: \t\t\tif (ret < 0) {\n754: \t\t\t\tdev_err(&pdev->dev, \"Error allocating MSI vectors\\n\");\n755: \t\t\t\tgoto error;\n756: \t\t\t}\n757: ",
+        "summary_line": 725,
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/generate_only_evidence_all39_v8_r5/G03_1f886a7bfb3f_Null_Pointer_Dereference/csa/patchweaver_runtime/csa_raw/drivers-spi-spi-pci1xxxx.c-pci1xxxx_spi_probe.txt",
+        "raw_output_sha256": "e9d63f5c82764cdc8addd055f16a67d42c2303de51dddb71fd28d0cd52408ee9",
+        "command_sha256": "86aa7f3e1bb7d6bc661e3c5b1c153b94c7e8abd98f9343c4ec9b9763e93785ad"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:debug-cfg",
+        "confidence": 0.92,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/spi/spi-pci1xxxx.c",
+          "hunk_index": 0,
+          "source_line": 725
+        },
+        "summary": "Analyzer CFG for pci1xxxx_spi_probe in drivers/spi/spi-pci1xxxx.c: bindings: start (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int) == 1; spi_sub_ptr (ImplicitCastExpr, LValueToRValue, struct pci1xxxx_spi_internal *)->hw_inst = start++ | branches: if start (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int) == 1; goto error; | calls: pci1xxxx_spi_probe -> devm_kzalloc; pci1xxxx_spi_probe -> size_mul",
+        "statements": [
+          "697: static int pci1xxxx_spi_probe(struct pci_dev *pdev, const struct pci_device_id *ent)",
+          "698: {",
+          "699: \tu8 hw_inst_cnt, iter, start, only_sec_inst;",
+          "700: \tstruct pci1xxxx_spi_internal *spi_sub_ptr;",
+          "701: \tstruct device *dev = &pdev->dev;",
+          "702: \tstruct pci1xxxx_spi *spi_bus;"
+        ],
+        "guards": [
+          "if start (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int) == 1",
+          "goto error;",
+          "if ret (ImplicitCastExpr, LValueToRValue, int)",
+          "do ... while 0"
+        ],
+        "call_boundary": [
+          "devm_kzalloc",
+          "struct_size",
+          "pci_set_master",
+          "devm_spi_alloc_host",
+          "pcim_enable_device",
+          "pci_request_regions"
+        ],
+        "call_edges": [
+          "pci1xxxx_spi_probe -> devm_kzalloc",
+          "pci1xxxx_spi_probe -> size_mul",
+          "pci1xxxx_spi_probe -> size_add",
+          "pci1xxxx_spi_probe -> pci_set_master",
+          "pci1xxxx_spi_probe -> devm_spi_alloc_host",
+          "pci1xxxx_spi_probe -> pcim_enable_device",
+          "pci1xxxx_spi_probe -> pci_request_regions",
+          "pci1xxxx_spi_probe -> pcim_iomap"
+        ],
+        "state_transitions": [
+          "cfg_binding(start (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int) == 1)",
+          "cfg_binding(spi_sub_ptr (ImplicitCastExpr, LValueToRValue, struct pci1xxxx_spi_internal *)->hw_inst = start++)",
+          "cfg_branch(if start (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int) == 1)",
+          "cfg_branch(goto error;)",
+          "return [B1.7];",
+          "return [B2.9];"
+        ],
+        "api_terms": [
+          "devm_kzalloc",
+          "size_mul",
+          "size_add",
+          "pci_set_master",
+          "devm_spi_alloc_host",
+          "pcim_enable_device"
+        ],
+        "related_symbols": [
+          "pdev",
+          "ent",
+          "pdev->dev",
+          "ent->driver_data",
+          "spi_bus->dev",
+          "spi_bus->total_hw_instances"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/spi/spi-pci1xxxx.c",
+        "function": "pci1xxxx_spi_probe"
+      },
+      "location": {
+        "line": 725,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "pci1xxxx_spi_probe adds patch barrier `!spi_bus->spi_int[iter]` around struct_size, spi_sub_ptr->parent = spi_bus.",
+        "state_before": [
+          "input(spi_bus)",
+          "input(spi_int)",
+          "buffer(spi_bus->spi_int)",
+          "buffer(spi_sub_ptr->parent)"
+        ],
+        "state_after": [
+          "guard(!spi_bus->spi_int[iter])",
+          "sink(struct_size)",
+          "sink(spi_sub_ptr->parent = spi_bus)"
+        ],
+        "functions": [
+          "pci1xxxx_spi_probe"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "spi_bus",
+          "spi_int",
+          "iter",
+          "ENOMEM"
+        ],
+        "buffer_fields": [
+          "spi_bus->spi_int",
+          "spi_sub_ptr->parent"
+        ],
+        "call_targets": [
+          "struct_size",
+          "spi_sub_ptr->parent = spi_bus"
+        ],
+        "call_edges": [
+          "pci1xxxx_spi_probe -> struct_size",
+          "pci1xxxx_spi_probe -> spi_sub_ptr->parent = spi_bus"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "!spi_bus->spi_int[iter]"
+        ],
+        "state_statements": [
+          "if (!spi_bus->spi_int[iter])",
+          "return -ENOMEM;"
+        ],
+        "return_statements": [],
+        "source_file": "drivers/spi/spi-pci1xxxx.c",
+        "source_excerpt": "697: static int pci1xxxx_spi_probe(struct pci_dev *pdev, const struct pci_device_id *ent)\n698: {\n699: \tu8 hw_inst_cnt, iter, start, only_sec_inst;\n700: \tstruct pci1xxxx_spi_internal *spi_sub_ptr;\n701: \tstruct device *dev = &pdev->dev;\n702: \tstruct pci1xxxx_spi *spi_bus;\n703: \tstruct spi_controller *spi_host;\n704: \tu32 regval;\n705: \tint ret;\n706: \n707: \thw_inst_cnt = ent->driver_data & 0x0f;\n708: \tstart = (ent->driver_data & 0xf0) >> 4;\n709: \tif (start == 1)\n710: \t\tonly_sec_inst = 1;\n711: \telse\n712: \t\tonly_sec_inst = 0;\n713: \n714: \tspi_bus = devm_kzalloc(&pdev->dev,\n715: \t\t\t       struct_size(spi_bus, spi_int, hw_inst_cnt),\n716: \t\t\t       GFP_KERNEL);\n717: \tif (!spi_bus)\n718: \t\treturn -ENOMEM;\n719: \n720: \tspi_bus->dev = pdev;\n721: \tspi_bus->total_hw_instances = hw_inst_cnt;\n722: \tpci_set_master(pdev);\n723: \n724: \tfor (iter = 0; iter < hw_inst_cnt; iter++) {\n725: \t\tspi_bus->spi_int[iter] = devm_kzalloc(&pdev->dev,\n726: \t\t\t\t\t\t      sizeof(struct pci1xxxx_spi_internal),\n727: \t\t\t\t\t\t      GFP_KERNEL);\n728: \t\tspi_sub_ptr = spi_bus->spi_int[iter];\n729: \t\tspi_sub_ptr->spi_host = devm_spi_alloc_host(dev, sizeof(struct spi_controller));\n730: \t\tif (!spi_sub_ptr->spi_host)\n731: \t\t\treturn -ENOMEM;\n732: \n733: \t\tspi_sub_ptr->parent = spi_bus;\n734: \t\tspi_sub_ptr->spi_xfer_in_progress = false;\n735: \n736: \t\tif (!iter) {\n737: \t\t\tret = pcim_enable_device(pdev);\n738: \t\t\tif (ret)\n739: \t\t\t\treturn -ENOMEM;\n740: \n741: \t\t\tret = pci_request_regions(pdev, DRV_NAME);\n742: \t\t\tif (ret)\n743: \t\t\t\treturn -ENOMEM;\n744: \n745: \t\t\tspi_bus->reg_base = pcim_iomap(pdev, 0, pci_resource_len(pdev, 0));\n746: \t\t\tif (!spi_bus->reg_base) {\n747: \t\t\t\tret = -EINVAL;\n748: \t\t\t\tgoto error;\n749: \t\t\t}\n750: \n751: \t\t\tret = pci_alloc_irq_vectors(pdev, hw_inst_cnt, hw_inst_cnt,\n752: \t\t\t\t\t\t    PCI_IRQ_ALL_TYPES);\n753: \t\t\tif (ret < 0) {\n754: \t\t\t\tdev_err(&pdev->dev, \"Error allocating MSI vectors\\n\");\n755: \t\t\t\tgoto error;\n756: \t\t\t}\n757: ",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:guarded-state",
+        "confidence": 0.9,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "drivers/spi/spi-pci1xxxx.c",
+          "hunk_index": 0,
+          "source_line": 725
+        },
+        "summary": "pci1xxxx_spi_probe adds patch barrier `!spi_bus->spi_int[iter]` around struct_size, spi_sub_ptr->parent = spi_bus.",
+        "statements": [
+          "if (!spi_bus->spi_int[iter])",
+          "return -ENOMEM;"
+        ],
+        "guards": [
+          "!spi_bus->spi_int[iter]"
+        ],
+        "call_boundary": [
+          "struct_size",
+          "spi_sub_ptr->parent = spi_bus"
+        ],
+        "call_edges": [
+          "pci1xxxx_spi_probe -> struct_size",
+          "pci1xxxx_spi_probe -> spi_sub_ptr->parent = spi_bus"
+        ],
+        "state_transitions": [
+          "guard(!spi_bus->spi_int[iter])",
+          "sink(struct_size)",
+          "sink(spi_sub_ptr->parent = spi_bus)"
+        ],
+        "api_terms": [
+          "struct_size",
+          "spi_sub_ptr->parent = spi_bus"
+        ],
+        "related_symbols": [
+          "spi_bus",
+          "spi_int",
+          "iter",
+          "ENOMEM"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_0",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/spi/spi-pci1xxxx.c",
+        "function": "pci1xxxx_spi_probe"
+      },
+      "location": {
+        "line": 725,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "pci1xxxx_spi_probe in drivers/spi/spi-pci1xxxx.c provides CSA-backed pointer/resource lifecycle context near line 725",
+        "diagnostic_message": "",
+        "diagnostic_checker": "",
+        "state_before": [
+          "input(pdev)",
+          "input(ent)",
+          "buffer(pdev->dev)",
+          "buffer(ent->driver_data)",
+          "sinks(devm_kzalloc, struct_size)"
+        ],
+        "state_after": [
+          "operation(for (iter = 0; iter < hw_inst_cnt; iter++) {)",
+          "operation(return [B1.7];)",
+          "operation(return [B2.9];)",
+          "operation([B3.1]++)"
+        ],
+        "functions": [
+          "pci1xxxx_spi_probe"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "pdev",
+          "ent",
+          "spi_bus",
+          "spi_int",
+          "iter",
+          "ENOMEM"
+        ],
+        "buffer_fields": [
+          "pdev->dev",
+          "ent->driver_data",
+          "spi_bus->dev",
+          "spi_bus->total_hw_instances",
+          "spi_bus->spi_int",
+          "spi_sub_ptr->spi_host"
+        ],
+        "call_targets": [
+          "devm_kzalloc",
+          "struct_size",
+          "pci_set_master",
+          "devm_spi_alloc_host",
+          "pcim_enable_device",
+          "pci_request_regions"
+        ],
+        "call_edges": [
+          "pci1xxxx_spi_probe -> devm_kzalloc",
+          "pci1xxxx_spi_probe -> size_mul",
+          "pci1xxxx_spi_probe -> size_add",
+          "pci1xxxx_spi_probe -> pci_set_master",
+          "pci1xxxx_spi_probe -> devm_spi_alloc_host",
+          "pci1xxxx_spi_probe -> pcim_enable_device"
+        ],
+        "state_statements": [
+          "for (iter = 0; iter < hw_inst_cnt; iter++) {",
+          "return [B1.7];",
+          "return [B2.9];",
+          "[B3.1]++",
+          "[B5.2]->spi_host",
+          "[B5.5] = [B5.4]"
+        ],
+        "source_file": "drivers/spi/spi-pci1xxxx.c",
+        "source_excerpt": "697: static int pci1xxxx_spi_probe(struct pci_dev *pdev, const struct pci_device_id *ent)\n698: {\n699: \tu8 hw_inst_cnt, iter, start, only_sec_inst;\n700: \tstruct pci1xxxx_spi_internal *spi_sub_ptr;\n701: \tstruct device *dev = &pdev->dev;\n702: \tstruct pci1xxxx_spi *spi_bus;\n703: \tstruct spi_controller *spi_host;\n704: \tu32 regval;\n705: \tint ret;\n706: \n707: \thw_inst_cnt = ent->driver_data & 0x0f;\n708: \tstart = (ent->driver_data & 0xf0) >> 4;\n709: \tif (start == 1)\n710: \t\tonly_sec_inst = 1;\n711: \telse\n712: \t\tonly_sec_inst = 0;\n713: \n714: \tspi_bus = devm_kzalloc(&pdev->dev,\n715: \t\t\t       struct_size(spi_bus, spi_int, hw_inst_cnt),\n716: \t\t\t       GFP_KERNEL);\n717: \tif (!spi_bus)\n718: \t\treturn -ENOMEM;\n719: \n720: \tspi_bus->dev = pdev;\n721: \tspi_bus->total_hw_instances = hw_inst_cnt;\n722: \tpci_set_master(pdev);\n723: \n724: \tfor (iter = 0; iter < hw_inst_cnt; iter++) {\n725: \t\tspi_bus->spi_int[iter] = devm_kzalloc(&pdev->dev,\n726: \t\t\t\t\t\t      sizeof(struct pci1xxxx_spi_internal),\n727: \t\t\t\t\t\t      GFP_KERNEL);\n728: \t\tspi_sub_ptr = spi_bus->spi_int[iter];\n729: \t\tspi_sub_ptr->spi_host = devm_spi_alloc_host(dev, sizeof(struct spi_controller));\n730: \t\tif (!spi_sub_ptr->spi_host)\n731: \t\t\treturn -ENOMEM;\n732: \n733: \t\tspi_sub_ptr->parent = spi_bus;\n734: \t\tspi_sub_ptr->spi_xfer_in_progress = false;\n735: \n736: \t\tif (!iter) {\n737: \t\t\tret = pcim_enable_device(pdev);\n738: \t\t\tif (ret)\n739: \t\t\t\treturn -ENOMEM;\n740: \n741: \t\t\tret = pci_request_regions(pdev, DRV_NAME);\n742: \t\t\tif (ret)\n743: \t\t\t\treturn -ENOMEM;\n744: \n745: \t\t\tspi_bus->reg_base = pcim_iomap(pdev, 0, pci_resource_len(pdev, 0));\n746: \t\t\tif (!spi_bus->reg_base) {\n747: \t\t\t\tret = -EINVAL;\n748: \t\t\t\tgoto error;\n749: \t\t\t}\n750: \n751: \t\t\tret = pci_alloc_irq_vectors(pdev, hw_inst_cnt, hw_inst_cnt,\n752: \t\t\t\t\t\t    PCI_IRQ_ALL_TYPES);\n753: \t\t\tif (ret < 0) {\n754: \t\t\t\tdev_err(&pdev->dev, \"Error allocating MSI vectors\\n\");\n755: \t\t\t\tgoto error;\n756: \t\t\t}\n757: ",
+        "coverage_status": "partial",
+        "operations": [
+          "for (iter = 0; iter < hw_inst_cnt; iter++) {",
+          "return [B1.7];",
+          "return [B2.9];",
+          "[B3.1]++",
+          "[B5.2]->spi_host",
+          "[B5.5] = [B5.4]"
+        ],
+        "acquisition_ops": [],
+        "release_ops": []
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.72,
+        "origin": "analyzer_output"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "drivers/spi/spi-pci1xxxx.c",
+          "hunk_index": 0,
+          "source_line": 725
+        },
+        "summary": "pci1xxxx_spi_probe in drivers/spi/spi-pci1xxxx.c provides CSA-backed pointer/resource lifecycle context near line 725",
+        "statements": [
+          "697: static int pci1xxxx_spi_probe(struct pci_dev *pdev, const struct pci_device_id *ent)",
+          "698: {",
+          "699: \tu8 hw_inst_cnt, iter, start, only_sec_inst;",
+          "700: \tstruct pci1xxxx_spi_internal *spi_sub_ptr;",
+          "701: \tstruct device *dev = &pdev->dev;",
+          "702: \tstruct pci1xxxx_spi *spi_bus;"
+        ],
+        "guards": [
+          "start == 1",
+          "!spi_bus",
+          "iter = 0; iter < hw_inst_cnt; iter++",
+          "!spi_sub_ptr->spi_host"
+        ],
+        "call_boundary": [
+          "devm_kzalloc",
+          "struct_size",
+          "pci_set_master",
+          "devm_spi_alloc_host",
+          "pcim_enable_device",
+          "pci_request_regions"
+        ],
+        "call_edges": [
+          "pci1xxxx_spi_probe -> devm_kzalloc",
+          "pci1xxxx_spi_probe -> size_mul",
+          "pci1xxxx_spi_probe -> size_add",
+          "pci1xxxx_spi_probe -> pci_set_master",
+          "pci1xxxx_spi_probe -> devm_spi_alloc_host",
+          "pci1xxxx_spi_probe -> pcim_enable_device"
+        ],
+        "state_transitions": [
+          "operation(for (iter = 0; iter < hw_inst_cnt; iter++) {)",
+          "operation(return [B1.7];)",
+          "operation(return [B2.9];)",
+          "operation([B3.1]++)"
+        ],
+        "api_terms": [
+          "for (iter = 0; iter < hw_inst_cnt; iter++) {",
+          "return [B1.7];",
+          "return [B2.9];",
+          "[B3.1]++",
+          "[B5.2]->spi_host",
+          "[B5.5] = [B5.4]"
+        ],
+        "related_symbols": [
+          "pdev",
+          "ent",
+          "spi_bus",
+          "spi_int",
+          "iter",
+          "ENOMEM"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "collected_analyzers": [
+    "csa"
+  ],
+  "provenance_summary": {
+    "total_records": 5,
+    "origin_counts": {
+      "analyzer_internal": 1,
+      "analyzer_output": 1,
+      "source_derived": 3
+    },
+    "analyzer_internal_records": 1,
+    "analyzer_internal_fraction": 0.2,
+    "analyzer_backed_records": 2,
+    "analyzer_backed_fraction": 0.4,
+    "source_derived_records": 3,
+    "source_derived_fraction": 0.6
+  }
+}

@@ -1,0 +1,648 @@
+{
+  "records": [
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/ethernet/qualcomm/emac/emac.c",
+        "function": "emac_remove"
+      },
+      "location": {
+        "line": 735,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "if adpt (ImplicitCastExpr, LValueToRValue, struct emac_adapter *)->phy.digital (ImplicitCastExpr, LValueToRValue, void *)",
+        "summary": "Analyzer CFG for emac_remove in drivers/net/ethernet/qualcomm/emac/emac.c: bindings: struct emac_adapter *adpt = netdev_priv(netdev);; struct net_device *netdev = dev_get_drvdata(&pdev->dev); | branches: if adpt (ImplicitCastExpr, LValueToRValue, struct emac_adapter *)->phy.digital (ImplicitCastExpr, LValueToRValue, void *) | calls: emac_remove -> dev_get_drvdata; emac_remove -> netdev_priv",
+        "state_before": [
+          "input(pdev)",
+          "buffer(pdev->dev)",
+          "buffer(adpt->rx_q)",
+          "sinks(dev_get_drvdata, netdev_priv)"
+        ],
+        "state_after": [
+          "cfg_binding(struct emac_adapter *adpt = netdev_priv(netdev);)",
+          "cfg_binding(struct net_device *netdev = dev_get_drvdata(&pdev->dev);)",
+          "cfg_branch(if adpt (ImplicitCastExpr, LValueToRValue, struct emac_adapter *)->phy.digital (ImplicitCastExpr, LValueToRValue, void *))"
+        ],
+        "functions": [
+          "emac_remove"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "pdev",
+          "pdev->dev",
+          "adpt->rx_q",
+          "adpt->phydev",
+          "adpt->mii_bus",
+          "adpt->phy"
+        ],
+        "buffer_fields": [
+          "pdev->dev",
+          "adpt->rx_q",
+          "adpt->phydev",
+          "adpt->mii_bus",
+          "adpt->phy"
+        ],
+        "call_targets": [
+          "dev_get_drvdata",
+          "netdev_priv",
+          "unregister_netdev",
+          "netif_napi_del",
+          "emac_clks_teardown",
+          "put_device",
+          "mdiobus_unregister",
+          "free_netdev"
+        ],
+        "call_edges": [
+          "emac_remove -> dev_get_drvdata",
+          "emac_remove -> netdev_priv",
+          "emac_remove -> unregister_netdev",
+          "emac_remove -> netif_napi_del",
+          "emac_remove -> emac_clks_teardown",
+          "emac_remove -> put_device"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "if [B3.63]"
+        ],
+        "resolved_branch_conditions": [
+          "if adpt (ImplicitCastExpr, LValueToRValue, struct emac_adapter *)->phy.digital (ImplicitCastExpr, LValueToRValue, void *)"
+        ],
+        "cfg_value_bindings": [
+          "struct emac_adapter *adpt = netdev_priv(netdev);",
+          "struct net_device *netdev = dev_get_drvdata(&pdev->dev);"
+        ],
+        "state_statements": [
+          "[B1.4]->phy",
+          "return [B1.10];",
+          "[B2.4]->phy",
+          "[B3.4]->dev",
+          "struct net_device *netdev = dev_get_drvdata(&pdev->dev);",
+          "struct emac_adapter *adpt = netdev_priv(netdev);"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,drivers/net/ethernet/qualcomm/emac/.emac.o.d -nostdinc -isystem /usr/lib/llvm-18/lib/clang/18/include -I./arch/x86/include -I./arch/x86/includ...",
+        "source_file": "drivers/net/ethernet/qualcomm/emac/emac.c",
+        "source_excerpt": "726: static int emac_remove(struct platform_device *pdev)\n727: {\n728: \tstruct net_device *netdev = dev_get_drvdata(&pdev->dev);\n729: \tstruct emac_adapter *adpt = netdev_priv(netdev);\n730: \n731: \tunregister_netdev(netdev);\n732: \tnetif_napi_del(&adpt->rx_q.napi);\n733: \n734: \temac_clks_teardown(adpt);\n735: \n736: \tput_device(&adpt->phydev->mdio.dev);\n737: \tmdiobus_unregister(adpt->mii_bus);\n738: \tfree_netdev(netdev);\n739: \n740: \tif (adpt->phy.digital)\n741: \t\tiounmap(adpt->phy.digital);\n742: \tiounmap(adpt->phy.base);\n743: \n744: \treturn 0;\n745: }",
+        "summary_line": 735,
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/generate_only_evidence_all39_v8_r5/G23_ad297cd2db89_UAF/csa/patchweaver_runtime/csa_raw/drivers-net-ethernet-qualcomm-emac-emac.c-emac_remove.txt",
+        "raw_output_sha256": "c5359f807972b91403b71b2901a6c85a006d8bcfbd3fbec9b2bcc6d5c4e92b7c",
+        "command_sha256": "367ae5fab5ecb5f24b581936ea0bc1d59d9924521ab889a8d65a42ccadf68b62"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:debug-cfg",
+        "confidence": 0.92,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/net/ethernet/qualcomm/emac/emac.c",
+          "hunk_index": 0,
+          "source_line": 735
+        },
+        "summary": "Analyzer CFG for emac_remove in drivers/net/ethernet/qualcomm/emac/emac.c: bindings: struct emac_adapter *adpt = netdev_priv(netdev);; struct net_device *netdev = dev_get_drvdata(&pdev->dev); | branches: if adpt (ImplicitCastExpr, LValueToRValue, struct emac_adapter *)->phy.digital (ImplicitCastExpr, LValueToRValue, void *) | calls: emac_remove -> dev_get_drvdata; emac_remove -> netdev_priv",
+        "statements": [
+          "726: static int emac_remove(struct platform_device *pdev)",
+          "727: {",
+          "728: \tstruct net_device *netdev = dev_get_drvdata(&pdev->dev);",
+          "729: \tstruct emac_adapter *adpt = netdev_priv(netdev);",
+          "730:",
+          "731: \tunregister_netdev(netdev);"
+        ],
+        "guards": [
+          "if adpt (ImplicitCastExpr, LValueToRValue, struct emac_adapter *)->phy.digital (ImplicitCastExpr, LValueToRValue, void *)",
+          "if [B3.63]"
+        ],
+        "call_boundary": [
+          "dev_get_drvdata",
+          "netdev_priv",
+          "unregister_netdev",
+          "netif_napi_del",
+          "emac_clks_teardown",
+          "put_device"
+        ],
+        "call_edges": [
+          "emac_remove -> dev_get_drvdata",
+          "emac_remove -> netdev_priv",
+          "emac_remove -> unregister_netdev",
+          "emac_remove -> netif_napi_del",
+          "emac_remove -> emac_clks_teardown",
+          "emac_remove -> put_device",
+          "emac_remove -> mdiobus_unregister",
+          "emac_remove -> free_netdev"
+        ],
+        "state_transitions": [
+          "cfg_binding(struct emac_adapter *adpt = netdev_priv(netdev);)",
+          "cfg_binding(struct net_device *netdev = dev_get_drvdata(&pdev->dev);)",
+          "cfg_branch(if adpt (ImplicitCastExpr, LValueToRValue, struct emac_adapter *)->phy.digital (ImplicitCastExpr, LValueToRValue, void *))",
+          "[B1.4]->phy",
+          "return [B1.10];",
+          "[B2.4]->phy"
+        ],
+        "api_terms": [
+          "dev_get_drvdata",
+          "netdev_priv",
+          "unregister_netdev",
+          "netif_napi_del",
+          "emac_clks_teardown",
+          "put_device"
+        ],
+        "related_symbols": [
+          "pdev",
+          "pdev->dev",
+          "adpt->rx_q",
+          "adpt->phydev",
+          "adpt->mii_bus",
+          "adpt->phy"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/ethernet/qualcomm/emac/emac.c",
+        "function": "emac_remove"
+      },
+      "location": {
+        "line": 735,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "emac_remove in drivers/net/ethernet/qualcomm/emac/emac.c: cfg_calls=emac_remove -> dev_get_drvdata; emac_remove -> netdev_priv",
+        "state_before": [
+          "input(pdev)",
+          "buffer(pdev->dev)",
+          "buffer(adpt->rx_q)",
+          "sinks(dev_get_drvdata, netdev_priv)"
+        ],
+        "state_after": [
+          "transition([B1.4]->phy)",
+          "transition(return [B1.10];)",
+          "transition([B2.4]->phy)"
+        ],
+        "functions": [
+          "emac_remove"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "pdev",
+          "pdev->dev",
+          "adpt->rx_q",
+          "adpt->phydev",
+          "adpt->mii_bus",
+          "adpt->phy"
+        ],
+        "buffer_fields": [
+          "pdev->dev",
+          "adpt->rx_q",
+          "adpt->phydev",
+          "adpt->mii_bus",
+          "adpt->phy"
+        ],
+        "call_targets": [
+          "dev_get_drvdata",
+          "netdev_priv",
+          "unregister_netdev",
+          "netif_napi_del",
+          "emac_clks_teardown",
+          "put_device",
+          "mdiobus_unregister",
+          "free_netdev"
+        ],
+        "call_edges": [
+          "emac_remove -> dev_get_drvdata",
+          "emac_remove -> netdev_priv",
+          "emac_remove -> unregister_netdev",
+          "emac_remove -> netif_napi_del",
+          "emac_remove -> emac_clks_teardown",
+          "emac_remove -> put_device"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "if [B3.63]"
+        ],
+        "state_statements": [
+          "[B1.4]->phy",
+          "return [B1.10];",
+          "[B2.4]->phy",
+          "[B3.4]->dev",
+          "struct net_device *netdev = dev_get_drvdata(&pdev->dev);",
+          "struct emac_adapter *adpt = netdev_priv(netdev);",
+          "[B3.27]->rx_q",
+          "[B3.40]->phydev"
+        ],
+        "return_statements": [
+          "return [B1.10];"
+        ],
+        "source_file": "drivers/net/ethernet/qualcomm/emac/emac.c",
+        "source_excerpt": "726: static int emac_remove(struct platform_device *pdev)\n727: {\n728: \tstruct net_device *netdev = dev_get_drvdata(&pdev->dev);\n729: \tstruct emac_adapter *adpt = netdev_priv(netdev);\n730: \n731: \tunregister_netdev(netdev);\n732: \tnetif_napi_del(&adpt->rx_q.napi);\n733: \n734: \temac_clks_teardown(adpt);\n735: \n736: \tput_device(&adpt->phydev->mdio.dev);\n737: \tmdiobus_unregister(adpt->mii_bus);\n738: \tfree_netdev(netdev);\n739: \n740: \tif (adpt->phy.digital)\n741: \t\tiounmap(adpt->phy.digital);\n742: \tiounmap(adpt->phy.base);\n743: \n744: \treturn 0;\n745: }",
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/generate_only_evidence_all39_v8_r5/G23_ad297cd2db89_UAF/csa/patchweaver_runtime/csa_raw/drivers-net-ethernet-qualcomm-emac-emac.c-emac_remove.txt",
+        "raw_output_sha256": "c5359f807972b91403b71b2901a6c85a006d8bcfbd3fbec9b2bcc6d5c4e92b7c",
+        "command_sha256": "367ae5fab5ecb5f24b581936ea0bc1d59d9924521ab889a8d65a42ccadf68b62"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:symbolic-state",
+        "confidence": 0.88,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "drivers/net/ethernet/qualcomm/emac/emac.c",
+          "hunk_index": 0,
+          "source_line": 735
+        },
+        "summary": "emac_remove in drivers/net/ethernet/qualcomm/emac/emac.c: cfg_calls=emac_remove -> dev_get_drvdata; emac_remove -> netdev_priv",
+        "statements": [
+          "726: static int emac_remove(struct platform_device *pdev)",
+          "727: {",
+          "728: \tstruct net_device *netdev = dev_get_drvdata(&pdev->dev);",
+          "729: \tstruct emac_adapter *adpt = netdev_priv(netdev);",
+          "730:",
+          "731: \tunregister_netdev(netdev);"
+        ],
+        "guards": [
+          "if [B3.63]"
+        ],
+        "call_boundary": [
+          "dev_get_drvdata",
+          "netdev_priv",
+          "unregister_netdev",
+          "netif_napi_del",
+          "emac_clks_teardown",
+          "put_device"
+        ],
+        "call_edges": [
+          "emac_remove -> dev_get_drvdata",
+          "emac_remove -> netdev_priv",
+          "emac_remove -> unregister_netdev",
+          "emac_remove -> netif_napi_del",
+          "emac_remove -> emac_clks_teardown",
+          "emac_remove -> put_device",
+          "emac_remove -> mdiobus_unregister",
+          "emac_remove -> free_netdev"
+        ],
+        "state_transitions": [
+          "transition([B1.4]->phy)",
+          "transition(return [B1.10];)",
+          "transition([B2.4]->phy)",
+          "[B1.4]->phy",
+          "return [B1.10];",
+          "[B2.4]->phy"
+        ],
+        "api_terms": [
+          "dev_get_drvdata",
+          "netdev_priv",
+          "unregister_netdev",
+          "netif_napi_del",
+          "emac_clks_teardown",
+          "put_device"
+        ],
+        "related_symbols": [
+          "pdev",
+          "pdev->dev",
+          "adpt->rx_q",
+          "adpt->phydev",
+          "adpt->mii_bus",
+          "adpt->phy"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_lifecycle_0",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/ethernet/qualcomm/emac/emac.c",
+        "function": "emac_remove"
+      },
+      "location": {
+        "line": 735,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "emac_remove in drivers/net/ethernet/qualcomm/emac/emac.c reaches put_device, free_netdev",
+        "operations": [
+          "put_device",
+          "free_netdev"
+        ],
+        "acquisition_ops": [],
+        "release_ops": [
+          "free_netdev"
+        ],
+        "transition_ops": [
+          "put_device"
+        ],
+        "state_before": [
+          "input(pdev)",
+          "buffer(pdev->dev)",
+          "buffer(adpt->rx_q)",
+          "sinks(dev_get_drvdata, netdev_priv)"
+        ],
+        "state_after": [
+          "transition(put_device)",
+          "transition(free_netdev)"
+        ],
+        "functions": [
+          "emac_remove"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "pdev",
+          "pdev->dev",
+          "adpt->rx_q",
+          "adpt->phydev",
+          "adpt->mii_bus",
+          "adpt->phy"
+        ],
+        "buffer_fields": [
+          "pdev->dev",
+          "adpt->rx_q",
+          "adpt->phydev",
+          "adpt->mii_bus",
+          "adpt->phy"
+        ],
+        "call_edges": [
+          "emac_remove -> dev_get_drvdata",
+          "emac_remove -> netdev_priv",
+          "emac_remove -> unregister_netdev",
+          "emac_remove -> netif_napi_del",
+          "emac_remove -> emac_clks_teardown",
+          "emac_remove -> put_device"
+        ],
+        "cfg_value_bindings": [
+          "struct emac_adapter *adpt = netdev_priv(netdev);",
+          "struct net_device *netdev = dev_get_drvdata(&pdev->dev);"
+        ],
+        "resolved_branch_conditions": [
+          "if adpt (ImplicitCastExpr, LValueToRValue, struct emac_adapter *)->phy.digital (ImplicitCastExpr, LValueToRValue, void *)"
+        ],
+        "source_file": "drivers/net/ethernet/qualcomm/emac/emac.c",
+        "source_excerpt": "726: static int emac_remove(struct platform_device *pdev)\n727: {\n728: \tstruct net_device *netdev = dev_get_drvdata(&pdev->dev);\n729: \tstruct emac_adapter *adpt = netdev_priv(netdev);\n730: \n731: \tunregister_netdev(netdev);\n732: \tnetif_napi_del(&adpt->rx_q.napi);\n733: \n734: \temac_clks_teardown(adpt);\n735: \n736: \tput_device(&adpt->phydev->mdio.dev);\n737: \tmdiobus_unregister(adpt->mii_bus);\n738: \tfree_netdev(netdev);\n739: \n740: \tif (adpt->phy.digital)\n741: \t\tiounmap(adpt->phy.digital);\n742: \tiounmap(adpt->phy.base);\n743: \n744: \treturn 0;\n745: }",
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/generate_only_evidence_all39_v8_r5/G23_ad297cd2db89_UAF/csa/patchweaver_runtime/csa_raw/drivers-net-ethernet-qualcomm-emac-emac.c-emac_remove.txt",
+        "raw_output_sha256": "c5359f807972b91403b71b2901a6c85a006d8bcfbd3fbec9b2bcc6d5c4e92b7c",
+        "command_sha256": "367ae5fab5ecb5f24b581936ea0bc1d59d9924521ab889a8d65a42ccadf68b62"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:lifecycle",
+        "confidence": 0.9,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "drivers/net/ethernet/qualcomm/emac/emac.c",
+          "hunk_index": 0,
+          "source_line": 735
+        },
+        "summary": "emac_remove in drivers/net/ethernet/qualcomm/emac/emac.c reaches put_device, free_netdev",
+        "statements": [
+          "726: static int emac_remove(struct platform_device *pdev)",
+          "727: {",
+          "728: \tstruct net_device *netdev = dev_get_drvdata(&pdev->dev);",
+          "729: \tstruct emac_adapter *adpt = netdev_priv(netdev);",
+          "730:",
+          "731: \tunregister_netdev(netdev);"
+        ],
+        "guards": [
+          "if [B3.63]"
+        ],
+        "call_boundary": [
+          "dev_get_drvdata",
+          "netdev_priv",
+          "unregister_netdev",
+          "netif_napi_del",
+          "emac_clks_teardown",
+          "put_device"
+        ],
+        "call_edges": [
+          "emac_remove -> dev_get_drvdata",
+          "emac_remove -> netdev_priv",
+          "emac_remove -> unregister_netdev",
+          "emac_remove -> netif_napi_del",
+          "emac_remove -> emac_clks_teardown",
+          "emac_remove -> put_device",
+          "emac_remove -> mdiobus_unregister",
+          "emac_remove -> free_netdev"
+        ],
+        "state_transitions": [
+          "transition(put_device)",
+          "transition(free_netdev)",
+          "[B1.4]->phy",
+          "return [B1.10];",
+          "[B2.4]->phy",
+          "[B3.4]->dev"
+        ],
+        "api_terms": [
+          "put_device",
+          "free_netdev",
+          "dev_get_drvdata",
+          "netdev_priv",
+          "unregister_netdev",
+          "netif_napi_del"
+        ],
+        "related_symbols": [
+          "pdev",
+          "pdev->dev",
+          "adpt->rx_q",
+          "adpt->phydev",
+          "adpt->mii_bus",
+          "adpt->phy"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_validation_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/ethernet/qualcomm/emac/emac.c",
+        "function": "emac_remove"
+      },
+      "location": {
+        "line": 735,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at drivers/net/ethernet/qualcomm/emac/emac.c:735",
+        "diagnostic_message": "",
+        "diagnostic_checker": "",
+        "state_before": [
+          "input(pdev)",
+          "buffer(pdev->dev)",
+          "buffer(adpt->rx_q)",
+          "sinks(dev_get_drvdata, netdev_priv)"
+        ],
+        "state_after": [
+          "diagnostic(csa)"
+        ],
+        "functions": [
+          "emac_remove"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "pdev"
+        ],
+        "buffer_fields": [
+          "pdev->dev",
+          "adpt->rx_q",
+          "adpt->phydev",
+          "adpt->mii_bus",
+          "adpt->phy"
+        ],
+        "call_targets": [
+          "dev_get_drvdata",
+          "netdev_priv",
+          "unregister_netdev",
+          "netif_napi_del",
+          "emac_clks_teardown",
+          "put_device"
+        ],
+        "call_edges": [
+          "emac_remove -> dev_get_drvdata",
+          "emac_remove -> netdev_priv",
+          "emac_remove -> unregister_netdev",
+          "emac_remove -> netif_napi_del",
+          "emac_remove -> emac_clks_teardown",
+          "emac_remove -> put_device"
+        ],
+        "state_statements": [
+          "[B1.4]->phy",
+          "return [B1.10];",
+          "[B2.4]->phy",
+          "[B3.4]->dev",
+          "struct net_device *netdev = dev_get_drvdata(&pdev->dev);",
+          "struct emac_adapter *adpt = netdev_priv(netdev);"
+        ],
+        "source_file": "drivers/net/ethernet/qualcomm/emac/emac.c",
+        "source_excerpt": "726: static int emac_remove(struct platform_device *pdev)\n727: {\n728: \tstruct net_device *netdev = dev_get_drvdata(&pdev->dev);\n729: \tstruct emac_adapter *adpt = netdev_priv(netdev);\n730: \n731: \tunregister_netdev(netdev);\n732: \tnetif_napi_del(&adpt->rx_q.napi);\n733: \n734: \temac_clks_teardown(adpt);\n735: \n736: \tput_device(&adpt->phydev->mdio.dev);\n737: \tmdiobus_unregister(adpt->mii_bus);\n738: \tfree_netdev(netdev);\n739: \n740: \tif (adpt->phy.digital)\n741: \t\tiounmap(adpt->phy.digital);\n742: \tiounmap(adpt->phy.base);\n743: \n744: \treturn 0;\n745: }",
+        "coverage_status": "partial",
+        "contract_type": "",
+        "guard_exprs": [
+          "adpt->phy.digital",
+          "if [B3.63]"
+        ],
+        "sink_calls": [
+          "dev_get_drvdata",
+          "netdev_priv",
+          "unregister_netdev",
+          "netif_napi_del"
+        ]
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.72,
+        "origin": "analyzer_output"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "drivers/net/ethernet/qualcomm/emac/emac.c",
+          "hunk_index": 0,
+          "source_line": 735
+        },
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at drivers/net/ethernet/qualcomm/emac/emac.c:735",
+        "statements": [
+          "726: static int emac_remove(struct platform_device *pdev)",
+          "727: {",
+          "728: \tstruct net_device *netdev = dev_get_drvdata(&pdev->dev);",
+          "729: \tstruct emac_adapter *adpt = netdev_priv(netdev);",
+          "730:",
+          "731: \tunregister_netdev(netdev);"
+        ],
+        "guards": [
+          "adpt->phy.digital",
+          "if [B3.63]"
+        ],
+        "call_boundary": [
+          "dev_get_drvdata",
+          "netdev_priv",
+          "unregister_netdev",
+          "netif_napi_del",
+          "emac_clks_teardown",
+          "put_device"
+        ],
+        "call_edges": [
+          "emac_remove -> dev_get_drvdata",
+          "emac_remove -> netdev_priv",
+          "emac_remove -> unregister_netdev",
+          "emac_remove -> netif_napi_del",
+          "emac_remove -> emac_clks_teardown",
+          "emac_remove -> put_device"
+        ],
+        "state_transitions": [
+          "diagnostic(csa)"
+        ],
+        "api_terms": [
+          "put_device",
+          "free_netdev",
+          "[B1.4]->phy",
+          "return [B1.10];",
+          "[B2.4]->phy",
+          "[B3.4]->dev"
+        ],
+        "related_symbols": [
+          "pdev"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "collected_analyzers": [
+    "csa"
+  ],
+  "provenance_summary": {
+    "total_records": 4,
+    "origin_counts": {
+      "analyzer_internal": 3,
+      "analyzer_output": 1
+    },
+    "analyzer_internal_records": 3,
+    "analyzer_internal_fraction": 0.75,
+    "analyzer_backed_records": 4,
+    "analyzer_backed_fraction": 1.0,
+    "source_derived_records": 0,
+    "source_derived_fraction": 0.0
+  }
+}

@@ -1,0 +1,8 @@
+Refinement Plan:
+The checker currently recognizes `memset` and sink calls by searching their source text. That is brittle: source spelling is not a reliable way to identify the called function, so a real whole-object zeroing call can be missed and the later copy reported. The refined checker identifies direct callees through the `CallEvent` API, retaining the existing source-text helper include but not relying on it for call matching.
+
+The zeroing record is still limited to a full-size zeroing operation on the address of a local record. Thus the original buggy code, which has no such zeroing call, remains reportable. The fixed code records the zeroing before the field assignments and suppresses the later whole-object copy report.
+
+Refined Code:
+```cpp
+```

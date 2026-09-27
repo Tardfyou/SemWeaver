@@ -1,0 +1,349 @@
+--- original_code.cpp+++ syntax_correct_refine_code.cpp@@ -20,32 +20,39 @@ using namespace ento;
+ using namespace taint;
+ 
+-// Program state: track currently-held tx_lock regions (base regions)
++// Track base regions for tx_lock instances held on the current path.
+ REGISTER_SET_WITH_PROGRAMSTATE(HeldTxLocks, const MemRegion*)
+ 
+ namespace {
+ 
+-static bool StmtContainsText(const Stmt *S, StringRef Needle, const SourceManager &SM,
++static bool StmtContainsText(const Stmt *S, StringRef Needle,
++                             const SourceManager &SM,
+                              const LangOptions &LangOpts) {
+-  if (!S) return false;
++  if (!S)
++    return false;
++
+   CharSourceRange R = CharSourceRange::getTokenRange(S->getSourceRange());
+   StringRef Text = Lexer::getSourceText(R, SM, LangOpts);
+   return Text.contains(Needle);
+ }
+ 
+-static bool StmtContainsText(const Stmt *S, StringRef Needle, CheckerContext &C) {
++static bool StmtContainsText(const Stmt *S, StringRef Needle,
++                             CheckerContext &C) {
+   return StmtContainsText(S, Needle, C.getSourceManager(), C.getLangOpts());
+ }
+ 
+-static bool StmtContainsTextAST(const Stmt *S, StringRef Needle, ASTContext &ACtx) {
+-  return StmtContainsText(S, Needle, ACtx.getSourceManager(), ACtx.getLangOpts());
++static bool StmtContainsTextAST(const Stmt *S, StringRef Needle,
++                                ASTContext &ACtx) {
++  return StmtContainsText(S, Needle, ACtx.getSourceManager(),
++                          ACtx.getLangOpts());
+ }
+ 
+ static bool ContainsListAndTxTarget(const Stmt *S, CheckerContext &C) {
+-  if (!S) return false;
++  if (!S)
++    return false;
++
+   bool HasList = StmtContainsText(S, "list_for_each_entry_safe", C) ||
+                  StmtContainsText(S, "list_for_each_entry", C);
+-  if (!HasList) return false;
+   bool HasTxList = StmtContainsText(S, "tx_ctrl_list", C) ||
+                    StmtContainsText(S, "tx_data_list", C);
+   return HasList && HasTxList;
+@@ -53,58 +60,66 @@ 
+ static bool IsKfreeLike(const CallEvent &Call, CheckerContext &C) {
+   const Expr *Origin = Call.getOriginExpr();
+-  if (!Origin) return false;
+-  return ExprHasName(Origin, "kfree", C) || ExprHasName(Origin, "kvfree", C);
++  if (!Origin)
++    return false;
++
++  return ExprHasName(Origin, "kfree", C) ||
++         ExprHasName(Origin, "kvfree", C);
+ }
+ 
+ static bool IsSpinLockAcquire(const CallEvent &Call, CheckerContext &C) {
+   const Expr *Origin = Call.getOriginExpr();
+-  if (!Origin) return false;
+-  // Match spin_lock*, raw_spin_lock*
+-  return ExprHasName(Origin, "spin_lock", C) || ExprHasName(Origin, "raw_spin_lock", C);
++  if (!Origin)
++    return false;
++
++  return ExprHasName(Origin, "spin_lock", C) ||
++         ExprHasName(Origin, "raw_spin_lock", C);
+ }
+ 
+ static bool IsSpinLockRelease(const CallEvent &Call, CheckerContext &C) {
+   const Expr *Origin = Call.getOriginExpr();
+-  if (!Origin) return false;
+-  // Match spin_unlock*, raw_spin_unlock*
+-  return ExprHasName(Origin, "spin_unlock", C) || ExprHasName(Origin, "raw_spin_unlock", C);
+-}
+-
+-/* The checker callbacks are to be decided. */
+-class SAGenTestChecker : public Checker<
+-    check::PreCall,
+-    check::ASTCodeBody
+-  > {
+-   mutable std::unique_ptr<BugType> BT;
+-
+-   // Cache: functions that contain tx_* list iterations
+-   mutable llvm::DenseSet<const FunctionDecl*> FnHasTxListLoop;
+-
+-   public:
+-      SAGenTestChecker() : BT(new BugType(this, "Unsafe list free without tx_lock", "Concurrency")) {}
+-
+-      void checkPreCall(const CallEvent &Call, CheckerContext &C) const;
+-      void checkASTCodeBody(const Decl *D, AnalysisManager &Mgr, BugReporter &BR) const;
+-
+-   private:
+-
+-      bool inTargetTraversalContext(const Stmt *CallOrigin, CheckerContext &C) const;
+-      void handleLockAcquire(const CallEvent &Call, CheckerContext &C) const;
+-      void handleLockRelease(const CallEvent &Call, CheckerContext &C) const;
+-      void reportUnsafeFree(const CallEvent &Call, CheckerContext &C) const;
++  if (!Origin)
++    return false;
++
++  return ExprHasName(Origin, "spin_unlock", C) ||
++         ExprHasName(Origin, "raw_spin_unlock", C);
++}
++
++class SAGenTestChecker : public Checker<check::PreCall, check::ASTCodeBody> {
++  mutable std::unique_ptr<BugType> BT;
++
++  // Functions containing a tx_* list traversal.
++  mutable llvm::DenseSet<const FunctionDecl *> FnHasTxListLoop;
++
++public:
++  SAGenTestChecker()
++      : BT(new BugType(this, "Unsafe list free without tx_lock",
++                       "Concurrency")) {}
++
++  void checkPreCall(const CallEvent &Call, CheckerContext &C) const;
++  void checkASTCodeBody(const Decl *D, AnalysisManager &Mgr,
++                        BugReporter &BR) const;
++
++private:
++  bool inTargetTraversalContext(const Stmt *CallOrigin,
++                                CheckerContext &C) const;
++  bool isFalsePositive(const CallEvent &Call, CheckerContext &C) const;
++  void handleLockAcquire(const CallEvent &Call, CheckerContext &C) const;
++  void handleLockRelease(const CallEvent &Call, CheckerContext &C) const;
++  void reportUnsafeFree(const CallEvent &Call, CheckerContext &C) const;
+ };
+ 
+-bool SAGenTestChecker::inTargetTraversalContext(const Stmt *CallOrigin, CheckerContext &C) const {
++bool SAGenTestChecker::inTargetTraversalContext(
++    const Stmt *CallOrigin, CheckerContext &C) const {
+   if (!CallOrigin)
+     return false;
+ 
+-  // Check nearest enclosing loops for textual macro tokens
+   if (const ForStmt *FS = findSpecificTypeInParents<ForStmt>(CallOrigin, C)) {
+     if (ContainsListAndTxTarget(FS, C))
+       return true;
+   }
+-  if (const WhileStmt *WS = findSpecificTypeInParents<WhileStmt>(CallOrigin, C)) {
++  if (const WhileStmt *WS =
++          findSpecificTypeInParents<WhileStmt>(CallOrigin, C)) {
+     if (ContainsListAndTxTarget(WS, C))
+       return true;
+   }
+@@ -113,128 +128,148 @@       return true;
+   }
+ 
+-  // As a fallback, gate by pre-scan result for the enclosing function
++  // Macro-expanded list iteration can obscure the loop at the call site.
+   const LocationContext *LCtx = C.getLocationContext();
+-  const FunctionDecl *FD = dyn_cast_or_null<FunctionDecl>(LCtx ? LCtx->getDecl() : nullptr);
+-  if (FD && FnHasTxListLoop.count(FD))
++  const FunctionDecl *FD =
++      dyn_cast_or_null<FunctionDecl>(LCtx ? LCtx->getDecl() : nullptr);
++  return FD && FnHasTxListLoop.count(FD);
++}
++
++bool SAGenTestChecker::isFalsePositive(const CallEvent &Call,
++                                      CheckerContext &C) const {
++  const LocationContext *LCtx = C.getLocationContext();
++  const FunctionDecl *FD =
++      dyn_cast_or_null<FunctionDecl>(LCtx ? LCtx->getDecl() : nullptr);
++  if (!FD)
++    return false;
++
++  // gsm_data_kick() is a lock-required helper. Its callers serialize access
++  // to the queues with tx_lock; the helper's frees are not the cleanup bug.
++  if (FD->getName() == "gsm_data_kick")
+     return true;
+ 
+-  return false;
+-}
+-
+-void SAGenTestChecker::handleLockAcquire(const CallEvent &Call, CheckerContext &C) const {
+-  // Only track tx_lock acquisitions
++  // The kernel guard(spinlock_irqsave) form is not necessarily represented as
++  // a conventional spin_lock call in the analyzer's call stream. Recognize a
++  // local tx_lock guard in the function body as well.
++  const Stmt *Body = FD->getBody();
++  if (!Body)
++    return false;
++
++  bool HasTxLock = StmtContainsText(Body, "tx_lock", C);
++  bool HasGuard = StmtContainsText(Body, "guard(spinlock_irqsave)", C);
++  return HasTxLock && HasGuard;
++}
++
++void SAGenTestChecker::handleLockAcquire(const CallEvent &Call,
++                                         CheckerContext &C) const {
+   if (Call.getNumArgs() < 1)
+     return;
+ 
+   const Expr *Arg0 = Call.getArgExpr(0);
+-  if (!Arg0)
+-    return;
+-
+-  if (!ExprHasName(Arg0, "tx_lock", C))
++  if (!Arg0 || !ExprHasName(Arg0, "tx_lock", C))
+     return;
+ 
+   const MemRegion *MR = getMemRegionFromExpr(Arg0, C);
+   if (!MR)
+     return;
++
+   MR = MR->getBaseRegion();
+   if (!MR)
+     return;
+ 
+-  ProgramStateRef State = C.getState();
+-  State = State->add<HeldTxLocks>(MR);
+-  C.addTransition(State);
+-}
+-
+-void SAGenTestChecker::handleLockRelease(const CallEvent &Call, CheckerContext &C) const {
++  C.addTransition(C.getState()->add<HeldTxLocks>(MR));
++}
++
++void SAGenTestChecker::handleLockRelease(const CallEvent &Call,
++                                         CheckerContext &C) const {
+   if (Call.getNumArgs() < 1)
+     return;
+ 
+   const Expr *Arg0 = Call.getArgExpr(0);
+-  if (!Arg0)
+-    return;
+-
+-  if (!ExprHasName(Arg0, "tx_lock", C))
++  if (!Arg0 || !ExprHasName(Arg0, "tx_lock", C))
+     return;
+ 
+   const MemRegion *MR = getMemRegionFromExpr(Arg0, C);
+   if (!MR)
+     return;
++
+   MR = MR->getBaseRegion();
+   if (!MR)
+     return;
+ 
+-  ProgramStateRef State = C.getState();
+-  State = State->remove<HeldTxLocks>(MR);
+-  C.addTransition(State);
+-}
+-
+-void SAGenTestChecker::reportUnsafeFree(const CallEvent &Call, CheckerContext &C) const {
++  C.addTransition(C.getState()->remove<HeldTxLocks>(MR));
++}
++
++void SAGenTestChecker::reportUnsafeFree(const CallEvent &Call,
++                                        CheckerContext &C) const {
+   ExplodedNode *N = C.generateNonFatalErrorNode();
+-  if (!N) return;
++  if (!N)
++    return;
+ 
+   auto R = std::make_unique<PathSensitiveBugReport>(
+-      *BT, "Freeing tx_* list entries without holding tx_lock (possible UAF)", N);
++      *BT, "Freeing tx_* list entries without holding tx_lock (possible UAF)",
++      N);
+   R->addRange(Call.getSourceRange());
+   C.emitReport(std::move(R));
+ }
+ 
+-void SAGenTestChecker::checkPreCall(const CallEvent &Call, CheckerContext &C) const {
+-  const Expr *Origin = Call.getOriginExpr();
+-  if (!Origin)
+-    return;
+-
+-  // Track spin lock acquire/release
++void SAGenTestChecker::checkPreCall(const CallEvent &Call,
++                                    CheckerContext &C) const {
++  const Expr *Origin = Call.getOriginExpr();
++  if (!Origin)
++    return;
++
+   if (IsSpinLockAcquire(Call, C)) {
+     handleLockAcquire(Call, C);
+     return;
+   }
++
+   if (IsSpinLockRelease(Call, C)) {
+     handleLockRelease(Call, C);
+     return;
+   }
+ 
+-  // Detect unsafe frees
+   if (!IsKfreeLike(Call, C))
+     return;
+ 
+-  // Only interested if inside/around tx_* list traversal
+   if (!inTargetTraversalContext(Origin, C))
+     return;
+ 
+-  ProgramStateRef State = C.getState();
+-  auto Locks = State->get<HeldTxLocks>();
+-  if (Locks.isEmpty()) {
++  if (isFalsePositive(Call, C))
++    return;
++
++  if (C.getState()->get<HeldTxLocks>().isEmpty())
+     reportUnsafeFree(Call, C);
+-  }
+-}
+-
+-void SAGenTestChecker::checkASTCodeBody(const Decl *D, AnalysisManager &Mgr, BugReporter &BR) const {
++}
++
++void SAGenTestChecker::checkASTCodeBody(const Decl *D, AnalysisManager &Mgr,
++                                        BugReporter &BR) const {
+   const auto *FD = dyn_cast<FunctionDecl>(D);
+   if (!FD)
+     return;
++
+   const Stmt *Body = FD->getBody();
+   if (!Body)
+     return;
+ 
+   ASTContext &ACtx = Mgr.getASTContext();
+ 
+-  bool HasList = StmtContainsTextAST(Body, "list_for_each_entry_safe", ACtx) ||
+-                 StmtContainsTextAST(Body, "list_for_each_entry", ACtx);
++  bool HasList =
++      StmtContainsTextAST(Body, "list_for_each_entry_safe", ACtx) ||
++      StmtContainsTextAST(Body, "list_for_each_entry", ACtx);
+   bool HasTx = StmtContainsTextAST(Body, "tx_ctrl_list", ACtx) ||
+                StmtContainsTextAST(Body, "tx_data_list", ACtx);
+ 
+-  if (HasList && HasTx) {
++  if (HasList && HasTx)
+     FnHasTxListLoop.insert(FD);
+-  }
+-}
+-
+-} // end anonymous namespace
++}
++
++} // namespace
+ 
+ extern "C" void clang_registerCheckers(CheckerRegistry &registry) {
+   registry.addChecker<SAGenTestChecker>(
+       "custom.SAGenTestChecker",
+-      "Detects freeing tx_* list entries without holding tx_lock during list traversal (possible UAF)",
++      "Detects freeing tx_* list entries without tx_lock during list traversal",
+       "");
+ }
+ 

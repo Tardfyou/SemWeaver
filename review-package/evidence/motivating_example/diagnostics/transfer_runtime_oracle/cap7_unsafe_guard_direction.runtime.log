@@ -1,0 +1,49 @@
+=================================================================
+==145==ERROR: AddressSanitizer: stack-buffer-overflow on address 0x7a368100003c at pc 0x56a166287880 bp 0x7ffea25016f0 sp 0x7ffea25016e8
+READ of size 4 at 0x7a368100003c thread T0
+    #0 0x56a16628787f in inspect_window /project/LLM-Native/artifacts/fse_revision/motivating_g21_selection_20260927/transfer_confirmation/runtime/cap7_unsafe_guard_direction.c:5:107
+    #1 0x56a166287945 in main /project/LLM-Native/artifacts/fse_revision/motivating_g21_selection_20260927/transfer_confirmation/runtime/cap7_unsafe_guard_direction.c:10:18
+    #2 0x7a368305d1c9  (/lib/x86_64-linux-gnu/libc.so.6+0x2a1c9) (BuildId: a4a7992a8e66555c8141ab2a08a8465ff6e0ea65)
+    #3 0x7a368305d28a in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x2a28a) (BuildId: a4a7992a8e66555c8141ab2a08a8465ff6e0ea65)
+    #4 0x56a1661ae344 in _start (/project/LLM-Native/artifacts/fse_revision/motivating_g21_selection_20260927/transfer_runtime_oracle/cap7_unsafe_guard_direction+0x2b344) (BuildId: f7b7924339dfbf5609d0baaeffe28e7d96931de9)
+
+Address 0x7a368100003c is located in stack of thread T0 at offset 60 in frame
+    #0 0x56a16628773f in inspect_window /project/LLM-Native/artifacts/fse_revision/motivating_g21_selection_20260927/transfer_confirmation/runtime/cap7_unsafe_guard_direction.c:3
+
+  This frame has 1 object(s):
+    [32, 60) 'slots' (line 4) <== Memory access at offset 60 overflows this variable
+HINT: this may be a false positive if your program uses some custom stack unwind mechanism, swapcontext or vfork
+      (longjmp and C++ exceptions *are* supported)
+SUMMARY: AddressSanitizer: stack-buffer-overflow /project/LLM-Native/artifacts/fse_revision/motivating_g21_selection_20260927/transfer_confirmation/runtime/cap7_unsafe_guard_direction.c:5:107 in inspect_window
+Shadow bytes around the buggy address:
+  0x7a3680fffd80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x7a3680fffe00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x7a3680fffe80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x7a3680ffff00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x7a3680ffff80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x7a3681000000: f1 f1 f1 f1 00 00 00[04]f3 f3 f3 f3 00 00 00 00
+  0x7a3681000080: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x7a3681000100: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x7a3681000180: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x7a3681000200: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x7a3681000280: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==145==ABORTING

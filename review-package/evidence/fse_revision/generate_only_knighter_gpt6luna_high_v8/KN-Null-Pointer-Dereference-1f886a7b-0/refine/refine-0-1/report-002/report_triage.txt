@@ -1,0 +1,4 @@
+- Decision: NotABug
+- Reason: The reported allocation pattern is a real null-dereference bug in the supplied pre-patch function: `devm_kzalloc()` can return `NULL`, and `spi_sub_ptr` is then dereferenced. That matches the target pattern, and the fix patch addresses it by checking the allocated array element before assigning the alias.
+
+  However, the annotated source in the report already contains that check at lines 728–729. On that source path, a `NULL` result returns `-ENOMEM` before `spi_sub_ptr` is assigned or dereferenced. Thus the warning is a false positive for the reported code as shown, though it would be a true positive against the pre-patch code.

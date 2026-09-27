@@ -1,0 +1,654 @@
+{
+  "records": [
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/thermal/thermal_core.c",
+        "function": "thermal_zone_device_register_with_trips"
+      },
+      "location": {
+        "line": 1357,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "if atomic_cmpxchg (ImplicitCastExpr, FunctionToPointerDecay, int (*)(atomic_t *, int, int))(&tz (ImplicitCastExpr, LValueToRValue, struct thermal_zone_device *)->need_update, 1, 0)",
+        "summary": "Analyzer CFG for thermal_zone_device_register_with_trips in drivers/thermal/thermal_core.c: bindings: tz (ImplicitCastExpr, LValueToRValue, struct thermal_zone_device *)->tzp = kmemdup (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(const void *const, size_t, gfp_t))(tzp (ImplicitCastExpr, LValueToRValue, const struct thermal_zone_params *) (ImplicitCastExpr, BitCast, const void *), sizeof (*tzp), (((gfp_t)(1024U | 2048U) (CStyleCastExpr, NoOp, gfp_t)) | ((gfp_t)64U (CStyleCastExpr, NoOp, gfp_t)) | ((gfp_t)128U (CStyleCastExpr, NoOp, gfp_t)))) (ImplicitCastExpr, BitCast, struct thermal_zone_params *); kzalloc (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(size_t, gfp_t))(__builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(num_trips) * 0L)) : (int *)8))), sizeof (*(tz)) + __builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(num_trips) * 0L)) : (int *)8))), (num_trips) * sizeof (*(tz)->trips) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/thermal/thermal_core.c:1325:15)))), size_mul(num_trips, sizeof (*(tz)->trips) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/thermal/thermal_core.c:1325:15)))))), size_add (ImplicitCastExpr, FunctionToPointerDecay, size_t (*)(size_t, size_t))(sizeof (*(tz)), __builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(num_trips) * 0L)) : (int *)8))), (num_trips) * sizeof (*(tz)->trips) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/thermal/thermal_core.c:1325:15)))), size_mul (ImplicitCastExpr, FunctionToPointerDecay, size_t (*)(size_t, size_t))(num_trips (ImplicitCastExpr, LValueToRValue, int) (ImplicitCastExpr, IntegralCast, size_t), sizeof (*(tz)->trips) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/thermal/thermal_core.c:1325:15))) (CStyleCastExpr, IntegralCast, int)) (ImplicitCastExpr, IntegralCast, unsigned long))))), (((gfp_t)(1024U | 2048U) (CStyleCastExpr, NoOp, gfp_t)) | ((gfp_t)64U (CStyleCastExpr, NoOp, gfp_t)) | ((gfp_t)128U (CStyleCastExpr, NoOp, gfp_t)))) | branches: if atomic_cmpxchg (ImplicitCastExpr, FunctionToPointerDecay, int (*)(atomic_t *, int, int))(&tz (ImplicitCastExpr, LValueToRValue, struct thermal_zone_device *)->need_update, 1, 0); if !tz (ImplicitCastExpr, LValueToRValue, struct thermal_zone_device *)->tzp (ImplicitCastExpr, LValueToRValue, struct thermal_zone_params *) || !tz (ImplicitCastExpr, LValueToRValue, struct thermal_zone_device *)->tzp (ImplicitCastExpr, LValueToRValue, struct thermal_zone_params *)->no_hwmon (ImplicitCastExpr, LValueToRValue, bool) | calls: thermal_zone_device_register_with_trips -> __builtin_strlen; thermal_zone_device_register_with_trips -> __fortify_strlen",
+        "state_before": [
+          "buffer(tz->trips)",
+          "buffer(tz->type)",
+          "sinks(kzalloc, struct_size)"
+        ],
+        "state_after": [
+          "cfg_binding(tz (ImplicitCastExpr, LValueToRValue, struct thermal_zone_device *)->tzp = kmemdup (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(const void *const, size_t, gfp_t))(tzp (ImplicitCastExpr, LValueToRValue, const struct thermal_zone_params *) (ImplicitCastExpr, BitCast, const void *), sizeof (*tzp), (((gfp_t)(1024U | 2048U) (CStyleCastExpr, NoOp, gfp_t)) | ((gfp_t)64U (CStyleCastExpr, NoOp, gfp_t)) | ((gfp_t)128U (CStyleCastExpr, NoOp, gfp_t)))) (ImplicitCastExpr, BitCast, struct thermal_zone_params *))",
+          "cfg_binding(kzalloc (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(size_t, gfp_t))(__builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(num_trips) * 0L)) : (int *)8))), sizeof (*(tz)) + __builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(num_trips) * 0L)) : (int *)8))), (num_trips) * sizeof (*(tz)->trips) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/thermal/thermal_core.c:1325:15)))), size_mul(num_trips, sizeof (*(tz)->trips) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/thermal/thermal_core.c:1325:15)))))), size_add (ImplicitCastExpr, FunctionToPointerDecay, size_t (*)(size_t, size_t))(sizeof (*(tz)), __builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(num_trips) * 0L)) : (int *)8))), (num_trips) * sizeof (*(tz)->trips) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/thermal/thermal_core.c:1325:15)))), size_mul (ImplicitCastExpr, FunctionToPointerDecay, size_t (*)(size_t, size_t))(num_trips (ImplicitCastExpr, LValueToRValue, int) (ImplicitCastExpr, IntegralCast, size_t), sizeof (*(tz)->trips) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/thermal/thermal_core.c:1325:15))) (CStyleCastExpr, IntegralCast, int)) (ImplicitCastExpr, IntegralCast, unsigned long))))), (((gfp_t)(1024U | 2048U) (CStyleCastExpr, NoOp, gfp_t)) | ((gfp_t)64U (CStyleCastExpr, NoOp, gfp_t)) | ((gfp_t)128U (CStyleCastExpr, NoOp, gfp_t)))))",
+          "cfg_branch(if atomic_cmpxchg (ImplicitCastExpr, FunctionToPointerDecay, int (*)(atomic_t *, int, int))(&tz (ImplicitCastExpr, LValueToRValue, struct thermal_zone_device *)->need_update, 1, 0))",
+          "cfg_branch(if !tz (ImplicitCastExpr, LValueToRValue, struct thermal_zone_device *)->tzp (ImplicitCastExpr, LValueToRValue, struct thermal_zone_params *) || !tz (ImplicitCastExpr, LValueToRValue, struct thermal_zone_device *)->tzp (ImplicitCastExpr, LValueToRValue, struct thermal_zone_params *)->no_hwmon (ImplicitCastExpr, LValueToRValue, bool))"
+        ],
+        "functions": [
+          "thermal_zone_device_register_with_trips"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "tz->trips",
+          "tz->type",
+          "tz->lock",
+          "tz->tzp",
+          "tz->thermal_instances",
+          "tz->node"
+        ],
+        "buffer_fields": [
+          "tz->trips",
+          "tz->type",
+          "tz->lock",
+          "tz->tzp",
+          "tz->thermal_instances",
+          "tz->node"
+        ],
+        "call_targets": [
+          "kzalloc",
+          "struct_size",
+          "kmemdup",
+          "ida_init",
+          "mutex_init",
+          "init_completion",
+          "ida_alloc",
+          "strscpy"
+        ],
+        "call_edges": [
+          "thermal_zone_device_register_with_trips -> __builtin_strlen",
+          "thermal_zone_device_register_with_trips -> __fortify_strlen",
+          "thermal_zone_device_register_with_trips -> __builtin_constant_p",
+          "thermal_zone_device_register_with_trips -> _printk",
+          "thermal_zone_device_register_with_trips -> ERR_PTR"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "if [B8.56]",
+          "goto unregister;",
+          "if [B10.9]",
+          "if [B12.10] || [B11.7]",
+          "[B12.10] || ...",
+          "if [B14.11]"
+        ],
+        "resolved_branch_conditions": [
+          "if atomic_cmpxchg (ImplicitCastExpr, FunctionToPointerDecay, int (*)(atomic_t *, int, int))(&tz (ImplicitCastExpr, LValueToRValue, struct thermal_zone_device *)->need_update, 1, 0)",
+          "if !tz (ImplicitCastExpr, LValueToRValue, struct thermal_zone_device *)->tzp (ImplicitCastExpr, LValueToRValue, struct thermal_zone_params *) || !tz (ImplicitCastExpr, LValueToRValue, struct thermal_zone_device *)->tzp (ImplicitCastExpr, LValueToRValue, struct thermal_zone_params *)->no_hwmon (ImplicitCastExpr, LValueToRValue, bool)",
+          "!tz (ImplicitCastExpr, LValueToRValue, struct thermal_zone_device *)->tzp (ImplicitCastExpr, LValueToRValue, struct thermal_zone_params *) || ...",
+          "if tz (ImplicitCastExpr, LValueToRValue, struct thermal_zone_device *)->tzp (ImplicitCastExpr, LValueToRValue, struct thermal_zone_params *)",
+          "if !tz (ImplicitCastExpr, LValueToRValue, struct thermal_zone_device *)->ops.critical (ImplicitCastExpr, LValueToRValue, void (*)(struct thermal_zone_device *))",
+          "if !tz (ImplicitCastExpr, LValueToRValue, struct thermal_zone_device *)->tzp (ImplicitCastExpr, LValueToRValue, struct thermal_zone_params *)"
+        ],
+        "cfg_value_bindings": [
+          "tz (ImplicitCastExpr, LValueToRValue, struct thermal_zone_device *)->tzp = kmemdup (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(const void *const, size_t, gfp_t))(tzp (ImplicitCastExpr, LValueToRValue, const struct thermal_zone_params *) (ImplicitCastExpr, BitCast, const void *), sizeof (*tzp), (((gfp_t)(1024U | 2048U) (CStyleCastExpr, NoOp, gfp_t)) | ((gfp_t)64U (CStyleCastExpr, NoOp, gfp_t)) | ((gfp_t)128U (CStyleCastExpr, NoOp, gfp_t)))) (ImplicitCastExpr, BitCast, struct thermal_zone_params *)",
+          "kzalloc (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(size_t, gfp_t))(__builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(num_trips) * 0L)) : (int *)8))), sizeof (*(tz)) + __builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(num_trips) * 0L)) : (int *)8))), (num_trips) * sizeof (*(tz)->trips) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/thermal/thermal_core.c:1325:15)))), size_mul(num_trips, sizeof (*(tz)->trips) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/thermal/thermal_core.c:1325:15)))))), size_add (ImplicitCastExpr, FunctionToPointerDecay, size_t (*)(size_t, size_t))(sizeof (*(tz)), __builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(num_trips) * 0L)) : (int *)8))), (num_trips) * sizeof (*(tz)->trips) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/thermal/thermal_core.c:1325:15)))), size_mul (ImplicitCastExpr, FunctionToPointerDecay, size_t (*)(size_t, size_t))(num_trips (ImplicitCastExpr, LValueToRValue, int) (ImplicitCastExpr, IntegralCast, size_t), sizeof (*(tz)->trips) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/thermal/thermal_core.c:1325:15))) (CStyleCastExpr, IntegralCast, int)) (ImplicitCastExpr, IntegralCast, unsigned long))))), (((gfp_t)(1024U | 2048U) (CStyleCastExpr, NoOp, gfp_t)) | ((gfp_t)64U (CStyleCastExpr, NoOp, gfp_t)) | ((gfp_t)128U (CStyleCastExpr, NoOp, gfp_t))))",
+          "tz = kzalloc (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(size_t, gfp_t))(__builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(num_trips) * 0L)) : (int *)8))), sizeof (*(tz)) + __builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(num_trips) * 0L)) : (int *)8))), (num_trips) * sizeof (*(tz)->trips) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/thermal/thermal_core.c:1325:15)))), size_mul(num_trips, sizeof (*(tz)->trips) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/thermal/thermal_core.c:1325:15)))))), size_add (ImplicitCastExpr, FunctionToPointerDecay, size_t (*)(size_t, size_t))(sizeof (*(tz)), __builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(num_trips) * 0L)) : (int *)8))), (num_trips) * sizeof (*(tz)->trips) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/thermal/thermal_core.c:1325:15)))), size_mul (ImplicitCastExpr, FunctionToPointerDecay, size_t (*)(size_t, size_t))(num_trips (ImplicitCastExpr, LValueToRValue, int) (ImplicitCastExpr, IntegralCast, size_t), sizeof (*(tz)->trips) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/thermal/thermal_core.c:1325:15))) (CStyleCastExpr, IntegralCast, int)) (ImplicitCastExpr, IntegralCast, unsigned long))))), (((gfp_t)(1024U | 2048U) (CStyleCastExpr, NoOp, gfp_t)) | ((gfp_t)64U (CStyleCastExpr, NoOp, gfp_t)) | ((gfp_t)128U (CStyleCastExpr, NoOp, gfp_t)))) (ImplicitCastExpr, BitCast, struct thermal_zone_device *)",
+          "const size_t __p_size = (__builtin_dynamic_object_size(tz->trips, 0));",
+          "const size_t __p_size_field = (__builtin_dynamic_object_size(tz->trips, 1));",
+          "tz (ImplicitCastExpr, LValueToRValue, struct thermal_zone_device *)->id = id (ImplicitCastExpr, LValueToRValue, int)"
+        ],
+        "state_statements": [
+          "kfree",
+          "return [B1.13];",
+          "[B2.4]->tzp",
+          "ida_free",
+          "[B4.4]->device",
+          "[B5.4]->device"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,drivers/thermal/.thermal_core.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/uapi -I./arc...",
+        "source_file": "drivers/thermal/thermal_core.c",
+        "source_excerpt": "1325: \ttz = kzalloc(struct_size(tz, trips, num_trips), GFP_KERNEL);\n1326: \tif (!tz)\n1327: \t\treturn ERR_PTR(-ENOMEM);\n1328: \n1329: \tif (tzp) {\n1330: \t\ttz->tzp = kmemdup(tzp, sizeof(*tzp), GFP_KERNEL);\n1331: \t\tif (!tz->tzp) {\n1332: \t\t\tresult = -ENOMEM;\n1333: \t\t\tgoto free_tz;\n1334: \t\t}\n1335: \t}\n1336: \n1337: \tINIT_LIST_HEAD(&tz->thermal_instances);\n1338: \tINIT_LIST_HEAD(&tz->node);\n1339: \tida_init(&tz->ida);\n1340: \tmutex_init(&tz->lock);\n1341: \tinit_completion(&tz->removal);\n1342: \tid = ida_alloc(&thermal_tz_ida, GFP_KERNEL);\n1343: \tif (id < 0) {\n1344: \t\tresult = id;\n1345: \t\tgoto free_tzp;\n1346: \t}\n1347: \n1348: \ttz->id = id;\n1349: \tstrscpy(tz->type, type, sizeof(tz->type));\n1350: \n1351: \ttz->ops = *ops;\n1352: \tif (!tz->ops.critical)\n1353: \t\ttz->ops.critical = thermal_zone_device_critical;\n1354: \n1355: \ttz->device.class = thermal_class;\n1356: \ttz->devdata = devdata;\n1357: \tmemcpy(tz->trips, trips, num_trips * sizeof(*trips));\n1358: \ttz->num_trips = num_trips;\n1359: \n1360: \tthermal_set_delay_jiffies(&tz->passive_delay_jiffies, passive_delay);\n1361: \tthermal_set_delay_jiffies(&tz->polling_delay_jiffies, polling_delay);\n1362: \n1363: \t/* sys I/F */\n1364: \t/* Add nodes that are always present via .groups */\n1365: \tresult = thermal_zone_create_device_groups(tz, mask);\n1366: \tif (result)\n1367: \t\tgoto remove_id;\n1368: \n1369: \t/* A new thermal zone needs to be updated anyway. */\n1370: \tatomic_set(&tz->need_update, 1);\n1371: \n1372: \tresult = dev_set_name(&tz->device, \"thermal_zone%d\", tz->id);\n1373: \tif (result) {\n1374: \t\tthermal_zone_destroy_device_groups(tz);\n1375: \t\tgoto remove_id;\n1376: \t}\n1377: \tresult = device_register(&tz->device);\n1378: \tif (result)\n1379: \t\tgoto release_device;\n1380: \n1381: \t/* Update 'this' zone's governor information */\n1382: \tmutex_lock(&thermal_governor_lock);\n1383: \n1384: \tif (tz->tzp)\n1385: \t\tgovernor = __find_governor(tz->tzp->governor_name);\n1386: \telse\n1387: \t\tgovernor = def_governor;\n1388: \n1389: \tresult = thermal_set_governor(tz, governor);",
+        "summary_line": 1357,
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/generate_only_evidence_all39_v8_r5/G33_da1983355cce_Misuse/csa/patchweaver_runtime/csa_raw/drivers-thermal-thermal_core.c-thermal_zone_device_register_with_trips.txt",
+        "raw_output_sha256": "02b994f610d4d9c7ae8d0a2be719980705cf5b33fb743ab9fc56a248181f6386",
+        "command_sha256": "2f812ff9b3e2eb6adf5b352aa10abacabd91f9135bd7f342966b34b4616d99b4"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:debug-cfg",
+        "confidence": 0.92,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/thermal/thermal_core.c",
+          "hunk_index": 0,
+          "source_line": 1357
+        },
+        "summary": "Analyzer CFG for thermal_zone_device_register_with_trips in drivers/thermal/thermal_core.c: bindings: tz (ImplicitCastExpr, LValueToRValue, struct thermal_zone_device *)->tzp = kmemdup (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(const void *const, size_t, gfp_t))(tzp (ImplicitCastExpr, LValueToRValue, const struct thermal_zone_params *) (ImplicitCastExpr, BitCast, const void *), sizeof (*tzp), (((gfp_t)(1024U | 2048U) (CStyleCastExpr, NoOp, gfp_t)) | ((gfp_t)64U (CStyleCastExpr, NoOp, gfp_t)) | ((gfp_t)128U (CStyleCastExpr, NoOp, gfp_t)))) (ImplicitCastExpr, BitCast, struct thermal_zone_params *); kzalloc (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(size_t, gfp_t))(__builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(num_trips) * 0L)) : (int *)8))), sizeof (*(tz)) + __builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(num_trips) * 0L)) : (int *)8))), (num_trips) * sizeof (*(tz)->trips) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/thermal/thermal_core.c:1325:15)))), size_mul(num_trips, sizeof (*(tz)->trips) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/thermal/thermal_core.c:1325:15)))))), size_add (ImplicitCastExpr, FunctionToPointerDecay, size_t (*)(size_t, size_t))(sizeof (*(tz)), __builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(num_trips) * 0L)) : (int *)8))), (num_trips) * sizeof (*(tz)->trips) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/thermal/thermal_core.c:1325:15)))), size_mul (ImplicitCastExpr, FunctionToPointerDecay, size_t (*)(size_t, size_t))(num_trips (ImplicitCastExpr, LValueToRValue, int) (ImplicitCastExpr, IntegralCast, size_t), sizeof (*(tz)->trips) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/thermal/thermal_core.c:1325:15))) (CStyleCastExpr, IntegralCast, int)) (ImplicitCastExpr, IntegralCast, unsigned long))))), (((gfp_t)(1024U | 2048U) (CStyleCastExpr, NoOp, gfp_t)) | ((gfp_t)64U (CStyleCastExpr, NoOp, gfp_t)) | ((gfp_t)128U (CStyleCastExpr, NoOp, gfp_t)))) | branches: if atomic_cmpxchg (ImplicitCastExpr, FunctionToPointerDecay, int (*)(atomic_t *, int, int))(&tz (ImplicitCastExpr, LValueToRValue, struct thermal_zone_device *)->need_update, 1, 0); if !tz (ImplicitCastExpr, LValueToRValue, struct thermal_zone_device *)->tzp (ImplicitCastExpr, LValueToRValue, struct thermal_zone_params *) || !tz (ImplicitCastExpr, LValueToRValue, struct thermal_zone_device *)->tzp (ImplicitCastExpr, LValueToRValue, struct thermal_zone_params *)->no_hwmon (ImplicitCastExpr, LValueToRValue, bool) | calls: thermal_zone_device_register_with_trips -> __builtin_strlen; thermal_zone_device_register_with_trips -> __fortify_strlen",
+        "statements": [
+          "1325: \ttz = kzalloc(struct_size(tz, trips, num_trips), GFP_KERNEL);",
+          "1326: \tif (!tz)",
+          "1327: \t\treturn ERR_PTR(-ENOMEM);",
+          "1328:",
+          "1329: \tif (tzp) {",
+          "1330: \t\ttz->tzp = kmemdup(tzp, sizeof(*tzp), GFP_KERNEL);"
+        ],
+        "guards": [
+          "if atomic_cmpxchg (ImplicitCastExpr, FunctionToPointerDecay, int (*)(atomic_t *, int, int))(&tz (ImplicitCastExpr, LValueToRValue, struct thermal_zone_device *)->need_update, 1, 0)",
+          "if !tz (ImplicitCastExpr, LValueToRValue, struct thermal_zone_device *)->tzp (ImplicitCastExpr, LValueToRValue, struct thermal_zone_params *) || !tz (ImplicitCastExpr, LValueToRValue, struct thermal_zone_device *)->tzp (ImplicitCastExpr, LValueToRValue, struct thermal_zone_params *)->no_hwmon (ImplicitCastExpr, LValueToRValue, bool)",
+          "!tz (ImplicitCastExpr, LValueToRValue, struct thermal_zone_device *)->tzp (ImplicitCastExpr, LValueToRValue, struct thermal_zone_params *) || ...",
+          "if tz (ImplicitCastExpr, LValueToRValue, struct thermal_zone_device *)->tzp (ImplicitCastExpr, LValueToRValue, struct thermal_zone_params *)"
+        ],
+        "call_boundary": [
+          "kzalloc",
+          "struct_size",
+          "kmemdup",
+          "ida_init",
+          "mutex_init",
+          "init_completion"
+        ],
+        "call_edges": [
+          "thermal_zone_device_register_with_trips -> __builtin_strlen",
+          "thermal_zone_device_register_with_trips -> __fortify_strlen",
+          "thermal_zone_device_register_with_trips -> __builtin_constant_p",
+          "thermal_zone_device_register_with_trips -> _printk",
+          "thermal_zone_device_register_with_trips -> ERR_PTR"
+        ],
+        "state_transitions": [
+          "cfg_binding(tz (ImplicitCastExpr, LValueToRValue, struct thermal_zone_device *)->tzp = kmemdup (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(const void *const, size_t, gfp_t))(tzp (ImplicitCastExpr, LValueToRValue, const struct thermal_zone_params *) (ImplicitCastExpr, BitCast, const void *), sizeof (*tzp), (((gfp_t)(1024U | 2048U) (CStyleCastExpr, NoOp, gfp_t)) | ((gfp_t)64U (CStyleCastExpr, NoOp, gfp_t)) | ((gfp_t)128U (CStyleCastExpr, NoOp, gfp_t)))) (ImplicitCastExpr, BitCast, struct thermal_zone_params *))",
+          "cfg_binding(kzalloc (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(size_t, gfp_t))(__builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(num_trips) * 0L)) : (int *)8))), sizeof (*(tz)) + __builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(num_trips) * 0L)) : (int *)8))), (num_trips) * sizeof (*(tz)->trips) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/thermal/thermal_core.c:1325:15)))), size_mul(num_trips, sizeof (*(tz)->trips) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/thermal/thermal_core.c:1325:15)))))), size_add (ImplicitCastExpr, FunctionToPointerDecay, size_t (*)(size_t, size_t))(sizeof (*(tz)), __builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(num_trips) * 0L)) : (int *)8))), (num_trips) * sizeof (*(tz)->trips) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/thermal/thermal_core.c:1325:15)))), size_mul (ImplicitCastExpr, FunctionToPointerDecay, size_t (*)(size_t, size_t))(num_trips (ImplicitCastExpr, LValueToRValue, int) (ImplicitCastExpr, IntegralCast, size_t), sizeof (*(tz)->trips) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/thermal/thermal_core.c:1325:15))) (CStyleCastExpr, IntegralCast, int)) (ImplicitCastExpr, IntegralCast, unsigned long))))), (((gfp_t)(1024U | 2048U) (CStyleCastExpr, NoOp, gfp_t)) | ((gfp_t)64U (CStyleCastExpr, NoOp, gfp_t)) | ((gfp_t)128U (CStyleCastExpr, NoOp, gfp_t)))))",
+          "cfg_branch(if atomic_cmpxchg (ImplicitCastExpr, FunctionToPointerDecay, int (*)(atomic_t *, int, int))(&tz (ImplicitCastExpr, LValueToRValue, struct thermal_zone_device *)->need_update, 1, 0))",
+          "cfg_branch(if !tz (ImplicitCastExpr, LValueToRValue, struct thermal_zone_device *)->tzp (ImplicitCastExpr, LValueToRValue, struct thermal_zone_params *) || !tz (ImplicitCastExpr, LValueToRValue, struct thermal_zone_device *)->tzp (ImplicitCastExpr, LValueToRValue, struct thermal_zone_params *)->no_hwmon (ImplicitCastExpr, LValueToRValue, bool))",
+          "kfree",
+          "return [B1.13];"
+        ],
+        "api_terms": [
+          "__builtin_strlen",
+          "__fortify_strlen",
+          "__builtin_constant_p",
+          "_printk",
+          "ERR_PTR"
+        ],
+        "related_symbols": [
+          "tz->trips",
+          "tz->type",
+          "tz->lock",
+          "tz->tzp",
+          "tz->thermal_instances",
+          "tz->node"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/thermal/thermal_core.c",
+        "function": "thermal_zone_device_register_with_trips"
+      },
+      "location": {
+        "line": 1357,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "thermal_zone_device_register_with_trips in drivers/thermal/thermal_core.c: cfg_calls=thermal_zone_device_register_with_trips -> __builtin_strlen; thermal_zone_device_register_with_trips -> __fortify_strlen | memory_ops=memcpy",
+        "state_before": [
+          "buffer(tz->trips)",
+          "buffer(tz->type)",
+          "sinks(kzalloc, struct_size)"
+        ],
+        "state_after": [
+          "transition(kfree)",
+          "transition(return [B1.13];)",
+          "transition([B2.4]->tzp)"
+        ],
+        "functions": [
+          "thermal_zone_device_register_with_trips"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "tz->trips",
+          "tz->type",
+          "tz->lock",
+          "tz->tzp",
+          "tz->thermal_instances",
+          "tz->node"
+        ],
+        "buffer_fields": [
+          "tz->trips",
+          "tz->type",
+          "tz->lock",
+          "tz->tzp",
+          "tz->thermal_instances",
+          "tz->node"
+        ],
+        "call_targets": [
+          "kzalloc",
+          "struct_size",
+          "kmemdup",
+          "ida_init",
+          "mutex_init",
+          "init_completion",
+          "ida_alloc",
+          "strscpy"
+        ],
+        "call_edges": [
+          "thermal_zone_device_register_with_trips -> __builtin_strlen",
+          "thermal_zone_device_register_with_trips -> __fortify_strlen",
+          "thermal_zone_device_register_with_trips -> __builtin_constant_p",
+          "thermal_zone_device_register_with_trips -> _printk",
+          "thermal_zone_device_register_with_trips -> ERR_PTR"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "if [B8.56]",
+          "goto unregister;",
+          "if [B10.9]",
+          "if [B12.10] || [B11.7]"
+        ],
+        "state_statements": [
+          "kfree",
+          "return [B1.13];",
+          "[B2.4]->tzp",
+          "ida_free",
+          "[B4.4]->device",
+          "[B5.4]->device",
+          "return [B6.13];",
+          "[B8.11]->lock"
+        ],
+        "return_statements": [
+          "return [B1.13];",
+          "return [B6.13];",
+          "return [B57.7];",
+          "return [B59.7];"
+        ],
+        "source_file": "drivers/thermal/thermal_core.c",
+        "source_excerpt": "1325: \ttz = kzalloc(struct_size(tz, trips, num_trips), GFP_KERNEL);\n1326: \tif (!tz)\n1327: \t\treturn ERR_PTR(-ENOMEM);\n1328: \n1329: \tif (tzp) {\n1330: \t\ttz->tzp = kmemdup(tzp, sizeof(*tzp), GFP_KERNEL);\n1331: \t\tif (!tz->tzp) {\n1332: \t\t\tresult = -ENOMEM;\n1333: \t\t\tgoto free_tz;\n1334: \t\t}\n1335: \t}\n1336: \n1337: \tINIT_LIST_HEAD(&tz->thermal_instances);\n1338: \tINIT_LIST_HEAD(&tz->node);\n1339: \tida_init(&tz->ida);\n1340: \tmutex_init(&tz->lock);\n1341: \tinit_completion(&tz->removal);\n1342: \tid = ida_alloc(&thermal_tz_ida, GFP_KERNEL);\n1343: \tif (id < 0) {\n1344: \t\tresult = id;\n1345: \t\tgoto free_tzp;\n1346: \t}\n1347: \n1348: \ttz->id = id;\n1349: \tstrscpy(tz->type, type, sizeof(tz->type));\n1350: \n1351: \ttz->ops = *ops;\n1352: \tif (!tz->ops.critical)\n1353: \t\ttz->ops.critical = thermal_zone_device_critical;\n1354: \n1355: \ttz->device.class = thermal_class;\n1356: \ttz->devdata = devdata;\n1357: \tmemcpy(tz->trips, trips, num_trips * sizeof(*trips));\n1358: \ttz->num_trips = num_trips;\n1359: \n1360: \tthermal_set_delay_jiffies(&tz->passive_delay_jiffies, passive_delay);\n1361: \tthermal_set_delay_jiffies(&tz->polling_delay_jiffies, polling_delay);\n1362: \n1363: \t/* sys I/F */\n1364: \t/* Add nodes that are always present via .groups */\n1365: \tresult = thermal_zone_create_device_groups(tz, mask);\n1366: \tif (result)\n1367: \t\tgoto remove_id;\n1368: \n1369: \t/* A new thermal zone needs to be updated anyway. */\n1370: \tatomic_set(&tz->need_update, 1);\n1371: \n1372: \tresult = dev_set_name(&tz->device, \"thermal_zone%d\", tz->id);\n1373: \tif (result) {\n1374: \t\tthermal_zone_destroy_device_groups(tz);\n1375: \t\tgoto remove_id;\n1376: \t}\n1377: \tresult = device_register(&tz->device);\n1378: \tif (result)\n1379: \t\tgoto release_device;\n1380: \n1381: \t/* Update 'this' zone's governor information */\n1382: \tmutex_lock(&thermal_governor_lock);\n1383: \n1384: \tif (tz->tzp)\n1385: \t\tgovernor = __find_governor(tz->tzp->governor_name);\n1386: \telse\n1387: \t\tgovernor = def_governor;\n1388: \n1389: \tresult = thermal_set_governor(tz, governor);",
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/generate_only_evidence_all39_v8_r5/G33_da1983355cce_Misuse/csa/patchweaver_runtime/csa_raw/drivers-thermal-thermal_core.c-thermal_zone_device_register_with_trips.txt",
+        "raw_output_sha256": "02b994f610d4d9c7ae8d0a2be719980705cf5b33fb743ab9fc56a248181f6386",
+        "command_sha256": "2f812ff9b3e2eb6adf5b352aa10abacabd91f9135bd7f342966b34b4616d99b4"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:symbolic-state",
+        "confidence": 0.88,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "drivers/thermal/thermal_core.c",
+          "hunk_index": 0,
+          "source_line": 1357
+        },
+        "summary": "thermal_zone_device_register_with_trips in drivers/thermal/thermal_core.c: cfg_calls=thermal_zone_device_register_with_trips -> __builtin_strlen; thermal_zone_device_register_with_trips -> __fortify_strlen | memory_ops=memcpy",
+        "statements": [
+          "1325: \ttz = kzalloc(struct_size(tz, trips, num_trips), GFP_KERNEL);",
+          "1326: \tif (!tz)",
+          "1327: \t\treturn ERR_PTR(-ENOMEM);",
+          "1328:",
+          "1329: \tif (tzp) {",
+          "1330: \t\ttz->tzp = kmemdup(tzp, sizeof(*tzp), GFP_KERNEL);"
+        ],
+        "guards": [
+          "if [B8.56]",
+          "goto unregister;",
+          "if [B10.9]"
+        ],
+        "call_boundary": [
+          "kzalloc",
+          "struct_size",
+          "kmemdup",
+          "ida_init",
+          "mutex_init",
+          "init_completion"
+        ],
+        "call_edges": [
+          "thermal_zone_device_register_with_trips -> __builtin_strlen",
+          "thermal_zone_device_register_with_trips -> __fortify_strlen",
+          "thermal_zone_device_register_with_trips -> __builtin_constant_p",
+          "thermal_zone_device_register_with_trips -> _printk",
+          "thermal_zone_device_register_with_trips -> ERR_PTR"
+        ],
+        "state_transitions": [
+          "transition(kfree)",
+          "transition(return [B1.13];)",
+          "transition([B2.4]->tzp)",
+          "kfree",
+          "return [B1.13];",
+          "[B2.4]->tzp"
+        ],
+        "api_terms": [
+          "memcpy",
+          "__builtin_strlen",
+          "__fortify_strlen",
+          "__builtin_constant_p",
+          "_printk",
+          "ERR_PTR"
+        ],
+        "related_symbols": [
+          "tz->trips",
+          "tz->type",
+          "tz->lock",
+          "tz->tzp",
+          "tz->thermal_instances",
+          "tz->node"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_validation_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/thermal/thermal_core.c",
+        "function": "thermal_zone_device_register_with_trips"
+      },
+      "location": {
+        "line": 1357,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at drivers/thermal/thermal_core.c:1357",
+        "diagnostic_message": "",
+        "diagnostic_checker": "",
+        "state_before": [
+          "buffer(tz->trips)",
+          "buffer(tz->type)",
+          "sinks(kzalloc, struct_size)"
+        ],
+        "state_after": [
+          "diagnostic(csa)"
+        ],
+        "functions": [
+          "thermal_zone_device_register_with_trips"
+        ],
+        "globals": [],
+        "tracked_symbols": [],
+        "buffer_fields": [
+          "tz->trips",
+          "tz->type",
+          "tz->lock",
+          "tz->tzp",
+          "tz->thermal_instances",
+          "tz->node"
+        ],
+        "call_targets": [
+          "kzalloc",
+          "struct_size",
+          "kmemdup",
+          "ida_init",
+          "mutex_init",
+          "init_completion"
+        ],
+        "call_edges": [
+          "thermal_zone_device_register_with_trips -> __builtin_strlen",
+          "thermal_zone_device_register_with_trips -> __fortify_strlen",
+          "thermal_zone_device_register_with_trips -> __builtin_constant_p",
+          "thermal_zone_device_register_with_trips -> _printk",
+          "thermal_zone_device_register_with_trips -> ERR_PTR"
+        ],
+        "state_statements": [
+          "kfree",
+          "return [B1.13];",
+          "[B2.4]->tzp",
+          "ida_free",
+          "[B4.4]->device",
+          "[B5.4]->device"
+        ],
+        "source_file": "drivers/thermal/thermal_core.c",
+        "source_excerpt": "1325: \ttz = kzalloc(struct_size(tz, trips, num_trips), GFP_KERNEL);\n1326: \tif (!tz)\n1327: \t\treturn ERR_PTR(-ENOMEM);\n1328: \n1329: \tif (tzp) {\n1330: \t\ttz->tzp = kmemdup(tzp, sizeof(*tzp), GFP_KERNEL);\n1331: \t\tif (!tz->tzp) {\n1332: \t\t\tresult = -ENOMEM;\n1333: \t\t\tgoto free_tz;\n1334: \t\t}\n1335: \t}\n1336: \n1337: \tINIT_LIST_HEAD(&tz->thermal_instances);\n1338: \tINIT_LIST_HEAD(&tz->node);\n1339: \tida_init(&tz->ida);\n1340: \tmutex_init(&tz->lock);\n1341: \tinit_completion(&tz->removal);\n1342: \tid = ida_alloc(&thermal_tz_ida, GFP_KERNEL);\n1343: \tif (id < 0) {\n1344: \t\tresult = id;\n1345: \t\tgoto free_tzp;\n1346: \t}\n1347: \n1348: \ttz->id = id;\n1349: \tstrscpy(tz->type, type, sizeof(tz->type));\n1350: \n1351: \ttz->ops = *ops;\n1352: \tif (!tz->ops.critical)\n1353: \t\ttz->ops.critical = thermal_zone_device_critical;\n1354: \n1355: \ttz->device.class = thermal_class;\n1356: \ttz->devdata = devdata;\n1357: \tmemcpy(tz->trips, trips, num_trips * sizeof(*trips));\n1358: \ttz->num_trips = num_trips;\n1359: \n1360: \tthermal_set_delay_jiffies(&tz->passive_delay_jiffies, passive_delay);\n1361: \tthermal_set_delay_jiffies(&tz->polling_delay_jiffies, polling_delay);\n1362: \n1363: \t/* sys I/F */\n1364: \t/* Add nodes that are always present via .groups */\n1365: \tresult = thermal_zone_create_device_groups(tz, mask);\n1366: \tif (result)\n1367: \t\tgoto remove_id;\n1368: \n1369: \t/* A new thermal zone needs to be updated anyway. */\n1370: \tatomic_set(&tz->need_update, 1);\n1371: \n1372: \tresult = dev_set_name(&tz->device, \"thermal_zone%d\", tz->id);\n1373: \tif (result) {\n1374: \t\tthermal_zone_destroy_device_groups(tz);\n1375: \t\tgoto remove_id;\n1376: \t}\n1377: \tresult = device_register(&tz->device);\n1378: \tif (result)\n1379: \t\tgoto release_device;\n1380: \n1381: \t/* Update 'this' zone's governor information */\n1382: \tmutex_lock(&thermal_governor_lock);\n1383: \n1384: \tif (tz->tzp)\n1385: \t\tgovernor = __find_governor(tz->tzp->governor_name);\n1386: \telse\n1387: \t\tgovernor = def_governor;\n1388: \n1389: \tresult = thermal_set_governor(tz, governor);",
+        "coverage_status": "partial",
+        "contract_type": "",
+        "guard_exprs": [
+          "!tz",
+          "tzp",
+          "!tz->tzp",
+          "id < 0"
+        ],
+        "sink_calls": [
+          "kzalloc",
+          "struct_size",
+          "kmemdup",
+          "ida_init"
+        ]
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.72,
+        "origin": "analyzer_output"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "drivers/thermal/thermal_core.c",
+          "hunk_index": 0,
+          "source_line": 1357
+        },
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at drivers/thermal/thermal_core.c:1357",
+        "statements": [
+          "1325: \ttz = kzalloc(struct_size(tz, trips, num_trips), GFP_KERNEL);",
+          "1326: \tif (!tz)",
+          "1327: \t\treturn ERR_PTR(-ENOMEM);",
+          "1328:",
+          "1329: \tif (tzp) {",
+          "1330: \t\ttz->tzp = kmemdup(tzp, sizeof(*tzp), GFP_KERNEL);"
+        ],
+        "guards": [
+          "!tz",
+          "tzp",
+          "!tz->tzp",
+          "id < 0"
+        ],
+        "call_boundary": [
+          "kzalloc",
+          "struct_size",
+          "kmemdup",
+          "ida_init",
+          "mutex_init",
+          "init_completion"
+        ],
+        "call_edges": [
+          "thermal_zone_device_register_with_trips -> __builtin_strlen",
+          "thermal_zone_device_register_with_trips -> __fortify_strlen",
+          "thermal_zone_device_register_with_trips -> __builtin_constant_p",
+          "thermal_zone_device_register_with_trips -> _printk",
+          "thermal_zone_device_register_with_trips -> ERR_PTR"
+        ],
+        "state_transitions": [
+          "diagnostic(csa)"
+        ],
+        "api_terms": [
+          "memcpy",
+          "init_completion",
+          "kfree",
+          "return [B1.13];",
+          "[B2.4]->tzp",
+          "ida_free"
+        ],
+        "related_symbols": [],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      }
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_1",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/thermal/thermal_core.c",
+        "function": "thermal_zone_device_register_with_trips"
+      },
+      "location": {
+        "line": 1357,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "thermal_zone_device_register_with_trips in drivers/thermal/thermal_core.c provides CSA-backed pointer/resource lifecycle context near line 1357",
+        "diagnostic_message": "",
+        "diagnostic_checker": "",
+        "state_before": [
+          "buffer(tz->trips)",
+          "buffer(tz->type)",
+          "sinks(kzalloc, struct_size)"
+        ],
+        "state_after": [
+          "operation(memcpy)",
+          "operation(init_completion)",
+          "operation(kfree)",
+          "operation(return [B1.13];)"
+        ],
+        "functions": [
+          "thermal_zone_device_register_with_trips"
+        ],
+        "globals": [],
+        "tracked_symbols": [],
+        "buffer_fields": [
+          "tz->trips",
+          "tz->type",
+          "tz->lock",
+          "tz->tzp",
+          "tz->thermal_instances",
+          "tz->node"
+        ],
+        "call_targets": [
+          "kzalloc",
+          "struct_size",
+          "kmemdup",
+          "ida_init",
+          "mutex_init",
+          "init_completion"
+        ],
+        "call_edges": [
+          "thermal_zone_device_register_with_trips -> __builtin_strlen",
+          "thermal_zone_device_register_with_trips -> __fortify_strlen",
+          "thermal_zone_device_register_with_trips -> __builtin_constant_p",
+          "thermal_zone_device_register_with_trips -> _printk",
+          "thermal_zone_device_register_with_trips -> ERR_PTR"
+        ],
+        "state_statements": [
+          "kfree",
+          "return [B1.13];",
+          "[B2.4]->tzp",
+          "ida_free",
+          "[B4.4]->device",
+          "[B5.4]->device"
+        ],
+        "source_file": "drivers/thermal/thermal_core.c",
+        "source_excerpt": "1325: \ttz = kzalloc(struct_size(tz, trips, num_trips), GFP_KERNEL);\n1326: \tif (!tz)\n1327: \t\treturn ERR_PTR(-ENOMEM);\n1328: \n1329: \tif (tzp) {\n1330: \t\ttz->tzp = kmemdup(tzp, sizeof(*tzp), GFP_KERNEL);\n1331: \t\tif (!tz->tzp) {\n1332: \t\t\tresult = -ENOMEM;\n1333: \t\t\tgoto free_tz;\n1334: \t\t}\n1335: \t}\n1336: \n1337: \tINIT_LIST_HEAD(&tz->thermal_instances);\n1338: \tINIT_LIST_HEAD(&tz->node);\n1339: \tida_init(&tz->ida);\n1340: \tmutex_init(&tz->lock);\n1341: \tinit_completion(&tz->removal);\n1342: \tid = ida_alloc(&thermal_tz_ida, GFP_KERNEL);\n1343: \tif (id < 0) {\n1344: \t\tresult = id;\n1345: \t\tgoto free_tzp;\n1346: \t}\n1347: \n1348: \ttz->id = id;\n1349: \tstrscpy(tz->type, type, sizeof(tz->type));\n1350: \n1351: \ttz->ops = *ops;\n1352: \tif (!tz->ops.critical)\n1353: \t\ttz->ops.critical = thermal_zone_device_critical;\n1354: \n1355: \ttz->device.class = thermal_class;\n1356: \ttz->devdata = devdata;\n1357: \tmemcpy(tz->trips, trips, num_trips * sizeof(*trips));\n1358: \ttz->num_trips = num_trips;\n1359: \n1360: \tthermal_set_delay_jiffies(&tz->passive_delay_jiffies, passive_delay);\n1361: \tthermal_set_delay_jiffies(&tz->polling_delay_jiffies, polling_delay);\n1362: \n1363: \t/* sys I/F */\n1364: \t/* Add nodes that are always present via .groups */\n1365: \tresult = thermal_zone_create_device_groups(tz, mask);\n1366: \tif (result)\n1367: \t\tgoto remove_id;\n1368: \n1369: \t/* A new thermal zone needs to be updated anyway. */\n1370: \tatomic_set(&tz->need_update, 1);\n1371: \n1372: \tresult = dev_set_name(&tz->device, \"thermal_zone%d\", tz->id);\n1373: \tif (result) {\n1374: \t\tthermal_zone_destroy_device_groups(tz);\n1375: \t\tgoto remove_id;\n1376: \t}\n1377: \tresult = device_register(&tz->device);\n1378: \tif (result)\n1379: \t\tgoto release_device;\n1380: \n1381: \t/* Update 'this' zone's governor information */\n1382: \tmutex_lock(&thermal_governor_lock);\n1383: \n1384: \tif (tz->tzp)\n1385: \t\tgovernor = __find_governor(tz->tzp->governor_name);\n1386: \telse\n1387: \t\tgovernor = def_governor;\n1388: \n1389: \tresult = thermal_set_governor(tz, governor);",
+        "coverage_status": "partial",
+        "operations": [
+          "memcpy",
+          "init_completion",
+          "kfree",
+          "return [B1.13];",
+          "[B2.4]->tzp",
+          "ida_free"
+        ],
+        "acquisition_ops": [
+          "init_completion"
+        ],
+        "release_ops": []
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.72,
+        "origin": "analyzer_output"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "drivers/thermal/thermal_core.c",
+          "hunk_index": 0,
+          "source_line": 1357
+        },
+        "summary": "thermal_zone_device_register_with_trips in drivers/thermal/thermal_core.c provides CSA-backed pointer/resource lifecycle context near line 1357",
+        "statements": [
+          "1325: \ttz = kzalloc(struct_size(tz, trips, num_trips), GFP_KERNEL);",
+          "1326: \tif (!tz)",
+          "1327: \t\treturn ERR_PTR(-ENOMEM);",
+          "1328:",
+          "1329: \tif (tzp) {",
+          "1330: \t\ttz->tzp = kmemdup(tzp, sizeof(*tzp), GFP_KERNEL);"
+        ],
+        "guards": [
+          "!tz",
+          "tzp",
+          "!tz->tzp",
+          "id < 0"
+        ],
+        "call_boundary": [
+          "kzalloc",
+          "struct_size",
+          "kmemdup",
+          "ida_init",
+          "mutex_init",
+          "init_completion"
+        ],
+        "call_edges": [
+          "thermal_zone_device_register_with_trips -> __builtin_strlen",
+          "thermal_zone_device_register_with_trips -> __fortify_strlen",
+          "thermal_zone_device_register_with_trips -> __builtin_constant_p",
+          "thermal_zone_device_register_with_trips -> _printk",
+          "thermal_zone_device_register_with_trips -> ERR_PTR"
+        ],
+        "state_transitions": [
+          "operation(memcpy)",
+          "operation(init_completion)",
+          "operation(kfree)",
+          "operation(return [B1.13];)"
+        ],
+        "api_terms": [
+          "memcpy",
+          "init_completion",
+          "kfree",
+          "return [B1.13];",
+          "[B2.4]->tzp",
+          "ida_free"
+        ],
+        "related_symbols": [],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "collected_analyzers": [
+    "csa"
+  ],
+  "provenance_summary": {
+    "total_records": 4,
+    "origin_counts": {
+      "analyzer_internal": 2,
+      "analyzer_output": 2
+    },
+    "analyzer_internal_records": 2,
+    "analyzer_internal_fraction": 0.5,
+    "analyzer_backed_records": 4,
+    "analyzer_backed_fraction": 1.0,
+    "source_derived_records": 0,
+    "source_derived_fraction": 0.0
+  }
+}

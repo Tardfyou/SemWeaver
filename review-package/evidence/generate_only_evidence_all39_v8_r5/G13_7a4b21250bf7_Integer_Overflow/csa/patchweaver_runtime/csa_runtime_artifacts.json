@@ -1,0 +1,132 @@
+{
+  "cache_key": {
+    "cache_version": 16,
+    "patch_path": "/work/artifacts/fse_revision/generate_only_materialized_v1/cases/G13_7a4b21250bf7_Integer_Overflow/patches/commit.patch",
+    "evidence_dir": "/work/SemWeaver/artifacts/external/linux-evidence-clone-v8b",
+    "validate_path": "",
+    "source_files": [
+      "kernel/bpf/stackmap.c"
+    ],
+    "compile_commands_sha256": "b88db1aca7c4756cd4fa333b13603bae0c08780bc183f137f1f8add217a0c894"
+  },
+  "data": {
+    "available": true,
+    "clang_path": "/usr/lib/llvm-18/bin/clang",
+    "cfg_snapshots": [
+      {
+        "source_file": "kernel/bpf/stackmap.c",
+        "function_name": "stack_map_alloc",
+        "anchor_line": 98,
+        "branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "goto put_buffers;",
+          "if [B5.9]",
+          "goto free_smap;",
+          "if [B7.25]",
+          "if [B9.27]",
+          "if [B11.7]",
+          "[B18.11] ? ... : ...",
+          "([B22.4]) ? ... : ..."
+        ],
+        "resolved_branch_conditions": [
+          "((attr (ImplicitCastExpr, LValueToRValue, union bpf_attr *)->max_entries) (ImplicitCastExpr, LValueToRValue, __u32) - 1 (ImplicitCastExpr, IntegralCast, __u32)) < 2 (ImplicitCastExpr, IntegralCast, __u32) ? ... : ...",
+          "(sizeof ((attr->max_entries) - 1) <= 4 (ImplicitCastExpr, IntegralCast, unsigned long)) ? ... : ...",
+          "__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((attr (ImplicitCastExpr, LValueToRValue, union bpf_attr *)->max_entries) (ImplicitCastExpr, LValueToRValue, __u32) - 1 (ImplicitCastExpr, IntegralCast, __u32)) ? ... : ...",
+          "((attr (ImplicitCastExpr, LValueToRValue, union bpf_attr *)->max_entries) (ImplicitCastExpr, LValueToRValue, __u32) == 1 (ImplicitCastExpr, IntegralCast, __u32)) ? ... : ...",
+          "__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(attr (ImplicitCastExpr, LValueToRValue, union bpf_attr *)->max_entries (ImplicitCastExpr, LValueToRValue, __u32)) ? ... : ...",
+          "if attr (ImplicitCastExpr, LValueToRValue, union bpf_attr *)->map_flags (ImplicitCastExpr, LValueToRValue, __u32) & BPF_F_STACK_BUILD_ID (ImplicitCastExpr, IntegralCast, __u32)",
+          "if attr (ImplicitCastExpr, LValueToRValue, union bpf_attr *)->max_entries (ImplicitCastExpr, LValueToRValue, __u32) == 0 (ImplicitCastExpr, IntegralCast, __u32) || attr (ImplicitCastExpr, LValueToRValue, union bpf_attr *)->key_size (ImplicitCastExpr, LValueToRValue, __u32) != 4 (ImplicitCastExpr, IntegralCast, __u32) || value_size (ImplicitCastExpr, LValueToRValue, u32) < 8 (ImplicitCastExpr, IntegralCast, u32) || value_size (ImplicitCastExpr, LValueToRValue, u32) % 8 (ImplicitCastExpr, IntegralCast, u32)",
+          "attr (ImplicitCastExpr, LValueToRValue, union bpf_attr *)->max_entries (ImplicitCastExpr, LValueToRValue, __u32) == 0 (ImplicitCastExpr, IntegralCast, __u32) || attr (ImplicitCastExpr, LValueToRValue, union bpf_attr *)->key_size (ImplicitCastExpr, LValueToRValue, __u32) != 4 (ImplicitCastExpr, IntegralCast, __u32) || value_size (ImplicitCastExpr, LValueToRValue, u32) < 8 (ImplicitCastExpr, IntegralCast, u32) || ..."
+        ],
+        "cfg_value_bindings": [
+          "smap = bpf_map_area_alloc (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(u64, int))(cost (ImplicitCastExpr, LValueToRValue, u64), bpf_map_attr_numa_node (ImplicitCastExpr, FunctionToPointerDecay, int (*)(const union bpf_attr *))(attr (ImplicitCastExpr, LValueToRValue, union bpf_attr *) (ImplicitCastExpr, NoOp, const union bpf_attr *))) (ImplicitCastExpr, BitCast, struct bpf_stack_map *)",
+          "n_buckets = (__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(attr (ImplicitCastExpr, LValueToRValue, union bpf_attr *)->max_entries (ImplicitCastExpr, LValueToRValue, __u32)) ? ((([B24.1] (ImplicitCastExpr, LValueToRValue, union bpf_attr *)->max_entries) (ImplicitCastExpr, LValueToRValue, __u32) == 1 (ImplicitCastExpr, IntegralCast, __u32)) ? 1 (ImplicitCastExpr, IntegralCast, unsigned long) : (1UL << (([B23.2] (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())([B23.8] - [B23.10]) ? (([B18.8]) < [B18.10] ? 0 : [B17.1] - [B17.13]) : ([B22.1] <= [B22.3]) ? [B20.2]([B20.10]) : [B21.2]([B21.11])) + 1))) : __roundup_pow_of_two (ImplicitCastExpr, FunctionToPointerDecay, unsigned long (*)(unsigned long))([B25.3] (ImplicitCastExpr, LValueToRValue, union bpf_attr *)->max_entries (ImplicitCastExpr, LValueToRValue, __u32) (ImplicitCastExpr, IntegralCast, unsigned long))) (ImplicitCastExpr, IntegralCast, u64)",
+          "u32 value_size = attr->value_size;",
+          "sizeof ((attr->max_entries) - 1) <= 4 (ImplicitCastExpr, IntegralCast, unsigned long)",
+          "attr (ImplicitCastExpr, LValueToRValue, union bpf_attr *)->key_size (ImplicitCastExpr, LValueToRValue, __u32) != 4 (ImplicitCastExpr, IntegralCast, __u32)",
+          "attr (ImplicitCastExpr, LValueToRValue, union bpf_attr *)->max_entries (ImplicitCastExpr, LValueToRValue, __u32) == 0 (ImplicitCastExpr, IntegralCast, __u32)",
+          "(attr (ImplicitCastExpr, LValueToRValue, union bpf_attr *)->max_entries) (ImplicitCastExpr, LValueToRValue, __u32) == 1 (ImplicitCastExpr, IntegralCast, __u32)",
+          "err = get_callchain_buffers (ImplicitCastExpr, FunctionToPointerDecay, int (*)(int))(sysctl_perf_event_max_stack (ImplicitCastExpr, LValueToRValue, int))"
+        ],
+        "call_edges": [
+          "stack_map_alloc -> ERR_PTR",
+          "stack_map_alloc -> __compiletime_assert_1317",
+          "stack_map_alloc -> __builtin_constant_p",
+          "stack_map_alloc -> __builtin_clzll",
+          "stack_map_alloc -> __ilog2_u32",
+          "stack_map_alloc -> __ilog2_u64",
+          "stack_map_alloc -> __roundup_pow_of_two",
+          "stack_map_alloc -> bpf_map_area_alloc",
+          "stack_map_alloc -> bpf_map_attr_numa_node",
+          "stack_map_alloc -> bpf_map_init_from_attr",
+          "stack_map_alloc -> get_callchain_buffers",
+          "stack_map_alloc -> prealloc_elems_and_freelist"
+        ],
+        "call_targets": [
+          "ERR_PTR",
+          "__compiletime_assert_1317",
+          "__builtin_constant_p",
+          "__builtin_clzll",
+          "__ilog2_u32",
+          "__ilog2_u64",
+          "__roundup_pow_of_two",
+          "bpf_map_area_alloc",
+          "bpf_map_attr_numa_node",
+          "bpf_map_init_from_attr"
+        ],
+        "state_statements": [
+          "bpf_map_area_free",
+          "return [B1.13];",
+          "[B3.2]->map",
+          "return [B3.4];",
+          "prealloc_elems_and_freelist",
+          "[B5.6] = [B5.5]",
+          "[B7.4]->map",
+          "[B7.14]->n_buckets",
+          "[B7.15] = [B7.12]",
+          "[B7.22] = [B7.21]",
+          "return [B8.7];",
+          "sizeof(struct stack_map_bucket *)"
+        ],
+        "field_accesses": [
+          "attr->max_entries",
+          "attr->value_size"
+        ],
+        "return_statements": [
+          "return [B1.13];",
+          "return [B3.4];",
+          "return [B8.7];",
+          "return [B10.7];",
+          "return [B27.7];",
+          "return [B29.7];"
+        ],
+        "dump_excerpt": " --- Call graph Dump --- \n  Function: < root > calls: offset_to_ptr __kasan_check_read __kasan_check_write kasan_check_read kasan_check_write __read_once_word_nocheck read_word_at_a_time array_index_mask_nospec INIT_LIST_HEAD __compiletime_assert_0 __compiletime_assert_1 __list_add_valid __builtin_expect __list_add_valid_or_report __list_del_entry_valid __list_del_entry_valid_or_report __list_add __compiletime_assert_2 list_add list_add_tail __list_del __compiletime_assert_3 __list_del_clearprev __list_del_entry list_del list_replace list_replace_init list_swap list_del_init list_move list_move_tail list_bulk_move_tail list_is_first list_is_last list_is_head list_empty __compiletime_assert_4 list_del_init_careful __compiletime_assert_5 __atomic_signal_fence __compiletime_assert_6 __compiletime_assert_7 list_empty_careful __compiletime_assert_8 __compiletime_assert_9 __compiletime_assert_10 list_rotate_left list_rotate_to_front list_is_singular __list_cut_position list_cut_position list_cut_before __list_splice list_splice list_splice_tail list_splice_init list_splice_tail_init list_count_nodes INIT_HLIST_NODE hlist_unhashed hlist_unhashed_lockless __compiletime_assert_11 hlist_empty __compiletime_assert_12 __hlist_del __compiletime_assert_13 __compiletime_assert_14 hlist_del hlist_del_init hlist_add_head __compiletime_assert_15 __compiletime_assert_16 __compiletime_assert_17 __compiletime_assert_18 hlist_add_before __compiletime_assert_19 __compiletime_assert_20 __compiletime_assert_21 __compiletime_assert_22 hlist_add_behind __compiletime_assert_23 __compiletime_assert_24 __compiletime_assert_25 __compiletime_assert_26 hlist_add_fake hlist_fake hlist_is_singular_node hlist_move_list hlist_splice_init set_arch_panic_timeout initcall_from_entry gen_endbr gen_endbr_poison is_endbr __arch_swab32 __arch_swab64 __fswab16 __fswab32 __fswab64 __fswahw32 __fswahb32 __swab __builtin_bswap64 __swab16p __builtin_bswap16 __swab32p __builtin_bswap32 __swab64p __swahw32p __builtin_constant_p __swahb32p __swab16s __swab32s __swab64s __swahw32s __swahb32s swab16_array swab32_array swab64_array __cpu_to_le64p __le64_to_cpup __cpu_to_le32p __le32_to_cpup __cpu_to_le16p __le16_to_cpup __cpu_to_be64p __be64_to_cpup __cpu_to_be32p __be32_to_cpup __cpu_to_be16p __be16_to_cpup le16_add_cpu le32_add_cpu le64_add_cpu le32_to_cpu_array cpu_to_le32_array be16_add_cpu be32_add_cpu be64_add_cpu cpu_to_be32_array be32_to_cpu_array printk_get_level printk_skip_level printk_skip_headers arch_static_branch arch_static_branch_jump jump_entry_code jump_entry_target jump_entry_key jump_entry_is_branch jump_entry_is_init jump_entry_set_init jump_entry_size arch_jump_entry_size static_key_false static_key_true mul_u64_u64_div_u64 mul_u64_u32_div reciprocal_scale int_sqrt64 int_sqrt __iter_div_u64_rem div_u64_rem div_s64_rem div64_u64_rem div64_u64 div64_s64 div_u64 div_s64 mul_u32_u32 mul_u64_u32_shr mul_u64_u64_shr mul_s64_u64_shr in_range64 in_range32 timespec64_equal timespec64_compare timespec64_add set_normalized_timespec64 timespec64_sub timespec64_valid timespec64_valid_strict timespec64_valid_settod timespec64_to_ns timespec64_add_ns sme_get_me_mask vdso_encode_cpunode vdso_read_cpunode __loadsegment_fs get_max_mapped gate_offset gate_segment pgprot_nx native_make_pgd native_pgd_val pgd_flags native_make_p4d native_p4d_val native_make_pud native_pud_val native_make_pmd native_pmd_val p4d_pfn_mask p4d_flags_mask p4d_flags pud_pfn_mask pud_flags_mask pud_flags pmd_pfn_mask pmd_flags_mask pmd_flags native_make_pte native_pte_val pte_flags protval_4k_2_large pgprot_4k_2_large protval_large_2_4k pgprot_large_2_4k x86_this_cpu_constant_test_bit x86_this_cpu_variable_test_bit get_current __bad_size_call_parameter alternative_msr_write indirect_branch_prediction_barrier mds_clear_cpu_buffers mds_idle_clear_cpu_buffers ____wrong_branch_error regs_return_value regs_set_return_value user_mode v8086_mode user_64bit_mode any_64bit_mode ip_within_syscall_gap kernel_stac",
+        "error": "",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/generate_only_evidence_all39_v8_r5/G13_7a4b21250bf7_Integer_Overflow/csa/patchweaver_runtime/csa_raw/kernel-bpf-stackmap.c-stack_map_alloc.txt",
+        "raw_output_sha256": "0d38d82d464f9c858313ef9b5af3198a286f8df55b911a9522a43fb823cd00f9",
+        "command_sha256": "ac8d3b0f044d1e3fc025c0c14921df54c801b56cfff89cd544ea3b6eeddeef07",
+        "clang_command_preview": "/usr/lib/llvm-18/bin/clang --analyze -nostdinc -I./arch/x86/include -I./arch/x86/include/generated -I./include -I./arch/x86/include/uapi -I./arch/x86/include/generated/uapi -I./...",
+        "return_code": 0
+      }
+    ],
+    "call_edges": [
+      "stack_map_alloc -> ERR_PTR",
+      "stack_map_alloc -> __compiletime_assert_1317",
+      "stack_map_alloc -> __builtin_constant_p",
+      "stack_map_alloc -> __builtin_clzll",
+      "stack_map_alloc -> __ilog2_u32",
+      "stack_map_alloc -> __ilog2_u64",
+      "stack_map_alloc -> __roundup_pow_of_two",
+      "stack_map_alloc -> bpf_map_area_alloc",
+      "stack_map_alloc -> bpf_map_attr_numa_node",
+      "stack_map_alloc -> bpf_map_init_from_attr",
+      "stack_map_alloc -> get_callchain_buffers",
+      "stack_map_alloc -> prealloc_elems_and_freelist"
+    ],
+    "error": ""
+  }
+}

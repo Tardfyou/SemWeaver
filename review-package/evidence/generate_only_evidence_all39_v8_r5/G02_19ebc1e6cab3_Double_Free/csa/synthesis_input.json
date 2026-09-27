@@ -1,0 +1,1287 @@
+{
+  "analyzer_id": "csa",
+  "detector_artifact": "checker_plugin",
+  "primary_pattern": "double_free",
+  "objective": "Synthesize a path-sensitive double_free detector that encodes the same local state, guards, and lifecycle mechanism evidenced by the patch, while still generalizing to semantically equivalent sites.",
+  "mechanism_contract": {
+    "mechanism_family": "resource_lifetime_violation",
+    "semantic_dimensions": [
+      "resource identity or alias",
+      "release event count",
+      "reinitialization or nulling barrier"
+    ],
+    "trigger_invariants": [
+      "the same symbolic resource is released more than once on a feasible path",
+      "no reallocation, rebinding, or nulling separates the release events"
+    ],
+    "silence_invariants": [
+      "the resource is nulled, transferred, or rebound after the first release",
+      "a guard prevents the second release on the active path"
+    ],
+    "transfer_axes": [
+      "equivalent repeated-release sequences for the same resource role",
+      "equivalent ownership handoff patterns across sibling helpers",
+      "equivalent guard or barrier predicates on sibling paths",
+      "equivalent local state transitions around the same sink or dereference",
+      "equivalent ownership or release/reinit lifecycle on the same symbolic resource"
+    ],
+    "forbidden_shortcuts": [
+      "bind the detector to fixed file paths, line numbers, or exact patch strings",
+      "broaden into unrelated bug families just to improve hit count",
+      "count free/delete calls without tracking resource identity",
+      "treat unrelated release sites as the same resource lifecycle",
+      "placeholder helper logic or empty ProgramState modeling"
+    ],
+    "evidence_backed_axes": [
+      "path guards and barrier conditions",
+      "resource lifecycle",
+      "state transitions",
+      "semantic trigger slice"
+    ]
+  },
+  "detector_name_hint": "",
+  "focus_files": [],
+  "focus_functions": [],
+  "hypotheses": [
+    "The patch likely changes a resource lifecycle or stale-state transition."
+  ],
+  "required_evidence_types": [
+    "patch_fact",
+    "allocation_lifecycle",
+    "state_transition"
+  ],
+  "missing_evidence_types": [],
+  "evidence_degraded": false,
+  "patch_mechanism_signals": [],
+  "silencing_conditions": [],
+  "retry_guidance": [],
+  "selected_evidence_ids": [
+    "csa_guard_0",
+    "csa_lifecycle_0",
+    "csa_state_0",
+    "csa_validation_semantic_slice_0"
+  ],
+  "selected_evidence": [
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "fs/smb/client/smb2ops.c",
+        "function": "smb2_set_ea"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "if is_replayable_error (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(int))(rc (ImplicitCastExpr, LValueToRValue, int)) (ImplicitCastExpr, IntegralCast, int) && smb2_should_replay (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(struct cifs_tcon *, int *, int *))(tcon (ImplicitCastExpr, LValueToRValue, struct cifs_tcon *), &retries, &cur_sleep) (ImplicitCastExpr, IntegralCast, int)",
+        "summary": "Analyzer CFG for smb2_set_ea in fs/smb/client/smb2ops.c: bindings: rc = [B65.2]->server (ImplicitCastExpr, LValueToRValue, struct TCP_Server_Info *)->ops (ImplicitCastExpr, LValueToRValue, struct smb_version_operations *)->query_all_EAs (ImplicitCastExpr, LValueToRValue, ssize_t (*)(const unsigned int, struct cifs_tcon *, const unsigned char *, const unsigned char *, char *, size_t, struct cifs_sb_info *))(xid (ImplicitCastExpr, LValueToRValue, unsigned int), tcon (ImplicitCastExpr, LValueToRValue, struct cifs_tcon *), path (ImplicitCastExpr, LValueToRValue, const char *) (ImplicitCastExpr, BitCast, const unsigned char *), ea_name (ImplicitCastExpr, LValueToRValue, const char *) (ImplicitCastExpr, BitCast, const unsigned char *), ((void *)0 (CStyleCastExpr, NullToPointer, void *)) (ImplicitCastExpr, NullToPointer, char *), 0 (ImplicitCastExpr, IntegralCast, size_t), cifs_sb (ImplicitCastExpr, LValueToRValue, struct cifs_sb_info *)) (ImplicitCastExpr, IntegralCast, int); struct cifs_ses *ses = tcon->ses; | branches: if is_replayable_error (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(int))(rc (ImplicitCastExpr, LValueToRValue, int)) (ImplicitCastExpr, IntegralCast, int) && smb2_should_replay (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(struct cifs_tcon *, int *, int *))(tcon (ImplicitCastExpr, LValueToRValue, struct cifs_tcon *), &retries, &cur_sleep) (ImplicitCastExpr, IntegralCast, int); if smb3_encryption_required (ImplicitCastExpr, FunctionToPointerDecay, int (*)(const struct cifs_tcon *))(tcon (ImplicitCastExpr, LValueToRValue, struct cifs_tcon *) (ImplicitCastExpr, NoOp, const struct cifs_tcon *)) | calls: smb2_set_ea -> __builtin_strlen; smb2_set_ea -> __fortify_strlen",
+        "summary_line": 1161,
+        "state_before": [
+          "buffer(ea->ea_data)",
+          "buffer(tcon->ses)",
+          "sinks(le16_to_cpu, move_smb2_ea_to_cifs)"
+        ],
+        "state_after": [
+          "cfg_binding(rc = [B65.2]->server (ImplicitCastExpr, LValueToRValue, struct TCP_Server_Info *)->ops (ImplicitCastExpr, LValueToRValue, struct smb_version_operations *)->query_all_EAs (ImplicitCastExpr, LValueToRValue, ssize_t (*)(const unsigned int, struct cifs_tcon *, const unsigned char *, const unsigned char *, char *, size_t, struct cifs_sb_info *))(xid (ImplicitCastExpr, LValueToRValue, unsigned int), tcon (ImplicitCastExpr, LValueToRValue, struct cifs_tcon *), path (ImplicitCastExpr, LValueToRValue, const char *) (ImplicitCastExpr, BitCast, const unsigned char *), ea_name (ImplicitCastExpr, LValueToRValue, const char *) (ImplicitCastExpr, BitCast, const unsigned char *), ((void *)0 (CStyleCastExpr, NullToPointer, void *)) (ImplicitCastExpr, NullToPointer, char *), 0 (ImplicitCastExpr, IntegralCast, size_t), cifs_sb (ImplicitCastExpr, LValueToRValue, struct cifs_sb_info *)) (ImplicitCastExpr, IntegralCast, int))",
+          "cfg_binding(struct cifs_ses *ses = tcon->ses;)",
+          "cfg_branch(if is_replayable_error (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(int))(rc (ImplicitCastExpr, LValueToRValue, int)) (ImplicitCastExpr, IntegralCast, int) && smb2_should_replay (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(struct cifs_tcon *, int *, int *))(tcon (ImplicitCastExpr, LValueToRValue, struct cifs_tcon *), &retries, &cur_sleep) (ImplicitCastExpr, IntegralCast, int))",
+          "cfg_branch(if smb3_encryption_required (ImplicitCastExpr, FunctionToPointerDecay, int (*)(const struct cifs_tcon *))(tcon (ImplicitCastExpr, LValueToRValue, struct cifs_tcon *) (ImplicitCastExpr, NoOp, const struct cifs_tcon *)))"
+        ],
+        "tracked_symbols": [
+          "ea->ea_data",
+          "tcon->ses",
+          "rsp->OutputBufferOffset",
+          "rsp->OutputBufferLength",
+          "vars->rqst",
+          "vars->rsp_iov"
+        ],
+        "buffer_fields": [
+          "ea->ea_data",
+          "tcon->ses",
+          "rsp->OutputBufferOffset",
+          "rsp->OutputBufferLength",
+          "vars->rqst",
+          "vars->rsp_iov"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "smb2_set_ea"
+        ],
+        "call_targets": [
+          "le16_to_cpu",
+          "move_smb2_ea_to_cifs",
+          "le32_to_cpu",
+          "free_rsp_buf",
+          "smb2_set_ea",
+          "strlen",
+          "cifs_pick_channel",
+          "cifs_convert_path_to_utf16"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,fs/smb/client/.smb2ops.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/uapi -I./arch/x86/i...",
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "goto replay_again;",
+          "if [B4.12] && [B3.10]",
+          "[B4.12] && ...",
+          "if [B8.10]",
+          "goto sea_exit;",
+          "if [B10.56]"
+        ],
+        "call_edges": [
+          "smb2_set_ea -> __builtin_strlen",
+          "smb2_set_ea -> __fortify_strlen",
+          "smb2_set_ea -> cifs_pick_channel",
+          "smb2_set_ea -> smb3_encryption_required",
+          "smb2_set_ea -> cifs_convert_path_to_utf16",
+          "smb2_set_ea -> kzalloc_noprof"
+        ],
+        "state_statements": [
+          "return [B1.2];",
+          "kfree",
+          "SMB2_open_free",
+          "SMB2_set_info_free",
+          "SMB2_close_free",
+          "free_rsp_buf"
+        ],
+        "source_file": "fs/smb/client/smb2ops.c"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "fs/smb/client/smb2ops.c",
+          "hunk_index": 0,
+          "source_line": 1161
+        },
+        "summary": "Analyzer CFG for smb2_set_ea in fs/smb/client/smb2ops.c: bindings: rc = [B65.2]->server (ImplicitCastExpr, LValueToRValue, struct TCP_Server_Info *)->ops (ImplicitCastExpr, LValueToRValue, struct smb_version_operations *)->query_all_EAs (ImplicitCastExpr, LValueToRValue, ssize_t (*)(const unsigned int, struct cifs_tcon *, const unsigned char *, const unsigned char *, char *, size_t, struct cifs_sb_info *))(xid (ImplicitCastExpr, LValueToRValue, unsigned int), tcon (ImplicitCastExpr, LValueToRValue, struct cifs_tcon *), path (ImplicitCastExpr, LValueToRValue, const char *) (ImplicitCastExpr, BitCast, const unsigned char *), ea_name (ImplicitCastExpr, LValueToRValue, const char *) (ImplicitCastExpr, BitCast, const unsigned char *), ((void *)0 (CStyleCastExpr, NullToPointer, void *)) (ImplicitCastExpr, NullToPointer, char *), 0 (ImplicitCastExpr, IntegralCast, size_t), cifs_sb (ImplicitCastExpr, LValueToRValue, struct cifs_sb_info *)) (ImplicitCastExpr, IntegralCast, int); struct cifs_ses *ses = tcon->ses; | branches: if is_replayable_error (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(int))(rc (ImplicitCastExpr, LValueToRValue, int)) (ImplicitCastExpr, IntegralCast, int) && smb2_should_replay (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(struct cifs_tcon *, int *, int *))(tcon (ImplicitCastExpr, LValueToRValue, struct cifs_tcon *), &retries, &cur_sleep) (ImplicitCastExpr, IntegralCast, int); if smb3_encryption_required (ImplicitCastExpr, FunctionToPointerDecay, int (*)(const struct cifs_tcon *))(tcon (ImplicitCastExpr, LValueToRValue, struct cifs_tcon *) (ImplicitCastExpr, NoOp, const struct cifs_tcon *)) | calls: smb2_set_ea -> __builtin_strlen; smb2_set_ea -> __fortify_strlen",
+        "statements": [
+          "1129:",
+          "1130: \tinfo = (struct smb2_file_full_ea_info *)(",
+          "1131: \t\t\tle16_to_cpu(rsp->OutputBufferOffset) + (char *)rsp);",
+          "1132: \trc = move_smb2_ea_to_cifs(ea_data, buf_size, info,",
+          "1133: \t\t\tle32_to_cpu(rsp->OutputBufferLength), ea_name);",
+          "1134:"
+        ],
+        "guards": [
+          "if is_replayable_error (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(int))(rc (ImplicitCastExpr, LValueToRValue, int)) (ImplicitCastExpr, IntegralCast, int) && smb2_should_replay (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(struct cifs_tcon *, int *, int *))(tcon (ImplicitCastExpr, LValueToRValue, struct cifs_tcon *), &retries, &cur_sleep) (ImplicitCastExpr, IntegralCast, int)",
+          "if smb3_encryption_required (ImplicitCastExpr, FunctionToPointerDecay, int (*)(const struct cifs_tcon *))(tcon (ImplicitCastExpr, LValueToRValue, struct cifs_tcon *) (ImplicitCastExpr, NoOp, const struct cifs_tcon *))",
+          "goto replay_again;",
+          "is_replayable_error (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(int))(rc (ImplicitCastExpr, LValueToRValue, int)) (ImplicitCastExpr, IntegralCast, int) && ..."
+        ],
+        "call_boundary": [
+          "le16_to_cpu",
+          "move_smb2_ea_to_cifs",
+          "le32_to_cpu",
+          "free_rsp_buf",
+          "smb2_set_ea",
+          "strlen"
+        ],
+        "call_edges": [
+          "smb2_set_ea -> __builtin_strlen",
+          "smb2_set_ea -> __fortify_strlen",
+          "smb2_set_ea -> cifs_pick_channel",
+          "smb2_set_ea -> smb3_encryption_required",
+          "smb2_set_ea -> cifs_convert_path_to_utf16",
+          "smb2_set_ea -> kzalloc_noprof",
+          "smb2_set_ea -> smb2_query_info_compound",
+          "smb2_set_ea -> free_rsp_buf"
+        ],
+        "state_transitions": [
+          "cfg_binding(rc = [B65.2]->server (ImplicitCastExpr, LValueToRValue, struct TCP_Server_Info *)->ops (ImplicitCastExpr, LValueToRValue, struct smb_version_operations *)->query_all_EAs (ImplicitCastExpr, LValueToRValue, ssize_t (*)(const unsigned int, struct cifs_tcon *, const unsigned char *, const unsigned char *, char *, size_t, struct cifs_sb_info *))(xid (ImplicitCastExpr, LValueToRValue, unsigned int), tcon (ImplicitCastExpr, LValueToRValue, struct cifs_tcon *), path (ImplicitCastExpr, LValueToRValue, const char *) (ImplicitCastExpr, BitCast, const unsigned char *), ea_name (ImplicitCastExpr, LValueToRValue, const char *) (ImplicitCastExpr, BitCast, const unsigned char *), ((void *)0 (CStyleCastExpr, NullToPointer, void *)) (ImplicitCastExpr, NullToPointer, char *), 0 (ImplicitCastExpr, IntegralCast, size_t), cifs_sb (ImplicitCastExpr, LValueToRValue, struct cifs_sb_info *)) (ImplicitCastExpr, IntegralCast, int))",
+          "cfg_binding(struct cifs_ses *ses = tcon->ses;)",
+          "cfg_branch(if is_replayable_error (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(int))(rc (ImplicitCastExpr, LValueToRValue, int)) (ImplicitCastExpr, IntegralCast, int) && smb2_should_replay (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(struct cifs_tcon *, int *, int *))(tcon (ImplicitCastExpr, LValueToRValue, struct cifs_tcon *), &retries, &cur_sleep) (ImplicitCastExpr, IntegralCast, int))",
+          "cfg_branch(if smb3_encryption_required (ImplicitCastExpr, FunctionToPointerDecay, int (*)(const struct cifs_tcon *))(tcon (ImplicitCastExpr, LValueToRValue, struct cifs_tcon *) (ImplicitCastExpr, NoOp, const struct cifs_tcon *)))",
+          "return [B1.2];",
+          "kfree"
+        ],
+        "api_terms": [
+          "__builtin_strlen",
+          "__fortify_strlen",
+          "cifs_pick_channel",
+          "smb3_encryption_required",
+          "cifs_convert_path_to_utf16",
+          "kzalloc_noprof"
+        ],
+        "related_symbols": [
+          "ea->ea_data",
+          "tcon->ses",
+          "rsp->OutputBufferOffset",
+          "rsp->OutputBufferLength",
+          "vars->rqst",
+          "vars->rsp_iov"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_lifecycle_0",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "fs/smb/client/smb2ops.c",
+        "function": "smb2_set_ea"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "smb2_set_ea in fs/smb/client/smb2ops.c reaches free_rsp_buf",
+        "state_before": [
+          "buffer(ea->ea_data)",
+          "buffer(tcon->ses)",
+          "sinks(le16_to_cpu, move_smb2_ea_to_cifs)"
+        ],
+        "state_after": [
+          "transition(free_rsp_buf)"
+        ],
+        "tracked_symbols": [
+          "ea->ea_data",
+          "tcon->ses",
+          "rsp->OutputBufferOffset",
+          "rsp->OutputBufferLength",
+          "vars->rqst",
+          "vars->rsp_iov"
+        ],
+        "buffer_fields": [
+          "ea->ea_data",
+          "tcon->ses",
+          "rsp->OutputBufferOffset",
+          "rsp->OutputBufferLength",
+          "vars->rqst",
+          "vars->rsp_iov"
+        ],
+        "coverage_status": "full",
+        "operations": [
+          "free_rsp_buf"
+        ],
+        "functions": [
+          "smb2_set_ea"
+        ],
+        "call_edges": [
+          "smb2_set_ea -> __builtin_strlen",
+          "smb2_set_ea -> __fortify_strlen",
+          "smb2_set_ea -> cifs_pick_channel",
+          "smb2_set_ea -> smb3_encryption_required",
+          "smb2_set_ea -> cifs_convert_path_to_utf16",
+          "smb2_set_ea -> kzalloc_noprof"
+        ],
+        "source_file": "fs/smb/client/smb2ops.c"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "fs/smb/client/smb2ops.c",
+          "hunk_index": 0,
+          "source_line": 1161
+        },
+        "summary": "smb2_set_ea in fs/smb/client/smb2ops.c reaches free_rsp_buf",
+        "statements": [
+          "1129:",
+          "1130: \tinfo = (struct smb2_file_full_ea_info *)(",
+          "1131: \t\t\tle16_to_cpu(rsp->OutputBufferOffset) + (char *)rsp);",
+          "1132: \trc = move_smb2_ea_to_cifs(ea_data, buf_size, info,",
+          "1133: \t\t\tle32_to_cpu(rsp->OutputBufferLength), ea_name);",
+          "1134:"
+        ],
+        "guards": [
+          "goto replay_again;",
+          "if [B4.12] && [B3.10]",
+          "[B4.12] && ..."
+        ],
+        "call_boundary": [
+          "le16_to_cpu",
+          "move_smb2_ea_to_cifs",
+          "le32_to_cpu",
+          "free_rsp_buf",
+          "smb2_set_ea",
+          "strlen"
+        ],
+        "call_edges": [
+          "smb2_set_ea -> __builtin_strlen",
+          "smb2_set_ea -> __fortify_strlen",
+          "smb2_set_ea -> cifs_pick_channel",
+          "smb2_set_ea -> smb3_encryption_required",
+          "smb2_set_ea -> cifs_convert_path_to_utf16",
+          "smb2_set_ea -> kzalloc_noprof",
+          "smb2_set_ea -> smb2_query_info_compound",
+          "smb2_set_ea -> free_rsp_buf"
+        ],
+        "state_transitions": [
+          "transition(free_rsp_buf)",
+          "return [B1.2];",
+          "kfree",
+          "SMB2_open_free",
+          "SMB2_set_info_free"
+        ],
+        "api_terms": [
+          "free_rsp_buf",
+          "__builtin_strlen",
+          "__fortify_strlen",
+          "cifs_pick_channel",
+          "smb3_encryption_required",
+          "cifs_convert_path_to_utf16"
+        ],
+        "related_symbols": [
+          "ea->ea_data",
+          "tcon->ses",
+          "rsp->OutputBufferOffset",
+          "rsp->OutputBufferLength",
+          "vars->rqst",
+          "vars->rsp_iov"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.9
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "fs/smb/client/smb2ops.c",
+        "function": "smb2_set_ea"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "smb2_set_ea in fs/smb/client/smb2ops.c: cfg_calls=smb2_set_ea -> __builtin_strlen; smb2_set_ea -> __fortify_strlen",
+        "state_before": [
+          "buffer(ea->ea_data)",
+          "buffer(tcon->ses)",
+          "sinks(le16_to_cpu, move_smb2_ea_to_cifs)"
+        ],
+        "state_after": [
+          "transition(return [B1.2];)",
+          "transition(kfree)",
+          "transition(SMB2_open_free)"
+        ],
+        "tracked_symbols": [
+          "ea->ea_data",
+          "tcon->ses",
+          "rsp->OutputBufferOffset",
+          "rsp->OutputBufferLength",
+          "vars->rqst",
+          "vars->rsp_iov"
+        ],
+        "buffer_fields": [
+          "ea->ea_data",
+          "tcon->ses",
+          "rsp->OutputBufferOffset",
+          "rsp->OutputBufferLength",
+          "vars->rqst",
+          "vars->rsp_iov"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "smb2_set_ea"
+        ],
+        "call_targets": [
+          "le16_to_cpu",
+          "move_smb2_ea_to_cifs",
+          "le32_to_cpu",
+          "free_rsp_buf",
+          "smb2_set_ea",
+          "strlen",
+          "cifs_pick_channel",
+          "cifs_convert_path_to_utf16"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "goto replay_again;",
+          "if [B4.12] && [B3.10]",
+          "[B4.12] && ...",
+          "if [B8.10]"
+        ],
+        "call_edges": [
+          "smb2_set_ea -> __builtin_strlen",
+          "smb2_set_ea -> __fortify_strlen",
+          "smb2_set_ea -> cifs_pick_channel",
+          "smb2_set_ea -> smb3_encryption_required",
+          "smb2_set_ea -> cifs_convert_path_to_utf16",
+          "smb2_set_ea -> kzalloc_noprof"
+        ],
+        "state_statements": [
+          "return [B1.2];",
+          "kfree",
+          "SMB2_open_free",
+          "SMB2_set_info_free",
+          "SMB2_close_free",
+          "free_rsp_buf",
+          "[B6.19] = [B6.18]",
+          "[B10.20]->close_iov"
+        ],
+        "return_statements": [
+          "return [B1.2];",
+          "return [B73.2];",
+          "return [B75.2];"
+        ],
+        "source_file": "fs/smb/client/smb2ops.c"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "fs/smb/client/smb2ops.c",
+          "hunk_index": 0,
+          "source_line": 1161
+        },
+        "summary": "smb2_set_ea in fs/smb/client/smb2ops.c: cfg_calls=smb2_set_ea -> __builtin_strlen; smb2_set_ea -> __fortify_strlen",
+        "statements": [
+          "1129:",
+          "1130: \tinfo = (struct smb2_file_full_ea_info *)(",
+          "1131: \t\t\tle16_to_cpu(rsp->OutputBufferOffset) + (char *)rsp);",
+          "1132: \trc = move_smb2_ea_to_cifs(ea_data, buf_size, info,",
+          "1133: \t\t\tle32_to_cpu(rsp->OutputBufferLength), ea_name);",
+          "1134:"
+        ],
+        "guards": [
+          "goto replay_again;",
+          "if [B4.12] && [B3.10]",
+          "[B4.12] && ..."
+        ],
+        "call_boundary": [
+          "le16_to_cpu",
+          "move_smb2_ea_to_cifs",
+          "le32_to_cpu",
+          "free_rsp_buf",
+          "smb2_set_ea",
+          "strlen"
+        ],
+        "call_edges": [
+          "smb2_set_ea -> __builtin_strlen",
+          "smb2_set_ea -> __fortify_strlen",
+          "smb2_set_ea -> cifs_pick_channel",
+          "smb2_set_ea -> smb3_encryption_required",
+          "smb2_set_ea -> cifs_convert_path_to_utf16",
+          "smb2_set_ea -> kzalloc_noprof",
+          "smb2_set_ea -> smb2_query_info_compound",
+          "smb2_set_ea -> free_rsp_buf"
+        ],
+        "state_transitions": [
+          "transition(return [B1.2];)",
+          "transition(kfree)",
+          "transition(SMB2_open_free)",
+          "return [B1.2];",
+          "kfree",
+          "SMB2_open_free"
+        ],
+        "api_terms": [
+          "__builtin_strlen",
+          "__fortify_strlen",
+          "cifs_pick_channel",
+          "smb3_encryption_required",
+          "cifs_convert_path_to_utf16",
+          "kzalloc_noprof"
+        ],
+        "related_symbols": [
+          "ea->ea_data",
+          "tcon->ses",
+          "rsp->OutputBufferOffset",
+          "rsp->OutputBufferLength",
+          "vars->rqst",
+          "vars->rsp_iov"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.88
+    },
+    {
+      "evidence_id": "csa_validation_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "fs/smb/client/smb2ops.c",
+        "function": "smb2_set_ea"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at fs/smb/client/smb2ops.c:1161",
+        "state_before": [
+          "buffer(ea->ea_data)",
+          "buffer(tcon->ses)",
+          "sinks(le16_to_cpu, move_smb2_ea_to_cifs)"
+        ],
+        "state_after": [
+          "diagnostic(csa)"
+        ],
+        "buffer_fields": [
+          "ea->ea_data",
+          "tcon->ses",
+          "rsp->OutputBufferOffset",
+          "rsp->OutputBufferLength",
+          "vars->rqst",
+          "vars->rsp_iov"
+        ],
+        "coverage_status": "partial",
+        "functions": [
+          "smb2_set_ea"
+        ],
+        "call_targets": [
+          "le16_to_cpu",
+          "move_smb2_ea_to_cifs",
+          "le32_to_cpu",
+          "free_rsp_buf",
+          "smb2_set_ea",
+          "strlen"
+        ],
+        "call_edges": [
+          "smb2_set_ea -> __builtin_strlen",
+          "smb2_set_ea -> __fortify_strlen",
+          "smb2_set_ea -> cifs_pick_channel",
+          "smb2_set_ea -> smb3_encryption_required",
+          "smb2_set_ea -> cifs_convert_path_to_utf16",
+          "smb2_set_ea -> kzalloc_noprof"
+        ],
+        "state_statements": [
+          "return [B1.2];",
+          "kfree",
+          "SMB2_open_free",
+          "SMB2_set_info_free",
+          "SMB2_close_free",
+          "free_rsp_buf"
+        ],
+        "source_file": "fs/smb/client/smb2ops.c"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "fs/smb/client/smb2ops.c",
+          "hunk_index": 0,
+          "source_line": 1161
+        },
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at fs/smb/client/smb2ops.c:1161",
+        "statements": [
+          "1129:",
+          "1130: \tinfo = (struct smb2_file_full_ea_info *)(",
+          "1131: \t\t\tle16_to_cpu(rsp->OutputBufferOffset) + (char *)rsp);",
+          "1132: \trc = move_smb2_ea_to_cifs(ea_data, buf_size, info,",
+          "1133: \t\t\tle32_to_cpu(rsp->OutputBufferLength), ea_name);",
+          "1134:"
+        ],
+        "guards": [
+          "smb3_encryption_required(tcon)",
+          "ea_name_len > 255",
+          "!utf16_path",
+          "!vars"
+        ],
+        "call_boundary": [
+          "le16_to_cpu",
+          "move_smb2_ea_to_cifs",
+          "le32_to_cpu",
+          "free_rsp_buf",
+          "smb2_set_ea",
+          "strlen"
+        ],
+        "call_edges": [
+          "smb2_set_ea -> __builtin_strlen",
+          "smb2_set_ea -> __fortify_strlen",
+          "smb2_set_ea -> cifs_pick_channel",
+          "smb2_set_ea -> smb3_encryption_required",
+          "smb2_set_ea -> cifs_convert_path_to_utf16",
+          "smb2_set_ea -> kzalloc_noprof"
+        ],
+        "state_transitions": [
+          "diagnostic(csa)"
+        ],
+        "api_terms": [
+          "free_rsp_buf",
+          "return [B1.2];",
+          "kfree",
+          "SMB2_open_free",
+          "SMB2_set_info_free",
+          "SMB2_close_free"
+        ],
+        "related_symbols": [],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      },
+      "confidence": 0.72
+    }
+  ],
+  "semantic_slice_count": 4,
+  "context_summary_count": 0,
+  "semantic_slice_coverage": "partial",
+  "selected_semantic_slice_ids": [
+    "csa_guard_0",
+    "csa_lifecycle_0",
+    "csa_state_0",
+    "csa_validation_semantic_slice_0"
+  ],
+  "selected_context_summary_ids": [],
+  "selected_semantic_slices": [
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "fs/smb/client/smb2ops.c",
+        "function": "smb2_set_ea"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "if is_replayable_error (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(int))(rc (ImplicitCastExpr, LValueToRValue, int)) (ImplicitCastExpr, IntegralCast, int) && smb2_should_replay (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(struct cifs_tcon *, int *, int *))(tcon (ImplicitCastExpr, LValueToRValue, struct cifs_tcon *), &retries, &cur_sleep) (ImplicitCastExpr, IntegralCast, int)",
+        "summary": "Analyzer CFG for smb2_set_ea in fs/smb/client/smb2ops.c: bindings: rc = [B65.2]->server (ImplicitCastExpr, LValueToRValue, struct TCP_Server_Info *)->ops (ImplicitCastExpr, LValueToRValue, struct smb_version_operations *)->query_all_EAs (ImplicitCastExpr, LValueToRValue, ssize_t (*)(const unsigned int, struct cifs_tcon *, const unsigned char *, const unsigned char *, char *, size_t, struct cifs_sb_info *))(xid (ImplicitCastExpr, LValueToRValue, unsigned int), tcon (ImplicitCastExpr, LValueToRValue, struct cifs_tcon *), path (ImplicitCastExpr, LValueToRValue, const char *) (ImplicitCastExpr, BitCast, const unsigned char *), ea_name (ImplicitCastExpr, LValueToRValue, const char *) (ImplicitCastExpr, BitCast, const unsigned char *), ((void *)0 (CStyleCastExpr, NullToPointer, void *)) (ImplicitCastExpr, NullToPointer, char *), 0 (ImplicitCastExpr, IntegralCast, size_t), cifs_sb (ImplicitCastExpr, LValueToRValue, struct cifs_sb_info *)) (ImplicitCastExpr, IntegralCast, int); struct cifs_ses *ses = tcon->ses; | branches: if is_replayable_error (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(int))(rc (ImplicitCastExpr, LValueToRValue, int)) (ImplicitCastExpr, IntegralCast, int) && smb2_should_replay (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(struct cifs_tcon *, int *, int *))(tcon (ImplicitCastExpr, LValueToRValue, struct cifs_tcon *), &retries, &cur_sleep) (ImplicitCastExpr, IntegralCast, int); if smb3_encryption_required (ImplicitCastExpr, FunctionToPointerDecay, int (*)(const struct cifs_tcon *))(tcon (ImplicitCastExpr, LValueToRValue, struct cifs_tcon *) (ImplicitCastExpr, NoOp, const struct cifs_tcon *)) | calls: smb2_set_ea -> __builtin_strlen; smb2_set_ea -> __fortify_strlen",
+        "summary_line": 1161,
+        "state_before": [
+          "buffer(ea->ea_data)",
+          "buffer(tcon->ses)",
+          "sinks(le16_to_cpu, move_smb2_ea_to_cifs)"
+        ],
+        "state_after": [
+          "cfg_binding(rc = [B65.2]->server (ImplicitCastExpr, LValueToRValue, struct TCP_Server_Info *)->ops (ImplicitCastExpr, LValueToRValue, struct smb_version_operations *)->query_all_EAs (ImplicitCastExpr, LValueToRValue, ssize_t (*)(const unsigned int, struct cifs_tcon *, const unsigned char *, const unsigned char *, char *, size_t, struct cifs_sb_info *))(xid (ImplicitCastExpr, LValueToRValue, unsigned int), tcon (ImplicitCastExpr, LValueToRValue, struct cifs_tcon *), path (ImplicitCastExpr, LValueToRValue, const char *) (ImplicitCastExpr, BitCast, const unsigned char *), ea_name (ImplicitCastExpr, LValueToRValue, const char *) (ImplicitCastExpr, BitCast, const unsigned char *), ((void *)0 (CStyleCastExpr, NullToPointer, void *)) (ImplicitCastExpr, NullToPointer, char *), 0 (ImplicitCastExpr, IntegralCast, size_t), cifs_sb (ImplicitCastExpr, LValueToRValue, struct cifs_sb_info *)) (ImplicitCastExpr, IntegralCast, int))",
+          "cfg_binding(struct cifs_ses *ses = tcon->ses;)",
+          "cfg_branch(if is_replayable_error (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(int))(rc (ImplicitCastExpr, LValueToRValue, int)) (ImplicitCastExpr, IntegralCast, int) && smb2_should_replay (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(struct cifs_tcon *, int *, int *))(tcon (ImplicitCastExpr, LValueToRValue, struct cifs_tcon *), &retries, &cur_sleep) (ImplicitCastExpr, IntegralCast, int))",
+          "cfg_branch(if smb3_encryption_required (ImplicitCastExpr, FunctionToPointerDecay, int (*)(const struct cifs_tcon *))(tcon (ImplicitCastExpr, LValueToRValue, struct cifs_tcon *) (ImplicitCastExpr, NoOp, const struct cifs_tcon *)))"
+        ],
+        "tracked_symbols": [
+          "ea->ea_data",
+          "tcon->ses",
+          "rsp->OutputBufferOffset",
+          "rsp->OutputBufferLength",
+          "vars->rqst",
+          "vars->rsp_iov"
+        ],
+        "buffer_fields": [
+          "ea->ea_data",
+          "tcon->ses",
+          "rsp->OutputBufferOffset",
+          "rsp->OutputBufferLength",
+          "vars->rqst",
+          "vars->rsp_iov"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "smb2_set_ea"
+        ],
+        "call_targets": [
+          "le16_to_cpu",
+          "move_smb2_ea_to_cifs",
+          "le32_to_cpu",
+          "free_rsp_buf",
+          "smb2_set_ea",
+          "strlen",
+          "cifs_pick_channel",
+          "cifs_convert_path_to_utf16"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,fs/smb/client/.smb2ops.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/uapi -I./arch/x86/i...",
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "goto replay_again;",
+          "if [B4.12] && [B3.10]",
+          "[B4.12] && ...",
+          "if [B8.10]",
+          "goto sea_exit;",
+          "if [B10.56]"
+        ],
+        "call_edges": [
+          "smb2_set_ea -> __builtin_strlen",
+          "smb2_set_ea -> __fortify_strlen",
+          "smb2_set_ea -> cifs_pick_channel",
+          "smb2_set_ea -> smb3_encryption_required",
+          "smb2_set_ea -> cifs_convert_path_to_utf16",
+          "smb2_set_ea -> kzalloc_noprof"
+        ],
+        "state_statements": [
+          "return [B1.2];",
+          "kfree",
+          "SMB2_open_free",
+          "SMB2_set_info_free",
+          "SMB2_close_free",
+          "free_rsp_buf"
+        ],
+        "source_file": "fs/smb/client/smb2ops.c"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "fs/smb/client/smb2ops.c",
+          "hunk_index": 0,
+          "source_line": 1161
+        },
+        "summary": "Analyzer CFG for smb2_set_ea in fs/smb/client/smb2ops.c: bindings: rc = [B65.2]->server (ImplicitCastExpr, LValueToRValue, struct TCP_Server_Info *)->ops (ImplicitCastExpr, LValueToRValue, struct smb_version_operations *)->query_all_EAs (ImplicitCastExpr, LValueToRValue, ssize_t (*)(const unsigned int, struct cifs_tcon *, const unsigned char *, const unsigned char *, char *, size_t, struct cifs_sb_info *))(xid (ImplicitCastExpr, LValueToRValue, unsigned int), tcon (ImplicitCastExpr, LValueToRValue, struct cifs_tcon *), path (ImplicitCastExpr, LValueToRValue, const char *) (ImplicitCastExpr, BitCast, const unsigned char *), ea_name (ImplicitCastExpr, LValueToRValue, const char *) (ImplicitCastExpr, BitCast, const unsigned char *), ((void *)0 (CStyleCastExpr, NullToPointer, void *)) (ImplicitCastExpr, NullToPointer, char *), 0 (ImplicitCastExpr, IntegralCast, size_t), cifs_sb (ImplicitCastExpr, LValueToRValue, struct cifs_sb_info *)) (ImplicitCastExpr, IntegralCast, int); struct cifs_ses *ses = tcon->ses; | branches: if is_replayable_error (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(int))(rc (ImplicitCastExpr, LValueToRValue, int)) (ImplicitCastExpr, IntegralCast, int) && smb2_should_replay (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(struct cifs_tcon *, int *, int *))(tcon (ImplicitCastExpr, LValueToRValue, struct cifs_tcon *), &retries, &cur_sleep) (ImplicitCastExpr, IntegralCast, int); if smb3_encryption_required (ImplicitCastExpr, FunctionToPointerDecay, int (*)(const struct cifs_tcon *))(tcon (ImplicitCastExpr, LValueToRValue, struct cifs_tcon *) (ImplicitCastExpr, NoOp, const struct cifs_tcon *)) | calls: smb2_set_ea -> __builtin_strlen; smb2_set_ea -> __fortify_strlen",
+        "statements": [
+          "1129:",
+          "1130: \tinfo = (struct smb2_file_full_ea_info *)(",
+          "1131: \t\t\tle16_to_cpu(rsp->OutputBufferOffset) + (char *)rsp);",
+          "1132: \trc = move_smb2_ea_to_cifs(ea_data, buf_size, info,",
+          "1133: \t\t\tle32_to_cpu(rsp->OutputBufferLength), ea_name);",
+          "1134:"
+        ],
+        "guards": [
+          "if is_replayable_error (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(int))(rc (ImplicitCastExpr, LValueToRValue, int)) (ImplicitCastExpr, IntegralCast, int) && smb2_should_replay (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(struct cifs_tcon *, int *, int *))(tcon (ImplicitCastExpr, LValueToRValue, struct cifs_tcon *), &retries, &cur_sleep) (ImplicitCastExpr, IntegralCast, int)",
+          "if smb3_encryption_required (ImplicitCastExpr, FunctionToPointerDecay, int (*)(const struct cifs_tcon *))(tcon (ImplicitCastExpr, LValueToRValue, struct cifs_tcon *) (ImplicitCastExpr, NoOp, const struct cifs_tcon *))",
+          "goto replay_again;",
+          "is_replayable_error (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(int))(rc (ImplicitCastExpr, LValueToRValue, int)) (ImplicitCastExpr, IntegralCast, int) && ..."
+        ],
+        "call_boundary": [
+          "le16_to_cpu",
+          "move_smb2_ea_to_cifs",
+          "le32_to_cpu",
+          "free_rsp_buf",
+          "smb2_set_ea",
+          "strlen"
+        ],
+        "call_edges": [
+          "smb2_set_ea -> __builtin_strlen",
+          "smb2_set_ea -> __fortify_strlen",
+          "smb2_set_ea -> cifs_pick_channel",
+          "smb2_set_ea -> smb3_encryption_required",
+          "smb2_set_ea -> cifs_convert_path_to_utf16",
+          "smb2_set_ea -> kzalloc_noprof",
+          "smb2_set_ea -> smb2_query_info_compound",
+          "smb2_set_ea -> free_rsp_buf"
+        ],
+        "state_transitions": [
+          "cfg_binding(rc = [B65.2]->server (ImplicitCastExpr, LValueToRValue, struct TCP_Server_Info *)->ops (ImplicitCastExpr, LValueToRValue, struct smb_version_operations *)->query_all_EAs (ImplicitCastExpr, LValueToRValue, ssize_t (*)(const unsigned int, struct cifs_tcon *, const unsigned char *, const unsigned char *, char *, size_t, struct cifs_sb_info *))(xid (ImplicitCastExpr, LValueToRValue, unsigned int), tcon (ImplicitCastExpr, LValueToRValue, struct cifs_tcon *), path (ImplicitCastExpr, LValueToRValue, const char *) (ImplicitCastExpr, BitCast, const unsigned char *), ea_name (ImplicitCastExpr, LValueToRValue, const char *) (ImplicitCastExpr, BitCast, const unsigned char *), ((void *)0 (CStyleCastExpr, NullToPointer, void *)) (ImplicitCastExpr, NullToPointer, char *), 0 (ImplicitCastExpr, IntegralCast, size_t), cifs_sb (ImplicitCastExpr, LValueToRValue, struct cifs_sb_info *)) (ImplicitCastExpr, IntegralCast, int))",
+          "cfg_binding(struct cifs_ses *ses = tcon->ses;)",
+          "cfg_branch(if is_replayable_error (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(int))(rc (ImplicitCastExpr, LValueToRValue, int)) (ImplicitCastExpr, IntegralCast, int) && smb2_should_replay (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(struct cifs_tcon *, int *, int *))(tcon (ImplicitCastExpr, LValueToRValue, struct cifs_tcon *), &retries, &cur_sleep) (ImplicitCastExpr, IntegralCast, int))",
+          "cfg_branch(if smb3_encryption_required (ImplicitCastExpr, FunctionToPointerDecay, int (*)(const struct cifs_tcon *))(tcon (ImplicitCastExpr, LValueToRValue, struct cifs_tcon *) (ImplicitCastExpr, NoOp, const struct cifs_tcon *)))",
+          "return [B1.2];",
+          "kfree"
+        ],
+        "api_terms": [
+          "__builtin_strlen",
+          "__fortify_strlen",
+          "cifs_pick_channel",
+          "smb3_encryption_required",
+          "cifs_convert_path_to_utf16",
+          "kzalloc_noprof"
+        ],
+        "related_symbols": [
+          "ea->ea_data",
+          "tcon->ses",
+          "rsp->OutputBufferOffset",
+          "rsp->OutputBufferLength",
+          "vars->rqst",
+          "vars->rsp_iov"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_lifecycle_0",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "fs/smb/client/smb2ops.c",
+        "function": "smb2_set_ea"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "smb2_set_ea in fs/smb/client/smb2ops.c reaches free_rsp_buf",
+        "state_before": [
+          "buffer(ea->ea_data)",
+          "buffer(tcon->ses)",
+          "sinks(le16_to_cpu, move_smb2_ea_to_cifs)"
+        ],
+        "state_after": [
+          "transition(free_rsp_buf)"
+        ],
+        "tracked_symbols": [
+          "ea->ea_data",
+          "tcon->ses",
+          "rsp->OutputBufferOffset",
+          "rsp->OutputBufferLength",
+          "vars->rqst",
+          "vars->rsp_iov"
+        ],
+        "buffer_fields": [
+          "ea->ea_data",
+          "tcon->ses",
+          "rsp->OutputBufferOffset",
+          "rsp->OutputBufferLength",
+          "vars->rqst",
+          "vars->rsp_iov"
+        ],
+        "coverage_status": "full",
+        "operations": [
+          "free_rsp_buf"
+        ],
+        "functions": [
+          "smb2_set_ea"
+        ],
+        "call_edges": [
+          "smb2_set_ea -> __builtin_strlen",
+          "smb2_set_ea -> __fortify_strlen",
+          "smb2_set_ea -> cifs_pick_channel",
+          "smb2_set_ea -> smb3_encryption_required",
+          "smb2_set_ea -> cifs_convert_path_to_utf16",
+          "smb2_set_ea -> kzalloc_noprof"
+        ],
+        "source_file": "fs/smb/client/smb2ops.c"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "fs/smb/client/smb2ops.c",
+          "hunk_index": 0,
+          "source_line": 1161
+        },
+        "summary": "smb2_set_ea in fs/smb/client/smb2ops.c reaches free_rsp_buf",
+        "statements": [
+          "1129:",
+          "1130: \tinfo = (struct smb2_file_full_ea_info *)(",
+          "1131: \t\t\tle16_to_cpu(rsp->OutputBufferOffset) + (char *)rsp);",
+          "1132: \trc = move_smb2_ea_to_cifs(ea_data, buf_size, info,",
+          "1133: \t\t\tle32_to_cpu(rsp->OutputBufferLength), ea_name);",
+          "1134:"
+        ],
+        "guards": [
+          "goto replay_again;",
+          "if [B4.12] && [B3.10]",
+          "[B4.12] && ..."
+        ],
+        "call_boundary": [
+          "le16_to_cpu",
+          "move_smb2_ea_to_cifs",
+          "le32_to_cpu",
+          "free_rsp_buf",
+          "smb2_set_ea",
+          "strlen"
+        ],
+        "call_edges": [
+          "smb2_set_ea -> __builtin_strlen",
+          "smb2_set_ea -> __fortify_strlen",
+          "smb2_set_ea -> cifs_pick_channel",
+          "smb2_set_ea -> smb3_encryption_required",
+          "smb2_set_ea -> cifs_convert_path_to_utf16",
+          "smb2_set_ea -> kzalloc_noprof",
+          "smb2_set_ea -> smb2_query_info_compound",
+          "smb2_set_ea -> free_rsp_buf"
+        ],
+        "state_transitions": [
+          "transition(free_rsp_buf)",
+          "return [B1.2];",
+          "kfree",
+          "SMB2_open_free",
+          "SMB2_set_info_free"
+        ],
+        "api_terms": [
+          "free_rsp_buf",
+          "__builtin_strlen",
+          "__fortify_strlen",
+          "cifs_pick_channel",
+          "smb3_encryption_required",
+          "cifs_convert_path_to_utf16"
+        ],
+        "related_symbols": [
+          "ea->ea_data",
+          "tcon->ses",
+          "rsp->OutputBufferOffset",
+          "rsp->OutputBufferLength",
+          "vars->rqst",
+          "vars->rsp_iov"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.9
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "fs/smb/client/smb2ops.c",
+        "function": "smb2_set_ea"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "smb2_set_ea in fs/smb/client/smb2ops.c: cfg_calls=smb2_set_ea -> __builtin_strlen; smb2_set_ea -> __fortify_strlen",
+        "state_before": [
+          "buffer(ea->ea_data)",
+          "buffer(tcon->ses)",
+          "sinks(le16_to_cpu, move_smb2_ea_to_cifs)"
+        ],
+        "state_after": [
+          "transition(return [B1.2];)",
+          "transition(kfree)",
+          "transition(SMB2_open_free)"
+        ],
+        "tracked_symbols": [
+          "ea->ea_data",
+          "tcon->ses",
+          "rsp->OutputBufferOffset",
+          "rsp->OutputBufferLength",
+          "vars->rqst",
+          "vars->rsp_iov"
+        ],
+        "buffer_fields": [
+          "ea->ea_data",
+          "tcon->ses",
+          "rsp->OutputBufferOffset",
+          "rsp->OutputBufferLength",
+          "vars->rqst",
+          "vars->rsp_iov"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "smb2_set_ea"
+        ],
+        "call_targets": [
+          "le16_to_cpu",
+          "move_smb2_ea_to_cifs",
+          "le32_to_cpu",
+          "free_rsp_buf",
+          "smb2_set_ea",
+          "strlen",
+          "cifs_pick_channel",
+          "cifs_convert_path_to_utf16"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "goto replay_again;",
+          "if [B4.12] && [B3.10]",
+          "[B4.12] && ...",
+          "if [B8.10]"
+        ],
+        "call_edges": [
+          "smb2_set_ea -> __builtin_strlen",
+          "smb2_set_ea -> __fortify_strlen",
+          "smb2_set_ea -> cifs_pick_channel",
+          "smb2_set_ea -> smb3_encryption_required",
+          "smb2_set_ea -> cifs_convert_path_to_utf16",
+          "smb2_set_ea -> kzalloc_noprof"
+        ],
+        "state_statements": [
+          "return [B1.2];",
+          "kfree",
+          "SMB2_open_free",
+          "SMB2_set_info_free",
+          "SMB2_close_free",
+          "free_rsp_buf",
+          "[B6.19] = [B6.18]",
+          "[B10.20]->close_iov"
+        ],
+        "return_statements": [
+          "return [B1.2];",
+          "return [B73.2];",
+          "return [B75.2];"
+        ],
+        "source_file": "fs/smb/client/smb2ops.c"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "fs/smb/client/smb2ops.c",
+          "hunk_index": 0,
+          "source_line": 1161
+        },
+        "summary": "smb2_set_ea in fs/smb/client/smb2ops.c: cfg_calls=smb2_set_ea -> __builtin_strlen; smb2_set_ea -> __fortify_strlen",
+        "statements": [
+          "1129:",
+          "1130: \tinfo = (struct smb2_file_full_ea_info *)(",
+          "1131: \t\t\tle16_to_cpu(rsp->OutputBufferOffset) + (char *)rsp);",
+          "1132: \trc = move_smb2_ea_to_cifs(ea_data, buf_size, info,",
+          "1133: \t\t\tle32_to_cpu(rsp->OutputBufferLength), ea_name);",
+          "1134:"
+        ],
+        "guards": [
+          "goto replay_again;",
+          "if [B4.12] && [B3.10]",
+          "[B4.12] && ..."
+        ],
+        "call_boundary": [
+          "le16_to_cpu",
+          "move_smb2_ea_to_cifs",
+          "le32_to_cpu",
+          "free_rsp_buf",
+          "smb2_set_ea",
+          "strlen"
+        ],
+        "call_edges": [
+          "smb2_set_ea -> __builtin_strlen",
+          "smb2_set_ea -> __fortify_strlen",
+          "smb2_set_ea -> cifs_pick_channel",
+          "smb2_set_ea -> smb3_encryption_required",
+          "smb2_set_ea -> cifs_convert_path_to_utf16",
+          "smb2_set_ea -> kzalloc_noprof",
+          "smb2_set_ea -> smb2_query_info_compound",
+          "smb2_set_ea -> free_rsp_buf"
+        ],
+        "state_transitions": [
+          "transition(return [B1.2];)",
+          "transition(kfree)",
+          "transition(SMB2_open_free)",
+          "return [B1.2];",
+          "kfree",
+          "SMB2_open_free"
+        ],
+        "api_terms": [
+          "__builtin_strlen",
+          "__fortify_strlen",
+          "cifs_pick_channel",
+          "smb3_encryption_required",
+          "cifs_convert_path_to_utf16",
+          "kzalloc_noprof"
+        ],
+        "related_symbols": [
+          "ea->ea_data",
+          "tcon->ses",
+          "rsp->OutputBufferOffset",
+          "rsp->OutputBufferLength",
+          "vars->rqst",
+          "vars->rsp_iov"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.88
+    },
+    {
+      "evidence_id": "csa_validation_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "fs/smb/client/smb2ops.c",
+        "function": "smb2_set_ea"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at fs/smb/client/smb2ops.c:1161",
+        "state_before": [
+          "buffer(ea->ea_data)",
+          "buffer(tcon->ses)",
+          "sinks(le16_to_cpu, move_smb2_ea_to_cifs)"
+        ],
+        "state_after": [
+          "diagnostic(csa)"
+        ],
+        "buffer_fields": [
+          "ea->ea_data",
+          "tcon->ses",
+          "rsp->OutputBufferOffset",
+          "rsp->OutputBufferLength",
+          "vars->rqst",
+          "vars->rsp_iov"
+        ],
+        "coverage_status": "partial",
+        "functions": [
+          "smb2_set_ea"
+        ],
+        "call_targets": [
+          "le16_to_cpu",
+          "move_smb2_ea_to_cifs",
+          "le32_to_cpu",
+          "free_rsp_buf",
+          "smb2_set_ea",
+          "strlen"
+        ],
+        "call_edges": [
+          "smb2_set_ea -> __builtin_strlen",
+          "smb2_set_ea -> __fortify_strlen",
+          "smb2_set_ea -> cifs_pick_channel",
+          "smb2_set_ea -> smb3_encryption_required",
+          "smb2_set_ea -> cifs_convert_path_to_utf16",
+          "smb2_set_ea -> kzalloc_noprof"
+        ],
+        "state_statements": [
+          "return [B1.2];",
+          "kfree",
+          "SMB2_open_free",
+          "SMB2_set_info_free",
+          "SMB2_close_free",
+          "free_rsp_buf"
+        ],
+        "source_file": "fs/smb/client/smb2ops.c"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "fs/smb/client/smb2ops.c",
+          "hunk_index": 0,
+          "source_line": 1161
+        },
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at fs/smb/client/smb2ops.c:1161",
+        "statements": [
+          "1129:",
+          "1130: \tinfo = (struct smb2_file_full_ea_info *)(",
+          "1131: \t\t\tle16_to_cpu(rsp->OutputBufferOffset) + (char *)rsp);",
+          "1132: \trc = move_smb2_ea_to_cifs(ea_data, buf_size, info,",
+          "1133: \t\t\tle32_to_cpu(rsp->OutputBufferLength), ea_name);",
+          "1134:"
+        ],
+        "guards": [
+          "smb3_encryption_required(tcon)",
+          "ea_name_len > 255",
+          "!utf16_path",
+          "!vars"
+        ],
+        "call_boundary": [
+          "le16_to_cpu",
+          "move_smb2_ea_to_cifs",
+          "le32_to_cpu",
+          "free_rsp_buf",
+          "smb2_set_ea",
+          "strlen"
+        ],
+        "call_edges": [
+          "smb2_set_ea -> __builtin_strlen",
+          "smb2_set_ea -> __fortify_strlen",
+          "smb2_set_ea -> cifs_pick_channel",
+          "smb2_set_ea -> smb3_encryption_required",
+          "smb2_set_ea -> cifs_convert_path_to_utf16",
+          "smb2_set_ea -> kzalloc_noprof"
+        ],
+        "state_transitions": [
+          "diagnostic(csa)"
+        ],
+        "api_terms": [
+          "free_rsp_buf",
+          "return [B1.2];",
+          "kfree",
+          "SMB2_open_free",
+          "SMB2_set_info_free",
+          "SMB2_close_free"
+        ],
+        "related_symbols": [],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      },
+      "confidence": 0.72
+    }
+  ],
+  "selected_context_summaries": [],
+  "semantic_clause_plan": [
+    {
+      "clause_id": "vulnerable_trigger_clause",
+      "intent": "Trigger on the vulnerable double_free mechanism using evidence-backed path/flow semantics.",
+      "supporting_evidence_ids": [
+        "csa_guard_0",
+        "csa_lifecycle_0",
+        "csa_state_0",
+        "csa_validation_semantic_slice_0"
+      ],
+      "repair_when": [
+        "semantic_no_hits"
+      ],
+      "focus_functions": []
+    },
+    {
+      "clause_id": "patched_silence_clause",
+      "intent": "Stay silent on patched code when patch-added guards, barriers, or safe APIs prove the mechanism is blocked.",
+      "supporting_evidence_ids": [
+        "csa_guard_0",
+        "csa_state_0",
+        "csa_validation_semantic_slice_0"
+      ],
+      "repair_when": [],
+      "silencing_conditions": []
+    },
+    {
+      "clause_id": "semantic_transfer_clause",
+      "intent": "Generalize along semantic slices and call-chain evidence rather than patch-local syntax.",
+      "supporting_evidence_ids": [
+        "csa_validation_semantic_slice_0"
+      ],
+      "repair_when": [],
+      "analyzer_id": "csa"
+    },
+    {
+      "clause_id": "analyzer_interface_clause",
+      "intent": "Preserve valid analyzer-facing syntax and interfaces while keeping semantics unchanged.",
+      "supporting_evidence_ids": [],
+      "repair_when": [
+        "semantic_execution_error"
+      ],
+      "analyzer_id": "csa"
+    }
+  ],
+  "repair_directives": [],
+  "constraints": [
+    {
+      "title": "Generalize beyond patch site",
+      "description": "Do not bind the detector to fixed file paths, line numbers, or exact patch strings.",
+      "priority": "high"
+    },
+    {
+      "title": "Preserve vulnerability semantics",
+      "description": "Keep the detector focused on the vulnerability family implied by the patch and evidence.",
+      "priority": "high"
+    },
+    {
+      "title": "Respect analyzer-native form",
+      "description": "Output must be a valid checker_plugin for csa.",
+      "priority": "high"
+    },
+    {
+      "title": "Stay within proven mechanism scope",
+      "description": "Generalize only along evidence-supported semantic dimensions. Do not broaden the detector into unrelated globals, APIs, or bug families.",
+      "priority": "high"
+    },
+    {
+      "title": "Honor mechanism contract",
+      "description": "Preserve the mechanism family `resource_lifetime_violation` by keeping trigger invariants the same symbolic resource is released more than once on a feasible path; no reallocation, rebinding, or nulling separates the release events.",
+      "priority": "high"
+    },
+    {
+      "title": "Generalize only on contract axes",
+      "description": "Reuse semantics only along these transfer axes: equivalent repeated-release sequences for the same resource role; equivalent ownership handoff patterns across sibling helpers; equivalent guard or barrier predicates on sibling paths.",
+      "priority": "high"
+    },
+    {
+      "title": "Track resource identity across lifetime edges",
+      "description": "Model release, reuse, reinitialization, and ownership transfer on the same symbolic resource; do not count frees or uses in isolation.",
+      "priority": "high"
+    },
+    {
+      "title": "Do not key on local identifier names",
+      "description": "Do not define the vulnerable resource role solely by field/variable names such as session/cache/context; infer it from release-use-nulling-relookup semantics and alias continuity.",
+      "priority": "high"
+    },
+    {
+      "title": "Use path-sensitive evidence",
+      "description": "Prefer guards, state transitions, and lifecycle facts over broad textual matching.",
+      "priority": "high"
+    },
+    {
+      "title": "No placeholder helper logic",
+      "description": "Helper predicates must inspect AST/program state and must not be unconditional return-true/return-false stubs.",
+      "priority": "high"
+    }
+  ],
+  "implementation_hints": [
+    "Mechanism family: resource_lifetime_violation",
+    "Mechanism dimensions: resource identity or alias, release event count, reinitialization or nulling barrier",
+    "Trigger invariants: the same symbolic resource is released more than once on a feasible path, no reallocation, rebinding, or nulling separates the release events",
+    "Silence invariants: the resource is nulled, transferred, or rebound after the first release, a guard prevents the second release on the active path",
+    "Transfer axes: equivalent repeated-release sequences for the same resource role, equivalent ownership handoff patterns across sibling helpers, equivalent guard or barrier predicates on sibling paths",
+    "Track the same symbolic resource across release, nulling/reinit, and later use/free; do not reduce lifecycle reasoning to raw API names.",
+    "Do not classify the resource only by field or variable names; use release/use/nulling/relookup relations plus alias continuity.",
+    "Semantic slice (path_witness): Analyzer CFG for smb2_set_ea in fs/smb/client/smb2ops.c: bindings: rc = [B65.2]->server (ImplicitCastExpr, LValueToRValue, struct TCP_Server_Info *)->ops (ImplicitCastExpr, LValueToRValue, struct smb_version_operations *)->query_all_EAs (ImplicitCastExpr, LValueToRValue, ssize_t (*)(const unsigned int, struct cifs_tcon *, const unsigned char *, const unsigned char *, char *, size_t, struct cifs_sb_info *))(xid (ImplicitCastExpr, LValueToRValue, unsigned int), tcon (ImplicitCastExpr, LValueToRValue, struct cifs_tcon *), path (ImplicitCastExpr, LValueToRValue, const char *) (ImplicitCastExpr, BitCast, const unsigned char *), ea_name (ImplicitCastExpr, LValueToRValue, const char *) (ImplicitCastExpr, BitCast, const unsigned char *), ((void *)0 (CStyleCastExpr, NullToPointer, void *)) (ImplicitCastExpr, NullToPointer, char *), 0 (ImplicitCastExpr, IntegralCast, size_t), cifs_sb (ImplicitCastExpr, LValueToRValue, struct cifs_sb_info *)) (ImplicitCastExpr, IntegralCast, int); struct cifs_ses *ses = tcon->ses; | branches: if is_replayable_error (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(int))(rc (ImplicitCastExpr, LValueToRValue, int)) (ImplicitCastExpr, IntegralCast, int) && smb2_should_replay (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(struct cifs_tcon *, int *, int *))(tcon (ImplicitCastExpr, LValueToRValue, struct cifs_tcon *), &retries, &cur_sleep) (ImplicitCastExpr, IntegralCast, int); if smb3_encryption_required (ImplicitCastExpr, FunctionToPointerDecay, int (*)(const struct cifs_tcon *))(tcon (ImplicitCastExpr, LValueToRValue, struct cifs_tcon *) (ImplicitCastExpr, NoOp, const struct cifs_tcon *)) | calls: smb2_set_ea -> __builtin_strlen; smb2_set_ea -> __fortify_strlen"
+  ],
+  "validation_expectations": [
+    "Vulnerable version should trigger a double_free finding.",
+    "Patched version should stay silent for the same mechanism.",
+    "Semantic validation that executes but returns zero hits is not acceptable; recover coverage with evidence-backed semantics.",
+    "Repair phase may fix syntax/interfaces only; it must not simplify away the core detection logic.",
+    "Generalization must stay inside the mechanism contract transfer axes instead of widening to adjacent bug families.",
+    "Sibling variants that preserve the same release-then-use lifecycle should also trigger; patch-local identifier matching is not sufficient.",
+    "Trigger invariant: the same symbolic resource is released more than once on a feasible path.",
+    "Trigger invariant: no reallocation, rebinding, or nulling separates the release events."
+  ]
+}

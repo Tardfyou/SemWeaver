@@ -1,0 +1,665 @@
+{
+  "records": [
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "fs/fhandle.c",
+        "function": "do_sys_name_to_handle"
+      },
+      "location": {
+        "line": 36,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "if !exportfs_can_encode_fh (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const struct export_operations *, int))([B20.12]->dentry (ImplicitCastExpr, LValueToRValue, struct dentry *)->d_sb (ImplicitCastExpr, LValueToRValue, struct super_block *)->s_export_op (ImplicitCastExpr, LValueToRValue, const struct export_operations *), fh_flags (ImplicitCastExpr, LValueToRValue, int))",
+        "summary": "Analyzer CFG for do_sys_name_to_handle in fs/fhandle.c: bindings: retval = exportfs_encode_fh (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct dentry *, struct fid *, int *, int))(path (ImplicitCastExpr, LValueToRValue, const struct path *)->dentry (ImplicitCastExpr, LValueToRValue, struct dentry *), (struct fid *)handle (ImplicitCastExpr, LValueToRValue, struct file_handle *)->f_handle (ImplicitCastExpr, ArrayToPointerDecay, unsigned char *) (CStyleCastExpr, BitCast, struct fid *), &handle_dwords, fh_flags (ImplicitCastExpr, LValueToRValue, int)) (ImplicitCastExpr, IntegralCast, long); typeof (*(mnt_id)) __x = (real_mount(path->mnt)->mnt_id); | branches: if !exportfs_can_encode_fh (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const struct export_operations *, int))([B20.12]->dentry (ImplicitCastExpr, LValueToRValue, struct dentry *)->d_sb (ImplicitCastExpr, LValueToRValue, struct super_block *)->s_export_op (ImplicitCastExpr, LValueToRValue, const struct export_operations *), fh_flags (ImplicitCastExpr, LValueToRValue, int)); if ({ ... ; ({ ... ; __builtin_expect (ImplicitCastExpr, BuiltinFnToFnPtr, long (*)(long, long))(__ret_pu (ImplicitCastExpr, LValueToRValue, int) (ImplicitCastExpr, IntegralCast, long), 0 (ImplicitCastExpr, IntegralCast, long)) }) }) || copy_to_user (ImplicitCastExpr, FunctionToPointerDecay, unsigned long (*)(void *, const void *, unsigned long))(ufh (ImplicitCastExpr, LValueToRValue, struct file_handle *) (ImplicitCastExpr, BitCast, void *), handle (ImplicitCastExpr, LValueToRValue, struct file_handle *) (ImplicitCastExpr, BitCast, const void *), sizeof(struct file_handle) + handle_bytes (ImplicitCastExpr, LValueToRValue, int) (ImplicitCastExpr, IntegralCast, unsigned long)) | calls: do_sys_name_to_handle -> exportfs_can_encode_fh; do_sys_name_to_handle -> copy_from_user",
+        "state_before": [
+          "buffer(path->mnt)",
+          "buffer(path->dentry)",
+          "sinks(do_sys_name_to_handle, kmalloc)"
+        ],
+        "state_after": [
+          "cfg_binding(retval = exportfs_encode_fh (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct dentry *, struct fid *, int *, int))(path (ImplicitCastExpr, LValueToRValue, const struct path *)->dentry (ImplicitCastExpr, LValueToRValue, struct dentry *), (struct fid *)handle (ImplicitCastExpr, LValueToRValue, struct file_handle *)->f_handle (ImplicitCastExpr, ArrayToPointerDecay, unsigned char *) (CStyleCastExpr, BitCast, struct fid *), &handle_dwords, fh_flags (ImplicitCastExpr, LValueToRValue, int)) (ImplicitCastExpr, IntegralCast, long))",
+          "cfg_binding(typeof (*(mnt_id)) __x = (real_mount(path->mnt)->mnt_id);)",
+          "cfg_branch(if !exportfs_can_encode_fh (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const struct export_operations *, int))([B20.12]->dentry (ImplicitCastExpr, LValueToRValue, struct dentry *)->d_sb (ImplicitCastExpr, LValueToRValue, struct super_block *)->s_export_op (ImplicitCastExpr, LValueToRValue, const struct export_operations *), fh_flags (ImplicitCastExpr, LValueToRValue, int)))",
+          "cfg_branch(if ({ ... ; ({ ... ; __builtin_expect (ImplicitCastExpr, BuiltinFnToFnPtr, long (*)(long, long))(__ret_pu (ImplicitCastExpr, LValueToRValue, int) (ImplicitCastExpr, IntegralCast, long), 0 (ImplicitCastExpr, IntegralCast, long)) }) }) || copy_to_user (ImplicitCastExpr, FunctionToPointerDecay, unsigned long (*)(void *, const void *, unsigned long))(ufh (ImplicitCastExpr, LValueToRValue, struct file_handle *) (ImplicitCastExpr, BitCast, void *), handle (ImplicitCastExpr, LValueToRValue, struct file_handle *) (ImplicitCastExpr, BitCast, const void *), sizeof(struct file_handle) + handle_bytes (ImplicitCastExpr, LValueToRValue, int) (ImplicitCastExpr, IntegralCast, unsigned long)))"
+        ],
+        "functions": [
+          "do_sys_name_to_handle"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "path->mnt",
+          "path->dentry",
+          "d_sb->s_export_op",
+          "handle->f_handle",
+          "handle->handle_type",
+          "handle->handle_bytes"
+        ],
+        "buffer_fields": [
+          "path->mnt",
+          "path->dentry",
+          "d_sb->s_export_op",
+          "handle->f_handle",
+          "handle->handle_type",
+          "handle->handle_bytes"
+        ],
+        "call_targets": [
+          "do_sys_name_to_handle",
+          "kmalloc",
+          "exportfs_encode_fh",
+          "exportfs_can_encode_fh",
+          "copy_from_user",
+          "__might_fault",
+          "real_mount",
+          "kmsan_copy_to_user"
+        ],
+        "call_edges": [
+          "do_sys_name_to_handle -> exportfs_can_encode_fh",
+          "do_sys_name_to_handle -> copy_from_user",
+          "do_sys_name_to_handle -> kmalloc",
+          "do_sys_name_to_handle -> exportfs_encode_fh",
+          "do_sys_name_to_handle -> __might_fault",
+          "do_sys_name_to_handle -> real_mount"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "if [B4.65] || [B3.14]",
+          "[B4.65] || ...",
+          "if [B9.5] || [B8.6]",
+          "[B9.5] || ...",
+          "if ([B12.57]) || ([B11.5]) || ([B10.5])",
+          "([B12.57]) || ([B11.5]) || ..."
+        ],
+        "resolved_branch_conditions": [
+          "if !exportfs_can_encode_fh (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const struct export_operations *, int))([B20.12]->dentry (ImplicitCastExpr, LValueToRValue, struct dentry *)->d_sb (ImplicitCastExpr, LValueToRValue, struct super_block *)->s_export_op (ImplicitCastExpr, LValueToRValue, const struct export_operations *), fh_flags (ImplicitCastExpr, LValueToRValue, int))",
+          "if ({ ... ; ({ ... ; __builtin_expect (ImplicitCastExpr, BuiltinFnToFnPtr, long (*)(long, long))(__ret_pu (ImplicitCastExpr, LValueToRValue, int) (ImplicitCastExpr, IntegralCast, long), 0 (ImplicitCastExpr, IntegralCast, long)) }) }) || copy_to_user (ImplicitCastExpr, FunctionToPointerDecay, unsigned long (*)(void *, const void *, unsigned long))(ufh (ImplicitCastExpr, LValueToRValue, struct file_handle *) (ImplicitCastExpr, BitCast, void *), handle (ImplicitCastExpr, LValueToRValue, struct file_handle *) (ImplicitCastExpr, BitCast, const void *), sizeof(struct file_handle) + handle_bytes (ImplicitCastExpr, LValueToRValue, int) (ImplicitCastExpr, IntegralCast, unsigned long))",
+          "({ ... ; ({ ... ; __builtin_expect (ImplicitCastExpr, BuiltinFnToFnPtr, long (*)(long, long))(__ret_pu (ImplicitCastExpr, LValueToRValue, int) (ImplicitCastExpr, IntegralCast, long), 0 (ImplicitCastExpr, IntegralCast, long)) }) }) || ...",
+          "if retval (ImplicitCastExpr, LValueToRValue, long) == FILEID_INVALID (ImplicitCastExpr, IntegralCast, long) || retval (ImplicitCastExpr, LValueToRValue, long) == -28 (ImplicitCastExpr, IntegralCast, long)",
+          "retval (ImplicitCastExpr, LValueToRValue, long) == FILEID_INVALID (ImplicitCastExpr, IntegralCast, long) || ...",
+          "if (handle (ImplicitCastExpr, LValueToRValue, struct file_handle *)->handle_bytes (ImplicitCastExpr, LValueToRValue, __u32) > f_handle.handle_bytes (ImplicitCastExpr, LValueToRValue, __u32)) || (retval (ImplicitCastExpr, LValueToRValue, long) == FILEID_INVALID (ImplicitCastExpr, IntegralCast, long)) || (retval (ImplicitCastExpr, LValueToRValue, long) < 0 (ImplicitCastExpr, IntegralCast, long))"
+        ],
+        "cfg_value_bindings": [
+          "retval = exportfs_encode_fh (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct dentry *, struct fid *, int *, int))(path (ImplicitCastExpr, LValueToRValue, const struct path *)->dentry (ImplicitCastExpr, LValueToRValue, struct dentry *), (struct fid *)handle (ImplicitCastExpr, LValueToRValue, struct file_handle *)->f_handle (ImplicitCastExpr, ArrayToPointerDecay, unsigned char *) (CStyleCastExpr, BitCast, struct fid *), &handle_dwords, fh_flags (ImplicitCastExpr, LValueToRValue, int)) (ImplicitCastExpr, IntegralCast, long)",
+          "typeof (*(mnt_id)) __x = (real_mount(path->mnt)->mnt_id);",
+          "handle = kmalloc (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(size_t, gfp_t))(sizeof(struct file_handle) + f_handle.handle_bytes (ImplicitCastExpr, LValueToRValue, __u32) (ImplicitCastExpr, IntegralCast, unsigned long), (((gfp_t)(1024U | 2048U) (CStyleCastExpr, NoOp, gfp_t)) | ((gfp_t)64U (CStyleCastExpr, NoOp, gfp_t)) | ((gfp_t)128U (CStyleCastExpr, NoOp, gfp_t)))) (ImplicitCastExpr, BitCast, struct file_handle *)",
+          "handle_bytes = 0",
+          "typeof (mnt_id) __ptr = (mnt_id);",
+          "struct file_handle *handle = ((void *)0);"
+        ],
+        "state_statements": [
+          "kfree",
+          "return [B1.8];",
+          "[B2.4] = [B2.3]",
+          "sizeof(struct file_handle)",
+          "[B4.14]->mnt",
+          "[B4.17]->mnt_id"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,fs/.fhandle.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/uapi -I./arch/x86/include/gene...",
+        "source_file": "fs/fhandle.c",
+        "source_excerpt": "4: #include <linux/fs.h>\n5: #include <linux/file.h>\n6: #include <linux/mount.h>\n7: #include <linux/namei.h>\n8: #include <linux/exportfs.h>\n9: #include <linux/fs_struct.h>\n10: #include <linux/fsnotify.h>\n11: #include <linux/personality.h>\n12: #include <linux/uaccess.h>\n13: #include <linux/compat.h>\n14: #include \"internal.h\"\n15: #include \"mount.h\"\n16: \n17: static long do_sys_name_to_handle(const struct path *path,\n18: \t\t\t\t  struct file_handle __user *ufh,\n19: \t\t\t\t  int __user *mnt_id, int fh_flags)\n20: {\n21: \tlong retval;\n22: \tstruct file_handle f_handle;\n23: \tint handle_dwords, handle_bytes;\n24: \tstruct file_handle *handle = NULL;\n25: \n26: \t/*\n27: \t * We need to make sure whether the file system support decoding of\n28: \t * the file handle if decodeable file handle was requested.\n29: \t */\n30: \tif (!exportfs_can_encode_fh(path->dentry->d_sb->s_export_op, fh_flags))\n31: \t\treturn -EOPNOTSUPP;\n32: \n33: \tif (copy_from_user(&f_handle, ufh, sizeof(struct file_handle)))\n34: \t\treturn -EFAULT;\n35: \n36: \tif (f_handle.handle_bytes > MAX_HANDLE_SZ)\n37: \t\treturn -EINVAL;\n38: \n39: \thandle = kmalloc(sizeof(struct file_handle) + f_handle.handle_bytes,\n40: \t\t\t GFP_KERNEL);\n41: \tif (!handle)\n42: \t\treturn -ENOMEM;\n43: \n44: \t/* convert handle size to multiple of sizeof(u32) */\n45: \thandle_dwords = f_handle.handle_bytes >> 2;\n46: \n47: \t/* we ask for a non connectable maybe decodeable file handle */\n48: \tretval = exportfs_encode_fh(path->dentry,\n49: \t\t\t\t    (struct fid *)handle->f_handle,\n50: \t\t\t\t    &handle_dwords, fh_flags);\n51: \thandle->handle_type = retval;\n52: \t/* convert handle size to bytes */\n53: \thandle_bytes = handle_dwords * sizeof(u32);\n54: \thandle->handle_bytes = handle_bytes;\n55: \tif ((handle->handle_bytes > f_handle.handle_bytes) ||\n56: \t    (retval == FILEID_INVALID) || (retval < 0)) {\n57: \t\t/* As per old exportfs_encode_fh documentation\n58: \t\t * we could return ENOSPC to indicate overflow\n59: \t\t * But file system returned 255 always. So handle\n60: \t\t * both the values\n61: \t\t */\n62: \t\tif (retval == FILEID_INVALID || retval == -ENOSPC)\n63: \t\t\tretval = -EOVERFLOW;\n64: \t\t/*\n65: \t\t * set the handle size to zero so we copy only\n66: \t\t * non variable part of the file_handle\n67: \t\t */\n68: \t\thandle_bytes = 0;",
+        "summary_line": 36,
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/generate_only_evidence_all39_v8_r5/G05_3948abaa4e2b_Uninit_Data/csa/patchweaver_runtime/csa_raw/fs-fhandle.c-do_sys_name_to_handle.txt",
+        "raw_output_sha256": "ced3cc5960913bde6c466189323302dfde80041391a07af80cbf26e31d1661f2",
+        "command_sha256": "a06e99a082947f0a84c51b0bc6fdb20d6d332af87e705c2413f17c92701faf85"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:debug-cfg",
+        "confidence": 0.92,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "fs/fhandle.c",
+          "hunk_index": 0,
+          "source_line": 36
+        },
+        "summary": "Analyzer CFG for do_sys_name_to_handle in fs/fhandle.c: bindings: retval = exportfs_encode_fh (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct dentry *, struct fid *, int *, int))(path (ImplicitCastExpr, LValueToRValue, const struct path *)->dentry (ImplicitCastExpr, LValueToRValue, struct dentry *), (struct fid *)handle (ImplicitCastExpr, LValueToRValue, struct file_handle *)->f_handle (ImplicitCastExpr, ArrayToPointerDecay, unsigned char *) (CStyleCastExpr, BitCast, struct fid *), &handle_dwords, fh_flags (ImplicitCastExpr, LValueToRValue, int)) (ImplicitCastExpr, IntegralCast, long); typeof (*(mnt_id)) __x = (real_mount(path->mnt)->mnt_id); | branches: if !exportfs_can_encode_fh (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const struct export_operations *, int))([B20.12]->dentry (ImplicitCastExpr, LValueToRValue, struct dentry *)->d_sb (ImplicitCastExpr, LValueToRValue, struct super_block *)->s_export_op (ImplicitCastExpr, LValueToRValue, const struct export_operations *), fh_flags (ImplicitCastExpr, LValueToRValue, int)); if ({ ... ; ({ ... ; __builtin_expect (ImplicitCastExpr, BuiltinFnToFnPtr, long (*)(long, long))(__ret_pu (ImplicitCastExpr, LValueToRValue, int) (ImplicitCastExpr, IntegralCast, long), 0 (ImplicitCastExpr, IntegralCast, long)) }) }) || copy_to_user (ImplicitCastExpr, FunctionToPointerDecay, unsigned long (*)(void *, const void *, unsigned long))(ufh (ImplicitCastExpr, LValueToRValue, struct file_handle *) (ImplicitCastExpr, BitCast, void *), handle (ImplicitCastExpr, LValueToRValue, struct file_handle *) (ImplicitCastExpr, BitCast, const void *), sizeof(struct file_handle) + handle_bytes (ImplicitCastExpr, LValueToRValue, int) (ImplicitCastExpr, IntegralCast, unsigned long)) | calls: do_sys_name_to_handle -> exportfs_can_encode_fh; do_sys_name_to_handle -> copy_from_user",
+        "statements": [
+          "4: #include <linux/fs.h>",
+          "5: #include <linux/file.h>",
+          "6: #include <linux/mount.h>",
+          "7: #include <linux/namei.h>",
+          "8: #include <linux/exportfs.h>",
+          "9: #include <linux/fs_struct.h>"
+        ],
+        "guards": [
+          "if !exportfs_can_encode_fh (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const struct export_operations *, int))([B20.12]->dentry (ImplicitCastExpr, LValueToRValue, struct dentry *)->d_sb (ImplicitCastExpr, LValueToRValue, struct super_block *)->s_export_op (ImplicitCastExpr, LValueToRValue, const struct export_operations *), fh_flags (ImplicitCastExpr, LValueToRValue, int))",
+          "if ({ ... ; ({ ... ; __builtin_expect (ImplicitCastExpr, BuiltinFnToFnPtr, long (*)(long, long))(__ret_pu (ImplicitCastExpr, LValueToRValue, int) (ImplicitCastExpr, IntegralCast, long), 0 (ImplicitCastExpr, IntegralCast, long)) }) }) || copy_to_user (ImplicitCastExpr, FunctionToPointerDecay, unsigned long (*)(void *, const void *, unsigned long))(ufh (ImplicitCastExpr, LValueToRValue, struct file_handle *) (ImplicitCastExpr, BitCast, void *), handle (ImplicitCastExpr, LValueToRValue, struct file_handle *) (ImplicitCastExpr, BitCast, const void *), sizeof(struct file_handle) + handle_bytes (ImplicitCastExpr, LValueToRValue, int) (ImplicitCastExpr, IntegralCast, unsigned long))",
+          "({ ... ; ({ ... ; __builtin_expect (ImplicitCastExpr, BuiltinFnToFnPtr, long (*)(long, long))(__ret_pu (ImplicitCastExpr, LValueToRValue, int) (ImplicitCastExpr, IntegralCast, long), 0 (ImplicitCastExpr, IntegralCast, long)) }) }) || ...",
+          "if retval (ImplicitCastExpr, LValueToRValue, long) == FILEID_INVALID (ImplicitCastExpr, IntegralCast, long) || retval (ImplicitCastExpr, LValueToRValue, long) == -28 (ImplicitCastExpr, IntegralCast, long)"
+        ],
+        "call_boundary": [
+          "do_sys_name_to_handle",
+          "kmalloc",
+          "exportfs_encode_fh",
+          "exportfs_can_encode_fh",
+          "copy_from_user",
+          "__might_fault"
+        ],
+        "call_edges": [
+          "do_sys_name_to_handle -> exportfs_can_encode_fh",
+          "do_sys_name_to_handle -> copy_from_user",
+          "do_sys_name_to_handle -> kmalloc",
+          "do_sys_name_to_handle -> exportfs_encode_fh",
+          "do_sys_name_to_handle -> __might_fault",
+          "do_sys_name_to_handle -> real_mount",
+          "do_sys_name_to_handle -> kmsan_copy_to_user",
+          "do_sys_name_to_handle -> __builtin_expect"
+        ],
+        "state_transitions": [
+          "cfg_binding(retval = exportfs_encode_fh (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct dentry *, struct fid *, int *, int))(path (ImplicitCastExpr, LValueToRValue, const struct path *)->dentry (ImplicitCastExpr, LValueToRValue, struct dentry *), (struct fid *)handle (ImplicitCastExpr, LValueToRValue, struct file_handle *)->f_handle (ImplicitCastExpr, ArrayToPointerDecay, unsigned char *) (CStyleCastExpr, BitCast, struct fid *), &handle_dwords, fh_flags (ImplicitCastExpr, LValueToRValue, int)) (ImplicitCastExpr, IntegralCast, long))",
+          "cfg_binding(typeof (*(mnt_id)) __x = (real_mount(path->mnt)->mnt_id);)",
+          "cfg_branch(if !exportfs_can_encode_fh (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const struct export_operations *, int))([B20.12]->dentry (ImplicitCastExpr, LValueToRValue, struct dentry *)->d_sb (ImplicitCastExpr, LValueToRValue, struct super_block *)->s_export_op (ImplicitCastExpr, LValueToRValue, const struct export_operations *), fh_flags (ImplicitCastExpr, LValueToRValue, int)))",
+          "cfg_branch(if ({ ... ; ({ ... ; __builtin_expect (ImplicitCastExpr, BuiltinFnToFnPtr, long (*)(long, long))(__ret_pu (ImplicitCastExpr, LValueToRValue, int) (ImplicitCastExpr, IntegralCast, long), 0 (ImplicitCastExpr, IntegralCast, long)) }) }) || copy_to_user (ImplicitCastExpr, FunctionToPointerDecay, unsigned long (*)(void *, const void *, unsigned long))(ufh (ImplicitCastExpr, LValueToRValue, struct file_handle *) (ImplicitCastExpr, BitCast, void *), handle (ImplicitCastExpr, LValueToRValue, struct file_handle *) (ImplicitCastExpr, BitCast, const void *), sizeof(struct file_handle) + handle_bytes (ImplicitCastExpr, LValueToRValue, int) (ImplicitCastExpr, IntegralCast, unsigned long)))",
+          "kfree",
+          "return [B1.8];"
+        ],
+        "api_terms": [
+          "exportfs_can_encode_fh",
+          "copy_from_user",
+          "kmalloc",
+          "exportfs_encode_fh",
+          "__might_fault",
+          "real_mount"
+        ],
+        "related_symbols": [
+          "path->mnt",
+          "path->dentry",
+          "d_sb->s_export_op",
+          "handle->f_handle",
+          "handle->handle_type",
+          "handle->handle_bytes"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "fs/fhandle.c",
+        "function": "do_sys_name_to_handle"
+      },
+      "location": {
+        "line": 36,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "do_sys_name_to_handle in fs/fhandle.c: cfg_calls=do_sys_name_to_handle -> exportfs_can_encode_fh; do_sys_name_to_handle -> copy_from_user",
+        "state_before": [
+          "buffer(path->mnt)",
+          "buffer(path->dentry)",
+          "sinks(do_sys_name_to_handle, kmalloc)"
+        ],
+        "state_after": [
+          "transition(kfree)",
+          "transition(return [B1.8];)",
+          "transition([B2.4] = [B2.3])"
+        ],
+        "functions": [
+          "do_sys_name_to_handle"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "path->mnt",
+          "path->dentry",
+          "d_sb->s_export_op",
+          "handle->f_handle",
+          "handle->handle_type",
+          "handle->handle_bytes"
+        ],
+        "buffer_fields": [
+          "path->mnt",
+          "path->dentry",
+          "d_sb->s_export_op",
+          "handle->f_handle",
+          "handle->handle_type",
+          "handle->handle_bytes"
+        ],
+        "call_targets": [
+          "do_sys_name_to_handle",
+          "kmalloc",
+          "exportfs_encode_fh",
+          "exportfs_can_encode_fh",
+          "copy_from_user",
+          "__might_fault",
+          "real_mount",
+          "kmsan_copy_to_user"
+        ],
+        "call_edges": [
+          "do_sys_name_to_handle -> exportfs_can_encode_fh",
+          "do_sys_name_to_handle -> copy_from_user",
+          "do_sys_name_to_handle -> kmalloc",
+          "do_sys_name_to_handle -> exportfs_encode_fh",
+          "do_sys_name_to_handle -> __might_fault",
+          "do_sys_name_to_handle -> real_mount"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "if [B4.65] || [B3.14]",
+          "[B4.65] || ...",
+          "if [B9.5] || [B8.6]",
+          "[B9.5] || ..."
+        ],
+        "state_statements": [
+          "kfree",
+          "return [B1.8];",
+          "[B2.4] = [B2.3]",
+          "sizeof(struct file_handle)",
+          "[B4.14]->mnt",
+          "[B4.17]->mnt_id",
+          "typeof (*(mnt_id)) __x = (real_mount(path->mnt)->mnt_id);",
+          "typeof (mnt_id) __ptr = (mnt_id);"
+        ],
+        "return_statements": [
+          "return [B1.8];",
+          "return [B13.3];",
+          "return [B15.3];",
+          "return [B17.3];"
+        ],
+        "source_file": "fs/fhandle.c",
+        "source_excerpt": "4: #include <linux/fs.h>\n5: #include <linux/file.h>\n6: #include <linux/mount.h>\n7: #include <linux/namei.h>\n8: #include <linux/exportfs.h>\n9: #include <linux/fs_struct.h>\n10: #include <linux/fsnotify.h>\n11: #include <linux/personality.h>\n12: #include <linux/uaccess.h>\n13: #include <linux/compat.h>\n14: #include \"internal.h\"\n15: #include \"mount.h\"\n16: \n17: static long do_sys_name_to_handle(const struct path *path,\n18: \t\t\t\t  struct file_handle __user *ufh,\n19: \t\t\t\t  int __user *mnt_id, int fh_flags)\n20: {\n21: \tlong retval;\n22: \tstruct file_handle f_handle;\n23: \tint handle_dwords, handle_bytes;\n24: \tstruct file_handle *handle = NULL;\n25: \n26: \t/*\n27: \t * We need to make sure whether the file system support decoding of\n28: \t * the file handle if decodeable file handle was requested.\n29: \t */\n30: \tif (!exportfs_can_encode_fh(path->dentry->d_sb->s_export_op, fh_flags))\n31: \t\treturn -EOPNOTSUPP;\n32: \n33: \tif (copy_from_user(&f_handle, ufh, sizeof(struct file_handle)))\n34: \t\treturn -EFAULT;\n35: \n36: \tif (f_handle.handle_bytes > MAX_HANDLE_SZ)\n37: \t\treturn -EINVAL;\n38: \n39: \thandle = kmalloc(sizeof(struct file_handle) + f_handle.handle_bytes,\n40: \t\t\t GFP_KERNEL);\n41: \tif (!handle)\n42: \t\treturn -ENOMEM;\n43: \n44: \t/* convert handle size to multiple of sizeof(u32) */\n45: \thandle_dwords = f_handle.handle_bytes >> 2;\n46: \n47: \t/* we ask for a non connectable maybe decodeable file handle */\n48: \tretval = exportfs_encode_fh(path->dentry,\n49: \t\t\t\t    (struct fid *)handle->f_handle,\n50: \t\t\t\t    &handle_dwords, fh_flags);\n51: \thandle->handle_type = retval;\n52: \t/* convert handle size to bytes */\n53: \thandle_bytes = handle_dwords * sizeof(u32);\n54: \thandle->handle_bytes = handle_bytes;\n55: \tif ((handle->handle_bytes > f_handle.handle_bytes) ||\n56: \t    (retval == FILEID_INVALID) || (retval < 0)) {\n57: \t\t/* As per old exportfs_encode_fh documentation\n58: \t\t * we could return ENOSPC to indicate overflow\n59: \t\t * But file system returned 255 always. So handle\n60: \t\t * both the values\n61: \t\t */\n62: \t\tif (retval == FILEID_INVALID || retval == -ENOSPC)\n63: \t\t\tretval = -EOVERFLOW;\n64: \t\t/*\n65: \t\t * set the handle size to zero so we copy only\n66: \t\t * non variable part of the file_handle\n67: \t\t */\n68: \t\thandle_bytes = 0;",
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/generate_only_evidence_all39_v8_r5/G05_3948abaa4e2b_Uninit_Data/csa/patchweaver_runtime/csa_raw/fs-fhandle.c-do_sys_name_to_handle.txt",
+        "raw_output_sha256": "ced3cc5960913bde6c466189323302dfde80041391a07af80cbf26e31d1661f2",
+        "command_sha256": "a06e99a082947f0a84c51b0bc6fdb20d6d332af87e705c2413f17c92701faf85"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:symbolic-state",
+        "confidence": 0.88,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "fs/fhandle.c",
+          "hunk_index": 0,
+          "source_line": 36
+        },
+        "summary": "do_sys_name_to_handle in fs/fhandle.c: cfg_calls=do_sys_name_to_handle -> exportfs_can_encode_fh; do_sys_name_to_handle -> copy_from_user",
+        "statements": [
+          "4: #include <linux/fs.h>",
+          "5: #include <linux/file.h>",
+          "6: #include <linux/mount.h>",
+          "7: #include <linux/namei.h>",
+          "8: #include <linux/exportfs.h>",
+          "9: #include <linux/fs_struct.h>"
+        ],
+        "guards": [
+          "if [B4.65] || [B3.14]",
+          "[B4.65] || ...",
+          "if [B9.5] || [B8.6]"
+        ],
+        "call_boundary": [
+          "do_sys_name_to_handle",
+          "kmalloc",
+          "exportfs_encode_fh",
+          "exportfs_can_encode_fh",
+          "copy_from_user",
+          "__might_fault"
+        ],
+        "call_edges": [
+          "do_sys_name_to_handle -> exportfs_can_encode_fh",
+          "do_sys_name_to_handle -> copy_from_user",
+          "do_sys_name_to_handle -> kmalloc",
+          "do_sys_name_to_handle -> exportfs_encode_fh",
+          "do_sys_name_to_handle -> __might_fault",
+          "do_sys_name_to_handle -> real_mount",
+          "do_sys_name_to_handle -> kmsan_copy_to_user",
+          "do_sys_name_to_handle -> __builtin_expect"
+        ],
+        "state_transitions": [
+          "transition(kfree)",
+          "transition(return [B1.8];)",
+          "transition([B2.4] = [B2.3])",
+          "kfree",
+          "return [B1.8];",
+          "[B2.4] = [B2.3]"
+        ],
+        "api_terms": [
+          "exportfs_can_encode_fh",
+          "copy_from_user",
+          "kmalloc",
+          "exportfs_encode_fh",
+          "__might_fault",
+          "real_mount"
+        ],
+        "related_symbols": [
+          "path->mnt",
+          "path->dentry",
+          "d_sb->s_export_op",
+          "handle->f_handle",
+          "handle->handle_type",
+          "handle->handle_bytes"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_validation_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "fs/fhandle.c",
+        "function": "do_sys_name_to_handle"
+      },
+      "location": {
+        "line": 36,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at fs/fhandle.c:36",
+        "diagnostic_message": "",
+        "diagnostic_checker": "",
+        "state_before": [
+          "buffer(path->mnt)",
+          "buffer(path->dentry)",
+          "sinks(do_sys_name_to_handle, kmalloc)"
+        ],
+        "state_after": [
+          "diagnostic(csa)"
+        ],
+        "functions": [
+          "do_sys_name_to_handle"
+        ],
+        "globals": [],
+        "tracked_symbols": [],
+        "buffer_fields": [
+          "path->mnt",
+          "path->dentry",
+          "d_sb->s_export_op",
+          "handle->f_handle",
+          "handle->handle_type",
+          "handle->handle_bytes"
+        ],
+        "call_targets": [
+          "do_sys_name_to_handle",
+          "kmalloc",
+          "exportfs_encode_fh",
+          "exportfs_can_encode_fh",
+          "copy_from_user",
+          "__might_fault"
+        ],
+        "call_edges": [
+          "do_sys_name_to_handle -> exportfs_can_encode_fh",
+          "do_sys_name_to_handle -> copy_from_user",
+          "do_sys_name_to_handle -> kmalloc",
+          "do_sys_name_to_handle -> exportfs_encode_fh",
+          "do_sys_name_to_handle -> __might_fault",
+          "do_sys_name_to_handle -> real_mount"
+        ],
+        "state_statements": [
+          "kfree",
+          "return [B1.8];",
+          "[B2.4] = [B2.3]",
+          "sizeof(struct file_handle)",
+          "[B4.14]->mnt",
+          "[B4.17]->mnt_id"
+        ],
+        "source_file": "fs/fhandle.c",
+        "source_excerpt": "4: #include <linux/fs.h>\n5: #include <linux/file.h>\n6: #include <linux/mount.h>\n7: #include <linux/namei.h>\n8: #include <linux/exportfs.h>\n9: #include <linux/fs_struct.h>\n10: #include <linux/fsnotify.h>\n11: #include <linux/personality.h>\n12: #include <linux/uaccess.h>\n13: #include <linux/compat.h>\n14: #include \"internal.h\"\n15: #include \"mount.h\"\n16: \n17: static long do_sys_name_to_handle(const struct path *path,\n18: \t\t\t\t  struct file_handle __user *ufh,\n19: \t\t\t\t  int __user *mnt_id, int fh_flags)\n20: {\n21: \tlong retval;\n22: \tstruct file_handle f_handle;\n23: \tint handle_dwords, handle_bytes;\n24: \tstruct file_handle *handle = NULL;\n25: \n26: \t/*\n27: \t * We need to make sure whether the file system support decoding of\n28: \t * the file handle if decodeable file handle was requested.\n29: \t */\n30: \tif (!exportfs_can_encode_fh(path->dentry->d_sb->s_export_op, fh_flags))\n31: \t\treturn -EOPNOTSUPP;\n32: \n33: \tif (copy_from_user(&f_handle, ufh, sizeof(struct file_handle)))\n34: \t\treturn -EFAULT;\n35: \n36: \tif (f_handle.handle_bytes > MAX_HANDLE_SZ)\n37: \t\treturn -EINVAL;\n38: \n39: \thandle = kmalloc(sizeof(struct file_handle) + f_handle.handle_bytes,\n40: \t\t\t GFP_KERNEL);\n41: \tif (!handle)\n42: \t\treturn -ENOMEM;\n43: \n44: \t/* convert handle size to multiple of sizeof(u32) */\n45: \thandle_dwords = f_handle.handle_bytes >> 2;\n46: \n47: \t/* we ask for a non connectable maybe decodeable file handle */\n48: \tretval = exportfs_encode_fh(path->dentry,\n49: \t\t\t\t    (struct fid *)handle->f_handle,\n50: \t\t\t\t    &handle_dwords, fh_flags);\n51: \thandle->handle_type = retval;\n52: \t/* convert handle size to bytes */\n53: \thandle_bytes = handle_dwords * sizeof(u32);\n54: \thandle->handle_bytes = handle_bytes;\n55: \tif ((handle->handle_bytes > f_handle.handle_bytes) ||\n56: \t    (retval == FILEID_INVALID) || (retval < 0)) {\n57: \t\t/* As per old exportfs_encode_fh documentation\n58: \t\t * we could return ENOSPC to indicate overflow\n59: \t\t * But file system returned 255 always. So handle\n60: \t\t * both the values\n61: \t\t */\n62: \t\tif (retval == FILEID_INVALID || retval == -ENOSPC)\n63: \t\t\tretval = -EOVERFLOW;\n64: \t\t/*\n65: \t\t * set the handle size to zero so we copy only\n66: \t\t * non variable part of the file_handle\n67: \t\t */\n68: \t\thandle_bytes = 0;",
+        "coverage_status": "partial",
+        "contract_type": "",
+        "guard_exprs": [
+          "!exportfs_can_encode_fh(path->dentry->d_sb->s_export_op, fh_flags)",
+          "copy_from_user(&f_handle, ufh, sizeof(struct file_handle))",
+          "f_handle.handle_bytes > MAX_HANDLE_SZ",
+          "!handle"
+        ],
+        "sink_calls": [
+          "do_sys_name_to_handle",
+          "kmalloc",
+          "exportfs_encode_fh",
+          "exportfs_can_encode_fh"
+        ]
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.72,
+        "origin": "analyzer_output"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "fs/fhandle.c",
+          "hunk_index": 0,
+          "source_line": 36
+        },
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at fs/fhandle.c:36",
+        "statements": [
+          "4: #include <linux/fs.h>",
+          "5: #include <linux/file.h>",
+          "6: #include <linux/mount.h>",
+          "7: #include <linux/namei.h>",
+          "8: #include <linux/exportfs.h>",
+          "9: #include <linux/fs_struct.h>"
+        ],
+        "guards": [
+          "!exportfs_can_encode_fh(path->dentry->d_sb->s_export_op, fh_flags)",
+          "copy_from_user(&f_handle, ufh, sizeof(struct file_handle))",
+          "f_handle.handle_bytes > MAX_HANDLE_SZ",
+          "!handle"
+        ],
+        "call_boundary": [
+          "do_sys_name_to_handle",
+          "kmalloc",
+          "exportfs_encode_fh",
+          "exportfs_can_encode_fh",
+          "copy_from_user",
+          "__might_fault"
+        ],
+        "call_edges": [
+          "do_sys_name_to_handle -> exportfs_can_encode_fh",
+          "do_sys_name_to_handle -> copy_from_user",
+          "do_sys_name_to_handle -> kmalloc",
+          "do_sys_name_to_handle -> exportfs_encode_fh",
+          "do_sys_name_to_handle -> __might_fault",
+          "do_sys_name_to_handle -> real_mount"
+        ],
+        "state_transitions": [
+          "diagnostic(csa)"
+        ],
+        "api_terms": [
+          "kfree",
+          "return [B1.8];",
+          "[B2.4] = [B2.3]",
+          "sizeof(struct file_handle)",
+          "[B4.14]->mnt",
+          "[B4.17]->mnt_id"
+        ],
+        "related_symbols": [],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      }
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_1",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "fs/fhandle.c",
+        "function": "do_sys_name_to_handle"
+      },
+      "location": {
+        "line": 36,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "do_sys_name_to_handle in fs/fhandle.c provides CSA-backed pointer/resource lifecycle context near line 36",
+        "diagnostic_message": "",
+        "diagnostic_checker": "",
+        "state_before": [
+          "buffer(path->mnt)",
+          "buffer(path->dentry)",
+          "sinks(do_sys_name_to_handle, kmalloc)"
+        ],
+        "state_after": [
+          "operation(kfree)",
+          "operation(return [B1.8];)",
+          "operation([B2.4] = [B2.3])",
+          "operation(sizeof(struct file_handle))"
+        ],
+        "functions": [
+          "do_sys_name_to_handle"
+        ],
+        "globals": [],
+        "tracked_symbols": [],
+        "buffer_fields": [
+          "path->mnt",
+          "path->dentry",
+          "d_sb->s_export_op",
+          "handle->f_handle",
+          "handle->handle_type",
+          "handle->handle_bytes"
+        ],
+        "call_targets": [
+          "do_sys_name_to_handle",
+          "kmalloc",
+          "exportfs_encode_fh",
+          "exportfs_can_encode_fh",
+          "copy_from_user",
+          "__might_fault"
+        ],
+        "call_edges": [
+          "do_sys_name_to_handle -> exportfs_can_encode_fh",
+          "do_sys_name_to_handle -> copy_from_user",
+          "do_sys_name_to_handle -> kmalloc",
+          "do_sys_name_to_handle -> exportfs_encode_fh",
+          "do_sys_name_to_handle -> __might_fault",
+          "do_sys_name_to_handle -> real_mount"
+        ],
+        "state_statements": [
+          "kfree",
+          "return [B1.8];",
+          "[B2.4] = [B2.3]",
+          "sizeof(struct file_handle)",
+          "[B4.14]->mnt",
+          "[B4.17]->mnt_id"
+        ],
+        "source_file": "fs/fhandle.c",
+        "source_excerpt": "4: #include <linux/fs.h>\n5: #include <linux/file.h>\n6: #include <linux/mount.h>\n7: #include <linux/namei.h>\n8: #include <linux/exportfs.h>\n9: #include <linux/fs_struct.h>\n10: #include <linux/fsnotify.h>\n11: #include <linux/personality.h>\n12: #include <linux/uaccess.h>\n13: #include <linux/compat.h>\n14: #include \"internal.h\"\n15: #include \"mount.h\"\n16: \n17: static long do_sys_name_to_handle(const struct path *path,\n18: \t\t\t\t  struct file_handle __user *ufh,\n19: \t\t\t\t  int __user *mnt_id, int fh_flags)\n20: {\n21: \tlong retval;\n22: \tstruct file_handle f_handle;\n23: \tint handle_dwords, handle_bytes;\n24: \tstruct file_handle *handle = NULL;\n25: \n26: \t/*\n27: \t * We need to make sure whether the file system support decoding of\n28: \t * the file handle if decodeable file handle was requested.\n29: \t */\n30: \tif (!exportfs_can_encode_fh(path->dentry->d_sb->s_export_op, fh_flags))\n31: \t\treturn -EOPNOTSUPP;\n32: \n33: \tif (copy_from_user(&f_handle, ufh, sizeof(struct file_handle)))\n34: \t\treturn -EFAULT;\n35: \n36: \tif (f_handle.handle_bytes > MAX_HANDLE_SZ)\n37: \t\treturn -EINVAL;\n38: \n39: \thandle = kmalloc(sizeof(struct file_handle) + f_handle.handle_bytes,\n40: \t\t\t GFP_KERNEL);\n41: \tif (!handle)\n42: \t\treturn -ENOMEM;\n43: \n44: \t/* convert handle size to multiple of sizeof(u32) */\n45: \thandle_dwords = f_handle.handle_bytes >> 2;\n46: \n47: \t/* we ask for a non connectable maybe decodeable file handle */\n48: \tretval = exportfs_encode_fh(path->dentry,\n49: \t\t\t\t    (struct fid *)handle->f_handle,\n50: \t\t\t\t    &handle_dwords, fh_flags);\n51: \thandle->handle_type = retval;\n52: \t/* convert handle size to bytes */\n53: \thandle_bytes = handle_dwords * sizeof(u32);\n54: \thandle->handle_bytes = handle_bytes;\n55: \tif ((handle->handle_bytes > f_handle.handle_bytes) ||\n56: \t    (retval == FILEID_INVALID) || (retval < 0)) {\n57: \t\t/* As per old exportfs_encode_fh documentation\n58: \t\t * we could return ENOSPC to indicate overflow\n59: \t\t * But file system returned 255 always. So handle\n60: \t\t * both the values\n61: \t\t */\n62: \t\tif (retval == FILEID_INVALID || retval == -ENOSPC)\n63: \t\t\tretval = -EOVERFLOW;\n64: \t\t/*\n65: \t\t * set the handle size to zero so we copy only\n66: \t\t * non variable part of the file_handle\n67: \t\t */\n68: \t\thandle_bytes = 0;",
+        "coverage_status": "partial",
+        "operations": [
+          "kfree",
+          "return [B1.8];",
+          "[B2.4] = [B2.3]",
+          "sizeof(struct file_handle)",
+          "[B4.14]->mnt",
+          "[B4.17]->mnt_id"
+        ],
+        "acquisition_ops": [],
+        "release_ops": []
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.72,
+        "origin": "analyzer_output"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "fs/fhandle.c",
+          "hunk_index": 0,
+          "source_line": 36
+        },
+        "summary": "do_sys_name_to_handle in fs/fhandle.c provides CSA-backed pointer/resource lifecycle context near line 36",
+        "statements": [
+          "4: #include <linux/fs.h>",
+          "5: #include <linux/file.h>",
+          "6: #include <linux/mount.h>",
+          "7: #include <linux/namei.h>",
+          "8: #include <linux/exportfs.h>",
+          "9: #include <linux/fs_struct.h>"
+        ],
+        "guards": [
+          "!exportfs_can_encode_fh(path->dentry->d_sb->s_export_op, fh_flags)",
+          "copy_from_user(&f_handle, ufh, sizeof(struct file_handle))",
+          "f_handle.handle_bytes > MAX_HANDLE_SZ",
+          "!handle"
+        ],
+        "call_boundary": [
+          "do_sys_name_to_handle",
+          "kmalloc",
+          "exportfs_encode_fh",
+          "exportfs_can_encode_fh",
+          "copy_from_user",
+          "__might_fault"
+        ],
+        "call_edges": [
+          "do_sys_name_to_handle -> exportfs_can_encode_fh",
+          "do_sys_name_to_handle -> copy_from_user",
+          "do_sys_name_to_handle -> kmalloc",
+          "do_sys_name_to_handle -> exportfs_encode_fh",
+          "do_sys_name_to_handle -> __might_fault",
+          "do_sys_name_to_handle -> real_mount"
+        ],
+        "state_transitions": [
+          "operation(kfree)",
+          "operation(return [B1.8];)",
+          "operation([B2.4] = [B2.3])",
+          "operation(sizeof(struct file_handle))"
+        ],
+        "api_terms": [
+          "kfree",
+          "return [B1.8];",
+          "[B2.4] = [B2.3]",
+          "sizeof(struct file_handle)",
+          "[B4.14]->mnt",
+          "[B4.17]->mnt_id"
+        ],
+        "related_symbols": [],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "collected_analyzers": [
+    "csa"
+  ],
+  "provenance_summary": {
+    "total_records": 4,
+    "origin_counts": {
+      "analyzer_internal": 2,
+      "analyzer_output": 2
+    },
+    "analyzer_internal_records": 2,
+    "analyzer_internal_fraction": 0.5,
+    "analyzer_backed_records": 4,
+    "analyzer_backed_fraction": 1.0,
+    "source_derived_records": 0,
+    "source_derived_fraction": 0.0
+  }
+}

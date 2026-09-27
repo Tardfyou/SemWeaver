@@ -1,0 +1,700 @@
+{
+  "records": [
+    {
+      "evidence_id": "csa_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "fs/bcachefs/fs-io-direct.c",
+        "function": "bch2_direct_IO_read"
+      },
+      "location": {
+        "line": 88,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "bch2_direct_IO_read adds patch barrier `shorten >= iter->count` around bch2_direct_IO_read, iov_iter_count.",
+        "contract_type": "patch_barrier",
+        "same_call_binding": "tie the guard to the current downstream sink or protected state transition instead of any unrelated if-statement",
+        "trigger_contract": "report when a risky write proceeds without the patch-style barrier",
+        "silence_contract": "stay silent when the nearby guard proves the current write is blocked or bounded",
+        "guard_exprs": [
+          "shorten >= iter->count"
+        ],
+        "removed_calls": [],
+        "added_calls": [],
+        "tracked_symbols": [
+          "shorten",
+          "iter",
+          "count"
+        ],
+        "widened_variables": [],
+        "state_resets": [],
+        "old_numeric_type": "",
+        "new_numeric_type": "",
+        "numeric_domain_change": "",
+        "arithmetic_operations": [],
+        "sink_calls": [
+          "bch2_direct_IO_read",
+          "iov_iter_count",
+          "bio_iov_vecs_to_alloc"
+        ],
+        "buffer_fields": [
+          "iter->count"
+        ],
+        "source_file": "fs/bcachefs/fs-io-direct.c",
+        "function": "bch2_direct_IO_read",
+        "source_excerpt": "65: static int bch2_direct_IO_read(struct kiocb *req, struct iov_iter *iter)\n66: {\n67: \tstruct file *file = req->ki_filp;\n68: \tstruct bch_inode_info *inode = file_bch_inode(file);\n69: \tstruct bch_fs *c = inode->v.i_sb->s_fs_info;\n70: \tstruct bch_io_opts opts;\n71: \tstruct dio_read *dio;\n72: \tstruct bio *bio;\n73: \tloff_t offset = req->ki_pos;\n74: \tbool sync = is_sync_kiocb(req);\n75: \tsize_t shorten;\n76: \tssize_t ret;\n77: \n78: \tbch2_inode_opts_get(&opts, c, &inode->ei_inode);\n79: \n80: \t/* bios must be 512 byte aligned: */\n81: \tif ((offset|iter->count) & (SECTOR_SIZE - 1))\n82: \t\treturn -EINVAL;\n83: \n84: \tret = min_t(loff_t, iter->count,\n85: \t\t    max_t(loff_t, 0, i_size_read(&inode->v) - offset));\n86: \n87: \tif (!ret)\n88: \t\treturn ret;\n89: \n90: \tshorten = iov_iter_count(iter) - round_up(ret, block_bytes(c));\n91: \titer->count -= shorten;\n92: \n93: \tbio = bio_alloc_bioset(NULL,\n94: \t\t\t       bio_iov_vecs_to_alloc(iter, BIO_MAX_VECS),\n95: \t\t\t       REQ_OP_READ,\n96: \t\t\t       GFP_KERNEL,\n97: \t\t\t       &c->dio_read_bioset);\n98: \n99: \tbio->bi_end_io = bch2_direct_IO_read_endio;\n100: \n101: \tdio = container_of(bio, struct dio_read, rbio.bio);\n102: \tclosure_init(&dio->cl, NULL);\n103: \n104: \t/*\n105: \t * this is a _really_ horrible hack just to avoid an atomic sub at the\n106: \t * end:\n107: \t */\n108: \tif (!sync) {\n109: \t\tset_closure_fn(&dio->cl, bch2_dio_read_complete, NULL);\n110: \t\tatomic_set(&dio->cl.remaining,\n111: \t\t\t   CLOSURE_REMAINING_INITIALIZER -\n112: \t\t\t   CLOSURE_RUNNING +\n113: \t\t\t   CLOSURE_DESTRUCTOR);\n114: \t} else {\n115: \t\tatomic_set(&dio->cl.remaining,\n116: \t\t\t   CLOSURE_REMAINING_INITIALIZER + 1);\n117: \t\tdio->cl.closure_get_happened = true;\n118: \t}\n119: \n120: \tdio->req\t= req;",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:semantic-contract",
+        "confidence": 0.92,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "fs/bcachefs/fs-io-direct.c",
+          "hunk_index": 0,
+          "source_line": 88
+        },
+        "summary": "bch2_direct_IO_read adds patch barrier `shorten >= iter->count` around bch2_direct_IO_read, iov_iter_count.",
+        "statements": [
+          "if (shorten >= iter->count)",
+          "shorten = 0;"
+        ],
+        "guards": [
+          "shorten >= iter->count"
+        ],
+        "call_boundary": [
+          "bch2_direct_IO_read",
+          "iov_iter_count",
+          "bio_iov_vecs_to_alloc"
+        ],
+        "call_edges": [
+          "bch2_direct_IO_read -> bch2_direct_IO_read",
+          "bch2_direct_IO_read -> iov_iter_count",
+          "bch2_direct_IO_read -> bio_iov_vecs_to_alloc"
+        ],
+        "state_transitions": [
+          "",
+          "report when a risky write proceeds without the patch-style barrier",
+          "stay silent when the nearby guard proves the current write is blocked or bounded"
+        ],
+        "api_terms": [
+          "bch2_direct_IO_read",
+          "iov_iter_count",
+          "bio_iov_vecs_to_alloc"
+        ],
+        "related_symbols": [
+          "shorten",
+          "iter",
+          "count"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "fs/bcachefs/fs-io-direct.c",
+        "function": "bch2_direct_IO_read"
+      },
+      "location": {
+        "line": 88,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "shorten >= iter->count",
+        "summary": "bch2_direct_IO_read introduces patch guard `shorten >= iter->count` before bch2_direct_IO_read, iov_iter_count.",
+        "state_before": [
+          "input(shorten)",
+          "input(iter)",
+          "buffer(iter->count)"
+        ],
+        "state_after": [
+          "guard(shorten >= iter->count)",
+          "current_call(bch2_direct_IO_read)",
+          "current_call(iov_iter_count)"
+        ],
+        "functions": [
+          "bch2_direct_IO_read"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "shorten",
+          "iter",
+          "count"
+        ],
+        "buffer_fields": [
+          "iter->count"
+        ],
+        "call_targets": [
+          "bch2_direct_IO_read",
+          "iov_iter_count",
+          "bio_iov_vecs_to_alloc"
+        ],
+        "call_edges": [
+          "bch2_direct_IO_read -> bch2_direct_IO_read",
+          "bch2_direct_IO_read -> iov_iter_count",
+          "bch2_direct_IO_read -> bio_iov_vecs_to_alloc"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "shorten >= iter->count"
+        ],
+        "state_statements": [
+          "if (shorten >= iter->count)",
+          "shorten = 0;"
+        ],
+        "compile_command_preview": "",
+        "source_file": "fs/bcachefs/fs-io-direct.c",
+        "source_excerpt": "65: static int bch2_direct_IO_read(struct kiocb *req, struct iov_iter *iter)\n66: {\n67: \tstruct file *file = req->ki_filp;\n68: \tstruct bch_inode_info *inode = file_bch_inode(file);\n69: \tstruct bch_fs *c = inode->v.i_sb->s_fs_info;\n70: \tstruct bch_io_opts opts;\n71: \tstruct dio_read *dio;\n72: \tstruct bio *bio;\n73: \tloff_t offset = req->ki_pos;\n74: \tbool sync = is_sync_kiocb(req);\n75: \tsize_t shorten;\n76: \tssize_t ret;\n77: \n78: \tbch2_inode_opts_get(&opts, c, &inode->ei_inode);\n79: \n80: \t/* bios must be 512 byte aligned: */\n81: \tif ((offset|iter->count) & (SECTOR_SIZE - 1))\n82: \t\treturn -EINVAL;\n83: \n84: \tret = min_t(loff_t, iter->count,\n85: \t\t    max_t(loff_t, 0, i_size_read(&inode->v) - offset));\n86: \n87: \tif (!ret)\n88: \t\treturn ret;\n89: \n90: \tshorten = iov_iter_count(iter) - round_up(ret, block_bytes(c));\n91: \titer->count -= shorten;\n92: \n93: \tbio = bio_alloc_bioset(NULL,\n94: \t\t\t       bio_iov_vecs_to_alloc(iter, BIO_MAX_VECS),\n95: \t\t\t       REQ_OP_READ,\n96: \t\t\t       GFP_KERNEL,\n97: \t\t\t       &c->dio_read_bioset);\n98: \n99: \tbio->bi_end_io = bch2_direct_IO_read_endio;\n100: \n101: \tdio = container_of(bio, struct dio_read, rbio.bio);\n102: \tclosure_init(&dio->cl, NULL);\n103: \n104: \t/*\n105: \t * this is a _really_ horrible hack just to avoid an atomic sub at the\n106: \t * end:\n107: \t */\n108: \tif (!sync) {\n109: \t\tset_closure_fn(&dio->cl, bch2_dio_read_complete, NULL);\n110: \t\tatomic_set(&dio->cl.remaining,\n111: \t\t\t   CLOSURE_REMAINING_INITIALIZER -\n112: \t\t\t   CLOSURE_RUNNING +\n113: \t\t\t   CLOSURE_DESTRUCTOR);\n114: \t} else {\n115: \t\tatomic_set(&dio->cl.remaining,\n116: \t\t\t   CLOSURE_REMAINING_INITIALIZER + 1);\n117: \t\tdio->cl.closure_get_happened = true;\n118: \t}\n119: \n120: \tdio->req\t= req;",
+        "summary_line": 88,
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:path-guard",
+        "confidence": 0.92,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "fs/bcachefs/fs-io-direct.c",
+          "hunk_index": 0,
+          "source_line": 88
+        },
+        "summary": "bch2_direct_IO_read introduces patch guard `shorten >= iter->count` before bch2_direct_IO_read, iov_iter_count.",
+        "statements": [
+          "if (shorten >= iter->count)",
+          "shorten = 0;"
+        ],
+        "guards": [
+          "shorten >= iter->count"
+        ],
+        "call_boundary": [
+          "bch2_direct_IO_read",
+          "iov_iter_count",
+          "bio_iov_vecs_to_alloc"
+        ],
+        "call_edges": [
+          "bch2_direct_IO_read -> bch2_direct_IO_read",
+          "bch2_direct_IO_read -> iov_iter_count",
+          "bch2_direct_IO_read -> bio_iov_vecs_to_alloc"
+        ],
+        "state_transitions": [
+          "guard(shorten >= iter->count)",
+          "current_call(bch2_direct_IO_read)",
+          "current_call(iov_iter_count)"
+        ],
+        "api_terms": [
+          "bch2_direct_IO_read",
+          "iov_iter_count",
+          "bio_iov_vecs_to_alloc"
+        ],
+        "related_symbols": [
+          "shorten",
+          "iter",
+          "count"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_guard_1",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "fs/bcachefs/fs-io-direct.c",
+        "function": "bch2_direct_IO_read"
+      },
+      "location": {
+        "line": 88,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "if iter (ImplicitCastExpr, LValueToRValue, struct iov_iter *)->count (ImplicitCastExpr, LValueToRValue, size_t)",
+        "summary": "Analyzer CFG for bch2_direct_IO_read in fs/bcachefs/fs-io-direct.c: bindings: typeof ((loff_t)(i_size_read(&inode->v) - offset)) __UNIQUE_ID___y2541 = ((loff_t)(i_size_read(&inode->v) - offset));; typeof ((loff_t)(__builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(((loff_t)(0)) - ((loff_t)(i_size_read(&inode->v) - offset))) * 0L)) : (int *)8))), (((loff_t)(0)) > ((loff_t)(i_size_read(&inode->v) - offset)) ? ((loff_t)(0)) : ((loff_t)(i_size_read(&inode->v) - offset))), ({ | branches: if iter (ImplicitCastExpr, LValueToRValue, struct iov_iter *)->count (ImplicitCastExpr, LValueToRValue, size_t); while iter (ImplicitCastExpr, LValueToRValue, struct iov_iter *)->count (ImplicitCastExpr, LValueToRValue, size_t) | calls: bch2_direct_IO_read -> file_bch_inode; bch2_direct_IO_read -> is_sync_kiocb",
+        "state_before": [
+          "input(req)",
+          "input(iter)",
+          "buffer(iter->count)",
+          "buffer(inode->v)",
+          "sinks(file_bch_inode, is_sync_kiocb)"
+        ],
+        "state_after": [
+          "cfg_binding(typeof ((loff_t)(i_size_read(&inode->v) - offset)) __UNIQUE_ID___y2541 = ((loff_t)(i_size_read(&inode->v) - offset));)",
+          "cfg_binding(typeof ((loff_t)(__builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(((loff_t)(0)) - ((loff_t)(i_size_read(&inode->v) - offset))) * 0L)) : (int *)8))), (((loff_t)(0)) > ((loff_t)(i_size_read(&inode->v) - offset)) ? ((loff_t)(0)) : ((loff_t)(i_size_read(&inode->v) - offset))), ({)",
+          "cfg_branch(if iter (ImplicitCastExpr, LValueToRValue, struct iov_iter *)->count (ImplicitCastExpr, LValueToRValue, size_t))",
+          "cfg_branch(while iter (ImplicitCastExpr, LValueToRValue, struct iov_iter *)->count (ImplicitCastExpr, LValueToRValue, size_t))"
+        ],
+        "functions": [
+          "bch2_direct_IO_read"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "req",
+          "iter",
+          "iter->count",
+          "inode->v",
+          "req->ki_filp",
+          "i_sb->s_fs_info",
+          "req->ki_pos",
+          "inode->ei_inode"
+        ],
+        "buffer_fields": [
+          "iter->count",
+          "inode->v",
+          "req->ki_filp",
+          "i_sb->s_fs_info",
+          "req->ki_pos",
+          "inode->ei_inode"
+        ],
+        "call_targets": [
+          "file_bch_inode",
+          "is_sync_kiocb",
+          "bch2_inode_opts_get",
+          "min_t",
+          "max_t",
+          "i_size_read",
+          "iov_iter_count",
+          "round_up"
+        ],
+        "call_edges": [
+          "bch2_direct_IO_read -> file_bch_inode",
+          "bch2_direct_IO_read -> is_sync_kiocb",
+          "bch2_direct_IO_read -> bch2_inode_opts_get",
+          "bch2_direct_IO_read -> i_size_read",
+          "bch2_direct_IO_read -> iov_iter_count",
+          "bch2_direct_IO_read -> block_bytes"
+        ],
+        "cfg_branch_kinds": [
+          "if",
+          "while"
+        ],
+        "branch_conditions": [
+          "if [B3.10]",
+          "if [B7.6]",
+          "if [B9.12]",
+          "break;",
+          "if [B11.43]",
+          "while [B13.6]"
+        ],
+        "resolved_branch_conditions": [
+          "if iter (ImplicitCastExpr, LValueToRValue, struct iov_iter *)->count (ImplicitCastExpr, LValueToRValue, size_t)",
+          "while iter (ImplicitCastExpr, LValueToRValue, struct iov_iter *)->count (ImplicitCastExpr, LValueToRValue, size_t)",
+          "(__UNIQUE_ID___x2542) (ImplicitCastExpr, LValueToRValue, typeof ((loff_t)(iter->count))) < (__UNIQUE_ID___y2543) (ImplicitCastExpr, LValueToRValue, typeof ((loff_t)(__builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(((loff_t)(0)) - ((loff_t)(i_size_read(&inode->v) - offset))) * 0L)) : (int *)8))), (((loff_t)(0)) > ((loff_t)(i_size_read(&inode->v) - offset)) ? ((loff_t)(0)) : ((loff_t)(i_size_read(&inode->v) - offset))), ({ ? ... : ...",
+          "(__UNIQUE_ID___x2540) (ImplicitCastExpr, LValueToRValue, typeof ((loff_t)(0))) > (__UNIQUE_ID___y2541) (ImplicitCastExpr, LValueToRValue, typeof ((loff_t)(i_size_read(&inode->v) - offset))) ? ... : ...",
+          "if (offset (ImplicitCastExpr, LValueToRValue, loff_t) (ImplicitCastExpr, IntegralCast, unsigned long long) | [B27.51] (ImplicitCastExpr, LValueToRValue, struct iov_iter *)->count (ImplicitCastExpr, LValueToRValue, size_t) (ImplicitCastExpr, IntegralCast, unsigned long long)) & ((1 << 9) - 1) (ImplicitCastExpr, IntegralCast, unsigned long long)",
+          "if sync (ImplicitCastExpr, LValueToRValue, bool)"
+        ],
+        "cfg_value_bindings": [
+          "typeof ((loff_t)(i_size_read(&inode->v) - offset)) __UNIQUE_ID___y2541 = ((loff_t)(i_size_read(&inode->v) - offset));",
+          "typeof ((loff_t)(__builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(((loff_t)(0)) - ((loff_t)(i_size_read(&inode->v) - offset))) * 0L)) : (int *)8))), (((loff_t)(0)) > ((loff_t)(i_size_read(&inode->v) - offset)) ? ((loff_t)(0)) : ((loff_t)(i_size_read(&inode->v) - offset))), ({",
+          "(loff_t)(__builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(((loff_t)(0)) - ((loff_t)(i_size_read(&inode->v) - offset))) * 0L)) : (int *)8))), (((loff_t)(0)) > ((loff_t)(i_size_read(&inode->v) - offset)) ? ((loff_t)(0)) : ((loff_t)(i_size_read(&inode->v) - offset))), ({ ... ;  }))) (CStyleCastExpr, NoOp, loff_t)",
+          "(__UNIQUE_ID___y2543) (ImplicitCastExpr, LValueToRValue, typeof ((loff_t)(__builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(((loff_t)(0)) - ((loff_t)(i_size_read(&inode->v) - offset))) * 0L)) : (int *)8))), (((loff_t)(0)) > ((loff_t)(i_size_read(&inode->v) - offset)) ? ((loff_t)(0)) : ((loff_t)(i_size_read(&inode->v) - offset))), ({",
+          "__builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(((loff_t)(iter->count)) - ((loff_t)(__builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(((loff_t)(0)) - ((loff_t)(i_size_read(&inode->v) - offset))) * 0L)) : (int *)8))), (((loff_t)(0)) > ((loff_t)(i_size_read(&inode->v) - offset)) ? ((loff_t)(0)) : ((loff_t)(i_size_read(&inode->v) - offset))), ({",
+          "ret = __builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(((loff_t)(iter->count)) - ((loff_t)(__builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(((loff_t)(0)) - ((loff_t)(i_size_read(&inode->v) - offset))) * 0L)) : (int *)8))), (((loff_t)(0)) > ((loff_t)(i_size_read(&inode->v) - offset)) ? ((loff_t)(0)) : ((loff_t)(i_size_read(&inode->v) - offset))), ({"
+        ],
+        "state_statements": [
+          "return [B1.2];",
+          "[B2.4]->cl",
+          "[B2.11]->cl",
+          "[B2.16]->ret",
+          "[B2.19] = [B2.18]",
+          "[B2.24]->rbio"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,fs/bcachefs/.fs-io-direct.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/uapi -I./arch/x8...",
+        "source_file": "fs/bcachefs/fs-io-direct.c",
+        "source_excerpt": "65: static int bch2_direct_IO_read(struct kiocb *req, struct iov_iter *iter)\n66: {\n67: \tstruct file *file = req->ki_filp;\n68: \tstruct bch_inode_info *inode = file_bch_inode(file);\n69: \tstruct bch_fs *c = inode->v.i_sb->s_fs_info;\n70: \tstruct bch_io_opts opts;\n71: \tstruct dio_read *dio;\n72: \tstruct bio *bio;\n73: \tloff_t offset = req->ki_pos;\n74: \tbool sync = is_sync_kiocb(req);\n75: \tsize_t shorten;\n76: \tssize_t ret;\n77: \n78: \tbch2_inode_opts_get(&opts, c, &inode->ei_inode);\n79: \n80: \t/* bios must be 512 byte aligned: */\n81: \tif ((offset|iter->count) & (SECTOR_SIZE - 1))\n82: \t\treturn -EINVAL;\n83: \n84: \tret = min_t(loff_t, iter->count,\n85: \t\t    max_t(loff_t, 0, i_size_read(&inode->v) - offset));\n86: \n87: \tif (!ret)\n88: \t\treturn ret;\n89: \n90: \tshorten = iov_iter_count(iter) - round_up(ret, block_bytes(c));\n91: \titer->count -= shorten;\n92: \n93: \tbio = bio_alloc_bioset(NULL,\n94: \t\t\t       bio_iov_vecs_to_alloc(iter, BIO_MAX_VECS),\n95: \t\t\t       REQ_OP_READ,\n96: \t\t\t       GFP_KERNEL,\n97: \t\t\t       &c->dio_read_bioset);\n98: \n99: \tbio->bi_end_io = bch2_direct_IO_read_endio;\n100: \n101: \tdio = container_of(bio, struct dio_read, rbio.bio);\n102: \tclosure_init(&dio->cl, NULL);\n103: \n104: \t/*\n105: \t * this is a _really_ horrible hack just to avoid an atomic sub at the\n106: \t * end:\n107: \t */\n108: \tif (!sync) {\n109: \t\tset_closure_fn(&dio->cl, bch2_dio_read_complete, NULL);\n110: \t\tatomic_set(&dio->cl.remaining,\n111: \t\t\t   CLOSURE_REMAINING_INITIALIZER -\n112: \t\t\t   CLOSURE_RUNNING +\n113: \t\t\t   CLOSURE_DESTRUCTOR);\n114: \t} else {\n115: \t\tatomic_set(&dio->cl.remaining,\n116: \t\t\t   CLOSURE_REMAINING_INITIALIZER + 1);\n117: \t\tdio->cl.closure_get_happened = true;\n118: \t}\n119: \n120: \tdio->req\t= req;",
+        "summary_line": 88,
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/generate_only_evidence_all39_v8_r5/G26_b58b1b883b9b_Buffer_Overflow/csa/patchweaver_runtime/csa_raw/fs-bcachefs-fs-io-direct.c-bch2_direct_IO_read.txt",
+        "raw_output_sha256": "56ccb9d3aaaf8a133eff10a5e9133648a86413477248053ddb015f3abca4a386",
+        "command_sha256": "47555fc2de6f71524b9e6e990bc7ccbc07f7918ff53afc84f24fbff7bf34ad42"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:debug-cfg",
+        "confidence": 0.92,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "fs/bcachefs/fs-io-direct.c",
+          "hunk_index": 0,
+          "source_line": 88
+        },
+        "summary": "Analyzer CFG for bch2_direct_IO_read in fs/bcachefs/fs-io-direct.c: bindings: typeof ((loff_t)(i_size_read(&inode->v) - offset)) __UNIQUE_ID___y2541 = ((loff_t)(i_size_read(&inode->v) - offset));; typeof ((loff_t)(__builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(((loff_t)(0)) - ((loff_t)(i_size_read(&inode->v) - offset))) * 0L)) : (int *)8))), (((loff_t)(0)) > ((loff_t)(i_size_read(&inode->v) - offset)) ? ((loff_t)(0)) : ((loff_t)(i_size_read(&inode->v) - offset))), ({ | branches: if iter (ImplicitCastExpr, LValueToRValue, struct iov_iter *)->count (ImplicitCastExpr, LValueToRValue, size_t); while iter (ImplicitCastExpr, LValueToRValue, struct iov_iter *)->count (ImplicitCastExpr, LValueToRValue, size_t) | calls: bch2_direct_IO_read -> file_bch_inode; bch2_direct_IO_read -> is_sync_kiocb",
+        "statements": [
+          "65: static int bch2_direct_IO_read(struct kiocb *req, struct iov_iter *iter)",
+          "66: {",
+          "67: \tstruct file *file = req->ki_filp;",
+          "68: \tstruct bch_inode_info *inode = file_bch_inode(file);",
+          "69: \tstruct bch_fs *c = inode->v.i_sb->s_fs_info;",
+          "70: \tstruct bch_io_opts opts;"
+        ],
+        "guards": [
+          "if iter (ImplicitCastExpr, LValueToRValue, struct iov_iter *)->count (ImplicitCastExpr, LValueToRValue, size_t)",
+          "while iter (ImplicitCastExpr, LValueToRValue, struct iov_iter *)->count (ImplicitCastExpr, LValueToRValue, size_t)",
+          "(__UNIQUE_ID___x2542) (ImplicitCastExpr, LValueToRValue, typeof ((loff_t)(iter->count))) < (__UNIQUE_ID___y2543) (ImplicitCastExpr, LValueToRValue, typeof ((loff_t)(__builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(((loff_t)(0)) - ((loff_t)(i_size_read(&inode->v) - offset))) * 0L)) : (int *)8))), (((loff_t)(0)) > ((loff_t)(i_size_read(&inode->v) - offset)) ? ((loff_t)(0)) : ((loff_t)(i_size_read(&inode->v) - offset))), ({ ? ... : ...",
+          "(__UNIQUE_ID___x2540) (ImplicitCastExpr, LValueToRValue, typeof ((loff_t)(0))) > (__UNIQUE_ID___y2541) (ImplicitCastExpr, LValueToRValue, typeof ((loff_t)(i_size_read(&inode->v) - offset))) ? ... : ..."
+        ],
+        "call_boundary": [
+          "file_bch_inode",
+          "is_sync_kiocb",
+          "bch2_inode_opts_get",
+          "min_t",
+          "max_t",
+          "i_size_read"
+        ],
+        "call_edges": [
+          "bch2_direct_IO_read -> file_bch_inode",
+          "bch2_direct_IO_read -> is_sync_kiocb",
+          "bch2_direct_IO_read -> bch2_inode_opts_get",
+          "bch2_direct_IO_read -> i_size_read",
+          "bch2_direct_IO_read -> iov_iter_count",
+          "bch2_direct_IO_read -> block_bytes",
+          "bch2_direct_IO_read -> bio_alloc_bioset",
+          "bch2_direct_IO_read -> bio_iov_vecs_to_alloc"
+        ],
+        "state_transitions": [
+          "cfg_binding(typeof ((loff_t)(i_size_read(&inode->v) - offset)) __UNIQUE_ID___y2541 = ((loff_t)(i_size_read(&inode->v) - offset));)",
+          "cfg_binding(typeof ((loff_t)(__builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(((loff_t)(0)) - ((loff_t)(i_size_read(&inode->v) - offset))) * 0L)) : (int *)8))), (((loff_t)(0)) > ((loff_t)(i_size_read(&inode->v) - offset)) ? ((loff_t)(0)) : ((loff_t)(i_size_read(&inode->v) - offset))), ({)",
+          "cfg_branch(if iter (ImplicitCastExpr, LValueToRValue, struct iov_iter *)->count (ImplicitCastExpr, LValueToRValue, size_t))",
+          "cfg_branch(while iter (ImplicitCastExpr, LValueToRValue, struct iov_iter *)->count (ImplicitCastExpr, LValueToRValue, size_t))",
+          "return [B1.2];",
+          "[B2.4]->cl"
+        ],
+        "api_terms": [
+          "file_bch_inode",
+          "is_sync_kiocb",
+          "bch2_inode_opts_get",
+          "i_size_read",
+          "iov_iter_count",
+          "block_bytes"
+        ],
+        "related_symbols": [
+          "req",
+          "iter",
+          "iter->count",
+          "inode->v",
+          "req->ki_filp",
+          "i_sb->s_fs_info"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "fs/bcachefs/fs-io-direct.c",
+        "function": "bch2_direct_IO_read"
+      },
+      "location": {
+        "line": 88,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "bch2_direct_IO_read adds patch barrier `shorten >= iter->count` around bch2_direct_IO_read, iov_iter_count.",
+        "state_before": [
+          "input(shorten)",
+          "input(iter)",
+          "buffer(iter->count)"
+        ],
+        "state_after": [
+          "guard(shorten >= iter->count)",
+          "sink(bch2_direct_IO_read)",
+          "sink(iov_iter_count)"
+        ],
+        "functions": [
+          "bch2_direct_IO_read"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "shorten",
+          "iter",
+          "count"
+        ],
+        "buffer_fields": [
+          "iter->count"
+        ],
+        "call_targets": [
+          "bch2_direct_IO_read",
+          "iov_iter_count",
+          "bio_iov_vecs_to_alloc"
+        ],
+        "call_edges": [
+          "bch2_direct_IO_read -> bch2_direct_IO_read",
+          "bch2_direct_IO_read -> iov_iter_count",
+          "bch2_direct_IO_read -> bio_iov_vecs_to_alloc"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "shorten >= iter->count"
+        ],
+        "state_statements": [
+          "if (shorten >= iter->count)",
+          "shorten = 0;"
+        ],
+        "return_statements": [],
+        "source_file": "fs/bcachefs/fs-io-direct.c",
+        "source_excerpt": "65: static int bch2_direct_IO_read(struct kiocb *req, struct iov_iter *iter)\n66: {\n67: \tstruct file *file = req->ki_filp;\n68: \tstruct bch_inode_info *inode = file_bch_inode(file);\n69: \tstruct bch_fs *c = inode->v.i_sb->s_fs_info;\n70: \tstruct bch_io_opts opts;\n71: \tstruct dio_read *dio;\n72: \tstruct bio *bio;\n73: \tloff_t offset = req->ki_pos;\n74: \tbool sync = is_sync_kiocb(req);\n75: \tsize_t shorten;\n76: \tssize_t ret;\n77: \n78: \tbch2_inode_opts_get(&opts, c, &inode->ei_inode);\n79: \n80: \t/* bios must be 512 byte aligned: */\n81: \tif ((offset|iter->count) & (SECTOR_SIZE - 1))\n82: \t\treturn -EINVAL;\n83: \n84: \tret = min_t(loff_t, iter->count,\n85: \t\t    max_t(loff_t, 0, i_size_read(&inode->v) - offset));\n86: \n87: \tif (!ret)\n88: \t\treturn ret;\n89: \n90: \tshorten = iov_iter_count(iter) - round_up(ret, block_bytes(c));\n91: \titer->count -= shorten;\n92: \n93: \tbio = bio_alloc_bioset(NULL,\n94: \t\t\t       bio_iov_vecs_to_alloc(iter, BIO_MAX_VECS),\n95: \t\t\t       REQ_OP_READ,\n96: \t\t\t       GFP_KERNEL,\n97: \t\t\t       &c->dio_read_bioset);\n98: \n99: \tbio->bi_end_io = bch2_direct_IO_read_endio;\n100: \n101: \tdio = container_of(bio, struct dio_read, rbio.bio);\n102: \tclosure_init(&dio->cl, NULL);\n103: \n104: \t/*\n105: \t * this is a _really_ horrible hack just to avoid an atomic sub at the\n106: \t * end:\n107: \t */\n108: \tif (!sync) {\n109: \t\tset_closure_fn(&dio->cl, bch2_dio_read_complete, NULL);\n110: \t\tatomic_set(&dio->cl.remaining,\n111: \t\t\t   CLOSURE_REMAINING_INITIALIZER -\n112: \t\t\t   CLOSURE_RUNNING +\n113: \t\t\t   CLOSURE_DESTRUCTOR);\n114: \t} else {\n115: \t\tatomic_set(&dio->cl.remaining,\n116: \t\t\t   CLOSURE_REMAINING_INITIALIZER + 1);\n117: \t\tdio->cl.closure_get_happened = true;\n118: \t}\n119: \n120: \tdio->req\t= req;",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:guarded-state",
+        "confidence": 0.9,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "fs/bcachefs/fs-io-direct.c",
+          "hunk_index": 0,
+          "source_line": 88
+        },
+        "summary": "bch2_direct_IO_read adds patch barrier `shorten >= iter->count` around bch2_direct_IO_read, iov_iter_count.",
+        "statements": [
+          "if (shorten >= iter->count)",
+          "shorten = 0;"
+        ],
+        "guards": [
+          "shorten >= iter->count"
+        ],
+        "call_boundary": [
+          "bch2_direct_IO_read",
+          "iov_iter_count",
+          "bio_iov_vecs_to_alloc"
+        ],
+        "call_edges": [
+          "bch2_direct_IO_read -> bch2_direct_IO_read",
+          "bch2_direct_IO_read -> iov_iter_count",
+          "bch2_direct_IO_read -> bio_iov_vecs_to_alloc"
+        ],
+        "state_transitions": [
+          "guard(shorten >= iter->count)",
+          "sink(bch2_direct_IO_read)",
+          "sink(iov_iter_count)"
+        ],
+        "api_terms": [
+          "bch2_direct_IO_read",
+          "iov_iter_count",
+          "bio_iov_vecs_to_alloc"
+        ],
+        "related_symbols": [
+          "shorten",
+          "iter",
+          "count"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_0",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "fs/bcachefs/fs-io-direct.c",
+        "function": "bch2_direct_IO_read"
+      },
+      "location": {
+        "line": 88,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "bch2_direct_IO_read in fs/bcachefs/fs-io-direct.c provides CSA-backed pointer/resource lifecycle context near line 88",
+        "diagnostic_message": "",
+        "diagnostic_checker": "",
+        "state_before": [
+          "input(req)",
+          "input(iter)",
+          "buffer(iter->count)",
+          "buffer(inode->v)",
+          "sinks(file_bch_inode, is_sync_kiocb)"
+        ],
+        "state_after": [
+          "operation(return [B1.2];)",
+          "operation([B2.4]->cl)",
+          "operation([B2.11]->cl)",
+          "operation([B2.16]->ret)"
+        ],
+        "functions": [
+          "bch2_direct_IO_read"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "req",
+          "iter",
+          "shorten",
+          "count"
+        ],
+        "buffer_fields": [
+          "iter->count",
+          "inode->v",
+          "req->ki_filp",
+          "i_sb->s_fs_info",
+          "req->ki_pos",
+          "inode->ei_inode"
+        ],
+        "call_targets": [
+          "file_bch_inode",
+          "is_sync_kiocb",
+          "bch2_inode_opts_get",
+          "min_t",
+          "max_t",
+          "i_size_read"
+        ],
+        "call_edges": [
+          "bch2_direct_IO_read -> file_bch_inode",
+          "bch2_direct_IO_read -> is_sync_kiocb",
+          "bch2_direct_IO_read -> bch2_inode_opts_get",
+          "bch2_direct_IO_read -> i_size_read",
+          "bch2_direct_IO_read -> iov_iter_count",
+          "bch2_direct_IO_read -> block_bytes"
+        ],
+        "state_statements": [
+          "return [B1.2];",
+          "[B2.4]->cl",
+          "[B2.11]->cl",
+          "[B2.16]->ret",
+          "[B2.19] = [B2.18]",
+          "[B2.24]->rbio"
+        ],
+        "source_file": "fs/bcachefs/fs-io-direct.c",
+        "source_excerpt": "65: static int bch2_direct_IO_read(struct kiocb *req, struct iov_iter *iter)\n66: {\n67: \tstruct file *file = req->ki_filp;\n68: \tstruct bch_inode_info *inode = file_bch_inode(file);\n69: \tstruct bch_fs *c = inode->v.i_sb->s_fs_info;\n70: \tstruct bch_io_opts opts;\n71: \tstruct dio_read *dio;\n72: \tstruct bio *bio;\n73: \tloff_t offset = req->ki_pos;\n74: \tbool sync = is_sync_kiocb(req);\n75: \tsize_t shorten;\n76: \tssize_t ret;\n77: \n78: \tbch2_inode_opts_get(&opts, c, &inode->ei_inode);\n79: \n80: \t/* bios must be 512 byte aligned: */\n81: \tif ((offset|iter->count) & (SECTOR_SIZE - 1))\n82: \t\treturn -EINVAL;\n83: \n84: \tret = min_t(loff_t, iter->count,\n85: \t\t    max_t(loff_t, 0, i_size_read(&inode->v) - offset));\n86: \n87: \tif (!ret)\n88: \t\treturn ret;\n89: \n90: \tshorten = iov_iter_count(iter) - round_up(ret, block_bytes(c));\n91: \titer->count -= shorten;\n92: \n93: \tbio = bio_alloc_bioset(NULL,\n94: \t\t\t       bio_iov_vecs_to_alloc(iter, BIO_MAX_VECS),\n95: \t\t\t       REQ_OP_READ,\n96: \t\t\t       GFP_KERNEL,\n97: \t\t\t       &c->dio_read_bioset);\n98: \n99: \tbio->bi_end_io = bch2_direct_IO_read_endio;\n100: \n101: \tdio = container_of(bio, struct dio_read, rbio.bio);\n102: \tclosure_init(&dio->cl, NULL);\n103: \n104: \t/*\n105: \t * this is a _really_ horrible hack just to avoid an atomic sub at the\n106: \t * end:\n107: \t */\n108: \tif (!sync) {\n109: \t\tset_closure_fn(&dio->cl, bch2_dio_read_complete, NULL);\n110: \t\tatomic_set(&dio->cl.remaining,\n111: \t\t\t   CLOSURE_REMAINING_INITIALIZER -\n112: \t\t\t   CLOSURE_RUNNING +\n113: \t\t\t   CLOSURE_DESTRUCTOR);\n114: \t} else {\n115: \t\tatomic_set(&dio->cl.remaining,\n116: \t\t\t   CLOSURE_REMAINING_INITIALIZER + 1);\n117: \t\tdio->cl.closure_get_happened = true;\n118: \t}\n119: \n120: \tdio->req\t= req;",
+        "coverage_status": "partial",
+        "operations": [
+          "return [B1.2];",
+          "[B2.4]->cl",
+          "[B2.11]->cl",
+          "[B2.16]->ret",
+          "[B2.19] = [B2.18]",
+          "[B2.24]->rbio"
+        ],
+        "acquisition_ops": [],
+        "release_ops": []
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.72,
+        "origin": "analyzer_output"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "fs/bcachefs/fs-io-direct.c",
+          "hunk_index": 0,
+          "source_line": 88
+        },
+        "summary": "bch2_direct_IO_read in fs/bcachefs/fs-io-direct.c provides CSA-backed pointer/resource lifecycle context near line 88",
+        "statements": [
+          "65: static int bch2_direct_IO_read(struct kiocb *req, struct iov_iter *iter)",
+          "66: {",
+          "67: \tstruct file *file = req->ki_filp;",
+          "68: \tstruct bch_inode_info *inode = file_bch_inode(file);",
+          "69: \tstruct bch_fs *c = inode->v.i_sb->s_fs_info;",
+          "70: \tstruct bch_io_opts opts;"
+        ],
+        "guards": [
+          "(offset|iter->count) & (SECTOR_SIZE - 1)",
+          "!ret",
+          "!sync",
+          "shorten >= iter->count"
+        ],
+        "call_boundary": [
+          "file_bch_inode",
+          "is_sync_kiocb",
+          "bch2_inode_opts_get",
+          "min_t",
+          "max_t",
+          "i_size_read"
+        ],
+        "call_edges": [
+          "bch2_direct_IO_read -> file_bch_inode",
+          "bch2_direct_IO_read -> is_sync_kiocb",
+          "bch2_direct_IO_read -> bch2_inode_opts_get",
+          "bch2_direct_IO_read -> i_size_read",
+          "bch2_direct_IO_read -> iov_iter_count",
+          "bch2_direct_IO_read -> block_bytes"
+        ],
+        "state_transitions": [
+          "operation(return [B1.2];)",
+          "operation([B2.4]->cl)",
+          "operation([B2.11]->cl)",
+          "operation([B2.16]->ret)"
+        ],
+        "api_terms": [
+          "return [B1.2];",
+          "[B2.4]->cl",
+          "[B2.11]->cl",
+          "[B2.16]->ret",
+          "[B2.19] = [B2.18]",
+          "[B2.24]->rbio"
+        ],
+        "related_symbols": [
+          "req",
+          "iter",
+          "shorten",
+          "count"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "collected_analyzers": [
+    "csa"
+  ],
+  "provenance_summary": {
+    "total_records": 5,
+    "origin_counts": {
+      "analyzer_internal": 1,
+      "analyzer_output": 1,
+      "source_derived": 3
+    },
+    "analyzer_internal_records": 1,
+    "analyzer_internal_fraction": 0.2,
+    "analyzer_backed_records": 2,
+    "analyzer_backed_fraction": 0.4,
+    "source_derived_records": 3,
+    "source_derived_fraction": 0.6
+  }
+}

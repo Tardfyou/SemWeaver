@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "method": "frozen_csa_candidate_paired_validation",
+  "case_id": "G01_0f8ca019544a_Buffer_Overflow",
+  "commit_id": "0f8ca019544a252d1afb468ce840c6dcbac73af4",
+  "candidate_path": "/artifact/work/artifacts/fse_revision/all39_gpt6luna_high_no_internal_recovery_v13_r1/G01_0f8ca019544a_Buffer_Overflow/attempt-05/SAGenTestChecker.cpp",
+  "candidate_sha256": "65ac551d49df71294159a89fb0f485d61f7b48cd1ad8852fe09137c68b76204f",
+  "patch_sha256": "9542baf3417f57590b383d0f3f6d2b252f9c4f80cfb8d18ed669142bd99a2690",
+  "runtime_tools": {
+    "git": "/usr/bin/git",
+    "cmake": "/usr/bin/cmake",
+    "ninja": "/usr/bin/ninja",
+    "make": "/usr/bin/make",
+    "clang": "/usr/lib/llvm-18/bin/clang",
+    "clang++": "/usr/lib/llvm-18/bin/clang++",
+    "scan-build-18": "/usr/bin/scan-build-18"
+  },
+  "artifact_review": {
+    "findings": [],
+    "warnings": [
+      "CSA 代码引入了 `ProgramState` / 路径敏感相关符号或说明，但实现里没有对应的状态读写、约束传播或 guard 绑定。 如果当前路线本来就是 AST/实参/guard 建模，应删掉这类 stateful 话术；只有显式声明了状态建模却完全未落地时才应继续升级处理。"
+    ],
+    "passed": true
+  },
+  "review_policy": "diagnostic",
+  "pds_behavior": false,
+  "adoptable_with_review_gate": false,
+  "build_return_code": 0,
+  "build_stderr_tail": "",
+  "vulnerable_object_counts": {
+    "drivers/gpu/drm/amd/amdgpu/../display/dc/dml2/dml2_wrapper.o": -999
+  },
+  "fixed_object_counts": {},
+  "vulnerable_alerts": null,
+  "fixed_alerts": null,
+  "vulnerable_hit": false,
+  "fixed_silent": false,
+  "execution_valid": false,
+  "pds": false,
+  "infrastructure_errors": [],
+  "scan_failure_artifacts": [
+    {
+      "path": "drivers-gpu-drm-amd-amdgpu-..-display-dc-dml2-dml2_wrapper/2026-09-27-045244-75889-1/failures/clang_crash_6_MKnb.i.info.txt",
+      "sha256": "1e558d1001eead8d3b104c977c49d85eb1e0091f466e35711dcab3a4c012261f",
+      "kind": "scan_build_failure_artifact",
+      "diagnostic_tail": "-limits -Wno-shift-negative-value -Wno-initializer-overrides -Wno-sign-compare -Wno-unused-parameter -Wno-type-limits -Wno-sign-compare -Wno-missing-field-initializers -Wno-override-init -std=gnu11 -ferror-limit 19 -frandomize-layout-seed-file=./scripts/basic/randstruct.seed -fzero-call-used-regs=used-gpr -fsanitize=thread,array-bounds,bool,enum,shift-base,shift-exponent,kcfi -fsanitize-recover=array-bounds,bool,enum,shift-base,shift-exponent,kcfi -fno-sanitize-memory-param-retval -fno-sanitize-address-use-odr-indicator -fpatchable-function-entry=59 -fpatchable-function-entry-offset=59 -mfentry -fwrapv -fstrict-flex-arrays=3 -stack-protector 2 -ftrivial-auto-var-init=pattern -mstack-alignment=8 -fcf-protection=branch -mfunction-return=thunk-extern -mindirect-branch-cs-prefix -fno-signed-char -fwchar-type=short -fno-signed-wchar -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -vectorize-loops -vectorize-slp -mllvm -tsan-compound-read-before-write=1 -mllvm -tsan-distinguish-volatile=1 -faddrsig -x c drivers/gpu/drm/amd/amdgpu/../display/dc/dml2/dml2_wrapper.c\nLinux d40d40812326 6.8.0-71-generic #71-Ubuntu SMP PREEMPT_DYNAMIC Tue Jul 22 16:52:38 UTC 2025 x86_64 x86_64 x86_64 GNU/Linux\nUbuntu clang version 18.1.3 (1ubuntu1)\nTarget: x86_64-pc-linux-gnu\nThread model: posix\nInstalledDir: /usr/lib/llvm-18/bin\nFound candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/13\nSelected GCC installation: /usr/lib/gcc/x86_64-linux-gnu/13\nCandidate multilib: .;@m64\nSelected multilib: .;@m64\n",
+      "side": "vulnerable"
+    },
+    {
+      "path": "drivers-gpu-drm-amd-amdgpu-..-display-dc-dml2-dml2_wrapper/2026-09-27-045244-75889-1/failures/clang_crash_6_MKnb.i.stderr.txt",
+      "sha256": "1c8cdf4484bcf1f6e38b6e3f8102289ce1e47b14957f24deb3c513dedd502d0c",
+      "kind": "scan_build_failure_artifact",
+      "diagnostic_tail": "18)\n#14 0x000070444391df6c clang::ento::CoreEngine::ExecuteWorkList(clang::LocationContext const*, unsigned int, llvm::IntrusiveRefCntPtr<clang::ento::ProgramState const>) (/usr/lib/llvm-18/bin/../lib/libclang-cpp.so.18.1+0x2cb6f6c)\n#15 0x0000704443d3b529 (/usr/lib/llvm-18/bin/../lib/libclang-cpp.so.18.1+0x30d4529)\n#16 0x0000704443d1b51f (/usr/lib/llvm-18/bin/../lib/libclang-cpp.so.18.1+0x30b451f)\n#17 0x00007044417fe3d6 clang::ParseAST(clang::Sema&, bool, bool) (/usr/lib/llvm-18/bin/../lib/libclang-cpp.so.18.1+0xb973d6)\n#18 0x000070444366d62c clang::FrontendAction::Execute() (/usr/lib/llvm-18/bin/../lib/libclang-cpp.so.18.1+0x2a0662c)\n#19 0x00007044435ea0b4 clang::CompilerInstance::ExecuteAction(clang::FrontendAction&) (/usr/lib/llvm-18/bin/../lib/libclang-cpp.so.18.1+0x29830b4)\n#20 0x00007044436e963d clang::ExecuteCompilerInvocation(clang::CompilerInstance*) (/usr/lib/llvm-18/bin/../lib/libclang-cpp.so.18.1+0x2a8263d)\n#21 0x000062caf10a442e cc1_main(llvm::ArrayRef<char const*>, char const*, void*) (/usr/lib/llvm-18/bin/clang+0x1442e)\n#22 0x000062caf10a1894 (/usr/lib/llvm-18/bin/clang+0x11894)\n#23 0x000062caf10a0a26 clang_main(int, char**, llvm::ToolContext const&) (/usr/lib/llvm-18/bin/clang+0x10a26)\n#24 0x000062caf10ae383 main (/usr/lib/llvm-18/bin/clang+0x1e383)\n#25 0x00007044391f11ca (/lib/x86_64-linux-gnu/libc.so.6+0x2a1ca)\n#26 0x00007044391f128b __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x2a28b)\n#27 0x000062caf109e255 _start (/usr/lib/llvm-18/bin/clang+0xe255)\n",
+      "side": "vulnerable"
+    }
+  ],
+  "preflight_hazards": [],
+  "scan_failure_kind": "scan_build_failure_artifact",
+  "early_abort_reason": "vulnerable_scan_invalid:drivers/gpu/drm/amd/amdgpu/../display/dc/dml2/dml2_wrapper.o:-999",
+  "new_llm_calls": 0,
+  "scan_build_compatibility": {
+    "schema_version": 1,
+    "fix": "preserve_mllvm_option_and_operand_in_CompileOptionMap",
+    "original_ccc_sha256": "66eef2940988b16c30009eeb54a4fc2333a48ecab4a63f1da9a3782375edd100",
+    "patched_ccc_sha256": "4e6b94848d4360338f684a14ff6699863138aaa0b6a71cfe5646db04d919bcb3",
+    "compiler_arguments_removed": []
+  }
+}

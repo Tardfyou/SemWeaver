@@ -1,0 +1,4 @@
+- Decision: NotABug
+- Reason: The reported line is in `adf_device_sriov_worker`, which uses the reset worker’s stack-local `sriov_data`, not the heap-allocated `reset_data` involved in the target bug. The target fix’s `completion_done()` guard coordinates who frees `reset_data`; it does not apply to this stack object.
+
+  There may be a separate lifetime risk: if the SR-IOV work remains queued or running when the 10-second wait expires, the reset worker can return and invalidate `sriov_data` before the SR-IOV worker accesses it. That would need a different fix, such as ensuring the work completes before the stack frame ends or giving the context a suitable lifetime. So the report’s specific “missing `completion_done()` guard” finding does not match the target bug pattern.

@@ -1,0 +1,8 @@
+**Refinement Plan:**
+The false positive occurs because the checker reports from AST structure alone: it sees a tracked allocation and a `goto` in an `if` branch, but does not account for the branch condition. In `if (!ndev)`, the `goto` is taken precisely when allocation failed, so there is no device to free.
+
+The refinement recognizes null tests on the tracked net-device pointer and skips the then-branch when it represents the allocation-failure path. It still reports the target bug: the `if (err)` branch after `rvu_rep_devlink_port_register(rep)` is not a null test on `ndev`, so it remains eligible for detection.
+
+**Refined Code:**
+```cpp
+```

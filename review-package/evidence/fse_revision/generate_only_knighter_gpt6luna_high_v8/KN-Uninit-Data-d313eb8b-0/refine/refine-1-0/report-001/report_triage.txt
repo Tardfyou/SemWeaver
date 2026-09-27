@@ -1,0 +1,2 @@
+- Decision: NotABug
+- Reason: The report identifies a real bug in the pre-patch code: `tcf_skbmod_dump()` passed `sizeof(opt)` bytes to `nla_put()`, although the designated initializer left a four-byte padding hole in `struct tc_skbmod` uninitialized. That could disclose kernel stack data. But the reported source includes `memset(&opt, 0, sizeof(opt))` before assigning fields, which also clears the padding. The fix patch adds exactly this initialization, so the reported code no longer exhibits the target bug pattern or leaks the padding.

@@ -1,0 +1,8 @@
+Refinment Plan:
+The false positive is caused by the checker failing to recognize that the earlier whole-object `memset` zeroed the same local object later passed to `nla_put`. The existing logic relies on source-text substring matching for call names and independently derives the object region from AST expressions. I’ve made function matching use the call’s callee identifier and made zeroing and sink checks use the analyzer’s evaluated argument regions, normalized to their base region. That lets the checker reliably match `&opt` across the two calls, while still reporting a whole-struct sink when no recognized whole-object zeroing was recorded.
+
+This preserves detection of the pre-fix code, which has no whole-object zeroing call. The state tracking remains intentionally limited to recognized zeroing calls; handling later whole-object overwrites or aliasing writes would require additional invalidation logic.
+
+Refined Code:
+```cpp
+```

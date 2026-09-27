@@ -1,0 +1,2 @@
+- Decision: Bug
+- Reason: This is a true positive and matches the target pattern. In the pre-patch function, `mt76_connac_get_he_phy_cap()` can return `NULL` when the requested HE capability is unavailable. The function then derives `ve` from `vc` and later reads `ve->phy_cap_info[5]` without checking `vc`. The call path can reach this function for a peer with HE capability; that does not guarantee the local capability lookup succeeds. The fix adds a NULL check and returns before the code reads through `ve`, matching the target pattern and addressing the reported failure.

@@ -1,0 +1,110 @@
+{
+  "cache_key": {
+    "cache_version": 16,
+    "patch_path": "/work/artifacts/fse_revision/generate_only_materialized_v1/cases/G39_f503ae90c735_Null_Pointer_Dereference/patches/commit.patch",
+    "evidence_dir": "/work/SemWeaver/artifacts/external/linux-evidence-clone-v8b",
+    "validate_path": "",
+    "source_files": [
+      "drivers/net/wireless/mediatek/mt76/mt7996/mcu.c"
+    ],
+    "compile_commands_sha256": "a0a8fcbe35a0b54c94b63b1e3d9c7f893767b2e998595bf9314f648ae9aacbe4"
+  },
+  "data": {
+    "available": true,
+    "clang_path": "/usr/lib/llvm-18/bin/clang",
+    "cfg_snapshots": [
+      {
+        "source_file": "drivers/net/wireless/mediatek/mt76/mt7996/mcu.c",
+        "function_name": "mt7996_mcu_sta_bfer_he",
+        "anchor_line": 1544,
+        "branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "[B4.41] ? ... : ...",
+          "[B9.15] ? ... : ...",
+          "if [B10.20]",
+          "if [B11.10]",
+          "if [B13.10]",
+          "if [B15.24]",
+          "[B18.22] ? ... : ...",
+          "[B21.128] ? ... : ..."
+        ],
+        "resolved_branch_conditions": [
+          "if sta (ImplicitCastExpr, LValueToRValue, struct ieee80211_sta *)->deflink.bandwidth (ImplicitCastExpr, LValueToRValue, enum ieee80211_sta_rx_bandwidth) (ImplicitCastExpr, IntegralCast, unsigned int) != IEEE80211_STA_RX_BW_160 (ImplicitCastExpr, IntegralCast, unsigned int)",
+          "(__UNIQUE_ID_x_1744) (ImplicitCastExpr, LValueToRValue, int) < (__UNIQUE_ID_y_1745) (ImplicitCastExpr, LValueToRValue, int) ? ... : ...",
+          "(__UNIQUE_ID_x_1742) (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int) < (__UNIQUE_ID_y_1743) (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int) ? ... : ...",
+          "if bf (ImplicitCastExpr, LValueToRValue, struct sta_rec_bf *)->ncol_gt_bw80 (ImplicitCastExpr, LValueToRValue, u8)",
+          "if pe (ImplicitCastExpr, LValueToRValue, struct ieee80211_he_cap_elem *)->phy_cap_info (ImplicitCastExpr, ArrayToPointerDecay, u8 *)[0] (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int) & 16",
+          "if pe (ImplicitCastExpr, LValueToRValue, struct ieee80211_he_cap_elem *)->phy_cap_info (ImplicitCastExpr, ArrayToPointerDecay, u8 *)[0] (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int) & 8",
+          "(__UNIQUE_ID_x_1740) (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int) < (__UNIQUE_ID_y_1741) (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int) ? ... : ...",
+          "(__UNIQUE_ID_x_1738) (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int) < (__UNIQUE_ID_y_1739) (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int) ? ... : ..."
+        ],
+        "cfg_value_bindings": [
+          "struct ieee80211_sta_he_cap *pc = &sta->deflink.he_cap;",
+          "sta (ImplicitCastExpr, LValueToRValue, struct ieee80211_sta *)->deflink.bandwidth (ImplicitCastExpr, LValueToRValue, enum ieee80211_sta_rx_bandwidth) (ImplicitCastExpr, IntegralCast, unsigned int) != IEEE80211_STA_RX_BW_160 (ImplicitCastExpr, IntegralCast, unsigned int)",
+          "u8 nss_mcs = mt7996_mcu_get_sta_nss(mcs_map);",
+          "const struct ieee80211_sta_he_cap *vc = mt76_connac_get_he_phy_cap(phy->mt76, vif);",
+          "nss_mcs = mt7996_mcu_get_sta_nss (ImplicitCastExpr, FunctionToPointerDecay, u8 (*)(u16))(mcs_map (ImplicitCastExpr, LValueToRValue, u16))",
+          "u8 __UNIQUE_ID_y_1739 = (sts);",
+          "int __UNIQUE_ID_y_1745 = (sts);",
+          "u8 __UNIQUE_ID_y_1743 = (nss_mcs);"
+        ],
+        "call_edges": [
+          "mt7996_mcu_sta_bfer_he -> mt76_connac_get_he_phy_cap",
+          "mt7996_mcu_sta_bfer_he -> mt7996_mcu_get_sta_nss",
+          "mt7996_mcu_sta_bfer_he -> mt7996_mcu_sta_sounding_rate",
+          "mt7996_mcu_sta_bfer_he -> u8_get_bits"
+        ],
+        "call_targets": [
+          "mt76_connac_get_he_phy_cap",
+          "mt7996_mcu_get_sta_nss",
+          "mt7996_mcu_sta_sounding_rate",
+          "u8_get_bits"
+        ],
+        "state_statements": [
+          "[B1.5]->nrow_gt_bw80",
+          "[B1.6] = [B1.3]",
+          "[B4.4]->phy_cap_info",
+          "[B4.13] = [B4.12]",
+          "[B4.18]->phy_cap_info",
+          "[B4.27] = [B4.26]",
+          "int __UNIQUE_ID_x_1744 = (snd_dim);",
+          "int __UNIQUE_ID_y_1745 = (sts);",
+          "[B5.4]->ncol_gt_bw80",
+          "[B5.5] = [B5.2]",
+          "[B6.5]->ncol_gt_bw80",
+          "[B6.6] = [B6.3]"
+        ],
+        "field_accesses": [
+          "bf->ncol_gt_bw80",
+          "bf->nrow",
+          "sta->deflink",
+          "pc->he_cap_elem",
+          "phy->mt76",
+          "vc->he_cap_elem",
+          "pc->he_mcs_nss_supp"
+        ],
+        "return_statements": [
+          "return;"
+        ],
+        "dump_excerpt": " --- Call graph Dump --- \n  Function: < root > calls: offset_to_ptr __kasan_check_read __kasan_check_write kasan_check_read kasan_check_write __read_once_word_nocheck read_word_at_a_time __must_check_fn gen_endbr gen_endbr_poison is_endbr rip_rel_ptr get_current __compiletime_assert_0 __bad_size_call_parameter preempt_count preempt_count_set __builtin_expect set_preempt_need_resched clear_preempt_need_resched test_preempt_need_resched __preempt_count_add __builtin_constant_p __preempt_count_sub __preempt_count_dec_and_test should_resched interrupt_context_level preempt_notifier_init preempt_enable_nested preempt_count_sub class_preempt_destructor class_preempt_lock_ptr class_preempt_constructor preempt_count_add class_preempt_notrace_destructor class_preempt_notrace_lock_ptr class_preempt_notrace_constructor class_migrate_destructor migrate_enable class_migrate_lock_ptr class_migrate_constructor migrate_disable preempt_model_rt preempt_model_preemptible preempt_model_full initcall_from_entry sme_get_me_mask arch_static_branch arch_static_branch_jump jump_entry_code jump_entry_target jump_entry_key jump_entry_is_branch jump_entry_is_init jump_entry_set_init jump_entry_size arch_jump_entry_size static_key_false static_key_true __arch_swab32 __arch_swab64 __fswab16 __fswab32 __fswab64 __fswahw32 __fswahb32 __swab __builtin_bswap64 __swab16p __builtin_bswap16 __swab32p __builtin_bswap32 __swab64p __swahw32p __swahb32p __swab16s __swab32s __swab64s __swahw32s __swahb32s swab16_array swab32_array swab64_array __cpu_to_le64p __le64_to_cpup __cpu_to_le32p __le32_to_cpup __cpu_to_le16p __le16_to_cpup __cpu_to_be64p __be64_to_cpup __cpu_to_be32p __be32_to_cpup __cpu_to_be16p __be16_to_cpup le16_add_cpu le32_add_cpu le64_add_cpu le32_to_cpu_array cpu_to_le32_array be16_add_cpu be32_add_cpu be64_add_cpu cpu_to_be32_array be32_to_cpu_array alternative_msr_write indirect_branch_prediction_barrier vdso_encode_cpunode vdso_read_cpunode __loadsegment_fs mds_clear_cpu_buffers mds_idle_clear_cpu_buffers ____wrong_branch_error native_save_fl native_irq_disable native_irq_enable native_safe_halt native_halt native_irqs_disabled_flags native_local_irq_save native_local_irq_restore gate_offset gate_segment get_max_mapped pgprot_nx native_make_pgd native_pgd_val pgd_flags native_make_p4d native_p4d_val native_make_pud native_pud_val native_make_pmd native_pmd_val p4d_pfn_mask p4d_flags_mask p4d_flags pud_pfn_mask pud_flags_mask pud_flags pmd_pfn_mask pmd_flags_mask pmd_flags native_make_pte native_pte_val pte_flags protval_4k_2_large pgprot_4k_2_large protval_large_2_4k pgprot_large_2_4k set_arch_panic_timeout printk_get_level printk_skip_level printk_skip_headers is_warning_bug check_data_corruption generic___set_bit generic___clear_bit generic___change_bit generic___test_and_set_bit generic___test_and_clear_bit generic___test_and_change_bit generic_test_bit generic_test_bit_acquire __compiletime_assert_4 __compiletime_assert_5 const_test_bit arch_set_bit arch___set_bit arch_clear_bit arch_clear_bit_unlock arch___clear_bit arch_xor_unlock_is_negative_byte arch___clear_bit_unlock arch___change_bit arch_change_bit arch_test_and_set_bit arch_test_and_set_bit_lock arch___test_and_set_bit arch_test_and_clear_bit arch___test_and_clear_bit arch___test_and_change_bit arch_test_and_change_bit constant_test_bit constant_test_bit_acquire variable_test_bit arch_test_bit arch_test_bit_acquire variable__ffs variable_ffz __fls __builtin_clzl variable_ffs fls __builtin_clz fls64 __builtin_clzll sched_find_first_bit __builtin_ctzl __arch_hweight32 __arch_hweight16 __arch_hweight8 __arch_hweight64 kmsan_poison_memory kmsan_unpoison_memory kmsan_check_memory kmsan_copy_to_user kmsan_memmove instrument_read __kcsan_check_access instrument_write instrument_read_write instrument_atomic_read instrument_atomic_write instrument_atomic_read_write instrument_copy_to_user instrument_copy_from_user_before instrument_copy_from_user_after instrument_memcpy_before instrument_memcp",
+        "error": "",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/generate_only_evidence_all39_v8_r5/G39_f503ae90c735_Null_Pointer_Dereference/csa/patchweaver_runtime/csa_raw/drivers-net-wireless-mediatek-mt76-mt7996-mcu.c-mt7996_mcu_sta_bfer_he.txt",
+        "raw_output_sha256": "d6bcf30ff0f883e0361b8ace4b6cb2ed171586f5ac4457f2df74fcfdf5bce210",
+        "command_sha256": "0b5336d226fe568e2cc5677087791637d2b4eb27a77e052fbebd020637a62d3d",
+        "clang_command_preview": "/usr/lib/llvm-18/bin/clang --analyze -nostdinc -I./arch/x86/include -I./arch/x86/include/generated -I./include -I./arch/x86/include/uapi -I./arch/x86/include/generated/uapi -I./...",
+        "return_code": 0
+      }
+    ],
+    "call_edges": [
+      "mt7996_mcu_sta_bfer_he -> mt76_connac_get_he_phy_cap",
+      "mt7996_mcu_sta_bfer_he -> mt7996_mcu_get_sta_nss",
+      "mt7996_mcu_sta_bfer_he -> mt7996_mcu_sta_sounding_rate",
+      "mt7996_mcu_sta_bfer_he -> u8_get_bits"
+    ],
+    "error": ""
+  }
+}

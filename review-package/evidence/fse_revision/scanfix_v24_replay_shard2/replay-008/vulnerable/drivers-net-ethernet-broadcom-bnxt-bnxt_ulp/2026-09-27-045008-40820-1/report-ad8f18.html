@@ -1,0 +1,1207 @@
+<!doctype html>
+<html>
+<head>
+<title>drivers/net/ethernet/broadcom/bnxt/bnxt_ulp.c</title>
+
+<style type="text/css">
+body { color:#000000; background-color:#ffffff }
+body { font-family:Helvetica, sans-serif; font-size:10pt }
+h1 { font-size:14pt }
+.FileName { margin-top: 5px; margin-bottom: 5px; display: inline; }
+.FileNav { margin-left: 5px; margin-right: 5px; display: inline; }
+.FileNav a { text-decoration:none; font-size: larger; }
+.divider { margin-top: 30px; margin-bottom: 30px; height: 15px; }
+.divider { background-color: gray; }
+.code { border-collapse:collapse; width:100%; }
+.code { font-family: "Monospace", monospace; font-size:10pt }
+.code { line-height: 1.2em }
+.comment { color: green; font-style: oblique }
+.keyword { color: blue }
+.string_literal { color: red }
+.directive { color: darkmagenta }
+
+/* Macros and variables could have pop-up notes hidden by default.
+  - Macro pop-up:    expansion of the macro
+  - Variable pop-up: value (table) of the variable */
+.macro_popup, .variable_popup { display: none; }
+
+/* Pop-up appears on mouse-hover event. */
+.macro:hover .macro_popup, .variable:hover .variable_popup {
+  display: block;
+  padding: 2px;
+  -webkit-border-radius:5px;
+  -webkit-box-shadow:1px 1px 7px #000;
+  border-radius:5px;
+  box-shadow:1px 1px 7px #000;
+  position: absolute;
+  top: -1em;
+  left:10em;
+  z-index: 1
+}
+
+.macro_popup {
+  border: 2px solid red;
+  background-color:#FFF0F0;
+  font-weight: normal;
+}
+
+.variable_popup {
+  border: 2px solid blue;
+  background-color:#F0F0FF;
+  font-weight: bold;
+  font-family: Helvetica, sans-serif;
+  font-size: 9pt;
+}
+
+/* Pop-up notes needs a relative position as a base where they pops up. */
+.macro, .variable {
+  background-color: PaleGoldenRod;
+  position: relative;
+}
+.macro { color: DarkMagenta; }
+
+#tooltiphint {
+  position: fixed;
+  width: 50em;
+  margin-left: -25em;
+  left: 50%;
+  padding: 10px;
+  border: 1px solid #b0b0b0;
+  border-radius: 2px;
+  box-shadow: 1px 1px 7px black;
+  background-color: #c0c0c0;
+  z-index: 2;
+}
+
+.num { width:2.5em; padding-right:2ex; background-color:#eeeeee }
+.num { text-align:right; font-size:8pt }
+.num { color:#444444 }
+.line { padding-left: 1ex; border-left: 3px solid #ccc }
+.line { white-space: pre }
+.msg { -webkit-box-shadow:1px 1px 7px #000 }
+.msg { box-shadow:1px 1px 7px #000 }
+.msg { -webkit-border-radius:5px }
+.msg { border-radius:5px }
+.msg { font-family:Helvetica, sans-serif; font-size:8pt }
+.msg { float:left }
+.msg { position:relative }
+.msg { padding:0.25em 1ex 0.25em 1ex }
+.msg { margin-top:10px; margin-bottom:10px }
+.msg { font-weight:bold }
+.msg { max-width:60em; word-wrap: break-word; white-space: pre-wrap }
+.msgT { padding:0x; spacing:0x }
+.msgEvent { background-color:#fff8b4; color:#000000 }
+.msgControl { background-color:#bbbbbb; color:#000000 }
+.msgNote { background-color:#ddeeff; color:#000000 }
+.mrange { background-color:#dfddf3 }
+.mrange { border-bottom:1px solid #6F9DBE }
+.PathIndex { font-weight: bold; padding:0px 5px; margin-right:5px; }
+.PathIndex { -webkit-border-radius:8px }
+.PathIndex { border-radius:8px }
+.PathIndexEvent { background-color:#bfba87 }
+.PathIndexControl { background-color:#8c8c8c }
+.PathIndexPopUp { background-color: #879abc; }
+.PathNav a { text-decoration:none; font-size: larger }
+.CodeInsertionHint { font-weight: bold; background-color: #10dd10 }
+.CodeRemovalHint { background-color:#de1010 }
+.CodeRemovalHint { border-bottom:1px solid #6F9DBE }
+.msg.selected{ background-color:orange !important; }
+
+table.simpletable {
+  padding: 5px;
+  font-size:12pt;
+  margin:20px;
+  border-collapse: collapse; border-spacing: 0px;
+}
+td.rowname {
+  text-align: right;
+  vertical-align: top;
+  font-weight: bold;
+  color:#444444;
+  padding-right:2ex;
+}
+
+/* Hidden text. */
+input.spoilerhider + label {
+  cursor: pointer;
+  text-decoration: underline;
+  display: block;
+}
+input.spoilerhider {
+ display: none;
+}
+input.spoilerhider ~ .spoiler {
+  overflow: hidden;
+  margin: 10px auto 0;
+  height: 0;
+  opacity: 0;
+}
+input.spoilerhider:checked + label + .spoiler{
+  height: auto;
+  opacity: 1;
+}
+</style>
+</head>
+<body>
+<!-- BUGDESC Request not released: missing hwrm_req_drop() before return -->
+
+<!-- BUGTYPE Missing hwrm_req_drop on error path -->
+
+<!-- BUGCATEGORY Resource Management -->
+
+<!-- BUGFILE /artifact/work/SemWeaver/artifacts/external/linux-e3-repeat-native-v13/drivers/net/ethernet/broadcom/bnxt/bnxt_ulp.c -->
+
+<!-- FILENAME bnxt_ulp.c -->
+
+<!-- FUNCTIONNAME bnxt_send_msg -->
+
+<!-- ISSUEHASHCONTENTOFLINEINCONTEXT ad8f1879df0e0d376f94fb5436c6cc32 -->
+
+<!-- BUGLINE 211 -->
+
+<!-- BUGCOLUMN 3 -->
+
+<!-- BUGPATHLENGTH 7 -->
+
+<!-- BUGMETAEND -->
+<!-- REPORTHEADER -->
+<h3>Bug Summary</h3>
+<table class="simpletable">
+<tr><td class="rowname">File:</td><td>bnxt_ulp.c</td></tr>
+<tr><td class="rowname">Warning:</td><td><a href="#EndPath">line 211, column 3</a><br />Request not released: missing hwrm_req_drop() before return</td></tr>
+
+</table>
+<!-- REPORTSUMMARYEXTRA -->
+<h3>Annotated Source Code</h3>
+<p>Press <a href="#" onclick="toggleHelp(); return false;">'?'</a>
+   to see keyboard shortcuts</p>
+<input type="checkbox" class="spoilerhider" id="showinvocation" />
+<label for="showinvocation" >Show analyzer invocation</label>
+<div class="spoiler">clang -cc1 -cc1 -triple x86_64-unknown-linux-gnu -analyze -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name bnxt_ulp.c -analyzer-checker=core -analyzer-checker=apiModeling -analyzer-checker=unix -analyzer-checker=deadcode -analyzer-checker=security.insecureAPI.UncheckedReturn -analyzer-checker=security.insecureAPI.getpw -analyzer-checker=security.insecureAPI.gets -analyzer-checker=security.insecureAPI.mktemp -analyzer-checker=security.insecureAPI.mkstemp -analyzer-checker=security.insecureAPI.vfork -analyzer-checker=nullability.NullPassedToNonnull -analyzer-checker=nullability.NullReturnedFromNonnull -analyzer-output plist -w -setup-static-analyzer -analyzer-config-compatibility-mode=true -function-alignment 6 -falign-loops=1 -mrelocation-model static -fno-delete-null-pointer-checks -fno-jump-tables -mframe-pointer=none -relaxed-aliasing -fno-optimize-sibling-calls -fmath-errno -ffp-contract=on -fno-rounding-math -mconstructor-aliases -mcmodel=kernel -target-cpu x86-64 -target-feature +retpoline-indirect-calls -target-feature +retpoline-indirect-branches -target-feature -sse -target-feature -mmx -target-feature -sse2 -target-feature -3dnow -target-feature -avx -target-feature -x87 -target-feature +retpoline-external-thunk -target-feature +harden-sls-ijmp -target-feature +harden-sls-ret -disable-red-zone -mskip-rax-setup -tune-cpu generic -fdebug-info-for-profiling -debugger-tuning=gdb -fdebug-compilation-dir=/artifact/work/SemWeaver/artifacts/external/linux-e3-repeat-native-v13 -fcoverage-compilation-dir=/artifact/work/SemWeaver/artifacts/external/linux-e3-repeat-native-v13 -nostdsysteminc -nobuiltininc -resource-dir /usr/lib/llvm-18/lib/clang/18 -include ./include/linux/compiler-version.h -include ./include/linux/kconfig.h -include ./include/linux/compiler_types.h -I ./arch/x86/include -I ./arch/x86/include/generated -I ./include -I ./include -I ./arch/x86/include/uapi -I ./arch/x86/include/generated/uapi -I ./include/uapi -I ./include/generated/uapi -D __KERNEL__ -D CC_USING_NOP_MCOUNT -D CC_USING_FENTRY -D RANDSTRUCT -D KBUILD_MODFILE="drivers/net/ethernet/broadcom/bnxt/bnxt_en" -D KBUILD_BASENAME="bnxt_ulp" -D KBUILD_MODNAME="bnxt_en" -D __KBUILD_MODNAME=kmod_bnxt_en -O2 -Wno-sign-compare -Wno-format-security -Wno-trigraphs -Wno-frame-address -Wno-address-of-packed-member -Wno-gnu -Wno-pointer-sign -Wno-unused-but-set-variable -Wno-unused-const-variable -Wno-format-overflow -Wno-format-overflow-non-kprintf -Wno-format-truncation-non-kprintf -Wno-override-init -Wno-pointer-to-enum-cast -Wno-tautological-constant-out-of-range-compare -Wno-unaligned-access -Wno-enum-compare-conditional -Wno-enum-enum-conversion -Wno-missing-field-initializers -Wno-type-limits -Wno-shift-negative-value -Wno-sign-compare -Wno-unused-parameter -std=gnu11 -ferror-limit 19 -frandomize-layout-seed-file=./scripts/basic/randstruct.seed -fzero-call-used-regs=used-gpr -fsanitize-coverage-type=3 -fsanitize-coverage-trace-cmp -fsanitize-coverage-trace-pc -fsanitize=thread,array-bounds,bool,enum,shift-base,shift-exponent,kcfi -fsanitize-recover=array-bounds,bool,enum,shift-base,shift-exponent,kcfi -fno-sanitize-memory-param-retval -fno-sanitize-address-use-odr-indicator -fpatchable-function-entry=59 -fpatchable-function-entry-offset=59 -mfentry -fwrapv -fstrict-flex-arrays=3 -stack-protector 2 -ftrivial-auto-var-init=pattern -mstack-alignment=8 -fcf-protection=branch -mfunction-return=thunk-extern -mindirect-branch-cs-prefix -fno-signed-char -fwchar-type=short -fno-signed-wchar -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -vectorize-loops -vectorize-slp -analyzer-checker custom.SAGenTestChecker -analyzer-disable-checker cplusplus -analyzer-disable-checker deadcode -analyzer-disable-checker unix -analyzer-disable-checker nullability -analyzer-disable-checker security -analyzer-max-loop 4 -load /artifact/work/artifacts/fse_revision/scanfix_v24_backend_shard2/G28_c8dafb0e4398_Memory_Leak/build/lib/SAGenTestPlugin.so -analyzer-output=html  -analyzer-config silence-checkers=core -mllvm -tsan-compound-read-before-write=1 -mllvm -tsan-distinguish-volatile=1 -mllvm -enable-fs-discriminator=true -mllvm -improved-fs-discriminator=true -faddrsig -o /artifact/work/artifacts/fse_revision/scanfix_v24_replay_shard2/replay-008/vulnerable/drivers-net-ethernet-broadcom-bnxt-bnxt_ulp/2026-09-27-045008-40820-1 -x c drivers/net/ethernet/broadcom/bnxt/bnxt_ulp.c
+</div>
+<div id='tooltiphint' hidden="true">
+  <p>Keyboard shortcuts: </p>
+  <ul>
+    <li>Use 'j/k' keys for keyboard navigation</li>
+    <li>Use 'Shift+S' to show/hide relevant lines</li>
+    <li>Use '?' to toggle this window</li>
+  </ul>
+  <a href="#" onclick="toggleHelp(); return false;">Close</a>
+</div>
+<script type='text/javascript'>
+var relevant_lines = {"1": {"192": 1, "193": 1, "194": 1, "195": 1, "196": 1, "197": 1, "198": 1, "199": 1, "200": 1, "202": 1, "205": 1, "206": 1, "209": 1, "210": 1, "211": 1}, "300999": {"2650": 1, "2651": 1, "2652": 1}};
+
+var filterCounterexample = function (hide) {
+  var tables = document.getElementsByClassName("code");
+  for (var t=0; t<tables.length; t++) {
+    var table = tables[t];
+    var file_id = table.getAttribute("data-fileid");
+    var lines_in_fid = relevant_lines[file_id];
+    if (!lines_in_fid) {
+      lines_in_fid = {};
+    }
+    var lines = table.getElementsByClassName("codeline");
+    for (var i=0; i<lines.length; i++) {
+        var el = lines[i];
+        var lineNo = el.getAttribute("data-linenumber");
+        if (!lines_in_fid[lineNo]) {
+          if (hide) {
+            el.setAttribute("hidden", "");
+          } else {
+            el.removeAttribute("hidden");
+          }
+        }
+    }
+  }
+}
+
+window.addEventListener("keydown", function (event) {
+  if (event.defaultPrevented) {
+    return;
+  }
+  // SHIFT + S
+  if (event.shiftKey && event.keyCode == 83) {
+    var checked = document.getElementsByName("showCounterexample")[0].checked;
+    filterCounterexample(!checked);
+    document.getElementsByName("showCounterexample")[0].click();
+  } else {
+    return;
+  }
+  event.preventDefault();
+}, true);
+
+document.addEventListener("DOMContentLoaded", function() {
+    document.querySelector('input[name="showCounterexample"]').onchange=
+        function (event) {
+      filterCounterexample(this.checked);
+    };
+});
+</script>
+
+<form>
+    <input type="checkbox" name="showCounterexample" id="showCounterexample" />
+    <label for="showCounterexample">
+       Show only relevant lines
+    </label>
+    <input type="checkbox" name="showArrows"
+           id="showArrows" style="margin-left: 10px" />
+    <label for="showArrows">
+       Show control flow arrows
+    </label>
+</form>
+
+<script type='text/javascript'>
+// Return range of numbers from a range [lower, upper).
+function range(lower, upper) {
+  var array = [];
+  for (var i = lower; i <= upper; ++i) {
+      array.push(i);
+  }
+  return array;
+}
+
+var getRelatedArrowIndices = function(pathId) {
+  // HTML numeration of events is a bit different than it is in the path.
+  // Everything is rotated one step to the right, so the last element
+  // (error diagnostic) has index 0.
+  if (pathId == 0) {
+    // arrowIndices has at least 2 elements
+    pathId = arrowIndices.length - 1;
+  }
+
+  return range(arrowIndices[pathId], arrowIndices[pathId - 1]);
+}
+
+var highlightArrowsForSelectedEvent = function() {
+  const selectedNum = findNum();
+  const arrowIndicesToHighlight = getRelatedArrowIndices(selectedNum);
+  arrowIndicesToHighlight.forEach((index) => {
+    var arrow = document.querySelector("#arrow" + index);
+    if(arrow) {
+      classListAdd(arrow, "selected")
+    }
+  });
+}
+
+var getAbsoluteBoundingRect = function(element) {
+  const relative = element.getBoundingClientRect();
+  return {
+    left: relative.left + window.pageXOffset,
+    right: relative.right + window.pageXOffset,
+    top: relative.top + window.pageYOffset,
+    bottom: relative.bottom + window.pageYOffset,
+    height: relative.height,
+    width: relative.width
+  };
+}
+
+var drawArrow = function(index) {
+  // This function is based on the great answer from SO:
+  //   https://stackoverflow.com/a/39575674/11582326
+  var start = document.querySelector("#start" + index);
+  var end   = document.querySelector("#end" + index);
+  var arrow = document.querySelector("#arrow" + index);
+
+  var startRect = getAbsoluteBoundingRect(start);
+  var endRect   = getAbsoluteBoundingRect(end);
+
+  // It is an arrow from a token to itself, no need to visualize it.
+  if (startRect.top == endRect.top &&
+      startRect.left == endRect.left)
+    return;
+
+  // Each arrow is a very simple Bézier curve, with two nodes and
+  // two handles.  So, we need to calculate four points in the window:
+  //   * start node
+  var posStart    = { x: 0, y: 0 };
+  //   * end node
+  var posEnd      = { x: 0, y: 0 };
+  //   * handle for the start node
+  var startHandle = { x: 0, y: 0 };
+  //   * handle for the end node
+  var endHandle   = { x: 0, y: 0 };
+  // One can visualize it as follows:
+  //
+  //         start handle
+  //        /
+  //       X"""_.-""""X
+  //         .'        \
+  //        /           start node
+  //       |
+  //       |
+  //       |      end node
+  //        \    /
+  //         `->X
+  //        X-'
+  //         \
+  //          end handle
+  //
+  // NOTE: (0, 0) is the top left corner of the window.
+
+  // We have 3 similar, but still different scenarios to cover:
+  //
+  //   1. Two tokens on different lines.
+  //             -xxx
+  //           /
+  //           \
+  //             -> xxx
+  //      In this situation, we draw arrow on the left curving to the left.
+  //   2. Two tokens on the same line, and the destination is on the right.
+  //             ____
+  //            /    \
+  //           /      V
+  //        xxx        xxx
+  //      In this situation, we draw arrow above curving upwards.
+  //   3. Two tokens on the same line, and the destination is on the left.
+  //        xxx        xxx
+  //           ^      /
+  //            \____/
+  //      In this situation, we draw arrow below curving downwards.
+  const onDifferentLines = startRect.top <= endRect.top - 5 ||
+    startRect.top >= endRect.top + 5;
+  const leftToRight = startRect.left < endRect.left;
+
+  // NOTE: various magic constants are chosen empirically for
+  //       better positioning and look
+  if (onDifferentLines) {
+    // Case #1
+    const topToBottom = startRect.top < endRect.top;
+    posStart.x = startRect.left - 1;
+    // We don't want to start it at the top left corner of the token,
+    // it doesn't feel like this is where the arrow comes from.
+    // For this reason, we start it in the middle of the left side
+    // of the token.
+    posStart.y = startRect.top + startRect.height / 2;
+
+    // End node has arrow head and we give it a bit more space.
+    posEnd.x = endRect.left - 4;
+    posEnd.y = endRect.top;
+
+    // Utility object with x and y offsets for handles.
+    var curvature = {
+      // We want bottom-to-top arrow to curve a bit more, so it doesn't
+      // overlap much with top-to-bottom curves (much more frequent).
+      x: topToBottom ? 15 : 25,
+      y: Math.min((posEnd.y - posStart.y) / 3, 10)
+    }
+
+    // When destination is on the different line, we can make a
+    // curvier arrow because we have space for it.
+    // So, instead of using
+    //
+    //   startHandle.x = posStart.x - curvature.x
+    //   endHandle.x   = posEnd.x - curvature.x
+    //
+    // We use the leftmost of these two values for both handles.
+    startHandle.x = Math.min(posStart.x, posEnd.x) - curvature.x;
+    endHandle.x = startHandle.x;
+
+    // Curving downwards from the start node...
+    startHandle.y = posStart.y + curvature.y;
+    // ... and upwards from the end node.
+    endHandle.y = posEnd.y - curvature.y;
+
+  } else if (leftToRight) {
+    // Case #2
+    // Starting from the top right corner...
+    posStart.x = startRect.right - 1;
+    posStart.y = startRect.top;
+
+    // ...and ending at the top left corner of the end token.
+    posEnd.x = endRect.left + 1;
+    posEnd.y = endRect.top - 1;
+
+    // Utility object with x and y offsets for handles.
+    var curvature = {
+      x: Math.min((posEnd.x - posStart.x) / 3, 15),
+      y: 5
+    }
+
+    // Curving to the right...
+    startHandle.x = posStart.x + curvature.x;
+    // ... and upwards from the start node.
+    startHandle.y = posStart.y - curvature.y;
+
+    // And to the left...
+    endHandle.x = posEnd.x - curvature.x;
+    // ... and upwards from the end node.
+    endHandle.y = posEnd.y - curvature.y;
+
+  } else {
+    // Case #3
+    // Starting from the bottom right corner...
+    posStart.x = startRect.right;
+    posStart.y = startRect.bottom;
+
+    // ...and ending also at the bottom right corner, but of the end token.
+    posEnd.x = endRect.right - 1;
+    posEnd.y = endRect.bottom + 1;
+
+    // Utility object with x and y offsets for handles.
+    var curvature = {
+      x: Math.min((posStart.x - posEnd.x) / 3, 15),
+      y: 5
+    }
+
+    // Curving to the left...
+    startHandle.x = posStart.x - curvature.x;
+    // ... and downwards from the start node.
+    startHandle.y = posStart.y + curvature.y;
+
+    // And to the right...
+    endHandle.x = posEnd.x + curvature.x;
+    // ... and downwards from the end node.
+    endHandle.y = posEnd.y + curvature.y;
+  }
+
+  // Put it all together into a path.
+  // More information on the format:
+  //   https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths
+  var pathStr = "M" + posStart.x + "," + posStart.y + " " +
+    "C" + startHandle.x + "," + startHandle.y + " " +
+    endHandle.x + "," + endHandle.y + " " +
+    posEnd.x + "," + posEnd.y;
+
+  arrow.setAttribute("d", pathStr);
+};
+
+var drawArrows = function() {
+  const numOfArrows = document.querySelectorAll("path[id^=arrow]").length;
+  for (var i = 0; i < numOfArrows; ++i) {
+    drawArrow(i);
+  }
+}
+
+var toggleArrows = function(event) {
+  const arrows = document.querySelector("#arrows");
+  if (event.target.checked) {
+    arrows.setAttribute("visibility", "visible");
+  } else {
+    arrows.setAttribute("visibility", "hidden");
+  }
+}
+
+window.addEventListener("resize", drawArrows);
+document.addEventListener("DOMContentLoaded", function() {
+  // Whenever we show invocation, locations change, i.e. we
+  // need to redraw arrows.
+  document
+    .querySelector('input[id="showinvocation"]')
+    .addEventListener("click", drawArrows);
+  // Hiding irrelevant lines also should cause arrow rerender.
+  document
+    .querySelector('input[name="showCounterexample"]')
+    .addEventListener("change", drawArrows);
+  document
+    .querySelector('input[name="showArrows"]')
+    .addEventListener("change", toggleArrows);
+  drawArrows();
+  // Default highlighting for the last event.
+  highlightArrowsForSelectedEvent();
+});
+</script>
+  
+<script type='text/javascript'>
+var digitMatcher = new RegExp("[0-9]+");
+
+var querySelectorAllArray = function(selector) {
+  return Array.prototype.slice.call(
+    document.querySelectorAll(selector));
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    querySelectorAllArray(".PathNav > a").forEach(
+        function(currentValue, currentIndex) {
+            var hrefValue = currentValue.getAttribute("href");
+            currentValue.onclick = function() {
+                scrollTo(document.querySelector(hrefValue));
+                return false;
+            };
+        });
+});
+
+var findNum = function() {
+    var s = document.querySelector(".msg.selected");
+    if (!s || s.id == "EndPath") {
+        return 0;
+    }
+    var out = parseInt(digitMatcher.exec(s.id)[0]);
+    return out;
+};
+
+var classListAdd = function(el, theClass) {
+  if(!el.className.baseVal)
+    el.className += " " + theClass;
+  else
+    el.className.baseVal += " " + theClass;
+};
+
+var classListRemove = function(el, theClass) {
+  var className = (!el.className.baseVal) ?
+      el.className : el.className.baseVal;
+    className = className.replace(" " + theClass, "");
+  if(!el.className.baseVal)
+    el.className = className;
+  else
+    el.className.baseVal = className;
+};
+
+var scrollTo = function(el) {
+    querySelectorAllArray(".selected").forEach(function(s) {
+      classListRemove(s, "selected");
+    });
+    classListAdd(el, "selected");
+    window.scrollBy(0, el.getBoundingClientRect().top -
+        (window.innerHeight / 2));
+    highlightArrowsForSelectedEvent();
+};
+
+var move = function(num, up, numItems) {
+  if (num == 1 && up || num == numItems - 1 && !up) {
+    return 0;
+  } else if (num == 0 && up) {
+    return numItems - 1;
+  } else if (num == 0 && !up) {
+    return 1 % numItems;
+  }
+  return up ? num - 1 : num + 1;
+}
+
+var numToId = function(num) {
+  if (num == 0) {
+    return document.getElementById("EndPath")
+  }
+  return document.getElementById("Path" + num);
+};
+
+var navigateTo = function(up) {
+  var numItems = document.querySelectorAll(
+      ".line > .msgEvent, .line > .msgControl").length;
+  var currentSelected = findNum();
+  var newSelected = move(currentSelected, up, numItems);
+  var newEl = numToId(newSelected, numItems);
+
+  // Scroll element into center.
+  scrollTo(newEl);
+};
+
+window.addEventListener("keydown", function (event) {
+  if (event.defaultPrevented) {
+    return;
+  }
+  // key 'j'
+  if (event.keyCode == 74) {
+    navigateTo(/*up=*/false);
+  // key 'k'
+  } else if (event.keyCode == 75) {
+    navigateTo(/*up=*/true);
+  } else {
+    return;
+  }
+  event.preventDefault();
+}, true);
+</script>
+  
+<script type='text/javascript'>
+
+var toggleHelp = function() {
+    var hint = document.querySelector("#tooltiphint");
+    var attributeName = "hidden";
+    if (hint.hasAttribute(attributeName)) {
+      hint.removeAttribute(attributeName);
+    } else {
+      hint.setAttribute("hidden", "true");
+    }
+};
+window.addEventListener("keydown", function (event) {
+  if (event.defaultPrevented) {
+    return;
+  }
+  if (event.key == "?") {
+    toggleHelp();
+  } else {
+    return;
+  }
+  event.preventDefault();
+});
+</script>
+
+<style type="text/css">
+  svg {
+      position:absolute;
+      top:0;
+      left:0;
+      height:100%;
+      width:100%;
+      pointer-events: none;
+      overflow: visible
+  }
+  .arrow {
+      stroke-opacity: 0.2;
+      stroke-width: 1;
+      marker-end: url(#arrowhead);
+  }
+
+  .arrow.selected {
+      stroke-opacity: 0.6;
+      stroke-width: 2;
+      marker-end: url(#arrowheadSelected);
+  }
+
+  .arrowhead {
+      orient: auto;
+      stroke: none;
+      opacity: 0.6;
+      fill: blue;
+  }
+</style>
+<svg xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrowheadSelected" class="arrowhead" opacity="0.6"
+            viewBox="0 0 10 10" refX="3" refY="5"
+            markerWidth="4" markerHeight="4">
+      <path d="M 0 0 L 10 5 L 0 10 z" />
+    </marker>
+    <marker id="arrowhead" class="arrowhead" opacity="0.2"
+            viewBox="0 0 10 10" refX="3" refY="5"
+            markerWidth="4" markerHeight="4">
+      <path d="M 0 0 L 10 5 L 0 10 z" />
+    </marker>
+  </defs>
+  <g id="arrows" fill="none" stroke="blue" visibility="hidden">
+    <path class="arrow" id="arrow0"/>
+    <path class="arrow" id="arrow1"/>
+    <path class="arrow" id="arrow2"/>
+    <path class="arrow" id="arrow3"/>
+    <path class="arrow" id="arrow4"/>
+    <path class="arrow" id="arrow5"/>
+    <path class="arrow" id="arrow6"/>
+    <path class="arrow" id="arrow7"/>
+    <path class="arrow" id="arrow8"/>
+    <path class="arrow" id="arrow9"/>
+    <path class="arrow" id="arrow10"/>
+    <path class="arrow" id="arrow11"/>
+    <path class="arrow" id="arrow12"/>
+    <path class="arrow" id="arrow13"/>
+    <path class="arrow" id="arrow14"/>
+
+  </g>
+</svg>
+<script type='text/javascript'>
+const arrowIndices = [ 15,13,11,8,6,3,1,0 ]
+</script>
+<table class="code" data-fileid="1">
+<tr class="codeline" data-linenumber="1"><td class="num" id="LN1">1</td><td class="line"><span class='comment'>/* Broadcom NetXtreme-C/E network driver.</span></td></tr>
+<tr class="codeline" data-linenumber="2"><td class="num" id="LN2">2</td><td class="line"> <span class='comment'>*</span></td></tr>
+<tr class="codeline" data-linenumber="3"><td class="num" id="LN3">3</td><td class="line"> <span class='comment'>* Copyright (c) 2016-2018 Broadcom Limited</span></td></tr>
+<tr class="codeline" data-linenumber="4"><td class="num" id="LN4">4</td><td class="line"> <span class='comment'>*</span></td></tr>
+<tr class="codeline" data-linenumber="5"><td class="num" id="LN5">5</td><td class="line"> <span class='comment'>* This program is free software; you can redistribute it and/or modify</span></td></tr>
+<tr class="codeline" data-linenumber="6"><td class="num" id="LN6">6</td><td class="line"> <span class='comment'>* it under the terms of the GNU General Public License as published by</span></td></tr>
+<tr class="codeline" data-linenumber="7"><td class="num" id="LN7">7</td><td class="line"> <span class='comment'>* the Free Software Foundation.</span></td></tr>
+<tr class="codeline" data-linenumber="8"><td class="num" id="LN8">8</td><td class="line"> <span class='comment'>*/</span></td></tr>
+<tr class="codeline" data-linenumber="9"><td class="num" id="LN9">9</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="10"><td class="num" id="LN10">10</td><td class="line"><span class='directive'>#include &lt;<span class='macro'>linux<span class='macro_popup'>1</span></span>/module.h&gt;</span></td></tr>
+<tr class="codeline" data-linenumber="11"><td class="num" id="LN11">11</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="12"><td class="num" id="LN12">12</td><td class="line"><span class='directive'>#include &lt;<span class='macro'>linux<span class='macro_popup'>1</span></span>/kernel.h&gt;</span></td></tr>
+<tr class="codeline" data-linenumber="13"><td class="num" id="LN13">13</td><td class="line"><span class='directive'>#include &lt;<span class='macro'>linux<span class='macro_popup'>1</span></span>/errno.h&gt;</span></td></tr>
+<tr class="codeline" data-linenumber="14"><td class="num" id="LN14">14</td><td class="line"><span class='directive'>#include &lt;<span class='macro'>linux<span class='macro_popup'>1</span></span>/interrupt.h&gt;</span></td></tr>
+<tr class="codeline" data-linenumber="15"><td class="num" id="LN15">15</td><td class="line"><span class='directive'>#include &lt;<span class='macro'>linux<span class='macro_popup'>1</span></span>/pci.h&gt;</span></td></tr>
+<tr class="codeline" data-linenumber="16"><td class="num" id="LN16">16</td><td class="line"><span class='directive'>#include &lt;<span class='macro'>linux<span class='macro_popup'>1</span></span>/netdevice.h&gt;</span></td></tr>
+<tr class="codeline" data-linenumber="17"><td class="num" id="LN17">17</td><td class="line"><span class='directive'>#include &lt;<span class='macro'>linux<span class='macro_popup'>1</span></span>/rtnetlink.h&gt;</span></td></tr>
+<tr class="codeline" data-linenumber="18"><td class="num" id="LN18">18</td><td class="line"><span class='directive'>#include &lt;<span class='macro'>linux<span class='macro_popup'>1</span></span>/bitops.h&gt;</span></td></tr>
+<tr class="codeline" data-linenumber="19"><td class="num" id="LN19">19</td><td class="line"><span class='directive'>#include &lt;<span class='macro'>linux<span class='macro_popup'>1</span></span>/irq.h&gt;</span></td></tr>
+<tr class="codeline" data-linenumber="20"><td class="num" id="LN20">20</td><td class="line"><span class='directive'>#include &lt;asm/byteorder.h&gt;</span></td></tr>
+<tr class="codeline" data-linenumber="21"><td class="num" id="LN21">21</td><td class="line"><span class='directive'>#include &lt;<span class='macro'>linux<span class='macro_popup'>1</span></span>/bitmap.h&gt;</span></td></tr>
+<tr class="codeline" data-linenumber="22"><td class="num" id="LN22">22</td><td class="line"><span class='directive'>#include &lt;<span class='macro'>linux<span class='macro_popup'>1</span></span>/auxiliary_bus.h&gt;</span></td></tr>
+<tr class="codeline" data-linenumber="23"><td class="num" id="LN23">23</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="24"><td class="num" id="LN24">24</td><td class="line"><span class='directive'>#include "bnxt_hsi.h"</span></td></tr>
+<tr class="codeline" data-linenumber="25"><td class="num" id="LN25">25</td><td class="line"><span class='directive'>#include "bnxt.h"</span></td></tr>
+<tr class="codeline" data-linenumber="26"><td class="num" id="LN26">26</td><td class="line"><span class='directive'>#include "bnxt_hwrm.h"</span></td></tr>
+<tr class="codeline" data-linenumber="27"><td class="num" id="LN27">27</td><td class="line"><span class='directive'>#include "bnxt_ulp.h"</span></td></tr>
+<tr class="codeline" data-linenumber="28"><td class="num" id="LN28">28</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="29"><td class="num" id="LN29">29</td><td class="line"><span class='keyword'>static</span> <span class='macro'>DEFINE_IDA(bnxt_aux_dev_ids)<span class='macro_popup'>struct ida bnxt_aux_dev_ids = { .xa = { .xa_lock = (spinlock_t<br>) { { .rlock = { .raw_lock = { { .val = { (0) } } }, .magic =<br> 0xdead4ead, .owner_cpu = -1, .owner = ((void *)-1L), .dep_map<br> = { .name = "bnxt_aux_dev_ids.xa_lock", .wait_type_inner = LD_WAIT_CONFIG<br>, } } } }, .xa_flags = ((( gfp_t)XA_LOCK_IRQ) | ((( gfp_t)4U)<br> | (( gfp_t)((1U &lt;&lt; ___GFP_LAST_BIT) &lt;&lt; ( unsigned<br>)((( xa_mark_t)0U)))))), .xa_head = ((void *)0), } }</span></span>;</td></tr>
+<tr class="codeline" data-linenumber="30"><td class="num" id="LN30">30</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="31"><td class="num" id="LN31">31</td><td class="line"><span class='keyword'>static</span> <span class='keyword'>void</span> bnxt_fill_msix_vecs(<span class='keyword'>struct</span> bnxt *bp, <span class='keyword'>struct</span> bnxt_msix_entry *ent)</td></tr>
+<tr class="codeline" data-linenumber="32"><td class="num" id="LN32">32</td><td class="line">{</td></tr>
+<tr class="codeline" data-linenumber="33"><td class="num" id="LN33">33</td><td class="line">	<span class='keyword'>struct</span> bnxt_en_dev *edev = bp-&gt;edev;</td></tr>
+<tr class="codeline" data-linenumber="34"><td class="num" id="LN34">34</td><td class="line">	<span class='keyword'>int</span> num_msix, i;</td></tr>
+<tr class="codeline" data-linenumber="35"><td class="num" id="LN35">35</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="36"><td class="num" id="LN36">36</td><td class="line">	<span class='keyword'>if</span> (!edev-&gt;ulp_tbl-&gt;msix_requested) {</td></tr>
+<tr class="codeline" data-linenumber="37"><td class="num" id="LN37">37</td><td class="line">		netdev_warn(bp-&gt;dev, <span class='string_literal'>"Requested MSI-X vectors insufficient\n"</span>);</td></tr>
+<tr class="codeline" data-linenumber="38"><td class="num" id="LN38">38</td><td class="line">		<span class='keyword'>return</span>;</td></tr>
+<tr class="codeline" data-linenumber="39"><td class="num" id="LN39">39</td><td class="line">	}</td></tr>
+<tr class="codeline" data-linenumber="40"><td class="num" id="LN40">40</td><td class="line">	num_msix = edev-&gt;ulp_tbl-&gt;msix_requested;</td></tr>
+<tr class="codeline" data-linenumber="41"><td class="num" id="LN41">41</td><td class="line">	<span class='keyword'>for</span> (i = 0; i &lt; num_msix; i++) {</td></tr>
+<tr class="codeline" data-linenumber="42"><td class="num" id="LN42">42</td><td class="line">		ent[i].vector = bp-&gt;irq_tbl[i].vector;</td></tr>
+<tr class="codeline" data-linenumber="43"><td class="num" id="LN43">43</td><td class="line">		ent[i].ring_idx = i;</td></tr>
+<tr class="codeline" data-linenumber="44"><td class="num" id="LN44">44</td><td class="line">		<span class='keyword'>if</span> (bp-&gt;flags &amp; <span class='macro'>BNXT_FLAG_CHIP_P5_PLUS<span class='macro_popup'>0x1</span></span>)</td></tr>
+<tr class="codeline" data-linenumber="45"><td class="num" id="LN45">45</td><td class="line">			ent[i].db_offset = bp-&gt;db_offset;</td></tr>
+<tr class="codeline" data-linenumber="46"><td class="num" id="LN46">46</td><td class="line">		<span class='keyword'>else</span></td></tr>
+<tr class="codeline" data-linenumber="47"><td class="num" id="LN47">47</td><td class="line">			ent[i].db_offset = i * 0x80;</td></tr>
+<tr class="codeline" data-linenumber="48"><td class="num" id="LN48">48</td><td class="line">	}</td></tr>
+<tr class="codeline" data-linenumber="49"><td class="num" id="LN49">49</td><td class="line">}</td></tr>
+<tr class="codeline" data-linenumber="50"><td class="num" id="LN50">50</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="51"><td class="num" id="LN51">51</td><td class="line"><span class='keyword'>int</span> bnxt_get_ulp_msix_num(<span class='keyword'>struct</span> bnxt *bp)</td></tr>
+<tr class="codeline" data-linenumber="52"><td class="num" id="LN52">52</td><td class="line">{</td></tr>
+<tr class="codeline" data-linenumber="53"><td class="num" id="LN53">53</td><td class="line">	<span class='keyword'>if</span> (bp-&gt;edev)</td></tr>
+<tr class="codeline" data-linenumber="54"><td class="num" id="LN54">54</td><td class="line">		<span class='keyword'>return</span> bp-&gt;edev-&gt;ulp_num_msix_vec;</td></tr>
+<tr class="codeline" data-linenumber="55"><td class="num" id="LN55">55</td><td class="line">	<span class='keyword'>return</span> 0;</td></tr>
+<tr class="codeline" data-linenumber="56"><td class="num" id="LN56">56</td><td class="line">}</td></tr>
+<tr class="codeline" data-linenumber="57"><td class="num" id="LN57">57</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="58"><td class="num" id="LN58">58</td><td class="line"><span class='keyword'>void</span> bnxt_set_ulp_msix_num(<span class='keyword'>struct</span> bnxt *bp, <span class='keyword'>int</span> num)</td></tr>
+<tr class="codeline" data-linenumber="59"><td class="num" id="LN59">59</td><td class="line">{</td></tr>
+<tr class="codeline" data-linenumber="60"><td class="num" id="LN60">60</td><td class="line">	<span class='keyword'>if</span> (bp-&gt;edev)</td></tr>
+<tr class="codeline" data-linenumber="61"><td class="num" id="LN61">61</td><td class="line">		bp-&gt;edev-&gt;ulp_num_msix_vec = num;</td></tr>
+<tr class="codeline" data-linenumber="62"><td class="num" id="LN62">62</td><td class="line">}</td></tr>
+<tr class="codeline" data-linenumber="63"><td class="num" id="LN63">63</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="64"><td class="num" id="LN64">64</td><td class="line"><span class='keyword'>int</span> bnxt_get_ulp_msix_num_in_use(<span class='keyword'>struct</span> bnxt *bp)</td></tr>
+<tr class="codeline" data-linenumber="65"><td class="num" id="LN65">65</td><td class="line">{</td></tr>
+<tr class="codeline" data-linenumber="66"><td class="num" id="LN66">66</td><td class="line">	<span class='keyword'>if</span> (bnxt_ulp_registered(bp-&gt;edev))</td></tr>
+<tr class="codeline" data-linenumber="67"><td class="num" id="LN67">67</td><td class="line">		<span class='keyword'>return</span> bp-&gt;edev-&gt;ulp_num_msix_vec;</td></tr>
+<tr class="codeline" data-linenumber="68"><td class="num" id="LN68">68</td><td class="line">	<span class='keyword'>return</span> 0;</td></tr>
+<tr class="codeline" data-linenumber="69"><td class="num" id="LN69">69</td><td class="line">}</td></tr>
+<tr class="codeline" data-linenumber="70"><td class="num" id="LN70">70</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="71"><td class="num" id="LN71">71</td><td class="line"><span class='keyword'>int</span> bnxt_get_ulp_stat_ctxs(<span class='keyword'>struct</span> bnxt *bp)</td></tr>
+<tr class="codeline" data-linenumber="72"><td class="num" id="LN72">72</td><td class="line">{</td></tr>
+<tr class="codeline" data-linenumber="73"><td class="num" id="LN73">73</td><td class="line">	<span class='keyword'>if</span> (bp-&gt;edev)</td></tr>
+<tr class="codeline" data-linenumber="74"><td class="num" id="LN74">74</td><td class="line">		<span class='keyword'>return</span> bp-&gt;edev-&gt;ulp_num_ctxs;</td></tr>
+<tr class="codeline" data-linenumber="75"><td class="num" id="LN75">75</td><td class="line">	<span class='keyword'>return</span> 0;</td></tr>
+<tr class="codeline" data-linenumber="76"><td class="num" id="LN76">76</td><td class="line">}</td></tr>
+<tr class="codeline" data-linenumber="77"><td class="num" id="LN77">77</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="78"><td class="num" id="LN78">78</td><td class="line"><span class='keyword'>void</span> bnxt_set_ulp_stat_ctxs(<span class='keyword'>struct</span> bnxt *bp, <span class='keyword'>int</span> num_ulp_ctx)</td></tr>
+<tr class="codeline" data-linenumber="79"><td class="num" id="LN79">79</td><td class="line">{</td></tr>
+<tr class="codeline" data-linenumber="80"><td class="num" id="LN80">80</td><td class="line">	<span class='keyword'>if</span> (bp-&gt;edev)</td></tr>
+<tr class="codeline" data-linenumber="81"><td class="num" id="LN81">81</td><td class="line">		bp-&gt;edev-&gt;ulp_num_ctxs = num_ulp_ctx;</td></tr>
+<tr class="codeline" data-linenumber="82"><td class="num" id="LN82">82</td><td class="line">}</td></tr>
+<tr class="codeline" data-linenumber="83"><td class="num" id="LN83">83</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="84"><td class="num" id="LN84">84</td><td class="line"><span class='keyword'>int</span> bnxt_get_ulp_stat_ctxs_in_use(<span class='keyword'>struct</span> bnxt *bp)</td></tr>
+<tr class="codeline" data-linenumber="85"><td class="num" id="LN85">85</td><td class="line">{</td></tr>
+<tr class="codeline" data-linenumber="86"><td class="num" id="LN86">86</td><td class="line">	<span class='keyword'>if</span> (bnxt_ulp_registered(bp-&gt;edev))</td></tr>
+<tr class="codeline" data-linenumber="87"><td class="num" id="LN87">87</td><td class="line">		<span class='keyword'>return</span> bp-&gt;edev-&gt;ulp_num_ctxs;</td></tr>
+<tr class="codeline" data-linenumber="88"><td class="num" id="LN88">88</td><td class="line">	<span class='keyword'>return</span> 0;</td></tr>
+<tr class="codeline" data-linenumber="89"><td class="num" id="LN89">89</td><td class="line">}</td></tr>
+<tr class="codeline" data-linenumber="90"><td class="num" id="LN90">90</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="91"><td class="num" id="LN91">91</td><td class="line"><span class='keyword'>void</span> bnxt_set_dflt_ulp_stat_ctxs(<span class='keyword'>struct</span> bnxt *bp)</td></tr>
+<tr class="codeline" data-linenumber="92"><td class="num" id="LN92">92</td><td class="line">{</td></tr>
+<tr class="codeline" data-linenumber="93"><td class="num" id="LN93">93</td><td class="line">	<span class='keyword'>if</span> (bp-&gt;edev) {</td></tr>
+<tr class="codeline" data-linenumber="94"><td class="num" id="LN94">94</td><td class="line">		bp-&gt;edev-&gt;ulp_num_ctxs = <span class='macro'>BNXT_MIN_ROCE_STAT_CTXS<span class='macro_popup'>1</span></span>;</td></tr>
+<tr class="codeline" data-linenumber="95"><td class="num" id="LN95">95</td><td class="line">		<span class='comment'>/* Reserve one additional stat_ctx for PF0 (except</span></td></tr>
+<tr class="codeline" data-linenumber="96"><td class="num" id="LN96">96</td><td class="line">		 <span class='comment'>* on 1-port NICs) as it also creates one stat_ctx</span></td></tr>
+<tr class="codeline" data-linenumber="97"><td class="num" id="LN97">97</td><td class="line">		 <span class='comment'>* for PF1 in case of RoCE bonding.</span></td></tr>
+<tr class="codeline" data-linenumber="98"><td class="num" id="LN98">98</td><td class="line">		 <span class='comment'>*/</span></td></tr>
+<tr class="codeline" data-linenumber="99"><td class="num" id="LN99">99</td><td class="line">		<span class='keyword'>if</span> (<span class='macro'>BNXT_PF(bp)<span class='macro_popup'>(!((bp)-&gt;flags &amp; 0x2))</span></span> &amp;&amp; !bp-&gt;pf.port_id &amp;&amp;</td></tr>
+<tr class="codeline" data-linenumber="100"><td class="num" id="LN100">100</td><td class="line">		    bp-&gt;port_count &gt; 1)</td></tr>
+<tr class="codeline" data-linenumber="101"><td class="num" id="LN101">101</td><td class="line">			bp-&gt;edev-&gt;ulp_num_ctxs++;</td></tr>
+<tr class="codeline" data-linenumber="102"><td class="num" id="LN102">102</td><td class="line">	}</td></tr>
+<tr class="codeline" data-linenumber="103"><td class="num" id="LN103">103</td><td class="line">}</td></tr>
+<tr class="codeline" data-linenumber="104"><td class="num" id="LN104">104</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="105"><td class="num" id="LN105">105</td><td class="line"><span class='keyword'>int</span> bnxt_register_dev(<span class='keyword'>struct</span> bnxt_en_dev *edev,</td></tr>
+<tr class="codeline" data-linenumber="106"><td class="num" id="LN106">106</td><td class="line">		      <span class='keyword'>struct</span> bnxt_ulp_ops *ulp_ops,</td></tr>
+<tr class="codeline" data-linenumber="107"><td class="num" id="LN107">107</td><td class="line">		      <span class='keyword'>void</span> *handle)</td></tr>
+<tr class="codeline" data-linenumber="108"><td class="num" id="LN108">108</td><td class="line">{</td></tr>
+<tr class="codeline" data-linenumber="109"><td class="num" id="LN109">109</td><td class="line">	<span class='keyword'>struct</span> net_device *dev = edev-&gt;net;</td></tr>
+<tr class="codeline" data-linenumber="110"><td class="num" id="LN110">110</td><td class="line">	<span class='keyword'>struct</span> bnxt *bp = netdev_priv(dev);</td></tr>
+<tr class="codeline" data-linenumber="111"><td class="num" id="LN111">111</td><td class="line">	<span class='keyword'>unsigned</span> <span class='keyword'>int</span> max_stat_ctxs;</td></tr>
+<tr class="codeline" data-linenumber="112"><td class="num" id="LN112">112</td><td class="line">	<span class='keyword'>struct</span> bnxt_ulp *ulp;</td></tr>
+<tr class="codeline" data-linenumber="113"><td class="num" id="LN113">113</td><td class="line">	<span class='keyword'>int</span> rc = 0;</td></tr>
+<tr class="codeline" data-linenumber="114"><td class="num" id="LN114">114</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="115"><td class="num" id="LN115">115</td><td class="line">	rtnl_lock();</td></tr>
+<tr class="codeline" data-linenumber="116"><td class="num" id="LN116">116</td><td class="line">	<span class='macro'>mutex_lock(&amp;edev-&gt;en_dev_lock)<span class='macro_popup'>mutex_lock_nested(&amp;edev-&gt;en_dev_lock, 0)</span></span>;</td></tr>
+<tr class="codeline" data-linenumber="117"><td class="num" id="LN117">117</td><td class="line">	<span class='keyword'>if</span> (!bp-&gt;irq_tbl) {</td></tr>
+<tr class="codeline" data-linenumber="118"><td class="num" id="LN118">118</td><td class="line">		rc = -<span class='macro'>ENODEV<span class='macro_popup'>19</span></span>;</td></tr>
+<tr class="codeline" data-linenumber="119"><td class="num" id="LN119">119</td><td class="line">		<span class='keyword'>goto</span> exit;</td></tr>
+<tr class="codeline" data-linenumber="120"><td class="num" id="LN120">120</td><td class="line">	}</td></tr>
+<tr class="codeline" data-linenumber="121"><td class="num" id="LN121">121</td><td class="line">	max_stat_ctxs = bnxt_get_max_func_stat_ctxs(bp);</td></tr>
+<tr class="codeline" data-linenumber="122"><td class="num" id="LN122">122</td><td class="line">	<span class='keyword'>if</span> (max_stat_ctxs &lt;= <span class='macro'>BNXT_MIN_ROCE_STAT_CTXS<span class='macro_popup'>1</span></span> ||</td></tr>
+<tr class="codeline" data-linenumber="123"><td class="num" id="LN123">123</td><td class="line">	    bp-&gt;cp_nr_rings == max_stat_ctxs) {</td></tr>
+<tr class="codeline" data-linenumber="124"><td class="num" id="LN124">124</td><td class="line">		rc = -<span class='macro'>ENOMEM<span class='macro_popup'>12</span></span>;</td></tr>
+<tr class="codeline" data-linenumber="125"><td class="num" id="LN125">125</td><td class="line">		<span class='keyword'>goto</span> exit;</td></tr>
+<tr class="codeline" data-linenumber="126"><td class="num" id="LN126">126</td><td class="line">	}</td></tr>
+<tr class="codeline" data-linenumber="127"><td class="num" id="LN127">127</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="128"><td class="num" id="LN128">128</td><td class="line">	ulp = edev-&gt;ulp_tbl;</td></tr>
+<tr class="codeline" data-linenumber="129"><td class="num" id="LN129">129</td><td class="line">	ulp-&gt;handle = handle;</td></tr>
+<tr class="codeline" data-linenumber="130"><td class="num" id="LN130">130</td><td class="line">	<span class='macro'>rcu_assign_pointer(ulp-&gt;ulp_ops, ulp_ops)<span class='macro_popup'>do { uintptr_t _r_a_p__v = (uintptr_t)(ulp_ops); ; if (__builtin_constant_p<br>(ulp_ops) &amp;&amp; (_r_a_p__v) == (uintptr_t)((void *)0)) do<br> { do { __attribute__((__noreturn__)) extern void __compiletime_assert_2000<br>(void) __attribute__((__error__("Unsupported access size for {READ,WRITE}_ONCE()."<br>))); if (!((sizeof((ulp-&gt;ulp_ops)) == sizeof(char) || sizeof<br>((ulp-&gt;ulp_ops)) == sizeof(short) || sizeof((ulp-&gt;ulp_ops<br>)) == sizeof(int) || sizeof((ulp-&gt;ulp_ops)) == sizeof(long<br>)) || sizeof((ulp-&gt;ulp_ops)) == sizeof(long long))) __compiletime_assert_2000<br>(); } while (0); do { *(volatile typeof((ulp-&gt;ulp_ops)) *)<br>&amp;((ulp-&gt;ulp_ops)) = ((typeof(ulp-&gt;ulp_ops))(_r_a_p__v<br>)); } while (0); } while (0); else do { do { __asm__ __volatile__<br>("": : :"memory"); __atomic_signal_fence(3); __asm__ __volatile__<br>("": : :"memory"); } while (0); do { do { __attribute__((__noreturn__<br>)) extern void __compiletime_assert_2001(void) __attribute__(<br>(__error__("Need native word sized stores/loads for atomicity."<br>))); if (!((sizeof(*&amp;ulp-&gt;ulp_ops) == sizeof(char) || sizeof<br>(*&amp;ulp-&gt;ulp_ops) == sizeof(short) || sizeof(*&amp;ulp-&gt;<br>ulp_ops) == sizeof(int) || sizeof(*&amp;ulp-&gt;ulp_ops) == sizeof<br>(long)))) __compiletime_assert_2001(); } while (0); __asm__ __volatile__<br>("": : :"memory"); do { do { __attribute__((__noreturn__)) extern<br> void __compiletime_assert_2002(void) __attribute__((__error__<br>("Unsupported access size for {READ,WRITE}_ONCE()."))); if (!<br>((sizeof(*&amp;ulp-&gt;ulp_ops) == sizeof(char) || sizeof(*&amp;<br>ulp-&gt;ulp_ops) == sizeof(short) || sizeof(*&amp;ulp-&gt;ulp_ops<br>) == sizeof(int) || sizeof(*&amp;ulp-&gt;ulp_ops) == sizeof(long<br>)) || sizeof(*&amp;ulp-&gt;ulp_ops) == sizeof(long long))) __compiletime_assert_2002<br>(); } while (0); do { *(volatile typeof(*&amp;ulp-&gt;ulp_ops<br>) *)&amp;(*&amp;ulp-&gt;ulp_ops) = ((typeof(*((typeof(ulp-&gt;<br>ulp_ops))_r_a_p__v)) *)((typeof(ulp-&gt;ulp_ops))_r_a_p__v));<br> } while (0); } while (0); } while (0); } while (0); } while (<br>0)</span></span>;</td></tr>
+<tr class="codeline" data-linenumber="131"><td class="num" id="LN131">131</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="132"><td class="num" id="LN132">132</td><td class="line">	<span class='keyword'>if</span> (<span class='macro'>test_bit(BNXT_STATE_OPEN, &amp;bp-&gt;state)<span class='macro_popup'>((__builtin_constant_p(0) &amp;&amp; __builtin_constant_p((uintptr_t<br>)(&amp;bp-&gt;state) != (uintptr_t)((void *)0)) &amp;&amp; (uintptr_t<br>)(&amp;bp-&gt;state) != (uintptr_t)((void *)0) &amp;&amp; __builtin_constant_p<br>(*(const unsigned long *)(&amp;bp-&gt;state))) ? const_test_bit<br>(0, &amp;bp-&gt;state) : _test_bit(0, &amp;bp-&gt;state))</span></span>)</td></tr>
+<tr class="codeline" data-linenumber="133"><td class="num" id="LN133">133</td><td class="line">		bnxt_hwrm_vnic_cfg(bp, &amp;bp-&gt;vnic_info[<span class='macro'>BNXT_VNIC_DEFAULT<span class='macro_popup'>0</span></span>]);</td></tr>
+<tr class="codeline" data-linenumber="134"><td class="num" id="LN134">134</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="135"><td class="num" id="LN135">135</td><td class="line">	edev-&gt;ulp_tbl-&gt;msix_requested = bnxt_get_ulp_msix_num(bp);</td></tr>
+<tr class="codeline" data-linenumber="136"><td class="num" id="LN136">136</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="137"><td class="num" id="LN137">137</td><td class="line">	bnxt_fill_msix_vecs(bp, bp-&gt;edev-&gt;msix_entries);</td></tr>
+<tr class="codeline" data-linenumber="138"><td class="num" id="LN138">138</td><td class="line">	edev-&gt;flags |= <span class='macro'>BNXT_EN_FLAG_MSIX_REQUESTED<span class='macro_popup'>0x4</span></span>;</td></tr>
+<tr class="codeline" data-linenumber="139"><td class="num" id="LN139">139</td><td class="line">exit:</td></tr>
+<tr class="codeline" data-linenumber="140"><td class="num" id="LN140">140</td><td class="line">	mutex_unlock(&amp;edev-&gt;en_dev_lock);</td></tr>
+<tr class="codeline" data-linenumber="141"><td class="num" id="LN141">141</td><td class="line">	rtnl_unlock();</td></tr>
+<tr class="codeline" data-linenumber="142"><td class="num" id="LN142">142</td><td class="line">	<span class='keyword'>return</span> rc;</td></tr>
+<tr class="codeline" data-linenumber="143"><td class="num" id="LN143">143</td><td class="line">}</td></tr>
+<tr class="codeline" data-linenumber="144"><td class="num" id="LN144">144</td><td class="line"><span class='macro'>EXPORT_SYMBOL(bnxt_register_dev)<span class='macro_popup'>extern typeof(bnxt_register_dev) bnxt_register_dev; static void<br> * __attribute__((__used__)) __attribute__((__section__(".discard.addressable"<br>))) __UNIQUE_ID___addressable_bnxt_register_dev2003 = (void *<br>)(uintptr_t)&amp;bnxt_register_dev; asm(".section \".export_symbol\",\"a\" ; __export_symbol_bnxt_register_dev: ; .asciz \"\" ; .asciz \"\" ; .balign 8 ; .quad bnxt_register_dev ; .previous"<br>)</span></span>;</td></tr>
+<tr class="codeline" data-linenumber="145"><td class="num" id="LN145">145</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="146"><td class="num" id="LN146">146</td><td class="line"><span class='keyword'>void</span> bnxt_unregister_dev(<span class='keyword'>struct</span> bnxt_en_dev *edev)</td></tr>
+<tr class="codeline" data-linenumber="147"><td class="num" id="LN147">147</td><td class="line">{</td></tr>
+<tr class="codeline" data-linenumber="148"><td class="num" id="LN148">148</td><td class="line">	<span class='keyword'>struct</span> net_device *dev = edev-&gt;net;</td></tr>
+<tr class="codeline" data-linenumber="149"><td class="num" id="LN149">149</td><td class="line">	<span class='keyword'>struct</span> bnxt *bp = netdev_priv(dev);</td></tr>
+<tr class="codeline" data-linenumber="150"><td class="num" id="LN150">150</td><td class="line">	<span class='keyword'>struct</span> bnxt_ulp *ulp;</td></tr>
+<tr class="codeline" data-linenumber="151"><td class="num" id="LN151">151</td><td class="line">	<span class='keyword'>int</span> i = 0;</td></tr>
+<tr class="codeline" data-linenumber="152"><td class="num" id="LN152">152</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="153"><td class="num" id="LN153">153</td><td class="line">	ulp = edev-&gt;ulp_tbl;</td></tr>
+<tr class="codeline" data-linenumber="154"><td class="num" id="LN154">154</td><td class="line">	rtnl_lock();</td></tr>
+<tr class="codeline" data-linenumber="155"><td class="num" id="LN155">155</td><td class="line">	<span class='macro'>mutex_lock(&amp;edev-&gt;en_dev_lock)<span class='macro_popup'>mutex_lock_nested(&amp;edev-&gt;en_dev_lock, 0)</span></span>;</td></tr>
+<tr class="codeline" data-linenumber="156"><td class="num" id="LN156">156</td><td class="line">	<span class='keyword'>if</span> (ulp-&gt;msix_requested)</td></tr>
+<tr class="codeline" data-linenumber="157"><td class="num" id="LN157">157</td><td class="line">		edev-&gt;flags &amp;= ~<span class='macro'>BNXT_EN_FLAG_MSIX_REQUESTED<span class='macro_popup'>0x4</span></span>;</td></tr>
+<tr class="codeline" data-linenumber="158"><td class="num" id="LN158">158</td><td class="line">	edev-&gt;ulp_tbl-&gt;msix_requested = 0;</td></tr>
+<tr class="codeline" data-linenumber="159"><td class="num" id="LN159">159</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="160"><td class="num" id="LN160">160</td><td class="line">	<span class='keyword'>if</span> (ulp-&gt;max_async_event_id)</td></tr>
+<tr class="codeline" data-linenumber="161"><td class="num" id="LN161">161</td><td class="line">		bnxt_hwrm_func_drv_rgtr(bp, <span class='macro'>NULL<span class='macro_popup'>((void *)0)</span></span>, 0, true);</td></tr>
+<tr class="codeline" data-linenumber="162"><td class="num" id="LN162">162</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="163"><td class="num" id="LN163">163</td><td class="line">	<span class='macro'>RCU_INIT_POINTER(ulp-&gt;ulp_ops, NULL)<span class='macro_popup'>do { ; do { do { __attribute__((__noreturn__)) extern void __compiletime_assert_2004<br>(void) __attribute__((__error__("Unsupported access size for {READ,WRITE}_ONCE()."<br>))); if (!((sizeof(ulp-&gt;ulp_ops) == sizeof(char) || sizeof<br>(ulp-&gt;ulp_ops) == sizeof(short) || sizeof(ulp-&gt;ulp_ops)<br> == sizeof(int) || sizeof(ulp-&gt;ulp_ops) == sizeof(long)) ||<br> sizeof(ulp-&gt;ulp_ops) == sizeof(long long))) __compiletime_assert_2004<br>(); } while (0); do { *(volatile typeof(ulp-&gt;ulp_ops) *)&amp;<br>(ulp-&gt;ulp_ops) = ((typeof(*(((void *)0))) *)(((void *)0)))<br>; } while (0); } while (0); } while (0)</span></span>;</td></tr>
+<tr class="codeline" data-linenumber="164"><td class="num" id="LN164">164</td><td class="line">	synchronize_rcu();</td></tr>
+<tr class="codeline" data-linenumber="165"><td class="num" id="LN165">165</td><td class="line">	ulp-&gt;max_async_event_id = 0;</td></tr>
+<tr class="codeline" data-linenumber="166"><td class="num" id="LN166">166</td><td class="line">	ulp-&gt;async_events_bmap = <span class='macro'>NULL<span class='macro_popup'>((void *)0)</span></span>;</td></tr>
+<tr class="codeline" data-linenumber="167"><td class="num" id="LN167">167</td><td class="line">	<span class='keyword'>while</span> (atomic_read(&amp;ulp-&gt;ref_count) != 0 &amp;&amp; i &lt; 10) {</td></tr>
+<tr class="codeline" data-linenumber="168"><td class="num" id="LN168">168</td><td class="line">		msleep(100);</td></tr>
+<tr class="codeline" data-linenumber="169"><td class="num" id="LN169">169</td><td class="line">		i++;</td></tr>
+<tr class="codeline" data-linenumber="170"><td class="num" id="LN170">170</td><td class="line">	}</td></tr>
+<tr class="codeline" data-linenumber="171"><td class="num" id="LN171">171</td><td class="line">	mutex_unlock(&amp;edev-&gt;en_dev_lock);</td></tr>
+<tr class="codeline" data-linenumber="172"><td class="num" id="LN172">172</td><td class="line">	rtnl_unlock();</td></tr>
+<tr class="codeline" data-linenumber="173"><td class="num" id="LN173">173</td><td class="line">	<span class='keyword'>return</span>;</td></tr>
+<tr class="codeline" data-linenumber="174"><td class="num" id="LN174">174</td><td class="line">}</td></tr>
+<tr class="codeline" data-linenumber="175"><td class="num" id="LN175">175</td><td class="line"><span class='macro'>EXPORT_SYMBOL(bnxt_unregister_dev)<span class='macro_popup'>extern typeof(bnxt_unregister_dev) bnxt_unregister_dev; static<br> void * __attribute__((__used__)) __attribute__((__section__(<br>".discard.addressable"))) __UNIQUE_ID___addressable_bnxt_unregister_dev2005<br> = (void *)(uintptr_t)&amp;bnxt_unregister_dev; asm(".section \".export_symbol\",\"a\" ; __export_symbol_bnxt_unregister_dev: ; .asciz \"\" ; .asciz \"\" ; .balign 8 ; .quad bnxt_unregister_dev ; .previous"<br>)</span></span>;</td></tr>
+<tr class="codeline" data-linenumber="176"><td class="num" id="LN176">176</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="177"><td class="num" id="LN177">177</td><td class="line"><span class='keyword'>static</span> <span class='keyword'>int</span> bnxt_set_dflt_ulp_msix(<span class='keyword'>struct</span> bnxt *bp)</td></tr>
+<tr class="codeline" data-linenumber="178"><td class="num" id="LN178">178</td><td class="line">{</td></tr>
+<tr class="codeline" data-linenumber="179"><td class="num" id="LN179">179</td><td class="line">	<span class='keyword'>int</span> roce_msix = <span class='macro'>BNXT_MAX_ROCE_MSIX<span class='macro_popup'>64</span></span>;</td></tr>
+<tr class="codeline" data-linenumber="180"><td class="num" id="LN180">180</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="181"><td class="num" id="LN181">181</td><td class="line">	<span class='keyword'>if</span> (<span class='macro'>BNXT_VF(bp)<span class='macro_popup'>((bp)-&gt;flags &amp; 0x2)</span></span>)</td></tr>
+<tr class="codeline" data-linenumber="182"><td class="num" id="LN182">182</td><td class="line">		roce_msix = <span class='macro'>BNXT_MAX_ROCE_MSIX_VF<span class='macro_popup'>2</span></span>;</td></tr>
+<tr class="codeline" data-linenumber="183"><td class="num" id="LN183">183</td><td class="line">	<span class='keyword'>else</span> <span class='keyword'>if</span> (bp-&gt;port_partition_type)</td></tr>
+<tr class="codeline" data-linenumber="184"><td class="num" id="LN184">184</td><td class="line">		roce_msix = <span class='macro'>BNXT_MAX_ROCE_MSIX_NPAR_PF<span class='macro_popup'>5</span></span>;</td></tr>
+<tr class="codeline" data-linenumber="185"><td class="num" id="LN185">185</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="186"><td class="num" id="LN186">186</td><td class="line">	<span class='comment'>/* NQ MSIX vectors should match the number of CPUs plus 1 more for</span></td></tr>
+<tr class="codeline" data-linenumber="187"><td class="num" id="LN187">187</td><td class="line">	 <span class='comment'>* the CREQ MSIX, up to the default.</span></td></tr>
+<tr class="codeline" data-linenumber="188"><td class="num" id="LN188">188</td><td class="line">	 <span class='comment'>*/</span></td></tr>
+<tr class="codeline" data-linenumber="189"><td class="num" id="LN189">189</td><td class="line">	<span class='keyword'>return</span> <span class='macro'>min_t(<span class='keyword'>int</span>, roce_msix, num_online_cpus() + 1)<span class='macro_popup'>({ int __UNIQUE_ID_x_2006 = (roce_msix); int __UNIQUE_ID_y_2007<br> = (num_online_cpus() + 1); ((__UNIQUE_ID_x_2006) &lt; (__UNIQUE_ID_y_2007<br>) ? (__UNIQUE_ID_x_2006) : (__UNIQUE_ID_y_2007)); })</span></span>;</td></tr>
+<tr class="codeline" data-linenumber="190"><td class="num" id="LN190">190</td><td class="line">}</td></tr>
+<tr class="codeline" data-linenumber="191"><td class="num" id="LN191">191</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="192"><td class="num" id="LN192">192</td><td class="line"><span class='keyword'>int</span> bnxt_send_msg(<span class='keyword'>struct</span> bnxt_en_dev *edev,</td></tr>
+<tr class="codeline" data-linenumber="193"><td class="num" id="LN193">193</td><td class="line">			 <span class='keyword'>struct</span> bnxt_fw_msg *fw_msg)</td></tr>
+<tr class="codeline" data-linenumber="194"><td class="num" id="LN194">194</td><td class="line">{</td></tr>
+<tr class="codeline" data-linenumber="195"><td class="num" id="LN195">195</td><td class="line">	<span id="start14"><span class='keyword'>struct</span></span> net_device *dev = edev-&gt;net;</td></tr>
+<tr class="codeline" data-linenumber="196"><td class="num" id="LN196">196</td><td class="line">	<span class='keyword'>struct</span> bnxt *bp = netdev_priv(dev);</td></tr>
+<tr class="codeline" data-linenumber="197"><td class="num" id="LN197">197</td><td class="line">	<span class='keyword'>struct</span> output *resp;</td></tr>
+<tr class="codeline" data-linenumber="198"><td class="num" id="LN198">198</td><td class="line">	<span class='keyword'>struct</span> input *req;</td></tr>
+<tr class="codeline" data-linenumber="199"><td class="num" id="LN199">199</td><td class="line">	u32 resp_len;</td></tr>
+<tr class="codeline" data-linenumber="200"><td class="num" id="LN200">200</td><td class="line">	<span class='keyword'>int</span> rc;</td></tr>
+<tr class="codeline" data-linenumber="201"><td class="num" id="LN201">201</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="202"><td class="num" id="LN202">202</td><td class="line">	<span id="start13"><span id="end14"><span class='keyword'>if</span></span></span> (<span id="start12"><span class="mrange"><span id="end13">bp</span></span>-&gt;fw_reset_state</span>)</td></tr>
+<tr><td class="num"></td><td class="line"><div id="Path1" class="msg msgEvent" style="margin-left:13ex"><table class="msgT"><tr><td valign="top"><div class="PathIndex PathIndexEvent">1</div></td><td>Assuming field 'fw_reset_state' is 0</td><td><div class="PathNav"><a href="#Path2" title="Next event (2)">&#x2192;</a></div></td></tr></table></div></td></tr>
+<tr><td class="num"></td><td class="line"><div id="Path2" class="msg msgControl" style="margin-left:9ex"><table class="msgT"><tr><td valign="top"><div class="PathIndex PathIndexControl">2</div></td><td><div class="PathNav"><a href="#Path1" title="Previous event (1)">&#x2190;</a></div></td><td>Taking false branch</td><td><div class="PathNav"><a href="#Path3" title="Next event (3)">&#x2192;</a></div></td></tr></table></div></td></tr>
+<tr class="codeline" data-linenumber="203"><td class="num" id="LN203">203</td><td class="line">		<span class='keyword'>return</span> -<span class='macro'>EBUSY<span class='macro_popup'>16</span></span>;</td></tr>
+<tr class="codeline" data-linenumber="204"><td class="num" id="LN204">204</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="205"><td class="num" id="LN205">205</td><td class="line">	<span id="start9"><span id="end10"><span id="start11"><span id="end12">rc</span></span></span></span> = <span id="start10"><span id="end11"><span class='macro'>hwrm_req_init</span></span>(bp, req, 0 <span class='comment'>/* don't care */</span>)<span class='macro_popup'>__hwrm_req_init((bp), (void **)&amp;(req), (0), sizeof(*(req)<br>))</span></span>;</td></tr>
+<tr class="codeline" data-linenumber="206"><td class="num" id="LN206">206</td><td class="line">	<span id="start8"><span id="end9"><span class='keyword'>if</span></span></span> (<span id="start7"><span class="mrange"><span id="end8">rc</span></span></span>)</td></tr>
+<tr><td class="num"></td><td class="line"><div id="Path3" class="msg msgEvent" style="margin-left:13ex"><table class="msgT"><tr><td valign="top"><div class="PathIndex PathIndexEvent">3</div></td><td><div class="PathNav"><a href="#Path2" title="Previous event (2)">&#x2190;</a></div></td><td>Assuming 'rc' is 0</td><td><div class="PathNav"><a href="#Path4" title="Next event (4)">&#x2192;</a></div></td></tr></table></div></td></tr>
+<tr><td class="num"></td><td class="line"><div id="Path4" class="msg msgControl" style="margin-left:9ex"><table class="msgT"><tr><td valign="top"><div class="PathIndex PathIndexControl">4</div></td><td><div class="PathNav"><a href="#Path3" title="Previous event (3)">&#x2190;</a></div></td><td>Taking false branch</td><td><div class="PathNav"><a href="#Path5" title="Next event (5)">&#x2192;</a></div></td></tr></table></div></td></tr>
+<tr class="codeline" data-linenumber="207"><td class="num" id="LN207">207</td><td class="line">		<span class='keyword'>return</span> rc;</td></tr>
+<tr class="codeline" data-linenumber="208"><td class="num" id="LN208">208</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="209"><td class="num" id="LN209">209</td><td class="line">	<span id="start4"><span id="end5"><span id="start6"><span id="end7">rc</span></span></span></span> = <span id="start5"><span id="end6">hwrm_req_replace</span></span>(bp, req, fw_msg-&gt;msg, fw_msg-&gt;msg_len);</td></tr>
+<tr class="codeline" data-linenumber="210"><td class="num" id="LN210">210</td><td class="line">	<span id="start3"><span id="end4"><span class='keyword'>if</span></span></span> (<span id="start2"><span class="mrange"><span id="end3">rc</span></span></span>)</td></tr>
+<tr><td class="num"></td><td class="line"><div id="Path5" class="msg msgEvent" style="margin-left:13ex"><table class="msgT"><tr><td valign="top"><div class="PathIndex PathIndexEvent">5</div></td><td><div class="PathNav"><a href="#Path4" title="Previous event (4)">&#x2190;</a></div></td><td>Assuming 'rc' is not equal to 0</td><td><div class="PathNav"><a href="#Path6" title="Next event (6)">&#x2192;</a></div></td></tr></table></div></td></tr>
+<tr><td class="num"></td><td class="line"><div id="Path6" class="msg msgControl" style="margin-left:9ex"><table class="msgT"><tr><td valign="top"><div class="PathIndex PathIndexControl">6</div></td><td><div class="PathNav"><a href="#Path5" title="Previous event (5)">&#x2190;</a></div></td><td>Taking true branch</td><td><div class="PathNav"><a href="#EndPath" title="Next event (7)">&#x2192;</a></div></td></tr></table></div></td></tr>
+<tr class="codeline" data-linenumber="211"><td class="num" id="LN211">211</td><td class="line">		<span class="mrange"><span id="end0"><span id="start1"><span id="end2"><span class='keyword'>return</span></span></span></span> <span id="start0"><span id="end1">rc</span></span></span>;</td></tr>
+<tr><td class="num"></td><td class="line"><div id="EndPath" class="msg msgEvent" style="margin-left:17ex"><table class="msgT"><tr><td valign="top"><div class="PathIndex PathIndexEvent">7</div></td><td><div class="PathNav"><a href="#Path6" title="Previous event (6)">&#x2190;</a></div></td><td>Request not released: missing hwrm_req_drop() before return</td></tr></table></div></td></tr>
+<tr class="codeline" data-linenumber="212"><td class="num" id="LN212">212</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="213"><td class="num" id="LN213">213</td><td class="line">	hwrm_req_timeout(bp, req, fw_msg-&gt;timeout);</td></tr>
+<tr class="codeline" data-linenumber="214"><td class="num" id="LN214">214</td><td class="line">	resp = hwrm_req_hold(bp, req);</td></tr>
+<tr class="codeline" data-linenumber="215"><td class="num" id="LN215">215</td><td class="line">	rc = hwrm_req_send(bp, req);</td></tr>
+<tr class="codeline" data-linenumber="216"><td class="num" id="LN216">216</td><td class="line">	resp_len = <span class='macro'>le16_to_cpu(resp-&gt;resp_len)<span class='macro_popup'>(( __u16)(__le16)(resp-&gt;resp_len))</span></span>;</td></tr>
+<tr class="codeline" data-linenumber="217"><td class="num" id="LN217">217</td><td class="line">	<span class='keyword'>if</span> (resp_len) {</td></tr>
+<tr class="codeline" data-linenumber="218"><td class="num" id="LN218">218</td><td class="line">		<span class='keyword'>if</span> (fw_msg-&gt;resp_max_len &lt; resp_len)</td></tr>
+<tr class="codeline" data-linenumber="219"><td class="num" id="LN219">219</td><td class="line">			resp_len = fw_msg-&gt;resp_max_len;</td></tr>
+<tr class="codeline" data-linenumber="220"><td class="num" id="LN220">220</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="221"><td class="num" id="LN221">221</td><td class="line">		<span class='macro'>memcpy(fw_msg-&gt;resp, resp, resp_len)<span class='macro_popup'>({ const size_t __fortify_size = (size_t)(resp_len); const size_t<br> __p_size = (__builtin_dynamic_object_size(fw_msg-&gt;resp, 0<br>)); const size_t __q_size = (__builtin_dynamic_object_size(resp<br>, 0)); const size_t __p_size_field = (__builtin_dynamic_object_size<br>(fw_msg-&gt;resp, 1)); const size_t __q_size_field = (__builtin_dynamic_object_size<br>(resp, 1)); size_t __copy_size = __fortify_size; ({ bool __ret_do_once<br> = !!(fortify_memcpy_chk(__fortify_size, __p_size, __q_size, __p_size_field<br>, __q_size_field, FORTIFY_FUNC_memcpy)); if (({ static bool __attribute__<br>((__section__(".data..once"))) __already_done; bool __ret_cond<br> = !!(__ret_do_once); bool __ret_once = false; if (__builtin_expect<br>(!!(__ret_cond &amp;&amp; !__already_done), 0)) { __already_done<br> = true; __ret_once = true; } __builtin_expect(!!(__ret_once)<br>, 0); })) ({ int __ret_warn_on = !!(1); if (__builtin_expect(<br>!!(__ret_warn_on), 0)) do { ({ asm volatile("2008" ": nop\n\t"<br> ".pushsection .discard.instr_begin\n\t" ".long " "2008" "b - .\n\t"<br> ".popsection\n\t" : : "i" (2008)); }); __warn_printk("memcpy"<br> ": detected field-spanning write (size %zu) of single %s (size %zu)\n"<br>, __fortify_size, "field \"" "fw_msg-&gt;resp" "\" at " "drivers/net/ethernet/broadcom/bnxt/bnxt_ulp.c"<br> ":" "221", __p_size_field); do { __auto_type __flags = (1 &lt;&lt;<br> 0)|((1 &lt;&lt; 3) | ((9) &lt;&lt; 8)); ({ asm volatile("2009"<br> ": nop\n\t" ".pushsection .discard.instr_begin\n\t" ".long "<br> "2009" "b - .\n\t" ".popsection\n\t" : : "i" (2009)); }); do<br> { asm __inline volatile("1:\t" ".byte 0x0f, 0x0b" "\n" ".pushsection __bug_table,\"aw\"\n"<br> "2:\t" ".long " "1b" " - ." "\t# bug_entry::bug_addr\n" "\t"<br> ".long " "%c0" " - ." "\t# bug_entry::file\n" "\t.word %c1" "\t# bug_entry::line\n"<br> "\t.word %c2" "\t# bug_entry::flags\n" "\t.org 2b+%c3\n" ".popsection\n"<br> "998:\n\t" ".pushsection .discard.reachable\n\t" ".long 998b\n\t"<br> ".popsection\n\t" : : "i" ("drivers/net/ethernet/broadcom/bnxt/bnxt_ulp.c"<br>), "i" (221), "i" (__flags), "i" (sizeof(struct bug_entry)));<br> } while (0); ({ asm volatile("2010" ": nop\n\t" ".pushsection .discard.instr_end\n\t"<br> ".long " "2010" "b - .\n\t" ".popsection\n\t" : : "i" (2010)<br>); }); } while (0); ({ asm volatile("2011" ": nop\n\t" ".pushsection .discard.instr_end\n\t"<br> ".long " "2011" "b - .\n\t" ".popsection\n\t" : : "i" (2011)<br>); }); } while (0); __builtin_expect(!!(__ret_warn_on), 0); }<br>); __builtin_expect(!!(__ret_do_once), 0); }); if (!__builtin_constant_p<br>(__copy_size)) __asm__ ("" : "=r" (__copy_size) : "0" (__copy_size<br>)); __builtin_memcpy(fw_msg-&gt;resp, resp, __copy_size); })</span></span>;</td></tr>
+<tr class="codeline" data-linenumber="222"><td class="num" id="LN222">222</td><td class="line">	}</td></tr>
+<tr class="codeline" data-linenumber="223"><td class="num" id="LN223">223</td><td class="line">	hwrm_req_drop(bp, req);</td></tr>
+<tr class="codeline" data-linenumber="224"><td class="num" id="LN224">224</td><td class="line">	<span class='keyword'>return</span> rc;</td></tr>
+<tr class="codeline" data-linenumber="225"><td class="num" id="LN225">225</td><td class="line">}</td></tr>
+<tr class="codeline" data-linenumber="226"><td class="num" id="LN226">226</td><td class="line"><span class='macro'>EXPORT_SYMBOL(bnxt_send_msg)<span class='macro_popup'>extern typeof(bnxt_send_msg) bnxt_send_msg; static void * __attribute__<br>((__used__)) __attribute__((__section__(".discard.addressable"<br>))) __UNIQUE_ID___addressable_bnxt_send_msg2012 = (void *)(uintptr_t<br>)&amp;bnxt_send_msg; asm(".section \".export_symbol\",\"a\" ; __export_symbol_bnxt_send_msg: ; .asciz \"\" ; .asciz \"\" ; .balign 8 ; .quad bnxt_send_msg ; .previous"<br>)</span></span>;</td></tr>
+<tr class="codeline" data-linenumber="227"><td class="num" id="LN227">227</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="228"><td class="num" id="LN228">228</td><td class="line"><span class='keyword'>void</span> bnxt_ulp_stop(<span class='keyword'>struct</span> bnxt *bp)</td></tr>
+<tr class="codeline" data-linenumber="229"><td class="num" id="LN229">229</td><td class="line">{</td></tr>
+<tr class="codeline" data-linenumber="230"><td class="num" id="LN230">230</td><td class="line">	<span class='keyword'>struct</span> bnxt_aux_priv *aux_priv = bp-&gt;aux_priv;</td></tr>
+<tr class="codeline" data-linenumber="231"><td class="num" id="LN231">231</td><td class="line">	<span class='keyword'>struct</span> bnxt_en_dev *edev = bp-&gt;edev;</td></tr>
+<tr class="codeline" data-linenumber="232"><td class="num" id="LN232">232</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="233"><td class="num" id="LN233">233</td><td class="line">	<span class='keyword'>if</span> (!edev)</td></tr>
+<tr class="codeline" data-linenumber="234"><td class="num" id="LN234">234</td><td class="line">		<span class='keyword'>return</span>;</td></tr>
+<tr class="codeline" data-linenumber="235"><td class="num" id="LN235">235</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="236"><td class="num" id="LN236">236</td><td class="line">	<span class='macro'>mutex_lock(&amp;edev-&gt;en_dev_lock)<span class='macro_popup'>mutex_lock_nested(&amp;edev-&gt;en_dev_lock, 0)</span></span>;</td></tr>
+<tr class="codeline" data-linenumber="237"><td class="num" id="LN237">237</td><td class="line">	<span class='keyword'>if</span> (!bnxt_ulp_registered(edev)) {</td></tr>
+<tr class="codeline" data-linenumber="238"><td class="num" id="LN238">238</td><td class="line">		mutex_unlock(&amp;edev-&gt;en_dev_lock);</td></tr>
+<tr class="codeline" data-linenumber="239"><td class="num" id="LN239">239</td><td class="line">		<span class='keyword'>return</span>;</td></tr>
+<tr class="codeline" data-linenumber="240"><td class="num" id="LN240">240</td><td class="line">	}</td></tr>
+<tr class="codeline" data-linenumber="241"><td class="num" id="LN241">241</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="242"><td class="num" id="LN242">242</td><td class="line">	edev-&gt;flags |= <span class='macro'>BNXT_EN_FLAG_ULP_STOPPED<span class='macro_popup'>0x8</span></span>;</td></tr>
+<tr class="codeline" data-linenumber="243"><td class="num" id="LN243">243</td><td class="line">	<span class='keyword'>if</span> (aux_priv) {</td></tr>
+<tr class="codeline" data-linenumber="244"><td class="num" id="LN244">244</td><td class="line">		<span class='keyword'>struct</span> auxiliary_device *adev;</td></tr>
+<tr class="codeline" data-linenumber="245"><td class="num" id="LN245">245</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="246"><td class="num" id="LN246">246</td><td class="line">		adev = &amp;aux_priv-&gt;aux_dev;</td></tr>
+<tr class="codeline" data-linenumber="247"><td class="num" id="LN247">247</td><td class="line">		<span class='keyword'>if</span> (adev-&gt;dev.driver) {</td></tr>
+<tr class="codeline" data-linenumber="248"><td class="num" id="LN248">248</td><td class="line">			<span class='keyword'>const</span> <span class='keyword'>struct</span> auxiliary_driver *adrv;</td></tr>
+<tr class="codeline" data-linenumber="249"><td class="num" id="LN249">249</td><td class="line">			pm_message_t pm = {};</td></tr>
+<tr class="codeline" data-linenumber="250"><td class="num" id="LN250">250</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="251"><td class="num" id="LN251">251</td><td class="line">			adrv = to_auxiliary_drv(adev-&gt;dev.driver);</td></tr>
+<tr class="codeline" data-linenumber="252"><td class="num" id="LN252">252</td><td class="line">			edev-&gt;en_state = bp-&gt;state;</td></tr>
+<tr class="codeline" data-linenumber="253"><td class="num" id="LN253">253</td><td class="line">			adrv-&gt;suspend(adev, pm);</td></tr>
+<tr class="codeline" data-linenumber="254"><td class="num" id="LN254">254</td><td class="line">		}</td></tr>
+<tr class="codeline" data-linenumber="255"><td class="num" id="LN255">255</td><td class="line">	}</td></tr>
+<tr class="codeline" data-linenumber="256"><td class="num" id="LN256">256</td><td class="line">	mutex_unlock(&amp;edev-&gt;en_dev_lock);</td></tr>
+<tr class="codeline" data-linenumber="257"><td class="num" id="LN257">257</td><td class="line">}</td></tr>
+<tr class="codeline" data-linenumber="258"><td class="num" id="LN258">258</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="259"><td class="num" id="LN259">259</td><td class="line"><span class='keyword'>void</span> bnxt_ulp_start(<span class='keyword'>struct</span> bnxt *bp, <span class='keyword'>int</span> err)</td></tr>
+<tr class="codeline" data-linenumber="260"><td class="num" id="LN260">260</td><td class="line">{</td></tr>
+<tr class="codeline" data-linenumber="261"><td class="num" id="LN261">261</td><td class="line">	<span class='keyword'>struct</span> bnxt_aux_priv *aux_priv = bp-&gt;aux_priv;</td></tr>
+<tr class="codeline" data-linenumber="262"><td class="num" id="LN262">262</td><td class="line">	<span class='keyword'>struct</span> bnxt_en_dev *edev = bp-&gt;edev;</td></tr>
+<tr class="codeline" data-linenumber="263"><td class="num" id="LN263">263</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="264"><td class="num" id="LN264">264</td><td class="line">	<span class='keyword'>if</span> (!edev)</td></tr>
+<tr class="codeline" data-linenumber="265"><td class="num" id="LN265">265</td><td class="line">		<span class='keyword'>return</span>;</td></tr>
+<tr class="codeline" data-linenumber="266"><td class="num" id="LN266">266</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="267"><td class="num" id="LN267">267</td><td class="line">	edev-&gt;flags &amp;= ~<span class='macro'>BNXT_EN_FLAG_ULP_STOPPED<span class='macro_popup'>0x8</span></span>;</td></tr>
+<tr class="codeline" data-linenumber="268"><td class="num" id="LN268">268</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="269"><td class="num" id="LN269">269</td><td class="line">	<span class='keyword'>if</span> (err)</td></tr>
+<tr class="codeline" data-linenumber="270"><td class="num" id="LN270">270</td><td class="line">		<span class='keyword'>return</span>;</td></tr>
+<tr class="codeline" data-linenumber="271"><td class="num" id="LN271">271</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="272"><td class="num" id="LN272">272</td><td class="line">	<span class='macro'>mutex_lock(&amp;edev-&gt;en_dev_lock)<span class='macro_popup'>mutex_lock_nested(&amp;edev-&gt;en_dev_lock, 0)</span></span>;</td></tr>
+<tr class="codeline" data-linenumber="273"><td class="num" id="LN273">273</td><td class="line">	<span class='keyword'>if</span> (!bnxt_ulp_registered(edev)) {</td></tr>
+<tr class="codeline" data-linenumber="274"><td class="num" id="LN274">274</td><td class="line">		mutex_unlock(&amp;edev-&gt;en_dev_lock);</td></tr>
+<tr class="codeline" data-linenumber="275"><td class="num" id="LN275">275</td><td class="line">		<span class='keyword'>return</span>;</td></tr>
+<tr class="codeline" data-linenumber="276"><td class="num" id="LN276">276</td><td class="line">	}</td></tr>
+<tr class="codeline" data-linenumber="277"><td class="num" id="LN277">277</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="278"><td class="num" id="LN278">278</td><td class="line">	<span class='keyword'>if</span> (edev-&gt;ulp_tbl-&gt;msix_requested)</td></tr>
+<tr class="codeline" data-linenumber="279"><td class="num" id="LN279">279</td><td class="line">		bnxt_fill_msix_vecs(bp, edev-&gt;msix_entries);</td></tr>
+<tr class="codeline" data-linenumber="280"><td class="num" id="LN280">280</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="281"><td class="num" id="LN281">281</td><td class="line">	<span class='keyword'>if</span> (aux_priv) {</td></tr>
+<tr class="codeline" data-linenumber="282"><td class="num" id="LN282">282</td><td class="line">		<span class='keyword'>struct</span> auxiliary_device *adev;</td></tr>
+<tr class="codeline" data-linenumber="283"><td class="num" id="LN283">283</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="284"><td class="num" id="LN284">284</td><td class="line">		adev = &amp;aux_priv-&gt;aux_dev;</td></tr>
+<tr class="codeline" data-linenumber="285"><td class="num" id="LN285">285</td><td class="line">		<span class='keyword'>if</span> (adev-&gt;dev.driver) {</td></tr>
+<tr class="codeline" data-linenumber="286"><td class="num" id="LN286">286</td><td class="line">			<span class='keyword'>const</span> <span class='keyword'>struct</span> auxiliary_driver *adrv;</td></tr>
+<tr class="codeline" data-linenumber="287"><td class="num" id="LN287">287</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="288"><td class="num" id="LN288">288</td><td class="line">			adrv = to_auxiliary_drv(adev-&gt;dev.driver);</td></tr>
+<tr class="codeline" data-linenumber="289"><td class="num" id="LN289">289</td><td class="line">			edev-&gt;en_state = bp-&gt;state;</td></tr>
+<tr class="codeline" data-linenumber="290"><td class="num" id="LN290">290</td><td class="line">			adrv-&gt;resume(adev);</td></tr>
+<tr class="codeline" data-linenumber="291"><td class="num" id="LN291">291</td><td class="line">		}</td></tr>
+<tr class="codeline" data-linenumber="292"><td class="num" id="LN292">292</td><td class="line">	}</td></tr>
+<tr class="codeline" data-linenumber="293"><td class="num" id="LN293">293</td><td class="line">	mutex_unlock(&amp;edev-&gt;en_dev_lock);</td></tr>
+<tr class="codeline" data-linenumber="294"><td class="num" id="LN294">294</td><td class="line">}</td></tr>
+<tr class="codeline" data-linenumber="295"><td class="num" id="LN295">295</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="296"><td class="num" id="LN296">296</td><td class="line"><span class='keyword'>void</span> bnxt_ulp_irq_stop(<span class='keyword'>struct</span> bnxt *bp)</td></tr>
+<tr class="codeline" data-linenumber="297"><td class="num" id="LN297">297</td><td class="line">{</td></tr>
+<tr class="codeline" data-linenumber="298"><td class="num" id="LN298">298</td><td class="line">	<span class='keyword'>struct</span> bnxt_en_dev *edev = bp-&gt;edev;</td></tr>
+<tr class="codeline" data-linenumber="299"><td class="num" id="LN299">299</td><td class="line">	<span class='keyword'>struct</span> bnxt_ulp_ops *ops;</td></tr>
+<tr class="codeline" data-linenumber="300"><td class="num" id="LN300">300</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="301"><td class="num" id="LN301">301</td><td class="line">	<span class='keyword'>if</span> (!edev || !(edev-&gt;flags &amp; <span class='macro'>BNXT_EN_FLAG_MSIX_REQUESTED<span class='macro_popup'>0x4</span></span>))</td></tr>
+<tr class="codeline" data-linenumber="302"><td class="num" id="LN302">302</td><td class="line">		<span class='keyword'>return</span>;</td></tr>
+<tr class="codeline" data-linenumber="303"><td class="num" id="LN303">303</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="304"><td class="num" id="LN304">304</td><td class="line">	<span class='keyword'>if</span> (bnxt_ulp_registered(bp-&gt;edev)) {</td></tr>
+<tr class="codeline" data-linenumber="305"><td class="num" id="LN305">305</td><td class="line">		<span class='keyword'>struct</span> bnxt_ulp *ulp = edev-&gt;ulp_tbl;</td></tr>
+<tr class="codeline" data-linenumber="306"><td class="num" id="LN306">306</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="307"><td class="num" id="LN307">307</td><td class="line">		<span class='keyword'>if</span> (!ulp-&gt;msix_requested)</td></tr>
+<tr class="codeline" data-linenumber="308"><td class="num" id="LN308">308</td><td class="line">			<span class='keyword'>return</span>;</td></tr>
+<tr class="codeline" data-linenumber="309"><td class="num" id="LN309">309</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="310"><td class="num" id="LN310">310</td><td class="line">		ops = <span class='macro'>rtnl_dereference(ulp-&gt;ulp_ops)<span class='macro_popup'>({ do { static bool __attribute__((__section__(".data..unlikely"<br>))) __warned; if (debug_lockdep_rcu_enabled() &amp;&amp; (!((<br>lockdep_rtnl_is_held()))) &amp;&amp; debug_lockdep_rcu_enabled<br>() &amp;&amp; !__warned) { __warned = true; lockdep_rcu_suspicious<br>("drivers/net/ethernet/broadcom/bnxt/bnxt_ulp.c", 310, "suspicious rcu_dereference_protected() usage"<br>); } } while (0); ; ((typeof(*(ulp-&gt;ulp_ops)) *)((ulp-&gt;<br>ulp_ops))); })</span></span>;</td></tr>
+<tr class="codeline" data-linenumber="311"><td class="num" id="LN311">311</td><td class="line">		<span class='keyword'>if</span> (!ops || !ops-&gt;ulp_irq_stop)</td></tr>
+<tr class="codeline" data-linenumber="312"><td class="num" id="LN312">312</td><td class="line">			<span class='keyword'>return</span>;</td></tr>
+<tr class="codeline" data-linenumber="313"><td class="num" id="LN313">313</td><td class="line">		ops-&gt;ulp_irq_stop(ulp-&gt;handle);</td></tr>
+<tr class="codeline" data-linenumber="314"><td class="num" id="LN314">314</td><td class="line">	}</td></tr>
+<tr class="codeline" data-linenumber="315"><td class="num" id="LN315">315</td><td class="line">}</td></tr>
+<tr class="codeline" data-linenumber="316"><td class="num" id="LN316">316</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="317"><td class="num" id="LN317">317</td><td class="line"><span class='keyword'>void</span> bnxt_ulp_irq_restart(<span class='keyword'>struct</span> bnxt *bp, <span class='keyword'>int</span> err)</td></tr>
+<tr class="codeline" data-linenumber="318"><td class="num" id="LN318">318</td><td class="line">{</td></tr>
+<tr class="codeline" data-linenumber="319"><td class="num" id="LN319">319</td><td class="line">	<span class='keyword'>struct</span> bnxt_en_dev *edev = bp-&gt;edev;</td></tr>
+<tr class="codeline" data-linenumber="320"><td class="num" id="LN320">320</td><td class="line">	<span class='keyword'>struct</span> bnxt_ulp_ops *ops;</td></tr>
+<tr class="codeline" data-linenumber="321"><td class="num" id="LN321">321</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="322"><td class="num" id="LN322">322</td><td class="line">	<span class='keyword'>if</span> (!edev || !(edev-&gt;flags &amp; <span class='macro'>BNXT_EN_FLAG_MSIX_REQUESTED<span class='macro_popup'>0x4</span></span>))</td></tr>
+<tr class="codeline" data-linenumber="323"><td class="num" id="LN323">323</td><td class="line">		<span class='keyword'>return</span>;</td></tr>
+<tr class="codeline" data-linenumber="324"><td class="num" id="LN324">324</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="325"><td class="num" id="LN325">325</td><td class="line">	<span class='keyword'>if</span> (bnxt_ulp_registered(bp-&gt;edev)) {</td></tr>
+<tr class="codeline" data-linenumber="326"><td class="num" id="LN326">326</td><td class="line">		<span class='keyword'>struct</span> bnxt_ulp *ulp = edev-&gt;ulp_tbl;</td></tr>
+<tr class="codeline" data-linenumber="327"><td class="num" id="LN327">327</td><td class="line">		<span class='keyword'>struct</span> bnxt_msix_entry *ent = <span class='macro'>NULL<span class='macro_popup'>((void *)0)</span></span>;</td></tr>
+<tr class="codeline" data-linenumber="328"><td class="num" id="LN328">328</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="329"><td class="num" id="LN329">329</td><td class="line">		<span class='keyword'>if</span> (!ulp-&gt;msix_requested)</td></tr>
+<tr class="codeline" data-linenumber="330"><td class="num" id="LN330">330</td><td class="line">			<span class='keyword'>return</span>;</td></tr>
+<tr class="codeline" data-linenumber="331"><td class="num" id="LN331">331</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="332"><td class="num" id="LN332">332</td><td class="line">		ops = <span class='macro'>rtnl_dereference(ulp-&gt;ulp_ops)<span class='macro_popup'>({ do { static bool __attribute__((__section__(".data..unlikely"<br>))) __warned; if (debug_lockdep_rcu_enabled() &amp;&amp; (!((<br>lockdep_rtnl_is_held()))) &amp;&amp; debug_lockdep_rcu_enabled<br>() &amp;&amp; !__warned) { __warned = true; lockdep_rcu_suspicious<br>("drivers/net/ethernet/broadcom/bnxt/bnxt_ulp.c", 332, "suspicious rcu_dereference_protected() usage"<br>); } } while (0); ; ((typeof(*(ulp-&gt;ulp_ops)) *)((ulp-&gt;<br>ulp_ops))); })</span></span>;</td></tr>
+<tr class="codeline" data-linenumber="333"><td class="num" id="LN333">333</td><td class="line">		<span class='keyword'>if</span> (!ops || !ops-&gt;ulp_irq_restart)</td></tr>
+<tr class="codeline" data-linenumber="334"><td class="num" id="LN334">334</td><td class="line">			<span class='keyword'>return</span>;</td></tr>
+<tr class="codeline" data-linenumber="335"><td class="num" id="LN335">335</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="336"><td class="num" id="LN336">336</td><td class="line">		<span class='keyword'>if</span> (!err) {</td></tr>
+<tr class="codeline" data-linenumber="337"><td class="num" id="LN337">337</td><td class="line">			ent = <span class='macro'>kcalloc(ulp-&gt;msix_requested, <span class='keyword'>sizeof</span>(*ent),<span class='macro_popup'>({ ; ({ struct alloc_tag * __attribute__((__unused__)) _old =<br> ((void *)0); typeof(kmalloc_array_noprof(ulp-&gt;msix_requested<br>, sizeof(*ent), (((( gfp_t)(((((1UL))) &lt;&lt; (___GFP_DIRECT_RECLAIM_BIT<br>))|((((1UL))) &lt;&lt; (___GFP_KSWAPD_RECLAIM_BIT)))) | (( gfp_t<br>)((((1UL))) &lt;&lt; (___GFP_IO_BIT))) | (( gfp_t)((((1UL))) &lt;&lt;<br> (___GFP_FS_BIT))))) | (( gfp_t)((((1UL))) &lt;&lt; (___GFP_ZERO_BIT<br>))))) _res = kmalloc_array_noprof(ulp-&gt;msix_requested, sizeof<br>(*ent), (((( gfp_t)(((((1UL))) &lt;&lt; (___GFP_DIRECT_RECLAIM_BIT<br>))|((((1UL))) &lt;&lt; (___GFP_KSWAPD_RECLAIM_BIT)))) | (( gfp_t<br>)((((1UL))) &lt;&lt; (___GFP_IO_BIT))) | (( gfp_t)((((1UL))) &lt;&lt;<br> (___GFP_FS_BIT))))) | (( gfp_t)((((1UL))) &lt;&lt; (___GFP_ZERO_BIT<br>)))); do {} while (0); _res; }); })</span></span></td></tr>
+<tr class="codeline" data-linenumber="338"><td class="num" id="LN338">338</td><td class="line">				      <span class='macro'>GFP_KERNEL)<span class='macro_popup'>({ ; ({ struct alloc_tag * __attribute__((__unused__)) _old =<br> ((void *)0); typeof(kmalloc_array_noprof(ulp-&gt;msix_requested<br>, sizeof(*ent), (((( gfp_t)(((((1UL))) &lt;&lt; (___GFP_DIRECT_RECLAIM_BIT<br>))|((((1UL))) &lt;&lt; (___GFP_KSWAPD_RECLAIM_BIT)))) | (( gfp_t<br>)((((1UL))) &lt;&lt; (___GFP_IO_BIT))) | (( gfp_t)((((1UL))) &lt;&lt;<br> (___GFP_FS_BIT))))) | (( gfp_t)((((1UL))) &lt;&lt; (___GFP_ZERO_BIT<br>))))) _res = kmalloc_array_noprof(ulp-&gt;msix_requested, sizeof<br>(*ent), (((( gfp_t)(((((1UL))) &lt;&lt; (___GFP_DIRECT_RECLAIM_BIT<br>))|((((1UL))) &lt;&lt; (___GFP_KSWAPD_RECLAIM_BIT)))) | (( gfp_t<br>)((((1UL))) &lt;&lt; (___GFP_IO_BIT))) | (( gfp_t)((((1UL))) &lt;&lt;<br> (___GFP_FS_BIT))))) | (( gfp_t)((((1UL))) &lt;&lt; (___GFP_ZERO_BIT<br>)))); do {} while (0); _res; }); })</span></span>;</td></tr>
+<tr class="codeline" data-linenumber="339"><td class="num" id="LN339">339</td><td class="line">			<span class='keyword'>if</span> (!ent)</td></tr>
+<tr class="codeline" data-linenumber="340"><td class="num" id="LN340">340</td><td class="line">				<span class='keyword'>return</span>;</td></tr>
+<tr class="codeline" data-linenumber="341"><td class="num" id="LN341">341</td><td class="line">			bnxt_fill_msix_vecs(bp, ent);</td></tr>
+<tr class="codeline" data-linenumber="342"><td class="num" id="LN342">342</td><td class="line">		}</td></tr>
+<tr class="codeline" data-linenumber="343"><td class="num" id="LN343">343</td><td class="line">		ops-&gt;ulp_irq_restart(ulp-&gt;handle, ent);</td></tr>
+<tr class="codeline" data-linenumber="344"><td class="num" id="LN344">344</td><td class="line">		kfree(ent);</td></tr>
+<tr class="codeline" data-linenumber="345"><td class="num" id="LN345">345</td><td class="line">	}</td></tr>
+<tr class="codeline" data-linenumber="346"><td class="num" id="LN346">346</td><td class="line">}</td></tr>
+<tr class="codeline" data-linenumber="347"><td class="num" id="LN347">347</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="348"><td class="num" id="LN348">348</td><td class="line"><span class='keyword'>int</span> bnxt_register_async_events(<span class='keyword'>struct</span> bnxt_en_dev *edev,</td></tr>
+<tr class="codeline" data-linenumber="349"><td class="num" id="LN349">349</td><td class="line">			       <span class='keyword'>unsigned</span> <span class='keyword'>long</span> *events_bmap,</td></tr>
+<tr class="codeline" data-linenumber="350"><td class="num" id="LN350">350</td><td class="line">			       u16 max_id)</td></tr>
+<tr class="codeline" data-linenumber="351"><td class="num" id="LN351">351</td><td class="line">{</td></tr>
+<tr class="codeline" data-linenumber="352"><td class="num" id="LN352">352</td><td class="line">	<span class='keyword'>struct</span> net_device *dev = edev-&gt;net;</td></tr>
+<tr class="codeline" data-linenumber="353"><td class="num" id="LN353">353</td><td class="line">	<span class='keyword'>struct</span> bnxt *bp = netdev_priv(dev);</td></tr>
+<tr class="codeline" data-linenumber="354"><td class="num" id="LN354">354</td><td class="line">	<span class='keyword'>struct</span> bnxt_ulp *ulp;</td></tr>
+<tr class="codeline" data-linenumber="355"><td class="num" id="LN355">355</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="356"><td class="num" id="LN356">356</td><td class="line">	ulp = edev-&gt;ulp_tbl;</td></tr>
+<tr class="codeline" data-linenumber="357"><td class="num" id="LN357">357</td><td class="line">	ulp-&gt;async_events_bmap = events_bmap;</td></tr>
+<tr class="codeline" data-linenumber="358"><td class="num" id="LN358">358</td><td class="line">	<span class='comment'>/* Make sure bnxt_ulp_async_events() sees this order */</span></td></tr>
+<tr class="codeline" data-linenumber="359"><td class="num" id="LN359">359</td><td class="line">	<span class='macro'>smp_wmb()<span class='macro_popup'>do { do { __asm__ __volatile__("": : :"memory"); __atomic_signal_fence<br>(4); __asm__ __volatile__("": : :"memory"); } while (0); __asm__<br> __volatile__("": : :"memory"); } while (0)</span></span>;</td></tr>
+<tr class="codeline" data-linenumber="360"><td class="num" id="LN360">360</td><td class="line">	ulp-&gt;max_async_event_id = max_id;</td></tr>
+<tr class="codeline" data-linenumber="361"><td class="num" id="LN361">361</td><td class="line">	bnxt_hwrm_func_drv_rgtr(bp, events_bmap, max_id + 1, true);</td></tr>
+<tr class="codeline" data-linenumber="362"><td class="num" id="LN362">362</td><td class="line">	<span class='keyword'>return</span> 0;</td></tr>
+<tr class="codeline" data-linenumber="363"><td class="num" id="LN363">363</td><td class="line">}</td></tr>
+<tr class="codeline" data-linenumber="364"><td class="num" id="LN364">364</td><td class="line"><span class='macro'>EXPORT_SYMBOL(bnxt_register_async_events)<span class='macro_popup'>extern typeof(bnxt_register_async_events) bnxt_register_async_events<br>; static void * __attribute__((__used__)) __attribute__((__section__<br>(".discard.addressable"))) __UNIQUE_ID___addressable_bnxt_register_async_events2013<br> = (void *)(uintptr_t)&amp;bnxt_register_async_events; asm(".section \".export_symbol\",\"a\" ; __export_symbol_bnxt_register_async_events: ; .asciz \"\" ; .asciz \"\" ; .balign 8 ; .quad bnxt_register_async_events ; .previous"<br>)</span></span>;</td></tr>
+<tr class="codeline" data-linenumber="365"><td class="num" id="LN365">365</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="366"><td class="num" id="LN366">366</td><td class="line"><span class='keyword'>void</span> bnxt_rdma_aux_device_uninit(<span class='keyword'>struct</span> bnxt *bp)</td></tr>
+<tr class="codeline" data-linenumber="367"><td class="num" id="LN367">367</td><td class="line">{</td></tr>
+<tr class="codeline" data-linenumber="368"><td class="num" id="LN368">368</td><td class="line">	<span class='keyword'>struct</span> bnxt_aux_priv *aux_priv;</td></tr>
+<tr class="codeline" data-linenumber="369"><td class="num" id="LN369">369</td><td class="line">	<span class='keyword'>struct</span> auxiliary_device *adev;</td></tr>
+<tr class="codeline" data-linenumber="370"><td class="num" id="LN370">370</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="371"><td class="num" id="LN371">371</td><td class="line">	<span class='comment'>/* Skip if no auxiliary device init was done. */</span></td></tr>
+<tr class="codeline" data-linenumber="372"><td class="num" id="LN372">372</td><td class="line">	<span class='keyword'>if</span> (!bp-&gt;aux_priv)</td></tr>
+<tr class="codeline" data-linenumber="373"><td class="num" id="LN373">373</td><td class="line">		<span class='keyword'>return</span>;</td></tr>
+<tr class="codeline" data-linenumber="374"><td class="num" id="LN374">374</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="375"><td class="num" id="LN375">375</td><td class="line">	aux_priv = bp-&gt;aux_priv;</td></tr>
+<tr class="codeline" data-linenumber="376"><td class="num" id="LN376">376</td><td class="line">	adev = &amp;aux_priv-&gt;aux_dev;</td></tr>
+<tr class="codeline" data-linenumber="377"><td class="num" id="LN377">377</td><td class="line">	auxiliary_device_uninit(adev);</td></tr>
+<tr class="codeline" data-linenumber="378"><td class="num" id="LN378">378</td><td class="line">}</td></tr>
+<tr class="codeline" data-linenumber="379"><td class="num" id="LN379">379</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="380"><td class="num" id="LN380">380</td><td class="line"><span class='keyword'>static</span> <span class='keyword'>void</span> bnxt_aux_dev_release(<span class='keyword'>struct</span> device *dev)</td></tr>
+<tr class="codeline" data-linenumber="381"><td class="num" id="LN381">381</td><td class="line">{</td></tr>
+<tr class="codeline" data-linenumber="382"><td class="num" id="LN382">382</td><td class="line">	<span class='keyword'>struct</span> bnxt_aux_priv *aux_priv =</td></tr>
+<tr class="codeline" data-linenumber="383"><td class="num" id="LN383">383</td><td class="line">		<span class='macro'>container_of(dev, <span class='keyword'>struct</span> bnxt_aux_priv, aux_dev.dev)<span class='macro_popup'>({ void *__mptr = (void *)(dev); _Static_assert(__builtin_types_compatible_p<br>(typeof(*(dev)), typeof(((struct bnxt_aux_priv *)0)-&gt;aux_dev<br>.dev)) || __builtin_types_compatible_p(typeof(*(dev)), typeof<br>(void)), "pointer type mismatch in container_of()"); ((struct<br> bnxt_aux_priv *)(__mptr - __builtin_offsetof(struct bnxt_aux_priv<br>, aux_dev.dev))); })</span></span>;</td></tr>
+<tr class="codeline" data-linenumber="384"><td class="num" id="LN384">384</td><td class="line">	<span class='keyword'>struct</span> bnxt *bp = netdev_priv(aux_priv-&gt;edev-&gt;net);</td></tr>
+<tr class="codeline" data-linenumber="385"><td class="num" id="LN385">385</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="386"><td class="num" id="LN386">386</td><td class="line">	ida_free(&amp;bnxt_aux_dev_ids, aux_priv-&gt;id);</td></tr>
+<tr class="codeline" data-linenumber="387"><td class="num" id="LN387">387</td><td class="line">	kfree(aux_priv-&gt;edev-&gt;ulp_tbl);</td></tr>
+<tr class="codeline" data-linenumber="388"><td class="num" id="LN388">388</td><td class="line">	bp-&gt;edev = <span class='macro'>NULL<span class='macro_popup'>((void *)0)</span></span>;</td></tr>
+<tr class="codeline" data-linenumber="389"><td class="num" id="LN389">389</td><td class="line">	kfree(aux_priv-&gt;edev);</td></tr>
+<tr class="codeline" data-linenumber="390"><td class="num" id="LN390">390</td><td class="line">	kfree(aux_priv);</td></tr>
+<tr class="codeline" data-linenumber="391"><td class="num" id="LN391">391</td><td class="line">	bp-&gt;aux_priv = <span class='macro'>NULL<span class='macro_popup'>((void *)0)</span></span>;</td></tr>
+<tr class="codeline" data-linenumber="392"><td class="num" id="LN392">392</td><td class="line">}</td></tr>
+<tr class="codeline" data-linenumber="393"><td class="num" id="LN393">393</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="394"><td class="num" id="LN394">394</td><td class="line"><span class='keyword'>void</span> bnxt_rdma_aux_device_del(<span class='keyword'>struct</span> bnxt *bp)</td></tr>
+<tr class="codeline" data-linenumber="395"><td class="num" id="LN395">395</td><td class="line">{</td></tr>
+<tr class="codeline" data-linenumber="396"><td class="num" id="LN396">396</td><td class="line">	<span class='keyword'>if</span> (!bp-&gt;edev)</td></tr>
+<tr class="codeline" data-linenumber="397"><td class="num" id="LN397">397</td><td class="line">		<span class='keyword'>return</span>;</td></tr>
+<tr class="codeline" data-linenumber="398"><td class="num" id="LN398">398</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="399"><td class="num" id="LN399">399</td><td class="line">	auxiliary_device_delete(&amp;bp-&gt;aux_priv-&gt;aux_dev);</td></tr>
+<tr class="codeline" data-linenumber="400"><td class="num" id="LN400">400</td><td class="line">}</td></tr>
+<tr class="codeline" data-linenumber="401"><td class="num" id="LN401">401</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="402"><td class="num" id="LN402">402</td><td class="line"><span class='keyword'>static</span> <span class='keyword'>void</span> bnxt_set_edev_info(<span class='keyword'>struct</span> bnxt_en_dev *edev, <span class='keyword'>struct</span> bnxt *bp)</td></tr>
+<tr class="codeline" data-linenumber="403"><td class="num" id="LN403">403</td><td class="line">{</td></tr>
+<tr class="codeline" data-linenumber="404"><td class="num" id="LN404">404</td><td class="line">	edev-&gt;net = bp-&gt;dev;</td></tr>
+<tr class="codeline" data-linenumber="405"><td class="num" id="LN405">405</td><td class="line">	edev-&gt;pdev = bp-&gt;pdev;</td></tr>
+<tr class="codeline" data-linenumber="406"><td class="num" id="LN406">406</td><td class="line">	edev-&gt;l2_db_size = bp-&gt;db_size;</td></tr>
+<tr class="codeline" data-linenumber="407"><td class="num" id="LN407">407</td><td class="line">	edev-&gt;l2_db_size_nc = bp-&gt;db_size;</td></tr>
+<tr class="codeline" data-linenumber="408"><td class="num" id="LN408">408</td><td class="line">	edev-&gt;l2_db_offset = bp-&gt;db_offset;</td></tr>
+<tr class="codeline" data-linenumber="409"><td class="num" id="LN409">409</td><td class="line">	<span class='macro'>mutex_init(&amp;edev-&gt;en_dev_lock)<span class='macro_popup'>do { static struct lock_class_key __key; __mutex_init((&amp;edev<br>-&gt;en_dev_lock), "&amp;edev-&gt;en_dev_lock", &amp;__key); }<br> while (0)</span></span>;</td></tr>
+<tr class="codeline" data-linenumber="410"><td class="num" id="LN410">410</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="411"><td class="num" id="LN411">411</td><td class="line">	<span class='keyword'>if</span> (bp-&gt;flags &amp; <span class='macro'>BNXT_FLAG_ROCEV1_CAP<span class='macro_popup'>0x8000</span></span>)</td></tr>
+<tr class="codeline" data-linenumber="412"><td class="num" id="LN412">412</td><td class="line">		edev-&gt;flags |= <span class='macro'>BNXT_EN_FLAG_ROCEV1_CAP<span class='macro_popup'>0x1</span></span>;</td></tr>
+<tr class="codeline" data-linenumber="413"><td class="num" id="LN413">413</td><td class="line">	<span class='keyword'>if</span> (bp-&gt;flags &amp; <span class='macro'>BNXT_FLAG_ROCEV2_CAP<span class='macro_popup'>0x10000</span></span>)</td></tr>
+<tr class="codeline" data-linenumber="414"><td class="num" id="LN414">414</td><td class="line">		edev-&gt;flags |= <span class='macro'>BNXT_EN_FLAG_ROCEV2_CAP<span class='macro_popup'>0x2</span></span>;</td></tr>
+<tr class="codeline" data-linenumber="415"><td class="num" id="LN415">415</td><td class="line">	<span class='keyword'>if</span> (bp-&gt;flags &amp; <span class='macro'>BNXT_FLAG_VF<span class='macro_popup'>0x2</span></span>)</td></tr>
+<tr class="codeline" data-linenumber="416"><td class="num" id="LN416">416</td><td class="line">		edev-&gt;flags |= <span class='macro'>BNXT_EN_FLAG_VF<span class='macro_popup'>0x10</span></span>;</td></tr>
+<tr class="codeline" data-linenumber="417"><td class="num" id="LN417">417</td><td class="line">	<span class='keyword'>if</span> (<span class='macro'>BNXT_ROCE_VF_RESC_CAP(bp)<span class='macro_popup'>((bp)-&gt;fw_cap &amp; ((((1ULL))) &lt;&lt; (6)))</span></span>)</td></tr>
+<tr class="codeline" data-linenumber="418"><td class="num" id="LN418">418</td><td class="line">		edev-&gt;flags |= <span class='macro'>BNXT_EN_FLAG_ROCE_VF_RES_MGMT<span class='macro_popup'>0x20</span></span>;</td></tr>
+<tr class="codeline" data-linenumber="419"><td class="num" id="LN419">419</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="420"><td class="num" id="LN420">420</td><td class="line">	edev-&gt;chip_num = bp-&gt;chip_num;</td></tr>
+<tr class="codeline" data-linenumber="421"><td class="num" id="LN421">421</td><td class="line">	edev-&gt;hw_ring_stats_size = bp-&gt;hw_ring_stats_size;</td></tr>
+<tr class="codeline" data-linenumber="422"><td class="num" id="LN422">422</td><td class="line">	edev-&gt;pf_port_id = bp-&gt;pf.port_id;</td></tr>
+<tr class="codeline" data-linenumber="423"><td class="num" id="LN423">423</td><td class="line">	edev-&gt;en_state = bp-&gt;state;</td></tr>
+<tr class="codeline" data-linenumber="424"><td class="num" id="LN424">424</td><td class="line">	edev-&gt;bar0 = bp-&gt;bar0;</td></tr>
+<tr class="codeline" data-linenumber="425"><td class="num" id="LN425">425</td><td class="line">}</td></tr>
+<tr class="codeline" data-linenumber="426"><td class="num" id="LN426">426</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="427"><td class="num" id="LN427">427</td><td class="line"><span class='keyword'>void</span> bnxt_rdma_aux_device_add(<span class='keyword'>struct</span> bnxt *bp)</td></tr>
+<tr class="codeline" data-linenumber="428"><td class="num" id="LN428">428</td><td class="line">{</td></tr>
+<tr class="codeline" data-linenumber="429"><td class="num" id="LN429">429</td><td class="line">	<span class='keyword'>struct</span> auxiliary_device *aux_dev;</td></tr>
+<tr class="codeline" data-linenumber="430"><td class="num" id="LN430">430</td><td class="line">	<span class='keyword'>int</span> rc;</td></tr>
+<tr class="codeline" data-linenumber="431"><td class="num" id="LN431">431</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="432"><td class="num" id="LN432">432</td><td class="line">	<span class='keyword'>if</span> (!bp-&gt;edev)</td></tr>
+<tr class="codeline" data-linenumber="433"><td class="num" id="LN433">433</td><td class="line">		<span class='keyword'>return</span>;</td></tr>
+<tr class="codeline" data-linenumber="434"><td class="num" id="LN434">434</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="435"><td class="num" id="LN435">435</td><td class="line">	aux_dev = &amp;bp-&gt;aux_priv-&gt;aux_dev;</td></tr>
+<tr class="codeline" data-linenumber="436"><td class="num" id="LN436">436</td><td class="line">	rc = <span class='macro'>auxiliary_device_add(aux_dev)<span class='macro_popup'>__auxiliary_device_add(aux_dev, "bnxt_en")</span></span>;</td></tr>
+<tr class="codeline" data-linenumber="437"><td class="num" id="LN437">437</td><td class="line">	<span class='keyword'>if</span> (rc) {</td></tr>
+<tr class="codeline" data-linenumber="438"><td class="num" id="LN438">438</td><td class="line">		netdev_warn(bp-&gt;dev, <span class='string_literal'>"Failed to add auxiliary device for ROCE\n"</span>);</td></tr>
+<tr class="codeline" data-linenumber="439"><td class="num" id="LN439">439</td><td class="line">		auxiliary_device_uninit(aux_dev);</td></tr>
+<tr class="codeline" data-linenumber="440"><td class="num" id="LN440">440</td><td class="line">		bp-&gt;flags &amp;= ~<span class='macro'>BNXT_FLAG_ROCE_CAP<span class='macro_popup'>(0x8000 | 0x10000)</span></span>;</td></tr>
+<tr class="codeline" data-linenumber="441"><td class="num" id="LN441">441</td><td class="line">	}</td></tr>
+<tr class="codeline" data-linenumber="442"><td class="num" id="LN442">442</td><td class="line">}</td></tr>
+<tr class="codeline" data-linenumber="443"><td class="num" id="LN443">443</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="444"><td class="num" id="LN444">444</td><td class="line"><span class='keyword'>void</span> bnxt_rdma_aux_device_init(<span class='keyword'>struct</span> bnxt *bp)</td></tr>
+<tr class="codeline" data-linenumber="445"><td class="num" id="LN445">445</td><td class="line">{</td></tr>
+<tr class="codeline" data-linenumber="446"><td class="num" id="LN446">446</td><td class="line">	<span class='keyword'>struct</span> auxiliary_device *aux_dev;</td></tr>
+<tr class="codeline" data-linenumber="447"><td class="num" id="LN447">447</td><td class="line">	<span class='keyword'>struct</span> bnxt_aux_priv *aux_priv;</td></tr>
+<tr class="codeline" data-linenumber="448"><td class="num" id="LN448">448</td><td class="line">	<span class='keyword'>struct</span> bnxt_en_dev *edev;</td></tr>
+<tr class="codeline" data-linenumber="449"><td class="num" id="LN449">449</td><td class="line">	<span class='keyword'>struct</span> bnxt_ulp *ulp;</td></tr>
+<tr class="codeline" data-linenumber="450"><td class="num" id="LN450">450</td><td class="line">	<span class='keyword'>int</span> rc;</td></tr>
+<tr class="codeline" data-linenumber="451"><td class="num" id="LN451">451</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="452"><td class="num" id="LN452">452</td><td class="line">	<span class='keyword'>if</span> (!(bp-&gt;flags &amp; <span class='macro'>BNXT_FLAG_ROCE_CAP<span class='macro_popup'>(0x8000 | 0x10000)</span></span>))</td></tr>
+<tr class="codeline" data-linenumber="453"><td class="num" id="LN453">453</td><td class="line">		<span class='keyword'>return</span>;</td></tr>
+<tr class="codeline" data-linenumber="454"><td class="num" id="LN454">454</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="455"><td class="num" id="LN455">455</td><td class="line">	aux_priv = <span class='macro'>kzalloc(<span class='keyword'>sizeof</span>(*bp-&gt;aux_priv), GFP_KERNEL)<span class='macro_popup'>({ ; ({ struct alloc_tag * __attribute__((__unused__)) _old =<br> ((void *)0); typeof(kzalloc_noprof(sizeof(*bp-&gt;aux_priv),<br> ((( gfp_t)(((((1UL))) &lt;&lt; (___GFP_DIRECT_RECLAIM_BIT))|<br>((((1UL))) &lt;&lt; (___GFP_KSWAPD_RECLAIM_BIT)))) | (( gfp_t<br>)((((1UL))) &lt;&lt; (___GFP_IO_BIT))) | (( gfp_t)((((1UL))) &lt;&lt;<br> (___GFP_FS_BIT)))))) _res = kzalloc_noprof(sizeof(*bp-&gt;aux_priv<br>), ((( gfp_t)(((((1UL))) &lt;&lt; (___GFP_DIRECT_RECLAIM_BIT)<br>)|((((1UL))) &lt;&lt; (___GFP_KSWAPD_RECLAIM_BIT)))) | (( gfp_t<br>)((((1UL))) &lt;&lt; (___GFP_IO_BIT))) | (( gfp_t)((((1UL))) &lt;&lt;<br> (___GFP_FS_BIT))))); do {} while (0); _res; }); })</span></span>;</td></tr>
+<tr class="codeline" data-linenumber="456"><td class="num" id="LN456">456</td><td class="line">	<span class='keyword'>if</span> (!aux_priv)</td></tr>
+<tr class="codeline" data-linenumber="457"><td class="num" id="LN457">457</td><td class="line">		<span class='keyword'>goto</span> exit;</td></tr>
+<tr class="codeline" data-linenumber="458"><td class="num" id="LN458">458</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="459"><td class="num" id="LN459">459</td><td class="line">	aux_priv-&gt;id = ida_alloc(&amp;bnxt_aux_dev_ids, <span class='macro'>GFP_KERNEL<span class='macro_popup'>((( gfp_t)(((((1UL))) &lt;&lt; (___GFP_DIRECT_RECLAIM_BIT))|(<br>(((1UL))) &lt;&lt; (___GFP_KSWAPD_RECLAIM_BIT)))) | (( gfp_t)<br>((((1UL))) &lt;&lt; (___GFP_IO_BIT))) | (( gfp_t)((((1UL))) &lt;&lt;<br> (___GFP_FS_BIT))))</span></span>);</td></tr>
+<tr class="codeline" data-linenumber="460"><td class="num" id="LN460">460</td><td class="line">	<span class='keyword'>if</span> (aux_priv-&gt;id &lt; 0) {</td></tr>
+<tr class="codeline" data-linenumber="461"><td class="num" id="LN461">461</td><td class="line">		netdev_warn(bp-&gt;dev,</td></tr>
+<tr class="codeline" data-linenumber="462"><td class="num" id="LN462">462</td><td class="line">			    <span class='string_literal'>"ida alloc failed for ROCE auxiliary device\n"</span>);</td></tr>
+<tr class="codeline" data-linenumber="463"><td class="num" id="LN463">463</td><td class="line">		kfree(aux_priv);</td></tr>
+<tr class="codeline" data-linenumber="464"><td class="num" id="LN464">464</td><td class="line">		<span class='keyword'>goto</span> exit;</td></tr>
+<tr class="codeline" data-linenumber="465"><td class="num" id="LN465">465</td><td class="line">	}</td></tr>
+<tr class="codeline" data-linenumber="466"><td class="num" id="LN466">466</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="467"><td class="num" id="LN467">467</td><td class="line">	aux_dev = &amp;aux_priv-&gt;aux_dev;</td></tr>
+<tr class="codeline" data-linenumber="468"><td class="num" id="LN468">468</td><td class="line">	aux_dev-&gt;id = aux_priv-&gt;id;</td></tr>
+<tr class="codeline" data-linenumber="469"><td class="num" id="LN469">469</td><td class="line">	aux_dev-&gt;name = <span class='string_literal'>"rdma"</span>;</td></tr>
+<tr class="codeline" data-linenumber="470"><td class="num" id="LN470">470</td><td class="line">	aux_dev-&gt;dev.parent = &amp;bp-&gt;pdev-&gt;dev;</td></tr>
+<tr class="codeline" data-linenumber="471"><td class="num" id="LN471">471</td><td class="line">	aux_dev-&gt;dev.release = bnxt_aux_dev_release;</td></tr>
+<tr class="codeline" data-linenumber="472"><td class="num" id="LN472">472</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="473"><td class="num" id="LN473">473</td><td class="line">	rc = auxiliary_device_init(aux_dev);</td></tr>
+<tr class="codeline" data-linenumber="474"><td class="num" id="LN474">474</td><td class="line">	<span class='keyword'>if</span> (rc) {</td></tr>
+<tr class="codeline" data-linenumber="475"><td class="num" id="LN475">475</td><td class="line">		ida_free(&amp;bnxt_aux_dev_ids, aux_priv-&gt;id);</td></tr>
+<tr class="codeline" data-linenumber="476"><td class="num" id="LN476">476</td><td class="line">		kfree(aux_priv);</td></tr>
+<tr class="codeline" data-linenumber="477"><td class="num" id="LN477">477</td><td class="line">		<span class='keyword'>goto</span> exit;</td></tr>
+<tr class="codeline" data-linenumber="478"><td class="num" id="LN478">478</td><td class="line">	}</td></tr>
+<tr class="codeline" data-linenumber="479"><td class="num" id="LN479">479</td><td class="line">	bp-&gt;aux_priv = aux_priv;</td></tr>
+<tr class="codeline" data-linenumber="480"><td class="num" id="LN480">480</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="481"><td class="num" id="LN481">481</td><td class="line">	<span class='comment'>/* From this point, all cleanup will happen via the .release callback &amp;</span></td></tr>
+<tr class="codeline" data-linenumber="482"><td class="num" id="LN482">482</td><td class="line">	 <span class='comment'>* any error unwinding will need to include a call to</span></td></tr>
+<tr class="codeline" data-linenumber="483"><td class="num" id="LN483">483</td><td class="line">	 <span class='comment'>* auxiliary_device_uninit.</span></td></tr>
+<tr class="codeline" data-linenumber="484"><td class="num" id="LN484">484</td><td class="line">	 <span class='comment'>*/</span></td></tr>
+<tr class="codeline" data-linenumber="485"><td class="num" id="LN485">485</td><td class="line">	edev = <span class='macro'>kzalloc(<span class='keyword'>sizeof</span>(*edev), GFP_KERNEL)<span class='macro_popup'>({ ; ({ struct alloc_tag * __attribute__((__unused__)) _old =<br> ((void *)0); typeof(kzalloc_noprof(sizeof(*edev), ((( gfp_t)<br>(((((1UL))) &lt;&lt; (___GFP_DIRECT_RECLAIM_BIT))|((((1UL))) &lt;&lt;<br> (___GFP_KSWAPD_RECLAIM_BIT)))) | (( gfp_t)((((1UL))) &lt;&lt;<br> (___GFP_IO_BIT))) | (( gfp_t)((((1UL))) &lt;&lt; (___GFP_FS_BIT<br>)))))) _res = kzalloc_noprof(sizeof(*edev), ((( gfp_t)(((((1UL<br>))) &lt;&lt; (___GFP_DIRECT_RECLAIM_BIT))|((((1UL))) &lt;&lt;<br> (___GFP_KSWAPD_RECLAIM_BIT)))) | (( gfp_t)((((1UL))) &lt;&lt;<br> (___GFP_IO_BIT))) | (( gfp_t)((((1UL))) &lt;&lt; (___GFP_FS_BIT<br>))))); do {} while (0); _res; }); })</span></span>;</td></tr>
+<tr class="codeline" data-linenumber="486"><td class="num" id="LN486">486</td><td class="line">	<span class='keyword'>if</span> (!edev)</td></tr>
+<tr class="codeline" data-linenumber="487"><td class="num" id="LN487">487</td><td class="line">		<span class='keyword'>goto</span> aux_dev_uninit;</td></tr>
+<tr class="codeline" data-linenumber="488"><td class="num" id="LN488">488</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="489"><td class="num" id="LN489">489</td><td class="line">	aux_priv-&gt;edev = edev;</td></tr>
+<tr class="codeline" data-linenumber="490"><td class="num" id="LN490">490</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="491"><td class="num" id="LN491">491</td><td class="line">	ulp = <span class='macro'>kzalloc(<span class='keyword'>sizeof</span>(*ulp), GFP_KERNEL)<span class='macro_popup'>({ ; ({ struct alloc_tag * __attribute__((__unused__)) _old =<br> ((void *)0); typeof(kzalloc_noprof(sizeof(*ulp), ((( gfp_t)(<br>((((1UL))) &lt;&lt; (___GFP_DIRECT_RECLAIM_BIT))|((((1UL))) &lt;&lt;<br> (___GFP_KSWAPD_RECLAIM_BIT)))) | (( gfp_t)((((1UL))) &lt;&lt;<br> (___GFP_IO_BIT))) | (( gfp_t)((((1UL))) &lt;&lt; (___GFP_FS_BIT<br>)))))) _res = kzalloc_noprof(sizeof(*ulp), ((( gfp_t)(((((1UL<br>))) &lt;&lt; (___GFP_DIRECT_RECLAIM_BIT))|((((1UL))) &lt;&lt;<br> (___GFP_KSWAPD_RECLAIM_BIT)))) | (( gfp_t)((((1UL))) &lt;&lt;<br> (___GFP_IO_BIT))) | (( gfp_t)((((1UL))) &lt;&lt; (___GFP_FS_BIT<br>))))); do {} while (0); _res; }); })</span></span>;</td></tr>
+<tr class="codeline" data-linenumber="492"><td class="num" id="LN492">492</td><td class="line">	<span class='keyword'>if</span> (!ulp)</td></tr>
+<tr class="codeline" data-linenumber="493"><td class="num" id="LN493">493</td><td class="line">		<span class='keyword'>goto</span> aux_dev_uninit;</td></tr>
+<tr class="codeline" data-linenumber="494"><td class="num" id="LN494">494</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="495"><td class="num" id="LN495">495</td><td class="line">	edev-&gt;ulp_tbl = ulp;</td></tr>
+<tr class="codeline" data-linenumber="496"><td class="num" id="LN496">496</td><td class="line">	bp-&gt;edev = edev;</td></tr>
+<tr class="codeline" data-linenumber="497"><td class="num" id="LN497">497</td><td class="line">	bnxt_set_edev_info(edev, bp);</td></tr>
+<tr class="codeline" data-linenumber="498"><td class="num" id="LN498">498</td><td class="line">	bp-&gt;ulp_num_msix_want = bnxt_set_dflt_ulp_msix(bp);</td></tr>
+<tr class="codeline" data-linenumber="499"><td class="num" id="LN499">499</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="500"><td class="num" id="LN500">500</td><td class="line">	<span class='keyword'>return</span>;</td></tr>
+<tr class="codeline" data-linenumber="501"><td class="num" id="LN501">501</td><td class="line"> </td></tr>
+<tr class="codeline" data-linenumber="502"><td class="num" id="LN502">502</td><td class="line">aux_dev_uninit:</td></tr>
+<tr class="codeline" data-linenumber="503"><td class="num" id="LN503">503</td><td class="line">	auxiliary_device_uninit(aux_dev);</td></tr>
+<tr class="codeline" data-linenumber="504"><td class="num" id="LN504">504</td><td class="line">exit:</td></tr>
+<tr class="codeline" data-linenumber="505"><td class="num" id="LN505">505</td><td class="line">	bp-&gt;flags &amp;= ~<span class='macro'>BNXT_FLAG_ROCE_CAP<span class='macro_popup'>(0x8000 | 0x10000)</span></span>;</td></tr>
+<tr class="codeline" data-linenumber="506"><td class="num" id="LN506">506</td><td class="line">}</td></tr>
+</table></body></html>

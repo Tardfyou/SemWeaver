@@ -1,0 +1,4 @@
+- Decision: NotABug
+- Reason: The annotated source in the report sets `event->datalen = datalen` at line 500, before the flexible-array access at line 505. That means `data`'s `__counted_by` counter is initialized before `memcpy()`, so the reported access does not exhibit the target bug pattern.
+
+  The supplied pre-patch function does exhibit the pattern: `kzalloc()` leaves `datalen` zero, and `memcpy(event->data, data, datalen)` occurs before the counter is updated. For any accepted `datalen > 0`, that can be flagged as a zero-sized flexible array and is the real bug addressed by the patch. The report’s annotated source instead reflects the fixed ordering, so it is a false positive for that source.

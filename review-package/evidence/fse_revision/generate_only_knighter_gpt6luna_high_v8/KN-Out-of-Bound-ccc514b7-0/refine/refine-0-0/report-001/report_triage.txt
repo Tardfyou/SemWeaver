@@ -1,0 +1,2 @@
+- Decision: NotABug
+- Reason: The report points to the post-patch code, where the `i >= VG_NUM_DCFCLK_DPM_LEVELS` check breaks the loop before either array is indexed. `DcfClocks` has 7 elements, so the only possible indices at the access are 0–6; when `i` reaches 7, execution exits first. The pre-patch function did match the target bug pattern: its loop could reach `i == 7` and access `DcfClocks[7]`, which is out of bounds. That real bug is addressed by the patch, so the warning on the guarded code is a false positive.

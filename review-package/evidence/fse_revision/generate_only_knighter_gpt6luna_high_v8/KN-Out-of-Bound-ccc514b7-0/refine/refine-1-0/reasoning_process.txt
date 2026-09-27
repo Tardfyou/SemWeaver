@@ -1,0 +1,17 @@
+**Refinement Plan:**
+The warning comes from comparing the loop’s upper bound with the `DcfClocks` array size without proving that an earlier `break` prevents the loop from reaching the out-of-bounds index. The reported source has such a guard: `if (i >= VG_NUM_DCFCLK_DPM_LEVELS) break;`. The checker has a guard-recognition heuristic, but it only handles a narrow AST shape.
+
+The refinement makes guard recognition tolerate parentheses and implicit casts, checks both operand orders for the `>=` comparison, and confirms that the guard is a preceding top-level loop-body statement. It still reports the buggy version, which has no such guard. As with any syntactic AST checker, this does not attempt to prove arbitrary control flow; it deliberately recognizes only a direct `break` guard.
+
+**Refined Code:**
+```cpp
+```
+
+**Clang-18 note:** The `isBreakGuard` implementation above must account for the actual comparison opcode when supporting the reversed spelling. For `size <= i`, the AST opcode is `BO_LE`, so the initial opcode check should allow both `BO_GE` and `BO_LE`. The corrected condition is:
+
+```cpp
+if (!Cond || (Cond->getOpcode() != BO_GE && Cond->getOpcode() != BO_LE))
+  return false;
+```
+
+With that condition, the reported `i >= VG_NUM_DCFCLK_DPM_LEVELS` guard is recognized, while the unguarded target buggy loop still produces a diagnostic.

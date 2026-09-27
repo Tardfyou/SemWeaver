@@ -1,0 +1,1863 @@
+{
+  "analyzer_id": "csa",
+  "detector_artifact": "checker_plugin",
+  "primary_pattern": "double_free",
+  "objective": "Synthesize a path-sensitive double_free detector that encodes the same local state, guards, and lifecycle mechanism evidenced by the patch, while still generalizing to semantically equivalent sites.",
+  "mechanism_contract": {
+    "mechanism_family": "resource_lifetime_violation",
+    "semantic_dimensions": [
+      "resource identity or alias",
+      "release event count",
+      "reinitialization or nulling barrier"
+    ],
+    "trigger_invariants": [
+      "the same symbolic resource is released more than once on a feasible path",
+      "no reallocation, rebinding, or nulling separates the release events",
+      "Patch-backed trigger clue: added or highlighted APIs: hws_send_ring_destroy_sq, mlx5_core_destroy_sq"
+    ],
+    "silence_invariants": [
+      "the resource is nulled, transferred, or rebound after the first release",
+      "a guard prevents the second release on the active path"
+    ],
+    "transfer_axes": [
+      "equivalent repeated-release sequences for the same resource role",
+      "equivalent ownership handoff patterns across sibling helpers",
+      "equivalent guard or barrier predicates on sibling paths",
+      "equivalent local state transitions around the same sink or dereference",
+      "equivalent ownership or release/reinit lifecycle on the same symbolic resource"
+    ],
+    "forbidden_shortcuts": [
+      "bind the detector to fixed file paths, line numbers, or exact patch strings",
+      "broaden into unrelated bug families just to improve hit count",
+      "count free/delete calls without tracking resource identity",
+      "treat unrelated release sites as the same resource lifecycle",
+      "placeholder helper logic or empty ProgramState modeling"
+    ],
+    "evidence_backed_axes": [
+      "path guards and barrier conditions",
+      "state transitions",
+      "resource lifecycle",
+      "semantic trigger slice"
+    ]
+  },
+  "detector_name_hint": "",
+  "focus_files": [],
+  "focus_functions": [],
+  "hypotheses": [
+    "The patch likely changes a resource lifecycle or stale-state transition."
+  ],
+  "required_evidence_types": [
+    "patch_fact",
+    "allocation_lifecycle",
+    "state_transition"
+  ],
+  "missing_evidence_types": [],
+  "evidence_degraded": false,
+  "patch_mechanism_signals": [
+    "added or highlighted APIs: hws_send_ring_destroy_sq, mlx5_core_destroy_sq"
+  ],
+  "silencing_conditions": [],
+  "retry_guidance": [],
+  "selected_evidence_ids": [
+    "csa_guard_0",
+    "csa_guard_1",
+    "csa_state_0",
+    "csa_state_1",
+    "csa_validation_allocation_lifecycle_1",
+    "csa_validation_semantic_slice_0"
+  ],
+  "selected_evidence": [
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c",
+        "function": "hws_send_ring_create_sq"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "if !in (ImplicitCastExpr, LValueToRValue, void *)",
+        "summary": "Analyzer CFG for hws_send_ring_create_sq in drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c: bindings: err = mlx5_core_create_sq (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct mlx5_core_dev *, u32 *, int, u32 *))(mdev (ImplicitCastExpr, LValueToRValue, struct mlx5_core_dev *), in (ImplicitCastExpr, LValueToRValue, void *) (ImplicitCastExpr, BitCast, u32 *), inlen (ImplicitCastExpr, LValueToRValue, int), &sq (ImplicitCastExpr, LValueToRValue, struct mlx5hws_send_ring_sq *)->sqn); sqc = ((void *)((u8 *)(in) (ImplicitCastExpr, LValueToRValue, void *) (CStyleCastExpr, BitCast, u8 *) + ((__builtin_offsetof(struct mlx5_ifc_create_sq_in_bits, ctx)) / 8 (ImplicitCastExpr, IntegralCast, unsigned long))) (CStyleCastExpr, BitCast, void *)) | branches: if !in (ImplicitCastExpr, LValueToRValue, void *); do ... while 0 | calls: hws_send_ring_create_sq -> __kvmalloc_node_noprof; hws_send_ring_create_sq -> __builtin_dynamic_object_size",
+        "summary_line": 653,
+        "state_before": [
+          "buffer(sq->wq_ctrl)",
+          "buffer(mdev->mlx5e_res)",
+          "sinks(kvzalloc, memcpy)"
+        ],
+        "state_after": [
+          "cfg_binding(err = mlx5_core_create_sq (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct mlx5_core_dev *, u32 *, int, u32 *))(mdev (ImplicitCastExpr, LValueToRValue, struct mlx5_core_dev *), in (ImplicitCastExpr, LValueToRValue, void *) (ImplicitCastExpr, BitCast, u32 *), inlen (ImplicitCastExpr, LValueToRValue, int), &sq (ImplicitCastExpr, LValueToRValue, struct mlx5hws_send_ring_sq *)->sqn))",
+          "cfg_binding(sqc = ((void *)((u8 *)(in) (ImplicitCastExpr, LValueToRValue, void *) (CStyleCastExpr, BitCast, u8 *) + ((__builtin_offsetof(struct mlx5_ifc_create_sq_in_bits, ctx)) / 8 (ImplicitCastExpr, IntegralCast, unsigned long))) (CStyleCastExpr, BitCast, void *)))",
+          "cfg_branch(if !in (ImplicitCastExpr, LValueToRValue, void *))",
+          "cfg_branch(do ... while 0)"
+        ],
+        "tracked_symbols": [
+          "sq->wq_ctrl",
+          "mdev->mlx5e_res",
+          "cq->mcq",
+          "sq->sqn",
+          "sq->mdev",
+          "sq->wr_priv"
+        ],
+        "buffer_fields": [
+          "sq->wq_ctrl",
+          "mdev->mlx5e_res",
+          "cq->mcq",
+          "sq->sqn",
+          "sq->mdev",
+          "sq->wr_priv"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "hws_send_ring_create_sq"
+        ],
+        "call_targets": [
+          "kvzalloc",
+          "memcpy",
+          "mlx5_is_real_time_sq",
+          "mlx5_fill_page_frag_array",
+          "mlx5_core_create_sq",
+          "kvfree",
+          "mlx5_core_modify_sq",
+          "mlx5_core_destroy_sq"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,drivers/net/ethernet/mellanox/mlx5/core/steering/hws/.mlx5hws_send.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./incl...",
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "do ... while [B2.1]",
+          "do ... while [B3.1]",
+          "do ... while [B5.1]",
+          "if [B7.6]",
+          "do ... while [B10.1]",
+          "if [B12.6]"
+        ],
+        "call_edges": [
+          "hws_send_ring_create_sq -> __kvmalloc_node_noprof",
+          "hws_send_ring_create_sq -> __builtin_dynamic_object_size",
+          "hws_send_ring_create_sq -> fortify_memcpy_chk",
+          "hws_send_ring_create_sq -> __builtin_expect",
+          "hws_send_ring_create_sq -> __warn_printk",
+          "hws_send_ring_create_sq -> __builtin_memcpy"
+        ],
+        "state_statements": [
+          "[B1.4]->wq_ctrl",
+          "[B1.29]->sqn",
+          "[B1.33] = [B1.32]",
+          "kvfree",
+          "return [B1.42];",
+          "[B4.4]->wq_ctrl"
+        ],
+        "source_file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c",
+          "hunk_index": 0,
+          "source_line": 653
+        },
+        "summary": "Analyzer CFG for hws_send_ring_create_sq in drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c: bindings: err = mlx5_core_create_sq (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct mlx5_core_dev *, u32 *, int, u32 *))(mdev (ImplicitCastExpr, LValueToRValue, struct mlx5_core_dev *), in (ImplicitCastExpr, LValueToRValue, void *) (ImplicitCastExpr, BitCast, u32 *), inlen (ImplicitCastExpr, LValueToRValue, int), &sq (ImplicitCastExpr, LValueToRValue, struct mlx5hws_send_ring_sq *)->sqn); sqc = ((void *)((u8 *)(in) (ImplicitCastExpr, LValueToRValue, void *) (CStyleCastExpr, BitCast, u8 *) + ((__builtin_offsetof(struct mlx5_ifc_create_sq_in_bits, ctx)) / 8 (ImplicitCastExpr, IntegralCast, unsigned long))) (CStyleCastExpr, BitCast, void *)) | branches: if !in (ImplicitCastExpr, LValueToRValue, void *); do ... while 0 | calls: hws_send_ring_create_sq -> __kvmalloc_node_noprof; hws_send_ring_create_sq -> __builtin_dynamic_object_size",
+        "statements": [
+          "621:",
+          "622: \tinlen = MLX5_ST_SZ_BYTES(create_sq_in) +",
+          "623: \t\tsizeof(u64) * sq->wq_ctrl.buf.npages;",
+          "624: \tin = kvzalloc(inlen, GFP_KERNEL);",
+          "625: \tif (!in)",
+          "626: \t\treturn -ENOMEM;"
+        ],
+        "guards": [
+          "if !in (ImplicitCastExpr, LValueToRValue, void *)",
+          "do ... while 0",
+          "if !(!(sizeof (((struct mlx5_ifc_wq_bits *)0)->dbr_addr) != 64 (ImplicitCastExpr, IntegralCast, unsigned long)))",
+          "if !(!((__builtin_offsetof(struct mlx5_ifc_wq_bits, dbr_addr)) % 64 (ImplicitCastExpr, IntegralCast, unsigned long)))"
+        ],
+        "call_boundary": [
+          "kvzalloc",
+          "memcpy",
+          "mlx5_is_real_time_sq",
+          "mlx5_fill_page_frag_array",
+          "mlx5_core_create_sq",
+          "kvfree"
+        ],
+        "call_edges": [
+          "hws_send_ring_create_sq -> __kvmalloc_node_noprof",
+          "hws_send_ring_create_sq -> __builtin_dynamic_object_size",
+          "hws_send_ring_create_sq -> fortify_memcpy_chk",
+          "hws_send_ring_create_sq -> __builtin_expect",
+          "hws_send_ring_create_sq -> __warn_printk",
+          "hws_send_ring_create_sq -> __builtin_memcpy",
+          "hws_send_ring_create_sq -> __compiletime_assert_1876",
+          "hws_send_ring_create_sq -> __builtin_bswap32"
+        ],
+        "state_transitions": [
+          "cfg_binding(err = mlx5_core_create_sq (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct mlx5_core_dev *, u32 *, int, u32 *))(mdev (ImplicitCastExpr, LValueToRValue, struct mlx5_core_dev *), in (ImplicitCastExpr, LValueToRValue, void *) (ImplicitCastExpr, BitCast, u32 *), inlen (ImplicitCastExpr, LValueToRValue, int), &sq (ImplicitCastExpr, LValueToRValue, struct mlx5hws_send_ring_sq *)->sqn))",
+          "cfg_binding(sqc = ((void *)((u8 *)(in) (ImplicitCastExpr, LValueToRValue, void *) (CStyleCastExpr, BitCast, u8 *) + ((__builtin_offsetof(struct mlx5_ifc_create_sq_in_bits, ctx)) / 8 (ImplicitCastExpr, IntegralCast, unsigned long))) (CStyleCastExpr, BitCast, void *)))",
+          "cfg_branch(if !in (ImplicitCastExpr, LValueToRValue, void *))",
+          "cfg_branch(do ... while 0)",
+          "[B1.4]->wq_ctrl",
+          "[B1.29]->sqn"
+        ],
+        "api_terms": [
+          "__kvmalloc_node_noprof",
+          "__builtin_dynamic_object_size",
+          "fortify_memcpy_chk",
+          "__builtin_expect",
+          "__warn_printk",
+          "__builtin_memcpy"
+        ],
+        "related_symbols": [
+          "sq->wq_ctrl",
+          "mdev->mlx5e_res",
+          "cq->mcq",
+          "sq->sqn",
+          "sq->mdev",
+          "sq->wr_priv"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_guard_1",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c",
+        "function": "hws_send_ring_create_sq_rdy"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "if err (ImplicitCastExpr, LValueToRValue, int)",
+        "summary": "Analyzer CFG for hws_send_ring_create_sq_rdy in drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c: bindings: err = hws_send_ring_set_sq_rdy (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct mlx5_core_dev *, u32))(mdev (ImplicitCastExpr, LValueToRValue, struct mlx5_core_dev *), sq (ImplicitCastExpr, LValueToRValue, struct mlx5hws_send_ring_sq *)->sqn (ImplicitCastExpr, LValueToRValue, u32)); err = hws_send_ring_create_sq (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct mlx5_core_dev *, u32, void *, struct mlx5hws_send_engine *, struct mlx5hws_send_ring_sq *, struct mlx5hws_send_ring_cq *))(mdev (ImplicitCastExpr, LValueToRValue, struct mlx5_core_dev *), pdn (ImplicitCastExpr, LValueToRValue, u32), sqc_data (ImplicitCastExpr, LValueToRValue, void *), queue (ImplicitCastExpr, LValueToRValue, struct mlx5hws_send_engine *), sq (ImplicitCastExpr, LValueToRValue, struct mlx5hws_send_ring_sq *), cq (ImplicitCastExpr, LValueToRValue, struct mlx5hws_send_ring_cq *)) | branches: if err (ImplicitCastExpr, LValueToRValue, int) | calls: hws_send_ring_create_sq_rdy -> hws_send_ring_create_sq; hws_send_ring_create_sq_rdy -> hws_send_ring_set_sq_rdy",
+        "summary_line": 699,
+        "state_before": [
+          "buffer(sq->mdev)",
+          "buffer(sq->sqn)",
+          "sinks(mlx5_core_modify_sq, kvfree)"
+        ],
+        "state_after": [
+          "cfg_binding(err = hws_send_ring_set_sq_rdy (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct mlx5_core_dev *, u32))(mdev (ImplicitCastExpr, LValueToRValue, struct mlx5_core_dev *), sq (ImplicitCastExpr, LValueToRValue, struct mlx5hws_send_ring_sq *)->sqn (ImplicitCastExpr, LValueToRValue, u32)))",
+          "cfg_binding(err = hws_send_ring_create_sq (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct mlx5_core_dev *, u32, void *, struct mlx5hws_send_engine *, struct mlx5hws_send_ring_sq *, struct mlx5hws_send_ring_cq *))(mdev (ImplicitCastExpr, LValueToRValue, struct mlx5_core_dev *), pdn (ImplicitCastExpr, LValueToRValue, u32), sqc_data (ImplicitCastExpr, LValueToRValue, void *), queue (ImplicitCastExpr, LValueToRValue, struct mlx5hws_send_engine *), sq (ImplicitCastExpr, LValueToRValue, struct mlx5hws_send_ring_sq *), cq (ImplicitCastExpr, LValueToRValue, struct mlx5hws_send_ring_cq *)))",
+          "cfg_branch(if err (ImplicitCastExpr, LValueToRValue, int))"
+        ],
+        "tracked_symbols": [
+          "sq->mdev",
+          "sq->sqn",
+          "sq->wq_ctrl",
+          "sq->wr_priv",
+          "sq->dep_wqe",
+          "queue->num_entries"
+        ],
+        "buffer_fields": [
+          "sq->mdev",
+          "sq->sqn",
+          "sq->wq_ctrl",
+          "sq->wr_priv",
+          "sq->dep_wqe",
+          "queue->num_entries"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "hws_send_ring_create_sq_rdy"
+        ],
+        "call_targets": [
+          "mlx5_core_modify_sq",
+          "kvfree",
+          "mlx5_core_destroy_sq",
+          "mlx5_wq_destroy",
+          "kfree",
+          "hws_send_ring_create_sq_rdy",
+          "hws_send_ring_create_sq",
+          "hws_send_ring_set_sq_rdy"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,drivers/net/ethernet/mellanox/mlx5/core/steering/hws/.mlx5hws_send.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./incl...",
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "if [B3.13]",
+          "if [B5.20]"
+        ],
+        "call_edges": [
+          "hws_send_ring_create_sq_rdy -> hws_send_ring_create_sq",
+          "hws_send_ring_create_sq_rdy -> hws_send_ring_set_sq_rdy",
+          "hws_send_ring_create_sq_rdy -> hws_send_ring_close_sq"
+        ],
+        "state_statements": [
+          "return [B1.2];",
+          "[B3.6]->sqn",
+          "[B3.10] = [B3.9]",
+          "return [B4.2];",
+          "[B5.17] = [B5.16]"
+        ],
+        "source_file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c",
+          "hunk_index": 1,
+          "source_line": 699
+        },
+        "summary": "Analyzer CFG for hws_send_ring_create_sq_rdy in drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c: bindings: err = hws_send_ring_set_sq_rdy (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct mlx5_core_dev *, u32))(mdev (ImplicitCastExpr, LValueToRValue, struct mlx5_core_dev *), sq (ImplicitCastExpr, LValueToRValue, struct mlx5hws_send_ring_sq *)->sqn (ImplicitCastExpr, LValueToRValue, u32)); err = hws_send_ring_create_sq (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct mlx5_core_dev *, u32, void *, struct mlx5hws_send_engine *, struct mlx5hws_send_ring_sq *, struct mlx5hws_send_ring_cq *))(mdev (ImplicitCastExpr, LValueToRValue, struct mlx5_core_dev *), pdn (ImplicitCastExpr, LValueToRValue, u32), sqc_data (ImplicitCastExpr, LValueToRValue, void *), queue (ImplicitCastExpr, LValueToRValue, struct mlx5hws_send_engine *), sq (ImplicitCastExpr, LValueToRValue, struct mlx5hws_send_ring_sq *), cq (ImplicitCastExpr, LValueToRValue, struct mlx5hws_send_ring_cq *)) | branches: if err (ImplicitCastExpr, LValueToRValue, int) | calls: hws_send_ring_create_sq_rdy -> hws_send_ring_create_sq; hws_send_ring_create_sq_rdy -> hws_send_ring_set_sq_rdy",
+        "statements": [
+          "667: \tsqc = MLX5_ADDR_OF(modify_sq_in, in, ctx);",
+          "668: \tMLX5_SET(sqc, sqc, state, MLX5_SQC_STATE_RDY);",
+          "669:",
+          "670: \terr = mlx5_core_modify_sq(mdev, sqn, in);",
+          "671:",
+          "672: \tkvfree(in);"
+        ],
+        "guards": [
+          "if err (ImplicitCastExpr, LValueToRValue, int)",
+          "if [B3.13]",
+          "if [B5.20]"
+        ],
+        "call_boundary": [
+          "mlx5_core_modify_sq",
+          "kvfree",
+          "mlx5_core_destroy_sq",
+          "mlx5_wq_destroy",
+          "kfree",
+          "hws_send_ring_create_sq_rdy"
+        ],
+        "call_edges": [
+          "hws_send_ring_create_sq_rdy -> hws_send_ring_create_sq",
+          "hws_send_ring_create_sq_rdy -> hws_send_ring_set_sq_rdy",
+          "hws_send_ring_create_sq_rdy -> hws_send_ring_close_sq"
+        ],
+        "state_transitions": [
+          "cfg_binding(err = hws_send_ring_set_sq_rdy (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct mlx5_core_dev *, u32))(mdev (ImplicitCastExpr, LValueToRValue, struct mlx5_core_dev *), sq (ImplicitCastExpr, LValueToRValue, struct mlx5hws_send_ring_sq *)->sqn (ImplicitCastExpr, LValueToRValue, u32)))",
+          "cfg_binding(err = hws_send_ring_create_sq (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct mlx5_core_dev *, u32, void *, struct mlx5hws_send_engine *, struct mlx5hws_send_ring_sq *, struct mlx5hws_send_ring_cq *))(mdev (ImplicitCastExpr, LValueToRValue, struct mlx5_core_dev *), pdn (ImplicitCastExpr, LValueToRValue, u32), sqc_data (ImplicitCastExpr, LValueToRValue, void *), queue (ImplicitCastExpr, LValueToRValue, struct mlx5hws_send_engine *), sq (ImplicitCastExpr, LValueToRValue, struct mlx5hws_send_ring_sq *), cq (ImplicitCastExpr, LValueToRValue, struct mlx5hws_send_ring_cq *)))",
+          "cfg_branch(if err (ImplicitCastExpr, LValueToRValue, int))",
+          "return [B1.2];",
+          "[B3.6]->sqn",
+          "[B3.10] = [B3.9]"
+        ],
+        "api_terms": [
+          "hws_send_ring_create_sq",
+          "hws_send_ring_set_sq_rdy",
+          "hws_send_ring_close_sq"
+        ],
+        "related_symbols": [
+          "sq->mdev",
+          "sq->sqn",
+          "sq->wq_ctrl",
+          "sq->wr_priv",
+          "sq->dep_wqe",
+          "queue->num_entries"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c",
+        "function": "hws_send_ring_create_sq"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "hws_send_ring_create_sq in drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c: cfg_calls=hws_send_ring_create_sq -> __kvmalloc_node_noprof; hws_send_ring_create_sq -> __builtin_dynamic_object_size | memory_ops=memcpy",
+        "state_before": [
+          "buffer(sq->wq_ctrl)",
+          "buffer(mdev->mlx5e_res)",
+          "sinks(kvzalloc, memcpy)"
+        ],
+        "state_after": [
+          "transition([B1.4]->wq_ctrl)",
+          "transition([B1.29]->sqn)",
+          "transition([B1.33] = [B1.32])"
+        ],
+        "tracked_symbols": [
+          "sq->wq_ctrl",
+          "mdev->mlx5e_res",
+          "cq->mcq",
+          "sq->sqn",
+          "sq->mdev",
+          "sq->wr_priv"
+        ],
+        "buffer_fields": [
+          "sq->wq_ctrl",
+          "mdev->mlx5e_res",
+          "cq->mcq",
+          "sq->sqn",
+          "sq->mdev",
+          "sq->wr_priv"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "hws_send_ring_create_sq"
+        ],
+        "call_targets": [
+          "kvzalloc",
+          "memcpy",
+          "mlx5_is_real_time_sq",
+          "mlx5_fill_page_frag_array",
+          "mlx5_core_create_sq",
+          "kvfree",
+          "mlx5_core_modify_sq",
+          "mlx5_core_destroy_sq"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "do ... while [B2.1]",
+          "do ... while [B3.1]",
+          "do ... while [B5.1]",
+          "if [B7.6]"
+        ],
+        "call_edges": [
+          "hws_send_ring_create_sq -> __kvmalloc_node_noprof",
+          "hws_send_ring_create_sq -> __builtin_dynamic_object_size",
+          "hws_send_ring_create_sq -> fortify_memcpy_chk",
+          "hws_send_ring_create_sq -> __builtin_expect",
+          "hws_send_ring_create_sq -> __warn_printk",
+          "hws_send_ring_create_sq -> __builtin_memcpy"
+        ],
+        "state_statements": [
+          "[B1.4]->wq_ctrl",
+          "[B1.29]->sqn",
+          "[B1.33] = [B1.32]",
+          "kvfree",
+          "return [B1.42];",
+          "[B4.4]->wq_ctrl",
+          "[B4.22] = ([B4.13])",
+          "sizeof (((struct mlx5_ifc_wq_bits *)0)->dbr_addr)"
+        ],
+        "return_statements": [
+          "return [B1.42];",
+          "return [B96.2];"
+        ],
+        "source_file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c",
+          "hunk_index": 0,
+          "source_line": 653
+        },
+        "summary": "hws_send_ring_create_sq in drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c: cfg_calls=hws_send_ring_create_sq -> __kvmalloc_node_noprof; hws_send_ring_create_sq -> __builtin_dynamic_object_size | memory_ops=memcpy",
+        "statements": [
+          "621:",
+          "622: \tinlen = MLX5_ST_SZ_BYTES(create_sq_in) +",
+          "623: \t\tsizeof(u64) * sq->wq_ctrl.buf.npages;",
+          "624: \tin = kvzalloc(inlen, GFP_KERNEL);",
+          "625: \tif (!in)",
+          "626: \t\treturn -ENOMEM;"
+        ],
+        "guards": [
+          "do ... while [B2.1]",
+          "do ... while [B3.1]",
+          "do ... while [B5.1]"
+        ],
+        "call_boundary": [
+          "kvzalloc",
+          "memcpy",
+          "mlx5_is_real_time_sq",
+          "mlx5_fill_page_frag_array",
+          "mlx5_core_create_sq",
+          "kvfree"
+        ],
+        "call_edges": [
+          "hws_send_ring_create_sq -> __kvmalloc_node_noprof",
+          "hws_send_ring_create_sq -> __builtin_dynamic_object_size",
+          "hws_send_ring_create_sq -> fortify_memcpy_chk",
+          "hws_send_ring_create_sq -> __builtin_expect",
+          "hws_send_ring_create_sq -> __warn_printk",
+          "hws_send_ring_create_sq -> __builtin_memcpy",
+          "hws_send_ring_create_sq -> __compiletime_assert_1876",
+          "hws_send_ring_create_sq -> __builtin_bswap32"
+        ],
+        "state_transitions": [
+          "transition([B1.4]->wq_ctrl)",
+          "transition([B1.29]->sqn)",
+          "transition([B1.33] = [B1.32])",
+          "[B1.4]->wq_ctrl",
+          "[B1.29]->sqn",
+          "[B1.33] = [B1.32]"
+        ],
+        "api_terms": [
+          "memcpy",
+          "__kvmalloc_node_noprof",
+          "__builtin_dynamic_object_size",
+          "fortify_memcpy_chk",
+          "__builtin_expect",
+          "__warn_printk"
+        ],
+        "related_symbols": [
+          "sq->wq_ctrl",
+          "mdev->mlx5e_res",
+          "cq->mcq",
+          "sq->sqn",
+          "sq->mdev",
+          "sq->wr_priv"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.88
+    },
+    {
+      "evidence_id": "csa_state_1",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c",
+        "function": "hws_send_ring_create_sq_rdy"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "hws_send_ring_create_sq_rdy in drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c: cfg_calls=hws_send_ring_create_sq_rdy -> hws_send_ring_create_sq; hws_send_ring_create_sq_rdy -> hws_send_ring_set_sq_rdy",
+        "state_before": [
+          "buffer(sq->mdev)",
+          "buffer(sq->sqn)",
+          "sinks(mlx5_core_modify_sq, kvfree)"
+        ],
+        "state_after": [
+          "transition(return [B1.2];)",
+          "transition([B3.6]->sqn)",
+          "transition([B3.10] = [B3.9])"
+        ],
+        "tracked_symbols": [
+          "sq->mdev",
+          "sq->sqn",
+          "sq->wq_ctrl",
+          "sq->wr_priv",
+          "sq->dep_wqe",
+          "queue->num_entries"
+        ],
+        "buffer_fields": [
+          "sq->mdev",
+          "sq->sqn",
+          "sq->wq_ctrl",
+          "sq->wr_priv",
+          "sq->dep_wqe",
+          "queue->num_entries"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "hws_send_ring_create_sq_rdy"
+        ],
+        "call_targets": [
+          "mlx5_core_modify_sq",
+          "kvfree",
+          "mlx5_core_destroy_sq",
+          "mlx5_wq_destroy",
+          "kfree",
+          "hws_send_ring_create_sq_rdy",
+          "hws_send_ring_create_sq",
+          "hws_send_ring_set_sq_rdy"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "if [B3.13]",
+          "if [B5.20]"
+        ],
+        "call_edges": [
+          "hws_send_ring_create_sq_rdy -> hws_send_ring_create_sq",
+          "hws_send_ring_create_sq_rdy -> hws_send_ring_set_sq_rdy",
+          "hws_send_ring_create_sq_rdy -> hws_send_ring_close_sq"
+        ],
+        "state_statements": [
+          "return [B1.2];",
+          "[B3.6]->sqn",
+          "[B3.10] = [B3.9]",
+          "return [B4.2];",
+          "[B5.17] = [B5.16]"
+        ],
+        "return_statements": [
+          "return [B1.2];",
+          "return [B4.2];"
+        ],
+        "source_file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c",
+          "hunk_index": 1,
+          "source_line": 699
+        },
+        "summary": "hws_send_ring_create_sq_rdy in drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c: cfg_calls=hws_send_ring_create_sq_rdy -> hws_send_ring_create_sq; hws_send_ring_create_sq_rdy -> hws_send_ring_set_sq_rdy",
+        "statements": [
+          "667: \tsqc = MLX5_ADDR_OF(modify_sq_in, in, ctx);",
+          "668: \tMLX5_SET(sqc, sqc, state, MLX5_SQC_STATE_RDY);",
+          "669:",
+          "670: \terr = mlx5_core_modify_sq(mdev, sqn, in);",
+          "671:",
+          "672: \tkvfree(in);"
+        ],
+        "guards": [
+          "if [B3.13]",
+          "if [B5.20]"
+        ],
+        "call_boundary": [
+          "mlx5_core_modify_sq",
+          "kvfree",
+          "mlx5_core_destroy_sq",
+          "mlx5_wq_destroy",
+          "kfree",
+          "hws_send_ring_create_sq_rdy"
+        ],
+        "call_edges": [
+          "hws_send_ring_create_sq_rdy -> hws_send_ring_create_sq",
+          "hws_send_ring_create_sq_rdy -> hws_send_ring_set_sq_rdy",
+          "hws_send_ring_create_sq_rdy -> hws_send_ring_close_sq"
+        ],
+        "state_transitions": [
+          "transition(return [B1.2];)",
+          "transition([B3.6]->sqn)",
+          "transition([B3.10] = [B3.9])",
+          "return [B1.2];",
+          "[B3.6]->sqn",
+          "[B3.10] = [B3.9]"
+        ],
+        "api_terms": [
+          "hws_send_ring_create_sq",
+          "hws_send_ring_set_sq_rdy",
+          "hws_send_ring_close_sq"
+        ],
+        "related_symbols": [
+          "sq->mdev",
+          "sq->sqn",
+          "sq->wq_ctrl",
+          "sq->wr_priv",
+          "sq->dep_wqe",
+          "queue->num_entries"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.88
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_1",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c",
+        "function": "hws_send_ring_create_sq"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "hws_send_ring_create_sq in drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c provides CSA-backed pointer/resource lifecycle context near line 653",
+        "state_before": [
+          "buffer(sq->wq_ctrl)",
+          "buffer(mdev->mlx5e_res)",
+          "sinks(kvzalloc, memcpy)"
+        ],
+        "state_after": [
+          "operation(memcpy)",
+          "operation([B1.4]->wq_ctrl)",
+          "operation([B1.29]->sqn)",
+          "operation([B1.33] = [B1.32])"
+        ],
+        "buffer_fields": [
+          "sq->wq_ctrl",
+          "mdev->mlx5e_res",
+          "cq->mcq",
+          "sq->sqn",
+          "sq->mdev",
+          "sq->wr_priv"
+        ],
+        "coverage_status": "partial",
+        "operations": [
+          "memcpy",
+          "[B1.4]->wq_ctrl",
+          "[B1.29]->sqn",
+          "[B1.33] = [B1.32]",
+          "kvfree",
+          "return [B1.42];"
+        ],
+        "functions": [
+          "hws_send_ring_create_sq"
+        ],
+        "call_targets": [
+          "kvzalloc",
+          "memcpy",
+          "mlx5_is_real_time_sq",
+          "mlx5_fill_page_frag_array",
+          "mlx5_core_create_sq",
+          "kvfree"
+        ],
+        "call_edges": [
+          "hws_send_ring_create_sq -> __kvmalloc_node_noprof",
+          "hws_send_ring_create_sq -> __builtin_dynamic_object_size",
+          "hws_send_ring_create_sq -> fortify_memcpy_chk",
+          "hws_send_ring_create_sq -> __builtin_expect",
+          "hws_send_ring_create_sq -> __warn_printk",
+          "hws_send_ring_create_sq -> __builtin_memcpy"
+        ],
+        "state_statements": [
+          "[B1.4]->wq_ctrl",
+          "[B1.29]->sqn",
+          "[B1.33] = [B1.32]",
+          "kvfree",
+          "return [B1.42];",
+          "[B4.4]->wq_ctrl"
+        ],
+        "source_file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c",
+          "hunk_index": 0,
+          "source_line": 653
+        },
+        "summary": "hws_send_ring_create_sq in drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c provides CSA-backed pointer/resource lifecycle context near line 653",
+        "statements": [
+          "621:",
+          "622: \tinlen = MLX5_ST_SZ_BYTES(create_sq_in) +",
+          "623: \t\tsizeof(u64) * sq->wq_ctrl.buf.npages;",
+          "624: \tin = kvzalloc(inlen, GFP_KERNEL);",
+          "625: \tif (!in)",
+          "626: \t\treturn -ENOMEM;"
+        ],
+        "guards": [
+          "!in",
+          "do ... while [B2.1]",
+          "do ... while [B3.1]",
+          "do ... while [B5.1]"
+        ],
+        "call_boundary": [
+          "kvzalloc",
+          "memcpy",
+          "mlx5_is_real_time_sq",
+          "mlx5_fill_page_frag_array",
+          "mlx5_core_create_sq",
+          "kvfree"
+        ],
+        "call_edges": [
+          "hws_send_ring_create_sq -> __kvmalloc_node_noprof",
+          "hws_send_ring_create_sq -> __builtin_dynamic_object_size",
+          "hws_send_ring_create_sq -> fortify_memcpy_chk",
+          "hws_send_ring_create_sq -> __builtin_expect",
+          "hws_send_ring_create_sq -> __warn_printk",
+          "hws_send_ring_create_sq -> __builtin_memcpy"
+        ],
+        "state_transitions": [
+          "operation(memcpy)",
+          "operation([B1.4]->wq_ctrl)",
+          "operation([B1.29]->sqn)",
+          "operation([B1.33] = [B1.32])"
+        ],
+        "api_terms": [
+          "memcpy",
+          "[B1.4]->wq_ctrl",
+          "[B1.29]->sqn",
+          "[B1.33] = [B1.32]",
+          "kvfree",
+          "return [B1.42];"
+        ],
+        "related_symbols": [],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      },
+      "confidence": 0.72
+    },
+    {
+      "evidence_id": "csa_validation_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c",
+        "function": "hws_send_ring_create_sq"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c:653",
+        "state_before": [
+          "buffer(sq->wq_ctrl)",
+          "buffer(mdev->mlx5e_res)",
+          "sinks(kvzalloc, memcpy)"
+        ],
+        "state_after": [
+          "diagnostic(csa)"
+        ],
+        "buffer_fields": [
+          "sq->wq_ctrl",
+          "mdev->mlx5e_res",
+          "cq->mcq",
+          "sq->sqn",
+          "sq->mdev",
+          "sq->wr_priv"
+        ],
+        "coverage_status": "partial",
+        "functions": [
+          "hws_send_ring_create_sq"
+        ],
+        "call_targets": [
+          "kvzalloc",
+          "memcpy",
+          "mlx5_is_real_time_sq",
+          "mlx5_fill_page_frag_array",
+          "mlx5_core_create_sq",
+          "kvfree"
+        ],
+        "call_edges": [
+          "hws_send_ring_create_sq -> __kvmalloc_node_noprof",
+          "hws_send_ring_create_sq -> __builtin_dynamic_object_size",
+          "hws_send_ring_create_sq -> fortify_memcpy_chk",
+          "hws_send_ring_create_sq -> __builtin_expect",
+          "hws_send_ring_create_sq -> __warn_printk",
+          "hws_send_ring_create_sq -> __builtin_memcpy"
+        ],
+        "state_statements": [
+          "[B1.4]->wq_ctrl",
+          "[B1.29]->sqn",
+          "[B1.33] = [B1.32]",
+          "kvfree",
+          "return [B1.42];",
+          "[B4.4]->wq_ctrl"
+        ],
+        "source_file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c",
+          "hunk_index": 0,
+          "source_line": 653
+        },
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c:653",
+        "statements": [
+          "621:",
+          "622: \tinlen = MLX5_ST_SZ_BYTES(create_sq_in) +",
+          "623: \t\tsizeof(u64) * sq->wq_ctrl.buf.npages;",
+          "624: \tin = kvzalloc(inlen, GFP_KERNEL);",
+          "625: \tif (!in)",
+          "626: \t\treturn -ENOMEM;"
+        ],
+        "guards": [
+          "!in",
+          "do ... while [B2.1]",
+          "do ... while [B3.1]",
+          "do ... while [B5.1]"
+        ],
+        "call_boundary": [
+          "kvzalloc",
+          "memcpy",
+          "mlx5_is_real_time_sq",
+          "mlx5_fill_page_frag_array",
+          "mlx5_core_create_sq",
+          "kvfree"
+        ],
+        "call_edges": [
+          "hws_send_ring_create_sq -> __kvmalloc_node_noprof",
+          "hws_send_ring_create_sq -> __builtin_dynamic_object_size",
+          "hws_send_ring_create_sq -> fortify_memcpy_chk",
+          "hws_send_ring_create_sq -> __builtin_expect",
+          "hws_send_ring_create_sq -> __warn_printk",
+          "hws_send_ring_create_sq -> __builtin_memcpy"
+        ],
+        "state_transitions": [
+          "diagnostic(csa)"
+        ],
+        "api_terms": [
+          "memcpy",
+          "[B1.4]->wq_ctrl",
+          "[B1.29]->sqn",
+          "[B1.33] = [B1.32]",
+          "kvfree",
+          "return [B1.42];"
+        ],
+        "related_symbols": [],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      },
+      "confidence": 0.72
+    }
+  ],
+  "semantic_slice_count": 6,
+  "context_summary_count": 0,
+  "semantic_slice_coverage": "partial",
+  "selected_semantic_slice_ids": [
+    "csa_guard_0",
+    "csa_guard_1",
+    "csa_state_0",
+    "csa_state_1",
+    "csa_validation_allocation_lifecycle_1",
+    "csa_validation_semantic_slice_0"
+  ],
+  "selected_context_summary_ids": [],
+  "selected_semantic_slices": [
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c",
+        "function": "hws_send_ring_create_sq"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "if !in (ImplicitCastExpr, LValueToRValue, void *)",
+        "summary": "Analyzer CFG for hws_send_ring_create_sq in drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c: bindings: err = mlx5_core_create_sq (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct mlx5_core_dev *, u32 *, int, u32 *))(mdev (ImplicitCastExpr, LValueToRValue, struct mlx5_core_dev *), in (ImplicitCastExpr, LValueToRValue, void *) (ImplicitCastExpr, BitCast, u32 *), inlen (ImplicitCastExpr, LValueToRValue, int), &sq (ImplicitCastExpr, LValueToRValue, struct mlx5hws_send_ring_sq *)->sqn); sqc = ((void *)((u8 *)(in) (ImplicitCastExpr, LValueToRValue, void *) (CStyleCastExpr, BitCast, u8 *) + ((__builtin_offsetof(struct mlx5_ifc_create_sq_in_bits, ctx)) / 8 (ImplicitCastExpr, IntegralCast, unsigned long))) (CStyleCastExpr, BitCast, void *)) | branches: if !in (ImplicitCastExpr, LValueToRValue, void *); do ... while 0 | calls: hws_send_ring_create_sq -> __kvmalloc_node_noprof; hws_send_ring_create_sq -> __builtin_dynamic_object_size",
+        "summary_line": 653,
+        "state_before": [
+          "buffer(sq->wq_ctrl)",
+          "buffer(mdev->mlx5e_res)",
+          "sinks(kvzalloc, memcpy)"
+        ],
+        "state_after": [
+          "cfg_binding(err = mlx5_core_create_sq (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct mlx5_core_dev *, u32 *, int, u32 *))(mdev (ImplicitCastExpr, LValueToRValue, struct mlx5_core_dev *), in (ImplicitCastExpr, LValueToRValue, void *) (ImplicitCastExpr, BitCast, u32 *), inlen (ImplicitCastExpr, LValueToRValue, int), &sq (ImplicitCastExpr, LValueToRValue, struct mlx5hws_send_ring_sq *)->sqn))",
+          "cfg_binding(sqc = ((void *)((u8 *)(in) (ImplicitCastExpr, LValueToRValue, void *) (CStyleCastExpr, BitCast, u8 *) + ((__builtin_offsetof(struct mlx5_ifc_create_sq_in_bits, ctx)) / 8 (ImplicitCastExpr, IntegralCast, unsigned long))) (CStyleCastExpr, BitCast, void *)))",
+          "cfg_branch(if !in (ImplicitCastExpr, LValueToRValue, void *))",
+          "cfg_branch(do ... while 0)"
+        ],
+        "tracked_symbols": [
+          "sq->wq_ctrl",
+          "mdev->mlx5e_res",
+          "cq->mcq",
+          "sq->sqn",
+          "sq->mdev",
+          "sq->wr_priv"
+        ],
+        "buffer_fields": [
+          "sq->wq_ctrl",
+          "mdev->mlx5e_res",
+          "cq->mcq",
+          "sq->sqn",
+          "sq->mdev",
+          "sq->wr_priv"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "hws_send_ring_create_sq"
+        ],
+        "call_targets": [
+          "kvzalloc",
+          "memcpy",
+          "mlx5_is_real_time_sq",
+          "mlx5_fill_page_frag_array",
+          "mlx5_core_create_sq",
+          "kvfree",
+          "mlx5_core_modify_sq",
+          "mlx5_core_destroy_sq"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,drivers/net/ethernet/mellanox/mlx5/core/steering/hws/.mlx5hws_send.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./incl...",
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "do ... while [B2.1]",
+          "do ... while [B3.1]",
+          "do ... while [B5.1]",
+          "if [B7.6]",
+          "do ... while [B10.1]",
+          "if [B12.6]"
+        ],
+        "call_edges": [
+          "hws_send_ring_create_sq -> __kvmalloc_node_noprof",
+          "hws_send_ring_create_sq -> __builtin_dynamic_object_size",
+          "hws_send_ring_create_sq -> fortify_memcpy_chk",
+          "hws_send_ring_create_sq -> __builtin_expect",
+          "hws_send_ring_create_sq -> __warn_printk",
+          "hws_send_ring_create_sq -> __builtin_memcpy"
+        ],
+        "state_statements": [
+          "[B1.4]->wq_ctrl",
+          "[B1.29]->sqn",
+          "[B1.33] = [B1.32]",
+          "kvfree",
+          "return [B1.42];",
+          "[B4.4]->wq_ctrl"
+        ],
+        "source_file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c",
+          "hunk_index": 0,
+          "source_line": 653
+        },
+        "summary": "Analyzer CFG for hws_send_ring_create_sq in drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c: bindings: err = mlx5_core_create_sq (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct mlx5_core_dev *, u32 *, int, u32 *))(mdev (ImplicitCastExpr, LValueToRValue, struct mlx5_core_dev *), in (ImplicitCastExpr, LValueToRValue, void *) (ImplicitCastExpr, BitCast, u32 *), inlen (ImplicitCastExpr, LValueToRValue, int), &sq (ImplicitCastExpr, LValueToRValue, struct mlx5hws_send_ring_sq *)->sqn); sqc = ((void *)((u8 *)(in) (ImplicitCastExpr, LValueToRValue, void *) (CStyleCastExpr, BitCast, u8 *) + ((__builtin_offsetof(struct mlx5_ifc_create_sq_in_bits, ctx)) / 8 (ImplicitCastExpr, IntegralCast, unsigned long))) (CStyleCastExpr, BitCast, void *)) | branches: if !in (ImplicitCastExpr, LValueToRValue, void *); do ... while 0 | calls: hws_send_ring_create_sq -> __kvmalloc_node_noprof; hws_send_ring_create_sq -> __builtin_dynamic_object_size",
+        "statements": [
+          "621:",
+          "622: \tinlen = MLX5_ST_SZ_BYTES(create_sq_in) +",
+          "623: \t\tsizeof(u64) * sq->wq_ctrl.buf.npages;",
+          "624: \tin = kvzalloc(inlen, GFP_KERNEL);",
+          "625: \tif (!in)",
+          "626: \t\treturn -ENOMEM;"
+        ],
+        "guards": [
+          "if !in (ImplicitCastExpr, LValueToRValue, void *)",
+          "do ... while 0",
+          "if !(!(sizeof (((struct mlx5_ifc_wq_bits *)0)->dbr_addr) != 64 (ImplicitCastExpr, IntegralCast, unsigned long)))",
+          "if !(!((__builtin_offsetof(struct mlx5_ifc_wq_bits, dbr_addr)) % 64 (ImplicitCastExpr, IntegralCast, unsigned long)))"
+        ],
+        "call_boundary": [
+          "kvzalloc",
+          "memcpy",
+          "mlx5_is_real_time_sq",
+          "mlx5_fill_page_frag_array",
+          "mlx5_core_create_sq",
+          "kvfree"
+        ],
+        "call_edges": [
+          "hws_send_ring_create_sq -> __kvmalloc_node_noprof",
+          "hws_send_ring_create_sq -> __builtin_dynamic_object_size",
+          "hws_send_ring_create_sq -> fortify_memcpy_chk",
+          "hws_send_ring_create_sq -> __builtin_expect",
+          "hws_send_ring_create_sq -> __warn_printk",
+          "hws_send_ring_create_sq -> __builtin_memcpy",
+          "hws_send_ring_create_sq -> __compiletime_assert_1876",
+          "hws_send_ring_create_sq -> __builtin_bswap32"
+        ],
+        "state_transitions": [
+          "cfg_binding(err = mlx5_core_create_sq (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct mlx5_core_dev *, u32 *, int, u32 *))(mdev (ImplicitCastExpr, LValueToRValue, struct mlx5_core_dev *), in (ImplicitCastExpr, LValueToRValue, void *) (ImplicitCastExpr, BitCast, u32 *), inlen (ImplicitCastExpr, LValueToRValue, int), &sq (ImplicitCastExpr, LValueToRValue, struct mlx5hws_send_ring_sq *)->sqn))",
+          "cfg_binding(sqc = ((void *)((u8 *)(in) (ImplicitCastExpr, LValueToRValue, void *) (CStyleCastExpr, BitCast, u8 *) + ((__builtin_offsetof(struct mlx5_ifc_create_sq_in_bits, ctx)) / 8 (ImplicitCastExpr, IntegralCast, unsigned long))) (CStyleCastExpr, BitCast, void *)))",
+          "cfg_branch(if !in (ImplicitCastExpr, LValueToRValue, void *))",
+          "cfg_branch(do ... while 0)",
+          "[B1.4]->wq_ctrl",
+          "[B1.29]->sqn"
+        ],
+        "api_terms": [
+          "__kvmalloc_node_noprof",
+          "__builtin_dynamic_object_size",
+          "fortify_memcpy_chk",
+          "__builtin_expect",
+          "__warn_printk",
+          "__builtin_memcpy"
+        ],
+        "related_symbols": [
+          "sq->wq_ctrl",
+          "mdev->mlx5e_res",
+          "cq->mcq",
+          "sq->sqn",
+          "sq->mdev",
+          "sq->wr_priv"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_guard_1",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c",
+        "function": "hws_send_ring_create_sq_rdy"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "if err (ImplicitCastExpr, LValueToRValue, int)",
+        "summary": "Analyzer CFG for hws_send_ring_create_sq_rdy in drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c: bindings: err = hws_send_ring_set_sq_rdy (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct mlx5_core_dev *, u32))(mdev (ImplicitCastExpr, LValueToRValue, struct mlx5_core_dev *), sq (ImplicitCastExpr, LValueToRValue, struct mlx5hws_send_ring_sq *)->sqn (ImplicitCastExpr, LValueToRValue, u32)); err = hws_send_ring_create_sq (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct mlx5_core_dev *, u32, void *, struct mlx5hws_send_engine *, struct mlx5hws_send_ring_sq *, struct mlx5hws_send_ring_cq *))(mdev (ImplicitCastExpr, LValueToRValue, struct mlx5_core_dev *), pdn (ImplicitCastExpr, LValueToRValue, u32), sqc_data (ImplicitCastExpr, LValueToRValue, void *), queue (ImplicitCastExpr, LValueToRValue, struct mlx5hws_send_engine *), sq (ImplicitCastExpr, LValueToRValue, struct mlx5hws_send_ring_sq *), cq (ImplicitCastExpr, LValueToRValue, struct mlx5hws_send_ring_cq *)) | branches: if err (ImplicitCastExpr, LValueToRValue, int) | calls: hws_send_ring_create_sq_rdy -> hws_send_ring_create_sq; hws_send_ring_create_sq_rdy -> hws_send_ring_set_sq_rdy",
+        "summary_line": 699,
+        "state_before": [
+          "buffer(sq->mdev)",
+          "buffer(sq->sqn)",
+          "sinks(mlx5_core_modify_sq, kvfree)"
+        ],
+        "state_after": [
+          "cfg_binding(err = hws_send_ring_set_sq_rdy (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct mlx5_core_dev *, u32))(mdev (ImplicitCastExpr, LValueToRValue, struct mlx5_core_dev *), sq (ImplicitCastExpr, LValueToRValue, struct mlx5hws_send_ring_sq *)->sqn (ImplicitCastExpr, LValueToRValue, u32)))",
+          "cfg_binding(err = hws_send_ring_create_sq (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct mlx5_core_dev *, u32, void *, struct mlx5hws_send_engine *, struct mlx5hws_send_ring_sq *, struct mlx5hws_send_ring_cq *))(mdev (ImplicitCastExpr, LValueToRValue, struct mlx5_core_dev *), pdn (ImplicitCastExpr, LValueToRValue, u32), sqc_data (ImplicitCastExpr, LValueToRValue, void *), queue (ImplicitCastExpr, LValueToRValue, struct mlx5hws_send_engine *), sq (ImplicitCastExpr, LValueToRValue, struct mlx5hws_send_ring_sq *), cq (ImplicitCastExpr, LValueToRValue, struct mlx5hws_send_ring_cq *)))",
+          "cfg_branch(if err (ImplicitCastExpr, LValueToRValue, int))"
+        ],
+        "tracked_symbols": [
+          "sq->mdev",
+          "sq->sqn",
+          "sq->wq_ctrl",
+          "sq->wr_priv",
+          "sq->dep_wqe",
+          "queue->num_entries"
+        ],
+        "buffer_fields": [
+          "sq->mdev",
+          "sq->sqn",
+          "sq->wq_ctrl",
+          "sq->wr_priv",
+          "sq->dep_wqe",
+          "queue->num_entries"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "hws_send_ring_create_sq_rdy"
+        ],
+        "call_targets": [
+          "mlx5_core_modify_sq",
+          "kvfree",
+          "mlx5_core_destroy_sq",
+          "mlx5_wq_destroy",
+          "kfree",
+          "hws_send_ring_create_sq_rdy",
+          "hws_send_ring_create_sq",
+          "hws_send_ring_set_sq_rdy"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,drivers/net/ethernet/mellanox/mlx5/core/steering/hws/.mlx5hws_send.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./incl...",
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "if [B3.13]",
+          "if [B5.20]"
+        ],
+        "call_edges": [
+          "hws_send_ring_create_sq_rdy -> hws_send_ring_create_sq",
+          "hws_send_ring_create_sq_rdy -> hws_send_ring_set_sq_rdy",
+          "hws_send_ring_create_sq_rdy -> hws_send_ring_close_sq"
+        ],
+        "state_statements": [
+          "return [B1.2];",
+          "[B3.6]->sqn",
+          "[B3.10] = [B3.9]",
+          "return [B4.2];",
+          "[B5.17] = [B5.16]"
+        ],
+        "source_file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c",
+          "hunk_index": 1,
+          "source_line": 699
+        },
+        "summary": "Analyzer CFG for hws_send_ring_create_sq_rdy in drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c: bindings: err = hws_send_ring_set_sq_rdy (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct mlx5_core_dev *, u32))(mdev (ImplicitCastExpr, LValueToRValue, struct mlx5_core_dev *), sq (ImplicitCastExpr, LValueToRValue, struct mlx5hws_send_ring_sq *)->sqn (ImplicitCastExpr, LValueToRValue, u32)); err = hws_send_ring_create_sq (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct mlx5_core_dev *, u32, void *, struct mlx5hws_send_engine *, struct mlx5hws_send_ring_sq *, struct mlx5hws_send_ring_cq *))(mdev (ImplicitCastExpr, LValueToRValue, struct mlx5_core_dev *), pdn (ImplicitCastExpr, LValueToRValue, u32), sqc_data (ImplicitCastExpr, LValueToRValue, void *), queue (ImplicitCastExpr, LValueToRValue, struct mlx5hws_send_engine *), sq (ImplicitCastExpr, LValueToRValue, struct mlx5hws_send_ring_sq *), cq (ImplicitCastExpr, LValueToRValue, struct mlx5hws_send_ring_cq *)) | branches: if err (ImplicitCastExpr, LValueToRValue, int) | calls: hws_send_ring_create_sq_rdy -> hws_send_ring_create_sq; hws_send_ring_create_sq_rdy -> hws_send_ring_set_sq_rdy",
+        "statements": [
+          "667: \tsqc = MLX5_ADDR_OF(modify_sq_in, in, ctx);",
+          "668: \tMLX5_SET(sqc, sqc, state, MLX5_SQC_STATE_RDY);",
+          "669:",
+          "670: \terr = mlx5_core_modify_sq(mdev, sqn, in);",
+          "671:",
+          "672: \tkvfree(in);"
+        ],
+        "guards": [
+          "if err (ImplicitCastExpr, LValueToRValue, int)",
+          "if [B3.13]",
+          "if [B5.20]"
+        ],
+        "call_boundary": [
+          "mlx5_core_modify_sq",
+          "kvfree",
+          "mlx5_core_destroy_sq",
+          "mlx5_wq_destroy",
+          "kfree",
+          "hws_send_ring_create_sq_rdy"
+        ],
+        "call_edges": [
+          "hws_send_ring_create_sq_rdy -> hws_send_ring_create_sq",
+          "hws_send_ring_create_sq_rdy -> hws_send_ring_set_sq_rdy",
+          "hws_send_ring_create_sq_rdy -> hws_send_ring_close_sq"
+        ],
+        "state_transitions": [
+          "cfg_binding(err = hws_send_ring_set_sq_rdy (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct mlx5_core_dev *, u32))(mdev (ImplicitCastExpr, LValueToRValue, struct mlx5_core_dev *), sq (ImplicitCastExpr, LValueToRValue, struct mlx5hws_send_ring_sq *)->sqn (ImplicitCastExpr, LValueToRValue, u32)))",
+          "cfg_binding(err = hws_send_ring_create_sq (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct mlx5_core_dev *, u32, void *, struct mlx5hws_send_engine *, struct mlx5hws_send_ring_sq *, struct mlx5hws_send_ring_cq *))(mdev (ImplicitCastExpr, LValueToRValue, struct mlx5_core_dev *), pdn (ImplicitCastExpr, LValueToRValue, u32), sqc_data (ImplicitCastExpr, LValueToRValue, void *), queue (ImplicitCastExpr, LValueToRValue, struct mlx5hws_send_engine *), sq (ImplicitCastExpr, LValueToRValue, struct mlx5hws_send_ring_sq *), cq (ImplicitCastExpr, LValueToRValue, struct mlx5hws_send_ring_cq *)))",
+          "cfg_branch(if err (ImplicitCastExpr, LValueToRValue, int))",
+          "return [B1.2];",
+          "[B3.6]->sqn",
+          "[B3.10] = [B3.9]"
+        ],
+        "api_terms": [
+          "hws_send_ring_create_sq",
+          "hws_send_ring_set_sq_rdy",
+          "hws_send_ring_close_sq"
+        ],
+        "related_symbols": [
+          "sq->mdev",
+          "sq->sqn",
+          "sq->wq_ctrl",
+          "sq->wr_priv",
+          "sq->dep_wqe",
+          "queue->num_entries"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c",
+        "function": "hws_send_ring_create_sq"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "hws_send_ring_create_sq in drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c: cfg_calls=hws_send_ring_create_sq -> __kvmalloc_node_noprof; hws_send_ring_create_sq -> __builtin_dynamic_object_size | memory_ops=memcpy",
+        "state_before": [
+          "buffer(sq->wq_ctrl)",
+          "buffer(mdev->mlx5e_res)",
+          "sinks(kvzalloc, memcpy)"
+        ],
+        "state_after": [
+          "transition([B1.4]->wq_ctrl)",
+          "transition([B1.29]->sqn)",
+          "transition([B1.33] = [B1.32])"
+        ],
+        "tracked_symbols": [
+          "sq->wq_ctrl",
+          "mdev->mlx5e_res",
+          "cq->mcq",
+          "sq->sqn",
+          "sq->mdev",
+          "sq->wr_priv"
+        ],
+        "buffer_fields": [
+          "sq->wq_ctrl",
+          "mdev->mlx5e_res",
+          "cq->mcq",
+          "sq->sqn",
+          "sq->mdev",
+          "sq->wr_priv"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "hws_send_ring_create_sq"
+        ],
+        "call_targets": [
+          "kvzalloc",
+          "memcpy",
+          "mlx5_is_real_time_sq",
+          "mlx5_fill_page_frag_array",
+          "mlx5_core_create_sq",
+          "kvfree",
+          "mlx5_core_modify_sq",
+          "mlx5_core_destroy_sq"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "do ... while [B2.1]",
+          "do ... while [B3.1]",
+          "do ... while [B5.1]",
+          "if [B7.6]"
+        ],
+        "call_edges": [
+          "hws_send_ring_create_sq -> __kvmalloc_node_noprof",
+          "hws_send_ring_create_sq -> __builtin_dynamic_object_size",
+          "hws_send_ring_create_sq -> fortify_memcpy_chk",
+          "hws_send_ring_create_sq -> __builtin_expect",
+          "hws_send_ring_create_sq -> __warn_printk",
+          "hws_send_ring_create_sq -> __builtin_memcpy"
+        ],
+        "state_statements": [
+          "[B1.4]->wq_ctrl",
+          "[B1.29]->sqn",
+          "[B1.33] = [B1.32]",
+          "kvfree",
+          "return [B1.42];",
+          "[B4.4]->wq_ctrl",
+          "[B4.22] = ([B4.13])",
+          "sizeof (((struct mlx5_ifc_wq_bits *)0)->dbr_addr)"
+        ],
+        "return_statements": [
+          "return [B1.42];",
+          "return [B96.2];"
+        ],
+        "source_file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c",
+          "hunk_index": 0,
+          "source_line": 653
+        },
+        "summary": "hws_send_ring_create_sq in drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c: cfg_calls=hws_send_ring_create_sq -> __kvmalloc_node_noprof; hws_send_ring_create_sq -> __builtin_dynamic_object_size | memory_ops=memcpy",
+        "statements": [
+          "621:",
+          "622: \tinlen = MLX5_ST_SZ_BYTES(create_sq_in) +",
+          "623: \t\tsizeof(u64) * sq->wq_ctrl.buf.npages;",
+          "624: \tin = kvzalloc(inlen, GFP_KERNEL);",
+          "625: \tif (!in)",
+          "626: \t\treturn -ENOMEM;"
+        ],
+        "guards": [
+          "do ... while [B2.1]",
+          "do ... while [B3.1]",
+          "do ... while [B5.1]"
+        ],
+        "call_boundary": [
+          "kvzalloc",
+          "memcpy",
+          "mlx5_is_real_time_sq",
+          "mlx5_fill_page_frag_array",
+          "mlx5_core_create_sq",
+          "kvfree"
+        ],
+        "call_edges": [
+          "hws_send_ring_create_sq -> __kvmalloc_node_noprof",
+          "hws_send_ring_create_sq -> __builtin_dynamic_object_size",
+          "hws_send_ring_create_sq -> fortify_memcpy_chk",
+          "hws_send_ring_create_sq -> __builtin_expect",
+          "hws_send_ring_create_sq -> __warn_printk",
+          "hws_send_ring_create_sq -> __builtin_memcpy",
+          "hws_send_ring_create_sq -> __compiletime_assert_1876",
+          "hws_send_ring_create_sq -> __builtin_bswap32"
+        ],
+        "state_transitions": [
+          "transition([B1.4]->wq_ctrl)",
+          "transition([B1.29]->sqn)",
+          "transition([B1.33] = [B1.32])",
+          "[B1.4]->wq_ctrl",
+          "[B1.29]->sqn",
+          "[B1.33] = [B1.32]"
+        ],
+        "api_terms": [
+          "memcpy",
+          "__kvmalloc_node_noprof",
+          "__builtin_dynamic_object_size",
+          "fortify_memcpy_chk",
+          "__builtin_expect",
+          "__warn_printk"
+        ],
+        "related_symbols": [
+          "sq->wq_ctrl",
+          "mdev->mlx5e_res",
+          "cq->mcq",
+          "sq->sqn",
+          "sq->mdev",
+          "sq->wr_priv"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.88
+    },
+    {
+      "evidence_id": "csa_state_1",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c",
+        "function": "hws_send_ring_create_sq_rdy"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "hws_send_ring_create_sq_rdy in drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c: cfg_calls=hws_send_ring_create_sq_rdy -> hws_send_ring_create_sq; hws_send_ring_create_sq_rdy -> hws_send_ring_set_sq_rdy",
+        "state_before": [
+          "buffer(sq->mdev)",
+          "buffer(sq->sqn)",
+          "sinks(mlx5_core_modify_sq, kvfree)"
+        ],
+        "state_after": [
+          "transition(return [B1.2];)",
+          "transition([B3.6]->sqn)",
+          "transition([B3.10] = [B3.9])"
+        ],
+        "tracked_symbols": [
+          "sq->mdev",
+          "sq->sqn",
+          "sq->wq_ctrl",
+          "sq->wr_priv",
+          "sq->dep_wqe",
+          "queue->num_entries"
+        ],
+        "buffer_fields": [
+          "sq->mdev",
+          "sq->sqn",
+          "sq->wq_ctrl",
+          "sq->wr_priv",
+          "sq->dep_wqe",
+          "queue->num_entries"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "hws_send_ring_create_sq_rdy"
+        ],
+        "call_targets": [
+          "mlx5_core_modify_sq",
+          "kvfree",
+          "mlx5_core_destroy_sq",
+          "mlx5_wq_destroy",
+          "kfree",
+          "hws_send_ring_create_sq_rdy",
+          "hws_send_ring_create_sq",
+          "hws_send_ring_set_sq_rdy"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "if [B3.13]",
+          "if [B5.20]"
+        ],
+        "call_edges": [
+          "hws_send_ring_create_sq_rdy -> hws_send_ring_create_sq",
+          "hws_send_ring_create_sq_rdy -> hws_send_ring_set_sq_rdy",
+          "hws_send_ring_create_sq_rdy -> hws_send_ring_close_sq"
+        ],
+        "state_statements": [
+          "return [B1.2];",
+          "[B3.6]->sqn",
+          "[B3.10] = [B3.9]",
+          "return [B4.2];",
+          "[B5.17] = [B5.16]"
+        ],
+        "return_statements": [
+          "return [B1.2];",
+          "return [B4.2];"
+        ],
+        "source_file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c",
+          "hunk_index": 1,
+          "source_line": 699
+        },
+        "summary": "hws_send_ring_create_sq_rdy in drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c: cfg_calls=hws_send_ring_create_sq_rdy -> hws_send_ring_create_sq; hws_send_ring_create_sq_rdy -> hws_send_ring_set_sq_rdy",
+        "statements": [
+          "667: \tsqc = MLX5_ADDR_OF(modify_sq_in, in, ctx);",
+          "668: \tMLX5_SET(sqc, sqc, state, MLX5_SQC_STATE_RDY);",
+          "669:",
+          "670: \terr = mlx5_core_modify_sq(mdev, sqn, in);",
+          "671:",
+          "672: \tkvfree(in);"
+        ],
+        "guards": [
+          "if [B3.13]",
+          "if [B5.20]"
+        ],
+        "call_boundary": [
+          "mlx5_core_modify_sq",
+          "kvfree",
+          "mlx5_core_destroy_sq",
+          "mlx5_wq_destroy",
+          "kfree",
+          "hws_send_ring_create_sq_rdy"
+        ],
+        "call_edges": [
+          "hws_send_ring_create_sq_rdy -> hws_send_ring_create_sq",
+          "hws_send_ring_create_sq_rdy -> hws_send_ring_set_sq_rdy",
+          "hws_send_ring_create_sq_rdy -> hws_send_ring_close_sq"
+        ],
+        "state_transitions": [
+          "transition(return [B1.2];)",
+          "transition([B3.6]->sqn)",
+          "transition([B3.10] = [B3.9])",
+          "return [B1.2];",
+          "[B3.6]->sqn",
+          "[B3.10] = [B3.9]"
+        ],
+        "api_terms": [
+          "hws_send_ring_create_sq",
+          "hws_send_ring_set_sq_rdy",
+          "hws_send_ring_close_sq"
+        ],
+        "related_symbols": [
+          "sq->mdev",
+          "sq->sqn",
+          "sq->wq_ctrl",
+          "sq->wr_priv",
+          "sq->dep_wqe",
+          "queue->num_entries"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.88
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_1",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c",
+        "function": "hws_send_ring_create_sq"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "hws_send_ring_create_sq in drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c provides CSA-backed pointer/resource lifecycle context near line 653",
+        "state_before": [
+          "buffer(sq->wq_ctrl)",
+          "buffer(mdev->mlx5e_res)",
+          "sinks(kvzalloc, memcpy)"
+        ],
+        "state_after": [
+          "operation(memcpy)",
+          "operation([B1.4]->wq_ctrl)",
+          "operation([B1.29]->sqn)",
+          "operation([B1.33] = [B1.32])"
+        ],
+        "buffer_fields": [
+          "sq->wq_ctrl",
+          "mdev->mlx5e_res",
+          "cq->mcq",
+          "sq->sqn",
+          "sq->mdev",
+          "sq->wr_priv"
+        ],
+        "coverage_status": "partial",
+        "operations": [
+          "memcpy",
+          "[B1.4]->wq_ctrl",
+          "[B1.29]->sqn",
+          "[B1.33] = [B1.32]",
+          "kvfree",
+          "return [B1.42];"
+        ],
+        "functions": [
+          "hws_send_ring_create_sq"
+        ],
+        "call_targets": [
+          "kvzalloc",
+          "memcpy",
+          "mlx5_is_real_time_sq",
+          "mlx5_fill_page_frag_array",
+          "mlx5_core_create_sq",
+          "kvfree"
+        ],
+        "call_edges": [
+          "hws_send_ring_create_sq -> __kvmalloc_node_noprof",
+          "hws_send_ring_create_sq -> __builtin_dynamic_object_size",
+          "hws_send_ring_create_sq -> fortify_memcpy_chk",
+          "hws_send_ring_create_sq -> __builtin_expect",
+          "hws_send_ring_create_sq -> __warn_printk",
+          "hws_send_ring_create_sq -> __builtin_memcpy"
+        ],
+        "state_statements": [
+          "[B1.4]->wq_ctrl",
+          "[B1.29]->sqn",
+          "[B1.33] = [B1.32]",
+          "kvfree",
+          "return [B1.42];",
+          "[B4.4]->wq_ctrl"
+        ],
+        "source_file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c",
+          "hunk_index": 0,
+          "source_line": 653
+        },
+        "summary": "hws_send_ring_create_sq in drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c provides CSA-backed pointer/resource lifecycle context near line 653",
+        "statements": [
+          "621:",
+          "622: \tinlen = MLX5_ST_SZ_BYTES(create_sq_in) +",
+          "623: \t\tsizeof(u64) * sq->wq_ctrl.buf.npages;",
+          "624: \tin = kvzalloc(inlen, GFP_KERNEL);",
+          "625: \tif (!in)",
+          "626: \t\treturn -ENOMEM;"
+        ],
+        "guards": [
+          "!in",
+          "do ... while [B2.1]",
+          "do ... while [B3.1]",
+          "do ... while [B5.1]"
+        ],
+        "call_boundary": [
+          "kvzalloc",
+          "memcpy",
+          "mlx5_is_real_time_sq",
+          "mlx5_fill_page_frag_array",
+          "mlx5_core_create_sq",
+          "kvfree"
+        ],
+        "call_edges": [
+          "hws_send_ring_create_sq -> __kvmalloc_node_noprof",
+          "hws_send_ring_create_sq -> __builtin_dynamic_object_size",
+          "hws_send_ring_create_sq -> fortify_memcpy_chk",
+          "hws_send_ring_create_sq -> __builtin_expect",
+          "hws_send_ring_create_sq -> __warn_printk",
+          "hws_send_ring_create_sq -> __builtin_memcpy"
+        ],
+        "state_transitions": [
+          "operation(memcpy)",
+          "operation([B1.4]->wq_ctrl)",
+          "operation([B1.29]->sqn)",
+          "operation([B1.33] = [B1.32])"
+        ],
+        "api_terms": [
+          "memcpy",
+          "[B1.4]->wq_ctrl",
+          "[B1.29]->sqn",
+          "[B1.33] = [B1.32]",
+          "kvfree",
+          "return [B1.42];"
+        ],
+        "related_symbols": [],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      },
+      "confidence": 0.72
+    },
+    {
+      "evidence_id": "csa_validation_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c",
+        "function": "hws_send_ring_create_sq"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c:653",
+        "state_before": [
+          "buffer(sq->wq_ctrl)",
+          "buffer(mdev->mlx5e_res)",
+          "sinks(kvzalloc, memcpy)"
+        ],
+        "state_after": [
+          "diagnostic(csa)"
+        ],
+        "buffer_fields": [
+          "sq->wq_ctrl",
+          "mdev->mlx5e_res",
+          "cq->mcq",
+          "sq->sqn",
+          "sq->mdev",
+          "sq->wr_priv"
+        ],
+        "coverage_status": "partial",
+        "functions": [
+          "hws_send_ring_create_sq"
+        ],
+        "call_targets": [
+          "kvzalloc",
+          "memcpy",
+          "mlx5_is_real_time_sq",
+          "mlx5_fill_page_frag_array",
+          "mlx5_core_create_sq",
+          "kvfree"
+        ],
+        "call_edges": [
+          "hws_send_ring_create_sq -> __kvmalloc_node_noprof",
+          "hws_send_ring_create_sq -> __builtin_dynamic_object_size",
+          "hws_send_ring_create_sq -> fortify_memcpy_chk",
+          "hws_send_ring_create_sq -> __builtin_expect",
+          "hws_send_ring_create_sq -> __warn_printk",
+          "hws_send_ring_create_sq -> __builtin_memcpy"
+        ],
+        "state_statements": [
+          "[B1.4]->wq_ctrl",
+          "[B1.29]->sqn",
+          "[B1.33] = [B1.32]",
+          "kvfree",
+          "return [B1.42];",
+          "[B4.4]->wq_ctrl"
+        ],
+        "source_file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c",
+          "hunk_index": 0,
+          "source_line": 653
+        },
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at drivers/net/ethernet/mellanox/mlx5/core/steering/hws/mlx5hws_send.c:653",
+        "statements": [
+          "621:",
+          "622: \tinlen = MLX5_ST_SZ_BYTES(create_sq_in) +",
+          "623: \t\tsizeof(u64) * sq->wq_ctrl.buf.npages;",
+          "624: \tin = kvzalloc(inlen, GFP_KERNEL);",
+          "625: \tif (!in)",
+          "626: \t\treturn -ENOMEM;"
+        ],
+        "guards": [
+          "!in",
+          "do ... while [B2.1]",
+          "do ... while [B3.1]",
+          "do ... while [B5.1]"
+        ],
+        "call_boundary": [
+          "kvzalloc",
+          "memcpy",
+          "mlx5_is_real_time_sq",
+          "mlx5_fill_page_frag_array",
+          "mlx5_core_create_sq",
+          "kvfree"
+        ],
+        "call_edges": [
+          "hws_send_ring_create_sq -> __kvmalloc_node_noprof",
+          "hws_send_ring_create_sq -> __builtin_dynamic_object_size",
+          "hws_send_ring_create_sq -> fortify_memcpy_chk",
+          "hws_send_ring_create_sq -> __builtin_expect",
+          "hws_send_ring_create_sq -> __warn_printk",
+          "hws_send_ring_create_sq -> __builtin_memcpy"
+        ],
+        "state_transitions": [
+          "diagnostic(csa)"
+        ],
+        "api_terms": [
+          "memcpy",
+          "[B1.4]->wq_ctrl",
+          "[B1.29]->sqn",
+          "[B1.33] = [B1.32]",
+          "kvfree",
+          "return [B1.42];"
+        ],
+        "related_symbols": [],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      },
+      "confidence": 0.72
+    }
+  ],
+  "selected_context_summaries": [],
+  "semantic_clause_plan": [
+    {
+      "clause_id": "vulnerable_trigger_clause",
+      "intent": "Trigger on the vulnerable double_free mechanism using evidence-backed path/flow semantics.",
+      "supporting_evidence_ids": [
+        "csa_guard_0",
+        "csa_guard_1",
+        "csa_state_0",
+        "csa_state_1",
+        "csa_validation_allocation_lifecycle_1",
+        "csa_validation_semantic_slice_0"
+      ],
+      "repair_when": [
+        "semantic_no_hits"
+      ],
+      "focus_functions": []
+    },
+    {
+      "clause_id": "patched_silence_clause",
+      "intent": "Stay silent on patched code when patch-added guards, barriers, or safe APIs prove the mechanism is blocked.",
+      "supporting_evidence_ids": [
+        "csa_guard_0",
+        "csa_guard_1",
+        "csa_state_0",
+        "csa_state_1",
+        "csa_validation_semantic_slice_0"
+      ],
+      "repair_when": [],
+      "silencing_conditions": []
+    },
+    {
+      "clause_id": "semantic_transfer_clause",
+      "intent": "Generalize along semantic slices and call-chain evidence rather than patch-local syntax.",
+      "supporting_evidence_ids": [
+        "csa_validation_semantic_slice_0"
+      ],
+      "repair_when": [],
+      "analyzer_id": "csa"
+    },
+    {
+      "clause_id": "analyzer_interface_clause",
+      "intent": "Preserve valid analyzer-facing syntax and interfaces while keeping semantics unchanged.",
+      "supporting_evidence_ids": [],
+      "repair_when": [
+        "semantic_execution_error"
+      ],
+      "analyzer_id": "csa"
+    }
+  ],
+  "repair_directives": [],
+  "constraints": [
+    {
+      "title": "Generalize beyond patch site",
+      "description": "Do not bind the detector to fixed file paths, line numbers, or exact patch strings.",
+      "priority": "high"
+    },
+    {
+      "title": "Preserve vulnerability semantics",
+      "description": "Keep the detector focused on the vulnerability family implied by the patch and evidence.",
+      "priority": "high"
+    },
+    {
+      "title": "Respect analyzer-native form",
+      "description": "Output must be a valid checker_plugin for csa.",
+      "priority": "high"
+    },
+    {
+      "title": "Stay within proven mechanism scope",
+      "description": "Generalize only along evidence-supported semantic dimensions. Do not broaden the detector into unrelated globals, APIs, or bug families.",
+      "priority": "high"
+    },
+    {
+      "title": "Honor mechanism contract",
+      "description": "Preserve the mechanism family `resource_lifetime_violation` by keeping trigger invariants the same symbolic resource is released more than once on a feasible path; no reallocation, rebinding, or nulling separates the release events; Patch-backed trigger clue: added or highlighted APIs: hws_send_ring_destroy_sq, mlx5_core_destroy_sq.",
+      "priority": "high"
+    },
+    {
+      "title": "Generalize only on contract axes",
+      "description": "Reuse semantics only along these transfer axes: equivalent repeated-release sequences for the same resource role; equivalent ownership handoff patterns across sibling helpers; equivalent guard or barrier predicates on sibling paths.",
+      "priority": "high"
+    },
+    {
+      "title": "Encode the patch-added barrier",
+      "description": "use APIs such as hws_send_ring_destroy_sq, mlx5_core_destroy_sq as semantic clues, not string matches.",
+      "priority": "high"
+    },
+    {
+      "title": "Track resource identity across lifetime edges",
+      "description": "Model release, reuse, reinitialization, and ownership transfer on the same symbolic resource; do not count frees or uses in isolation.",
+      "priority": "high"
+    },
+    {
+      "title": "Do not key on local identifier names",
+      "description": "Do not define the vulnerable resource role solely by field/variable names such as session/cache/context; infer it from release-use-nulling-relookup semantics and alias continuity.",
+      "priority": "high"
+    },
+    {
+      "title": "Use path-sensitive evidence",
+      "description": "Prefer guards, state transitions, and lifecycle facts over broad textual matching.",
+      "priority": "high"
+    },
+    {
+      "title": "No placeholder helper logic",
+      "description": "Helper predicates must inspect AST/program state and must not be unconditional return-true/return-false stubs.",
+      "priority": "high"
+    }
+  ],
+  "implementation_hints": [
+    "Mechanism family: resource_lifetime_violation",
+    "Mechanism dimensions: resource identity or alias, release event count, reinitialization or nulling barrier",
+    "Trigger invariants: the same symbolic resource is released more than once on a feasible path, no reallocation, rebinding, or nulling separates the release events, Patch-backed trigger clue: added or highlighted APIs: hws_send_ring_destroy_sq, mlx5_core_destroy_sq",
+    "Silence invariants: the resource is nulled, transferred, or rebound after the first release, a guard prevents the second release on the active path",
+    "Transfer axes: equivalent repeated-release sequences for the same resource role, equivalent ownership handoff patterns across sibling helpers, equivalent guard or barrier predicates on sibling paths",
+    "Relevant APIs: hws_send_ring_destroy_sq, mlx5_core_destroy_sq",
+    "Patch mechanism: added or highlighted APIs: hws_send_ring_destroy_sq, mlx5_core_destroy_sq",
+    "Track the same symbolic resource across release, nulling/reinit, and later use/free; do not reduce lifecycle reasoning to raw API names."
+  ],
+  "validation_expectations": [
+    "Vulnerable version should trigger a double_free finding.",
+    "Patched version should stay silent for the same mechanism.",
+    "Semantic validation that executes but returns zero hits is not acceptable; recover coverage with evidence-backed semantics.",
+    "Repair phase may fix syntax/interfaces only; it must not simplify away the core detection logic.",
+    "Generalization must stay inside the mechanism contract transfer axes instead of widening to adjacent bug families.",
+    "Sibling variants that preserve the same release-then-use lifecycle should also trigger; patch-local identifier matching is not sufficient.",
+    "Trigger invariant: the same symbolic resource is released more than once on a feasible path.",
+    "Trigger invariant: no reallocation, rebinding, or nulling separates the release events."
+  ]
+}

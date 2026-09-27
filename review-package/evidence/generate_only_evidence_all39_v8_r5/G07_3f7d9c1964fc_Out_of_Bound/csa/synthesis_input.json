@@ -1,0 +1,1477 @@
+{
+  "analyzer_id": "csa",
+  "detector_artifact": "checker_plugin",
+  "primary_pattern": "out_of_bound",
+  "objective": "Synthesize a path-sensitive out_of_bound detector that encodes the same local state, guards, and lifecycle mechanism evidenced by the patch, while still generalizing to semantically equivalent sites.",
+  "mechanism_contract": {
+    "mechanism_family": "generic_vulnerability_mechanism",
+    "semantic_dimensions": [
+      "vulnerability trigger",
+      "patch-introduced barrier",
+      "local state or flow relation"
+    ],
+    "trigger_invariants": [
+      "the vulnerable mechanism is reachable on a feasible path",
+      "the path lacks the barrier introduced by the patch",
+      "Patch-backed trigger clue: added guard: if (vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE) {",
+      "Patch-backed trigger clue: added or highlighted APIs: dev_err"
+    ],
+    "silence_invariants": [
+      "patch-introduced guards, barriers, or safe APIs must suppress findings",
+      "length/capacity guard present: if (vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE) {"
+    ],
+    "transfer_axes": [
+      "only generalize along evidence-backed state, guard, flow, or API-role equivalence",
+      "equivalent guard or barrier predicates on sibling paths",
+      "equivalent local state transitions around the same sink or dereference",
+      "equivalent ownership or release/reinit lifecycle on the same symbolic resource"
+    ],
+    "forbidden_shortcuts": [
+      "bind the detector to fixed file paths, line numbers, or exact patch strings",
+      "broaden into unrelated bug families just to improve hit count",
+      "use the patch text itself as the matching rule",
+      "widen to unrelated bug families without evidence",
+      "placeholder helper logic or empty ProgramState modeling"
+    ],
+    "evidence_backed_axes": [
+      "path guards and barrier conditions",
+      "semantic trigger slice",
+      "state transitions",
+      "resource lifecycle"
+    ]
+  },
+  "detector_name_hint": "",
+  "focus_files": [],
+  "focus_functions": [],
+  "hypotheses": [
+    "Patch likely encodes a reusable vulnerability mechanism but available metadata is weak; keep evidence collection broad."
+  ],
+  "required_evidence_types": [
+    "patch_fact"
+  ],
+  "missing_evidence_types": [],
+  "evidence_degraded": false,
+  "patch_mechanism_signals": [
+    "added guard: if (vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE) {",
+    "added or highlighted APIs: dev_err"
+  ],
+  "silencing_conditions": [
+    "length/capacity guard present: if (vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE) {"
+  ],
+  "retry_guidance": [],
+  "selected_evidence_ids": [
+    "csa_guard_0",
+    "csa_guard_1",
+    "csa_semantic_slice_0",
+    "csa_state_0",
+    "csa_validation_allocation_lifecycle_0"
+  ],
+  "selected_evidence": [
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/virtio_net.c",
+        "function": "virtnet_probe"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE",
+        "summary": "virtnet_probe introduces patch guard `vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE` before netdev_priv, vi->dev = dev.",
+        "summary_line": 6451,
+        "state_before": [
+          "input(vi)",
+          "input(rss_key_size)",
+          "buffer(vi->rss_key_size)",
+          "buffer(vdev->dev)"
+        ],
+        "state_after": [
+          "guard(vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE)",
+          "current_call(netdev_priv)",
+          "current_call(vi->dev = dev)"
+        ],
+        "tracked_symbols": [
+          "vi",
+          "rss_key_size",
+          "VIRTIO_NET_RSS_MAX_KEY_SIZE",
+          "dev_err",
+          "vdev",
+          "dev"
+        ],
+        "buffer_fields": [
+          "vi->rss_key_size",
+          "vdev->dev",
+          "vi->dev",
+          "vi->vdev"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "virtnet_probe"
+        ],
+        "call_targets": [
+          "netdev_priv",
+          "vi->dev = dev",
+          "vi->vdev = vdev",
+          "vdev->priv = vi"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE"
+        ],
+        "call_edges": [
+          "virtnet_probe -> netdev_priv",
+          "virtnet_probe -> vi->dev = dev",
+          "virtnet_probe -> vi->vdev = vdev"
+        ],
+        "state_statements": [
+          "if (vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE) {",
+          "dev_err(&vdev->dev, \"rss_max_key_size=%u exceeds the limit %u.\\n\",",
+          "vi->rss_key_size, VIRTIO_NET_RSS_MAX_KEY_SIZE);",
+          "err = -EINVAL;",
+          "goto free;",
+          "}"
+        ],
+        "source_file": "drivers/net/virtio_net.c"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/net/virtio_net.c",
+          "hunk_index": 0,
+          "source_line": 6451
+        },
+        "summary": "virtnet_probe introduces patch guard `vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE` before netdev_priv, vi->dev = dev.",
+        "statements": [
+          "if (vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE) {",
+          "dev_err(&vdev->dev, \"rss_max_key_size=%u exceeds the limit %u.\\n\",",
+          "vi->rss_key_size, VIRTIO_NET_RSS_MAX_KEY_SIZE);",
+          "err = -EINVAL;",
+          "goto free;",
+          "}"
+        ],
+        "guards": [
+          "vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE"
+        ],
+        "call_boundary": [
+          "netdev_priv",
+          "vi->dev = dev",
+          "vi->vdev = vdev",
+          "vdev->priv = vi"
+        ],
+        "call_edges": [
+          "virtnet_probe -> netdev_priv",
+          "virtnet_probe -> vi->dev = dev",
+          "virtnet_probe -> vi->vdev = vdev"
+        ],
+        "state_transitions": [
+          "guard(vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE)",
+          "current_call(netdev_priv)",
+          "current_call(vi->dev = dev)"
+        ],
+        "api_terms": [
+          "netdev_priv",
+          "vi->dev = dev",
+          "vi->vdev = vdev"
+        ],
+        "related_symbols": [
+          "vi",
+          "rss_key_size",
+          "VIRTIO_NET_RSS_MAX_KEY_SIZE",
+          "dev_err",
+          "vdev",
+          "dev"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_guard_1",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/virtio_net.c",
+        "function": "virtnet_probe"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "if virtio_has_feature (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const struct virtio_device *, unsigned int))(vi (ImplicitCastExpr, LValueToRValue, struct virtnet_info *)->vdev (ImplicitCastExpr, LValueToRValue, struct virtio_device *) (ImplicitCastExpr, NoOp, const struct virtio_device *), guest_offloads (ImplicitCastExpr, ArrayToPointerDecay, const unsigned long *)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, unsigned long) (ImplicitCastExpr, IntegralCast, unsigned int))",
+        "summary": "Analyzer CFG for virtnet_probe in drivers/net/virtio_net.c: bindings: max_queue_pairs = virtio_cread16 (ImplicitCastExpr, FunctionToPointerDecay, u16 (*)(struct virtio_device *, unsigned int))(vdev (ImplicitCastExpr, LValueToRValue, struct virtio_device *), __builtin_offsetof(struct virtio_net_config, max_virtqueue_pairs) (ImplicitCastExpr, IntegralCast, unsigned int)); mtu = virtio_cread16 (ImplicitCastExpr, FunctionToPointerDecay, u16 (*)(struct virtio_device *, unsigned int))(vdev (ImplicitCastExpr, LValueToRValue, struct virtio_device *), __builtin_offsetof(struct virtio_net_config, mtu) (ImplicitCastExpr, IntegralCast, unsigned int)) (ImplicitCastExpr, IntegralCast, int) | branches: if virtio_has_feature (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const struct virtio_device *, unsigned int))(vi (ImplicitCastExpr, LValueToRValue, struct virtnet_info *)->vdev (ImplicitCastExpr, LValueToRValue, struct virtio_device *) (ImplicitCastExpr, NoOp, const struct virtio_device *), guest_offloads (ImplicitCastExpr, ArrayToPointerDecay, const unsigned long *)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, unsigned long) (ImplicitCastExpr, IntegralCast, unsigned int)); if virtio_has_feature (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const struct virtio_device *, unsigned int))(vi (ImplicitCastExpr, LValueToRValue, struct virtnet_info *)->vdev (ImplicitCastExpr, LValueToRValue, struct virtio_device *) (ImplicitCastExpr, NoOp, const struct virtio_device *), 16 (ImplicitCastExpr, IntegralCast, unsigned int)) | calls: virtnet_probe -> virtio_has_feature; virtnet_probe -> virtio_cread16",
+        "summary_line": 6451,
+        "state_before": [
+          "input(vdev)",
+          "buffer(vi->cvq_lock)",
+          "buffer(vi->refill_lock)",
+          "sinks(netdev_priv, spin_lock_init)"
+        ],
+        "state_after": [
+          "cfg_binding(max_queue_pairs = virtio_cread16 (ImplicitCastExpr, FunctionToPointerDecay, u16 (*)(struct virtio_device *, unsigned int))(vdev (ImplicitCastExpr, LValueToRValue, struct virtio_device *), __builtin_offsetof(struct virtio_net_config, max_virtqueue_pairs) (ImplicitCastExpr, IntegralCast, unsigned int)))",
+          "cfg_binding(mtu = virtio_cread16 (ImplicitCastExpr, FunctionToPointerDecay, u16 (*)(struct virtio_device *, unsigned int))(vdev (ImplicitCastExpr, LValueToRValue, struct virtio_device *), __builtin_offsetof(struct virtio_net_config, mtu) (ImplicitCastExpr, IntegralCast, unsigned int)) (ImplicitCastExpr, IntegralCast, int))",
+          "cfg_branch(if virtio_has_feature (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const struct virtio_device *, unsigned int))(vi (ImplicitCastExpr, LValueToRValue, struct virtnet_info *)->vdev (ImplicitCastExpr, LValueToRValue, struct virtio_device *) (ImplicitCastExpr, NoOp, const struct virtio_device *), guest_offloads (ImplicitCastExpr, ArrayToPointerDecay, const unsigned long *)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, unsigned long) (ImplicitCastExpr, IntegralCast, unsigned int)))",
+          "cfg_branch(if virtio_has_feature (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const struct virtio_device *, unsigned int))(vi (ImplicitCastExpr, LValueToRValue, struct virtnet_info *)->vdev (ImplicitCastExpr, LValueToRValue, struct virtio_device *) (ImplicitCastExpr, NoOp, const struct virtio_device *), 16 (ImplicitCastExpr, IntegralCast, unsigned int)))"
+        ],
+        "tracked_symbols": [
+          "vdev",
+          "vi->cvq_lock",
+          "vi->refill_lock",
+          "vi->rx_mode_work",
+          "vi->config_work",
+          "dev->dev_addr",
+          "vi->dev"
+        ],
+        "buffer_fields": [
+          "vi->cvq_lock",
+          "vi->refill_lock",
+          "vi->rx_mode_work",
+          "vi->config_work",
+          "dev->dev_addr",
+          "vi->dev"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "virtnet_probe"
+        ],
+        "call_targets": [
+          "netdev_priv",
+          "spin_lock_init",
+          "virtio_cread16",
+          "offsetof",
+          "rss_indirection_table_alloc",
+          "virtio_cread8",
+          "virtio_cread32",
+          "virtio_has_feature"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,drivers/net/.virtio_net.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/uapi -I./arch/x86/...",
+        "cfg_branch_kinds": [
+          "if",
+          "for"
+        ],
+        "branch_conditions": [
+          "do ... while [B6.1]",
+          "if [B8.11]",
+          "if [B11.1]",
+          "if [B13.2]",
+          "do ... while [B14.1]",
+          "if [B16.13]"
+        ],
+        "call_edges": [
+          "virtnet_probe -> virtio_has_feature",
+          "virtnet_probe -> virtio_cread16",
+          "virtnet_probe -> alloc_etherdev_mqs",
+          "virtnet_probe -> virtio_cread_bytes",
+          "virtnet_probe -> eth_hw_addr_set",
+          "virtnet_probe -> eth_hw_addr_random"
+        ],
+        "state_statements": [
+          "free_netdev",
+          "return [B1.7];",
+          "[B2.9]->refill",
+          "free_receive_page_frags",
+          "[B3.4]->failover",
+          "return [B5.1];"
+        ],
+        "source_file": "drivers/net/virtio_net.c"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/net/virtio_net.c",
+          "hunk_index": 0,
+          "source_line": 6451
+        },
+        "summary": "Analyzer CFG for virtnet_probe in drivers/net/virtio_net.c: bindings: max_queue_pairs = virtio_cread16 (ImplicitCastExpr, FunctionToPointerDecay, u16 (*)(struct virtio_device *, unsigned int))(vdev (ImplicitCastExpr, LValueToRValue, struct virtio_device *), __builtin_offsetof(struct virtio_net_config, max_virtqueue_pairs) (ImplicitCastExpr, IntegralCast, unsigned int)); mtu = virtio_cread16 (ImplicitCastExpr, FunctionToPointerDecay, u16 (*)(struct virtio_device *, unsigned int))(vdev (ImplicitCastExpr, LValueToRValue, struct virtio_device *), __builtin_offsetof(struct virtio_net_config, mtu) (ImplicitCastExpr, IntegralCast, unsigned int)) (ImplicitCastExpr, IntegralCast, int) | branches: if virtio_has_feature (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const struct virtio_device *, unsigned int))(vi (ImplicitCastExpr, LValueToRValue, struct virtnet_info *)->vdev (ImplicitCastExpr, LValueToRValue, struct virtio_device *) (ImplicitCastExpr, NoOp, const struct virtio_device *), guest_offloads (ImplicitCastExpr, ArrayToPointerDecay, const unsigned long *)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, unsigned long) (ImplicitCastExpr, IntegralCast, unsigned int)); if virtio_has_feature (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const struct virtio_device *, unsigned int))(vi (ImplicitCastExpr, LValueToRValue, struct virtnet_info *)->vdev (ImplicitCastExpr, LValueToRValue, struct virtio_device *) (ImplicitCastExpr, NoOp, const struct virtio_device *), 16 (ImplicitCastExpr, IntegralCast, unsigned int)) | calls: virtnet_probe -> virtio_has_feature; virtnet_probe -> virtio_cread16",
+        "statements": [
+          "6419: \t\t\t dev->dev_addr);",
+          "6420: \t}",
+          "6421:",
+          "6422: \t/* Set up our device-specific information */",
+          "6423: \tvi = netdev_priv(dev);",
+          "6424: \tvi->dev = dev;"
+        ],
+        "guards": [
+          "if virtio_has_feature (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const struct virtio_device *, unsigned int))(vi (ImplicitCastExpr, LValueToRValue, struct virtnet_info *)->vdev (ImplicitCastExpr, LValueToRValue, struct virtio_device *) (ImplicitCastExpr, NoOp, const struct virtio_device *), guest_offloads (ImplicitCastExpr, ArrayToPointerDecay, const unsigned long *)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, unsigned long) (ImplicitCastExpr, IntegralCast, unsigned int))",
+          "if virtio_has_feature (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const struct virtio_device *, unsigned int))(vi (ImplicitCastExpr, LValueToRValue, struct virtnet_info *)->vdev (ImplicitCastExpr, LValueToRValue, struct virtio_device *) (ImplicitCastExpr, NoOp, const struct virtio_device *), 16 (ImplicitCastExpr, IntegralCast, unsigned int))",
+          "if virtio_has_feature (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const struct virtio_device *, unsigned int))(vi (ImplicitCastExpr, LValueToRValue, struct virtnet_info *)->vdev (ImplicitCastExpr, LValueToRValue, struct virtio_device *) (ImplicitCastExpr, NoOp, const struct virtio_device *), 50 (ImplicitCastExpr, IntegralCast, unsigned int))",
+          "if !virtio_has_feature (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const struct virtio_device *, unsigned int))(vdev (ImplicitCastExpr, LValueToRValue, struct virtio_device *) (ImplicitCastExpr, NoOp, const struct virtio_device *), 5 (ImplicitCastExpr, IntegralCast, unsigned int)) && virtio_has_feature (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const struct virtio_device *, unsigned int))(vi (ImplicitCastExpr, LValueToRValue, struct virtnet_info *)->vdev (ImplicitCastExpr, LValueToRValue, struct virtio_device *) (ImplicitCastExpr, NoOp, const struct virtio_device *), 23 (ImplicitCastExpr, IntegralCast, unsigned int)) (ImplicitCastExpr, IntegralCast, int)"
+        ],
+        "call_boundary": [
+          "netdev_priv",
+          "spin_lock_init",
+          "virtio_cread16",
+          "offsetof",
+          "rss_indirection_table_alloc",
+          "virtio_cread8"
+        ],
+        "call_edges": [
+          "virtnet_probe -> virtio_has_feature",
+          "virtnet_probe -> virtio_cread16",
+          "virtnet_probe -> alloc_etherdev_mqs",
+          "virtnet_probe -> virtio_cread_bytes",
+          "virtnet_probe -> eth_hw_addr_set",
+          "virtnet_probe -> eth_hw_addr_random",
+          "virtnet_probe -> __builtin_constant_p",
+          "virtnet_probe -> _dev_info"
+        ],
+        "state_transitions": [
+          "cfg_binding(max_queue_pairs = virtio_cread16 (ImplicitCastExpr, FunctionToPointerDecay, u16 (*)(struct virtio_device *, unsigned int))(vdev (ImplicitCastExpr, LValueToRValue, struct virtio_device *), __builtin_offsetof(struct virtio_net_config, max_virtqueue_pairs) (ImplicitCastExpr, IntegralCast, unsigned int)))",
+          "cfg_binding(mtu = virtio_cread16 (ImplicitCastExpr, FunctionToPointerDecay, u16 (*)(struct virtio_device *, unsigned int))(vdev (ImplicitCastExpr, LValueToRValue, struct virtio_device *), __builtin_offsetof(struct virtio_net_config, mtu) (ImplicitCastExpr, IntegralCast, unsigned int)) (ImplicitCastExpr, IntegralCast, int))",
+          "cfg_branch(if virtio_has_feature (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const struct virtio_device *, unsigned int))(vi (ImplicitCastExpr, LValueToRValue, struct virtnet_info *)->vdev (ImplicitCastExpr, LValueToRValue, struct virtio_device *) (ImplicitCastExpr, NoOp, const struct virtio_device *), guest_offloads (ImplicitCastExpr, ArrayToPointerDecay, const unsigned long *)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, unsigned long) (ImplicitCastExpr, IntegralCast, unsigned int)))",
+          "cfg_branch(if virtio_has_feature (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const struct virtio_device *, unsigned int))(vi (ImplicitCastExpr, LValueToRValue, struct virtnet_info *)->vdev (ImplicitCastExpr, LValueToRValue, struct virtio_device *) (ImplicitCastExpr, NoOp, const struct virtio_device *), 16 (ImplicitCastExpr, IntegralCast, unsigned int)))",
+          "free_netdev",
+          "return [B1.7];"
+        ],
+        "api_terms": [
+          "virtio_has_feature",
+          "virtio_cread16",
+          "alloc_etherdev_mqs",
+          "virtio_cread_bytes",
+          "eth_hw_addr_set",
+          "eth_hw_addr_random"
+        ],
+        "related_symbols": [
+          "vdev",
+          "vi->cvq_lock",
+          "vi->refill_lock",
+          "vi->rx_mode_work",
+          "vi->config_work",
+          "dev->dev_addr"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/virtio_net.c",
+        "function": "virtnet_probe"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "virtnet_probe adds patch barrier `vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE` around netdev_priv, vi->dev = dev.",
+        "tracked_symbols": [
+          "vi",
+          "rss_key_size",
+          "VIRTIO_NET_RSS_MAX_KEY_SIZE",
+          "dev_err",
+          "vdev",
+          "dev",
+          "rss_max_key_size",
+          "u"
+        ],
+        "buffer_fields": [
+          "vi->rss_key_size",
+          "vdev->dev",
+          "vi->dev",
+          "vi->vdev",
+          "vdev->priv"
+        ],
+        "coverage_status": "full",
+        "source_file": "drivers/net/virtio_net.c"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "drivers/net/virtio_net.c",
+          "hunk_index": 0,
+          "source_line": 6451
+        },
+        "summary": "virtnet_probe adds patch barrier `vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE` around netdev_priv, vi->dev = dev.",
+        "statements": [
+          "if (vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE) {",
+          "dev_err(&vdev->dev, \"rss_max_key_size=%u exceeds the limit %u.\\n\",",
+          "vi->rss_key_size, VIRTIO_NET_RSS_MAX_KEY_SIZE);",
+          "err = -EINVAL;",
+          "goto free;",
+          "}"
+        ],
+        "guards": [
+          "vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE"
+        ],
+        "call_boundary": [
+          "netdev_priv",
+          "vi->dev = dev",
+          "vi->vdev = vdev",
+          "vdev->priv = vi"
+        ],
+        "call_edges": [
+          "virtnet_probe -> netdev_priv",
+          "virtnet_probe -> vi->dev = dev",
+          "virtnet_probe -> vi->vdev = vdev"
+        ],
+        "state_transitions": [
+          "",
+          "report when a risky write proceeds without the patch-style barrier",
+          "stay silent when the nearby guard proves the current write is blocked or bounded"
+        ],
+        "api_terms": [
+          "netdev_priv",
+          "vi->dev = dev",
+          "vi->vdev = vdev",
+          "dev_err"
+        ],
+        "related_symbols": [
+          "vi",
+          "rss_key_size",
+          "VIRTIO_NET_RSS_MAX_KEY_SIZE",
+          "dev_err",
+          "vdev",
+          "dev"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/virtio_net.c",
+        "function": "virtnet_probe"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "virtnet_probe adds patch barrier `vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE` around netdev_priv, vi->dev = dev.",
+        "state_before": [
+          "input(vi)",
+          "input(rss_key_size)",
+          "buffer(vi->rss_key_size)",
+          "buffer(vdev->dev)"
+        ],
+        "state_after": [
+          "guard(vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE)",
+          "sink(netdev_priv)",
+          "sink(vi->dev = dev)"
+        ],
+        "tracked_symbols": [
+          "vi",
+          "rss_key_size",
+          "VIRTIO_NET_RSS_MAX_KEY_SIZE",
+          "dev_err",
+          "vdev",
+          "dev"
+        ],
+        "buffer_fields": [
+          "vi->rss_key_size",
+          "vdev->dev",
+          "vi->dev",
+          "vi->vdev"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "virtnet_probe"
+        ],
+        "call_targets": [
+          "netdev_priv",
+          "vi->dev = dev",
+          "vi->vdev = vdev",
+          "vdev->priv = vi"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE"
+        ],
+        "call_edges": [
+          "virtnet_probe -> netdev_priv",
+          "virtnet_probe -> vi->dev = dev",
+          "virtnet_probe -> vi->vdev = vdev"
+        ],
+        "state_statements": [
+          "if (vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE) {",
+          "dev_err(&vdev->dev, \"rss_max_key_size=%u exceeds the limit %u.\\n\",",
+          "vi->rss_key_size, VIRTIO_NET_RSS_MAX_KEY_SIZE);",
+          "err = -EINVAL;",
+          "goto free;",
+          "}"
+        ],
+        "source_file": "drivers/net/virtio_net.c"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "drivers/net/virtio_net.c",
+          "hunk_index": 0,
+          "source_line": 6451
+        },
+        "summary": "virtnet_probe adds patch barrier `vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE` around netdev_priv, vi->dev = dev.",
+        "statements": [
+          "if (vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE) {",
+          "dev_err(&vdev->dev, \"rss_max_key_size=%u exceeds the limit %u.\\n\",",
+          "vi->rss_key_size, VIRTIO_NET_RSS_MAX_KEY_SIZE);",
+          "err = -EINVAL;",
+          "goto free;",
+          "}"
+        ],
+        "guards": [
+          "vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE"
+        ],
+        "call_boundary": [
+          "netdev_priv",
+          "vi->dev = dev",
+          "vi->vdev = vdev",
+          "vdev->priv = vi"
+        ],
+        "call_edges": [
+          "virtnet_probe -> netdev_priv",
+          "virtnet_probe -> vi->dev = dev",
+          "virtnet_probe -> vi->vdev = vdev"
+        ],
+        "state_transitions": [
+          "guard(vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE)",
+          "sink(netdev_priv)",
+          "sink(vi->dev = dev)"
+        ],
+        "api_terms": [
+          "netdev_priv",
+          "vi->dev = dev",
+          "vi->vdev = vdev"
+        ],
+        "related_symbols": [
+          "vi",
+          "rss_key_size",
+          "VIRTIO_NET_RSS_MAX_KEY_SIZE",
+          "dev_err",
+          "vdev",
+          "dev"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      },
+      "confidence": 0.9
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_0",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/virtio_net.c",
+        "function": "virtnet_probe"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "virtnet_probe in drivers/net/virtio_net.c provides CSA-backed pointer/resource lifecycle context near line 6451",
+        "state_before": [
+          "input(vdev)",
+          "buffer(vi->cvq_lock)",
+          "buffer(vi->refill_lock)",
+          "sinks(netdev_priv, spin_lock_init)"
+        ],
+        "state_after": [
+          "operation(free_netdev)",
+          "operation(return [B1.7];)",
+          "operation([B2.9]->refill)",
+          "operation(free_receive_page_frags)"
+        ],
+        "tracked_symbols": [
+          "vdev",
+          "vi",
+          "rss_key_size",
+          "VIRTIO_NET_RSS_MAX_KEY_SIZE",
+          "dev_err",
+          "dev"
+        ],
+        "buffer_fields": [
+          "vi->cvq_lock",
+          "vi->refill_lock",
+          "vi->rx_mode_work",
+          "vi->config_work",
+          "dev->dev_addr",
+          "vi->dev"
+        ],
+        "coverage_status": "partial",
+        "operations": [
+          "free_netdev",
+          "return [B1.7];",
+          "[B2.9]->refill",
+          "free_receive_page_frags",
+          "[B3.4]->failover",
+          "return [B5.1];"
+        ],
+        "functions": [
+          "virtnet_probe"
+        ],
+        "call_targets": [
+          "netdev_priv",
+          "spin_lock_init",
+          "virtio_cread16",
+          "offsetof",
+          "rss_indirection_table_alloc",
+          "virtio_cread8"
+        ],
+        "call_edges": [
+          "virtnet_probe -> virtio_has_feature",
+          "virtnet_probe -> virtio_cread16",
+          "virtnet_probe -> alloc_etherdev_mqs",
+          "virtnet_probe -> virtio_cread_bytes",
+          "virtnet_probe -> eth_hw_addr_set",
+          "virtnet_probe -> eth_hw_addr_random"
+        ],
+        "state_statements": [
+          "free_netdev",
+          "return [B1.7];",
+          "[B2.9]->refill",
+          "free_receive_page_frags",
+          "[B3.4]->failover",
+          "return [B5.1];"
+        ],
+        "source_file": "drivers/net/virtio_net.c"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "drivers/net/virtio_net.c",
+          "hunk_index": 0,
+          "source_line": 6451
+        },
+        "summary": "virtnet_probe in drivers/net/virtio_net.c provides CSA-backed pointer/resource lifecycle context near line 6451",
+        "statements": [
+          "6419: \t\t\t dev->dev_addr);",
+          "6420: \t}",
+          "6421:",
+          "6422: \t/* Set up our device-specific information */",
+          "6423: \tvi = netdev_priv(dev);",
+          "6424: \tvi->dev = dev;"
+        ],
+        "guards": [
+          "virtio_has_feature(vdev, VIRTIO_NET_F_MRG_RXBUF)",
+          "virtio_has_feature(vdev, VIRTIO_NET_F_HASH_REPORT)",
+          "virtio_has_feature(vdev, VIRTIO_NET_F_RSS)",
+          "err"
+        ],
+        "call_boundary": [
+          "netdev_priv",
+          "spin_lock_init",
+          "virtio_cread16",
+          "offsetof",
+          "rss_indirection_table_alloc",
+          "virtio_cread8"
+        ],
+        "call_edges": [
+          "virtnet_probe -> virtio_has_feature",
+          "virtnet_probe -> virtio_cread16",
+          "virtnet_probe -> alloc_etherdev_mqs",
+          "virtnet_probe -> virtio_cread_bytes",
+          "virtnet_probe -> eth_hw_addr_set",
+          "virtnet_probe -> eth_hw_addr_random"
+        ],
+        "state_transitions": [
+          "operation(free_netdev)",
+          "operation(return [B1.7];)",
+          "operation([B2.9]->refill)",
+          "operation(free_receive_page_frags)"
+        ],
+        "api_terms": [
+          "free_netdev",
+          "return [B1.7];",
+          "[B2.9]->refill",
+          "free_receive_page_frags",
+          "[B3.4]->failover",
+          "return [B5.1];"
+        ],
+        "related_symbols": [
+          "vdev",
+          "vi",
+          "rss_key_size",
+          "VIRTIO_NET_RSS_MAX_KEY_SIZE",
+          "dev_err",
+          "dev"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      },
+      "confidence": 0.72
+    }
+  ],
+  "semantic_slice_count": 5,
+  "context_summary_count": 0,
+  "semantic_slice_coverage": "partial",
+  "selected_semantic_slice_ids": [
+    "csa_guard_0",
+    "csa_guard_1",
+    "csa_semantic_slice_0",
+    "csa_state_0",
+    "csa_validation_allocation_lifecycle_0"
+  ],
+  "selected_context_summary_ids": [],
+  "selected_semantic_slices": [
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/virtio_net.c",
+        "function": "virtnet_probe"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE",
+        "summary": "virtnet_probe introduces patch guard `vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE` before netdev_priv, vi->dev = dev.",
+        "summary_line": 6451,
+        "state_before": [
+          "input(vi)",
+          "input(rss_key_size)",
+          "buffer(vi->rss_key_size)",
+          "buffer(vdev->dev)"
+        ],
+        "state_after": [
+          "guard(vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE)",
+          "current_call(netdev_priv)",
+          "current_call(vi->dev = dev)"
+        ],
+        "tracked_symbols": [
+          "vi",
+          "rss_key_size",
+          "VIRTIO_NET_RSS_MAX_KEY_SIZE",
+          "dev_err",
+          "vdev",
+          "dev"
+        ],
+        "buffer_fields": [
+          "vi->rss_key_size",
+          "vdev->dev",
+          "vi->dev",
+          "vi->vdev"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "virtnet_probe"
+        ],
+        "call_targets": [
+          "netdev_priv",
+          "vi->dev = dev",
+          "vi->vdev = vdev",
+          "vdev->priv = vi"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE"
+        ],
+        "call_edges": [
+          "virtnet_probe -> netdev_priv",
+          "virtnet_probe -> vi->dev = dev",
+          "virtnet_probe -> vi->vdev = vdev"
+        ],
+        "state_statements": [
+          "if (vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE) {",
+          "dev_err(&vdev->dev, \"rss_max_key_size=%u exceeds the limit %u.\\n\",",
+          "vi->rss_key_size, VIRTIO_NET_RSS_MAX_KEY_SIZE);",
+          "err = -EINVAL;",
+          "goto free;",
+          "}"
+        ],
+        "source_file": "drivers/net/virtio_net.c"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/net/virtio_net.c",
+          "hunk_index": 0,
+          "source_line": 6451
+        },
+        "summary": "virtnet_probe introduces patch guard `vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE` before netdev_priv, vi->dev = dev.",
+        "statements": [
+          "if (vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE) {",
+          "dev_err(&vdev->dev, \"rss_max_key_size=%u exceeds the limit %u.\\n\",",
+          "vi->rss_key_size, VIRTIO_NET_RSS_MAX_KEY_SIZE);",
+          "err = -EINVAL;",
+          "goto free;",
+          "}"
+        ],
+        "guards": [
+          "vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE"
+        ],
+        "call_boundary": [
+          "netdev_priv",
+          "vi->dev = dev",
+          "vi->vdev = vdev",
+          "vdev->priv = vi"
+        ],
+        "call_edges": [
+          "virtnet_probe -> netdev_priv",
+          "virtnet_probe -> vi->dev = dev",
+          "virtnet_probe -> vi->vdev = vdev"
+        ],
+        "state_transitions": [
+          "guard(vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE)",
+          "current_call(netdev_priv)",
+          "current_call(vi->dev = dev)"
+        ],
+        "api_terms": [
+          "netdev_priv",
+          "vi->dev = dev",
+          "vi->vdev = vdev"
+        ],
+        "related_symbols": [
+          "vi",
+          "rss_key_size",
+          "VIRTIO_NET_RSS_MAX_KEY_SIZE",
+          "dev_err",
+          "vdev",
+          "dev"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_guard_1",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/virtio_net.c",
+        "function": "virtnet_probe"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "if virtio_has_feature (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const struct virtio_device *, unsigned int))(vi (ImplicitCastExpr, LValueToRValue, struct virtnet_info *)->vdev (ImplicitCastExpr, LValueToRValue, struct virtio_device *) (ImplicitCastExpr, NoOp, const struct virtio_device *), guest_offloads (ImplicitCastExpr, ArrayToPointerDecay, const unsigned long *)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, unsigned long) (ImplicitCastExpr, IntegralCast, unsigned int))",
+        "summary": "Analyzer CFG for virtnet_probe in drivers/net/virtio_net.c: bindings: max_queue_pairs = virtio_cread16 (ImplicitCastExpr, FunctionToPointerDecay, u16 (*)(struct virtio_device *, unsigned int))(vdev (ImplicitCastExpr, LValueToRValue, struct virtio_device *), __builtin_offsetof(struct virtio_net_config, max_virtqueue_pairs) (ImplicitCastExpr, IntegralCast, unsigned int)); mtu = virtio_cread16 (ImplicitCastExpr, FunctionToPointerDecay, u16 (*)(struct virtio_device *, unsigned int))(vdev (ImplicitCastExpr, LValueToRValue, struct virtio_device *), __builtin_offsetof(struct virtio_net_config, mtu) (ImplicitCastExpr, IntegralCast, unsigned int)) (ImplicitCastExpr, IntegralCast, int) | branches: if virtio_has_feature (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const struct virtio_device *, unsigned int))(vi (ImplicitCastExpr, LValueToRValue, struct virtnet_info *)->vdev (ImplicitCastExpr, LValueToRValue, struct virtio_device *) (ImplicitCastExpr, NoOp, const struct virtio_device *), guest_offloads (ImplicitCastExpr, ArrayToPointerDecay, const unsigned long *)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, unsigned long) (ImplicitCastExpr, IntegralCast, unsigned int)); if virtio_has_feature (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const struct virtio_device *, unsigned int))(vi (ImplicitCastExpr, LValueToRValue, struct virtnet_info *)->vdev (ImplicitCastExpr, LValueToRValue, struct virtio_device *) (ImplicitCastExpr, NoOp, const struct virtio_device *), 16 (ImplicitCastExpr, IntegralCast, unsigned int)) | calls: virtnet_probe -> virtio_has_feature; virtnet_probe -> virtio_cread16",
+        "summary_line": 6451,
+        "state_before": [
+          "input(vdev)",
+          "buffer(vi->cvq_lock)",
+          "buffer(vi->refill_lock)",
+          "sinks(netdev_priv, spin_lock_init)"
+        ],
+        "state_after": [
+          "cfg_binding(max_queue_pairs = virtio_cread16 (ImplicitCastExpr, FunctionToPointerDecay, u16 (*)(struct virtio_device *, unsigned int))(vdev (ImplicitCastExpr, LValueToRValue, struct virtio_device *), __builtin_offsetof(struct virtio_net_config, max_virtqueue_pairs) (ImplicitCastExpr, IntegralCast, unsigned int)))",
+          "cfg_binding(mtu = virtio_cread16 (ImplicitCastExpr, FunctionToPointerDecay, u16 (*)(struct virtio_device *, unsigned int))(vdev (ImplicitCastExpr, LValueToRValue, struct virtio_device *), __builtin_offsetof(struct virtio_net_config, mtu) (ImplicitCastExpr, IntegralCast, unsigned int)) (ImplicitCastExpr, IntegralCast, int))",
+          "cfg_branch(if virtio_has_feature (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const struct virtio_device *, unsigned int))(vi (ImplicitCastExpr, LValueToRValue, struct virtnet_info *)->vdev (ImplicitCastExpr, LValueToRValue, struct virtio_device *) (ImplicitCastExpr, NoOp, const struct virtio_device *), guest_offloads (ImplicitCastExpr, ArrayToPointerDecay, const unsigned long *)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, unsigned long) (ImplicitCastExpr, IntegralCast, unsigned int)))",
+          "cfg_branch(if virtio_has_feature (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const struct virtio_device *, unsigned int))(vi (ImplicitCastExpr, LValueToRValue, struct virtnet_info *)->vdev (ImplicitCastExpr, LValueToRValue, struct virtio_device *) (ImplicitCastExpr, NoOp, const struct virtio_device *), 16 (ImplicitCastExpr, IntegralCast, unsigned int)))"
+        ],
+        "tracked_symbols": [
+          "vdev",
+          "vi->cvq_lock",
+          "vi->refill_lock",
+          "vi->rx_mode_work",
+          "vi->config_work",
+          "dev->dev_addr",
+          "vi->dev"
+        ],
+        "buffer_fields": [
+          "vi->cvq_lock",
+          "vi->refill_lock",
+          "vi->rx_mode_work",
+          "vi->config_work",
+          "dev->dev_addr",
+          "vi->dev"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "virtnet_probe"
+        ],
+        "call_targets": [
+          "netdev_priv",
+          "spin_lock_init",
+          "virtio_cread16",
+          "offsetof",
+          "rss_indirection_table_alloc",
+          "virtio_cread8",
+          "virtio_cread32",
+          "virtio_has_feature"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,drivers/net/.virtio_net.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/uapi -I./arch/x86/...",
+        "cfg_branch_kinds": [
+          "if",
+          "for"
+        ],
+        "branch_conditions": [
+          "do ... while [B6.1]",
+          "if [B8.11]",
+          "if [B11.1]",
+          "if [B13.2]",
+          "do ... while [B14.1]",
+          "if [B16.13]"
+        ],
+        "call_edges": [
+          "virtnet_probe -> virtio_has_feature",
+          "virtnet_probe -> virtio_cread16",
+          "virtnet_probe -> alloc_etherdev_mqs",
+          "virtnet_probe -> virtio_cread_bytes",
+          "virtnet_probe -> eth_hw_addr_set",
+          "virtnet_probe -> eth_hw_addr_random"
+        ],
+        "state_statements": [
+          "free_netdev",
+          "return [B1.7];",
+          "[B2.9]->refill",
+          "free_receive_page_frags",
+          "[B3.4]->failover",
+          "return [B5.1];"
+        ],
+        "source_file": "drivers/net/virtio_net.c"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/net/virtio_net.c",
+          "hunk_index": 0,
+          "source_line": 6451
+        },
+        "summary": "Analyzer CFG for virtnet_probe in drivers/net/virtio_net.c: bindings: max_queue_pairs = virtio_cread16 (ImplicitCastExpr, FunctionToPointerDecay, u16 (*)(struct virtio_device *, unsigned int))(vdev (ImplicitCastExpr, LValueToRValue, struct virtio_device *), __builtin_offsetof(struct virtio_net_config, max_virtqueue_pairs) (ImplicitCastExpr, IntegralCast, unsigned int)); mtu = virtio_cread16 (ImplicitCastExpr, FunctionToPointerDecay, u16 (*)(struct virtio_device *, unsigned int))(vdev (ImplicitCastExpr, LValueToRValue, struct virtio_device *), __builtin_offsetof(struct virtio_net_config, mtu) (ImplicitCastExpr, IntegralCast, unsigned int)) (ImplicitCastExpr, IntegralCast, int) | branches: if virtio_has_feature (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const struct virtio_device *, unsigned int))(vi (ImplicitCastExpr, LValueToRValue, struct virtnet_info *)->vdev (ImplicitCastExpr, LValueToRValue, struct virtio_device *) (ImplicitCastExpr, NoOp, const struct virtio_device *), guest_offloads (ImplicitCastExpr, ArrayToPointerDecay, const unsigned long *)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, unsigned long) (ImplicitCastExpr, IntegralCast, unsigned int)); if virtio_has_feature (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const struct virtio_device *, unsigned int))(vi (ImplicitCastExpr, LValueToRValue, struct virtnet_info *)->vdev (ImplicitCastExpr, LValueToRValue, struct virtio_device *) (ImplicitCastExpr, NoOp, const struct virtio_device *), 16 (ImplicitCastExpr, IntegralCast, unsigned int)) | calls: virtnet_probe -> virtio_has_feature; virtnet_probe -> virtio_cread16",
+        "statements": [
+          "6419: \t\t\t dev->dev_addr);",
+          "6420: \t}",
+          "6421:",
+          "6422: \t/* Set up our device-specific information */",
+          "6423: \tvi = netdev_priv(dev);",
+          "6424: \tvi->dev = dev;"
+        ],
+        "guards": [
+          "if virtio_has_feature (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const struct virtio_device *, unsigned int))(vi (ImplicitCastExpr, LValueToRValue, struct virtnet_info *)->vdev (ImplicitCastExpr, LValueToRValue, struct virtio_device *) (ImplicitCastExpr, NoOp, const struct virtio_device *), guest_offloads (ImplicitCastExpr, ArrayToPointerDecay, const unsigned long *)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, unsigned long) (ImplicitCastExpr, IntegralCast, unsigned int))",
+          "if virtio_has_feature (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const struct virtio_device *, unsigned int))(vi (ImplicitCastExpr, LValueToRValue, struct virtnet_info *)->vdev (ImplicitCastExpr, LValueToRValue, struct virtio_device *) (ImplicitCastExpr, NoOp, const struct virtio_device *), 16 (ImplicitCastExpr, IntegralCast, unsigned int))",
+          "if virtio_has_feature (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const struct virtio_device *, unsigned int))(vi (ImplicitCastExpr, LValueToRValue, struct virtnet_info *)->vdev (ImplicitCastExpr, LValueToRValue, struct virtio_device *) (ImplicitCastExpr, NoOp, const struct virtio_device *), 50 (ImplicitCastExpr, IntegralCast, unsigned int))",
+          "if !virtio_has_feature (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const struct virtio_device *, unsigned int))(vdev (ImplicitCastExpr, LValueToRValue, struct virtio_device *) (ImplicitCastExpr, NoOp, const struct virtio_device *), 5 (ImplicitCastExpr, IntegralCast, unsigned int)) && virtio_has_feature (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const struct virtio_device *, unsigned int))(vi (ImplicitCastExpr, LValueToRValue, struct virtnet_info *)->vdev (ImplicitCastExpr, LValueToRValue, struct virtio_device *) (ImplicitCastExpr, NoOp, const struct virtio_device *), 23 (ImplicitCastExpr, IntegralCast, unsigned int)) (ImplicitCastExpr, IntegralCast, int)"
+        ],
+        "call_boundary": [
+          "netdev_priv",
+          "spin_lock_init",
+          "virtio_cread16",
+          "offsetof",
+          "rss_indirection_table_alloc",
+          "virtio_cread8"
+        ],
+        "call_edges": [
+          "virtnet_probe -> virtio_has_feature",
+          "virtnet_probe -> virtio_cread16",
+          "virtnet_probe -> alloc_etherdev_mqs",
+          "virtnet_probe -> virtio_cread_bytes",
+          "virtnet_probe -> eth_hw_addr_set",
+          "virtnet_probe -> eth_hw_addr_random",
+          "virtnet_probe -> __builtin_constant_p",
+          "virtnet_probe -> _dev_info"
+        ],
+        "state_transitions": [
+          "cfg_binding(max_queue_pairs = virtio_cread16 (ImplicitCastExpr, FunctionToPointerDecay, u16 (*)(struct virtio_device *, unsigned int))(vdev (ImplicitCastExpr, LValueToRValue, struct virtio_device *), __builtin_offsetof(struct virtio_net_config, max_virtqueue_pairs) (ImplicitCastExpr, IntegralCast, unsigned int)))",
+          "cfg_binding(mtu = virtio_cread16 (ImplicitCastExpr, FunctionToPointerDecay, u16 (*)(struct virtio_device *, unsigned int))(vdev (ImplicitCastExpr, LValueToRValue, struct virtio_device *), __builtin_offsetof(struct virtio_net_config, mtu) (ImplicitCastExpr, IntegralCast, unsigned int)) (ImplicitCastExpr, IntegralCast, int))",
+          "cfg_branch(if virtio_has_feature (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const struct virtio_device *, unsigned int))(vi (ImplicitCastExpr, LValueToRValue, struct virtnet_info *)->vdev (ImplicitCastExpr, LValueToRValue, struct virtio_device *) (ImplicitCastExpr, NoOp, const struct virtio_device *), guest_offloads (ImplicitCastExpr, ArrayToPointerDecay, const unsigned long *)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, unsigned long) (ImplicitCastExpr, IntegralCast, unsigned int)))",
+          "cfg_branch(if virtio_has_feature (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const struct virtio_device *, unsigned int))(vi (ImplicitCastExpr, LValueToRValue, struct virtnet_info *)->vdev (ImplicitCastExpr, LValueToRValue, struct virtio_device *) (ImplicitCastExpr, NoOp, const struct virtio_device *), 16 (ImplicitCastExpr, IntegralCast, unsigned int)))",
+          "free_netdev",
+          "return [B1.7];"
+        ],
+        "api_terms": [
+          "virtio_has_feature",
+          "virtio_cread16",
+          "alloc_etherdev_mqs",
+          "virtio_cread_bytes",
+          "eth_hw_addr_set",
+          "eth_hw_addr_random"
+        ],
+        "related_symbols": [
+          "vdev",
+          "vi->cvq_lock",
+          "vi->refill_lock",
+          "vi->rx_mode_work",
+          "vi->config_work",
+          "dev->dev_addr"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/virtio_net.c",
+        "function": "virtnet_probe"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "virtnet_probe adds patch barrier `vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE` around netdev_priv, vi->dev = dev.",
+        "tracked_symbols": [
+          "vi",
+          "rss_key_size",
+          "VIRTIO_NET_RSS_MAX_KEY_SIZE",
+          "dev_err",
+          "vdev",
+          "dev",
+          "rss_max_key_size",
+          "u"
+        ],
+        "buffer_fields": [
+          "vi->rss_key_size",
+          "vdev->dev",
+          "vi->dev",
+          "vi->vdev",
+          "vdev->priv"
+        ],
+        "coverage_status": "full",
+        "source_file": "drivers/net/virtio_net.c"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "drivers/net/virtio_net.c",
+          "hunk_index": 0,
+          "source_line": 6451
+        },
+        "summary": "virtnet_probe adds patch barrier `vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE` around netdev_priv, vi->dev = dev.",
+        "statements": [
+          "if (vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE) {",
+          "dev_err(&vdev->dev, \"rss_max_key_size=%u exceeds the limit %u.\\n\",",
+          "vi->rss_key_size, VIRTIO_NET_RSS_MAX_KEY_SIZE);",
+          "err = -EINVAL;",
+          "goto free;",
+          "}"
+        ],
+        "guards": [
+          "vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE"
+        ],
+        "call_boundary": [
+          "netdev_priv",
+          "vi->dev = dev",
+          "vi->vdev = vdev",
+          "vdev->priv = vi"
+        ],
+        "call_edges": [
+          "virtnet_probe -> netdev_priv",
+          "virtnet_probe -> vi->dev = dev",
+          "virtnet_probe -> vi->vdev = vdev"
+        ],
+        "state_transitions": [
+          "",
+          "report when a risky write proceeds without the patch-style barrier",
+          "stay silent when the nearby guard proves the current write is blocked or bounded"
+        ],
+        "api_terms": [
+          "netdev_priv",
+          "vi->dev = dev",
+          "vi->vdev = vdev",
+          "dev_err"
+        ],
+        "related_symbols": [
+          "vi",
+          "rss_key_size",
+          "VIRTIO_NET_RSS_MAX_KEY_SIZE",
+          "dev_err",
+          "vdev",
+          "dev"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/virtio_net.c",
+        "function": "virtnet_probe"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "virtnet_probe adds patch barrier `vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE` around netdev_priv, vi->dev = dev.",
+        "state_before": [
+          "input(vi)",
+          "input(rss_key_size)",
+          "buffer(vi->rss_key_size)",
+          "buffer(vdev->dev)"
+        ],
+        "state_after": [
+          "guard(vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE)",
+          "sink(netdev_priv)",
+          "sink(vi->dev = dev)"
+        ],
+        "tracked_symbols": [
+          "vi",
+          "rss_key_size",
+          "VIRTIO_NET_RSS_MAX_KEY_SIZE",
+          "dev_err",
+          "vdev",
+          "dev"
+        ],
+        "buffer_fields": [
+          "vi->rss_key_size",
+          "vdev->dev",
+          "vi->dev",
+          "vi->vdev"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "virtnet_probe"
+        ],
+        "call_targets": [
+          "netdev_priv",
+          "vi->dev = dev",
+          "vi->vdev = vdev",
+          "vdev->priv = vi"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE"
+        ],
+        "call_edges": [
+          "virtnet_probe -> netdev_priv",
+          "virtnet_probe -> vi->dev = dev",
+          "virtnet_probe -> vi->vdev = vdev"
+        ],
+        "state_statements": [
+          "if (vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE) {",
+          "dev_err(&vdev->dev, \"rss_max_key_size=%u exceeds the limit %u.\\n\",",
+          "vi->rss_key_size, VIRTIO_NET_RSS_MAX_KEY_SIZE);",
+          "err = -EINVAL;",
+          "goto free;",
+          "}"
+        ],
+        "source_file": "drivers/net/virtio_net.c"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "drivers/net/virtio_net.c",
+          "hunk_index": 0,
+          "source_line": 6451
+        },
+        "summary": "virtnet_probe adds patch barrier `vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE` around netdev_priv, vi->dev = dev.",
+        "statements": [
+          "if (vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE) {",
+          "dev_err(&vdev->dev, \"rss_max_key_size=%u exceeds the limit %u.\\n\",",
+          "vi->rss_key_size, VIRTIO_NET_RSS_MAX_KEY_SIZE);",
+          "err = -EINVAL;",
+          "goto free;",
+          "}"
+        ],
+        "guards": [
+          "vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE"
+        ],
+        "call_boundary": [
+          "netdev_priv",
+          "vi->dev = dev",
+          "vi->vdev = vdev",
+          "vdev->priv = vi"
+        ],
+        "call_edges": [
+          "virtnet_probe -> netdev_priv",
+          "virtnet_probe -> vi->dev = dev",
+          "virtnet_probe -> vi->vdev = vdev"
+        ],
+        "state_transitions": [
+          "guard(vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE)",
+          "sink(netdev_priv)",
+          "sink(vi->dev = dev)"
+        ],
+        "api_terms": [
+          "netdev_priv",
+          "vi->dev = dev",
+          "vi->vdev = vdev"
+        ],
+        "related_symbols": [
+          "vi",
+          "rss_key_size",
+          "VIRTIO_NET_RSS_MAX_KEY_SIZE",
+          "dev_err",
+          "vdev",
+          "dev"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      },
+      "confidence": 0.9
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_0",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/virtio_net.c",
+        "function": "virtnet_probe"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "virtnet_probe in drivers/net/virtio_net.c provides CSA-backed pointer/resource lifecycle context near line 6451",
+        "state_before": [
+          "input(vdev)",
+          "buffer(vi->cvq_lock)",
+          "buffer(vi->refill_lock)",
+          "sinks(netdev_priv, spin_lock_init)"
+        ],
+        "state_after": [
+          "operation(free_netdev)",
+          "operation(return [B1.7];)",
+          "operation([B2.9]->refill)",
+          "operation(free_receive_page_frags)"
+        ],
+        "tracked_symbols": [
+          "vdev",
+          "vi",
+          "rss_key_size",
+          "VIRTIO_NET_RSS_MAX_KEY_SIZE",
+          "dev_err",
+          "dev"
+        ],
+        "buffer_fields": [
+          "vi->cvq_lock",
+          "vi->refill_lock",
+          "vi->rx_mode_work",
+          "vi->config_work",
+          "dev->dev_addr",
+          "vi->dev"
+        ],
+        "coverage_status": "partial",
+        "operations": [
+          "free_netdev",
+          "return [B1.7];",
+          "[B2.9]->refill",
+          "free_receive_page_frags",
+          "[B3.4]->failover",
+          "return [B5.1];"
+        ],
+        "functions": [
+          "virtnet_probe"
+        ],
+        "call_targets": [
+          "netdev_priv",
+          "spin_lock_init",
+          "virtio_cread16",
+          "offsetof",
+          "rss_indirection_table_alloc",
+          "virtio_cread8"
+        ],
+        "call_edges": [
+          "virtnet_probe -> virtio_has_feature",
+          "virtnet_probe -> virtio_cread16",
+          "virtnet_probe -> alloc_etherdev_mqs",
+          "virtnet_probe -> virtio_cread_bytes",
+          "virtnet_probe -> eth_hw_addr_set",
+          "virtnet_probe -> eth_hw_addr_random"
+        ],
+        "state_statements": [
+          "free_netdev",
+          "return [B1.7];",
+          "[B2.9]->refill",
+          "free_receive_page_frags",
+          "[B3.4]->failover",
+          "return [B5.1];"
+        ],
+        "source_file": "drivers/net/virtio_net.c"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "drivers/net/virtio_net.c",
+          "hunk_index": 0,
+          "source_line": 6451
+        },
+        "summary": "virtnet_probe in drivers/net/virtio_net.c provides CSA-backed pointer/resource lifecycle context near line 6451",
+        "statements": [
+          "6419: \t\t\t dev->dev_addr);",
+          "6420: \t}",
+          "6421:",
+          "6422: \t/* Set up our device-specific information */",
+          "6423: \tvi = netdev_priv(dev);",
+          "6424: \tvi->dev = dev;"
+        ],
+        "guards": [
+          "virtio_has_feature(vdev, VIRTIO_NET_F_MRG_RXBUF)",
+          "virtio_has_feature(vdev, VIRTIO_NET_F_HASH_REPORT)",
+          "virtio_has_feature(vdev, VIRTIO_NET_F_RSS)",
+          "err"
+        ],
+        "call_boundary": [
+          "netdev_priv",
+          "spin_lock_init",
+          "virtio_cread16",
+          "offsetof",
+          "rss_indirection_table_alloc",
+          "virtio_cread8"
+        ],
+        "call_edges": [
+          "virtnet_probe -> virtio_has_feature",
+          "virtnet_probe -> virtio_cread16",
+          "virtnet_probe -> alloc_etherdev_mqs",
+          "virtnet_probe -> virtio_cread_bytes",
+          "virtnet_probe -> eth_hw_addr_set",
+          "virtnet_probe -> eth_hw_addr_random"
+        ],
+        "state_transitions": [
+          "operation(free_netdev)",
+          "operation(return [B1.7];)",
+          "operation([B2.9]->refill)",
+          "operation(free_receive_page_frags)"
+        ],
+        "api_terms": [
+          "free_netdev",
+          "return [B1.7];",
+          "[B2.9]->refill",
+          "free_receive_page_frags",
+          "[B3.4]->failover",
+          "return [B5.1];"
+        ],
+        "related_symbols": [
+          "vdev",
+          "vi",
+          "rss_key_size",
+          "VIRTIO_NET_RSS_MAX_KEY_SIZE",
+          "dev_err",
+          "dev"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      },
+      "confidence": 0.72
+    }
+  ],
+  "selected_context_summaries": [],
+  "semantic_clause_plan": [
+    {
+      "clause_id": "vulnerable_trigger_clause",
+      "intent": "Trigger on the vulnerable out_of_bound mechanism using evidence-backed path/flow semantics.",
+      "supporting_evidence_ids": [
+        "csa_guard_0",
+        "csa_guard_1",
+        "csa_semantic_slice_0",
+        "csa_state_0",
+        "csa_validation_allocation_lifecycle_0"
+      ],
+      "repair_when": [
+        "semantic_no_hits"
+      ],
+      "focus_functions": []
+    },
+    {
+      "clause_id": "patched_silence_clause",
+      "intent": "Stay silent on patched code when patch-added guards, barriers, or safe APIs prove the mechanism is blocked.",
+      "supporting_evidence_ids": [
+        "csa_guard_0",
+        "csa_guard_1",
+        "csa_semantic_slice_0",
+        "csa_state_0"
+      ],
+      "repair_when": [],
+      "silencing_conditions": [
+        "length/capacity guard present: if (vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE) {"
+      ]
+    },
+    {
+      "clause_id": "semantic_transfer_clause",
+      "intent": "Generalize along semantic slices and call-chain evidence rather than patch-local syntax.",
+      "supporting_evidence_ids": [
+        "csa_semantic_slice_0"
+      ],
+      "repair_when": [],
+      "analyzer_id": "csa"
+    },
+    {
+      "clause_id": "analyzer_interface_clause",
+      "intent": "Preserve valid analyzer-facing syntax and interfaces while keeping semantics unchanged.",
+      "supporting_evidence_ids": [],
+      "repair_when": [
+        "semantic_execution_error"
+      ],
+      "analyzer_id": "csa"
+    }
+  ],
+  "repair_directives": [],
+  "constraints": [
+    {
+      "title": "Generalize beyond patch site",
+      "description": "Do not bind the detector to fixed file paths, line numbers, or exact patch strings.",
+      "priority": "high"
+    },
+    {
+      "title": "Preserve vulnerability semantics",
+      "description": "Keep the detector focused on the vulnerability family implied by the patch and evidence.",
+      "priority": "high"
+    },
+    {
+      "title": "Respect analyzer-native form",
+      "description": "Output must be a valid checker_plugin for csa.",
+      "priority": "high"
+    },
+    {
+      "title": "Stay within proven mechanism scope",
+      "description": "Generalize only along evidence-supported semantic dimensions. Do not broaden the detector into unrelated globals, APIs, or bug families.",
+      "priority": "high"
+    },
+    {
+      "title": "Honor mechanism contract",
+      "description": "Preserve the mechanism family `generic_vulnerability_mechanism` by keeping trigger invariants the vulnerable mechanism is reachable on a feasible path; the path lacks the barrier introduced by the patch; Patch-backed trigger clue: added guard: if (vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE) {.",
+      "priority": "high"
+    },
+    {
+      "title": "Generalize only on contract axes",
+      "description": "Reuse semantics only along these transfer axes: only generalize along evidence-backed state, guard, flow, or API-role equivalence; equivalent guard or barrier predicates on sibling paths; equivalent local state transitions around the same sink or dereference.",
+      "priority": "high"
+    },
+    {
+      "title": "Encode the patch-added barrier",
+      "description": "treat guards such as if (vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE) { as semantic barriers; use APIs such as dev_err as semantic clues, not string matches.",
+      "priority": "high"
+    },
+    {
+      "title": "Respect patched silence",
+      "description": "Use these no-report conditions when they are semantically proven: length/capacity guard present: if (vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE) {.",
+      "priority": "high"
+    },
+    {
+      "title": "Use path-sensitive evidence",
+      "description": "Prefer guards, state transitions, and lifecycle facts over broad textual matching.",
+      "priority": "high"
+    },
+    {
+      "title": "No placeholder helper logic",
+      "description": "Helper predicates must inspect AST/program state and must not be unconditional return-true/return-false stubs.",
+      "priority": "high"
+    }
+  ],
+  "implementation_hints": [
+    "Mechanism family: generic_vulnerability_mechanism",
+    "Mechanism dimensions: vulnerability trigger, patch-introduced barrier, local state or flow relation",
+    "Trigger invariants: the vulnerable mechanism is reachable on a feasible path, the path lacks the barrier introduced by the patch, Patch-backed trigger clue: added guard: if (vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE) {",
+    "Silence invariants: patch-introduced guards, barriers, or safe APIs must suppress findings, length/capacity guard present: if (vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE) {",
+    "Transfer axes: only generalize along evidence-backed state, guard, flow, or API-role equivalence, equivalent guard or barrier predicates on sibling paths, equivalent local state transitions around the same sink or dereference",
+    "Relevant APIs: dev_err",
+    "Silence condition: length/capacity guard present: if (vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE) {",
+    "Patch mechanism: added guard: if (vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE) {"
+  ],
+  "validation_expectations": [
+    "Vulnerable version should trigger a out_of_bound finding.",
+    "Patched version should stay silent for the same mechanism.",
+    "Semantic validation that executes but returns zero hits is not acceptable; recover coverage with evidence-backed semantics.",
+    "Repair phase may fix syntax/interfaces only; it must not simplify away the core detection logic.",
+    "Generalization must stay inside the mechanism contract transfer axes instead of widening to adjacent bug families.",
+    "Trigger invariant: the vulnerable mechanism is reachable on a feasible path.",
+    "Trigger invariant: the path lacks the barrier introduced by the patch.",
+    "Patched silence depends on: length/capacity guard present: if (vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE) {."
+  ]
+}

@@ -1,0 +1,672 @@
+# Instruction
+
+Determine whether the static analyzer report is a real bug in the Linux kernel and matches the target bug pattern
+
+Your analysis should:
+- **Compare the report against the provided target bug pattern specification,** using the **buggy function (pre-patch)** and the **fix patch** as the reference.
+- Explain your reasoning for classifying this as either:
+  - **A true positive** (matches the target bug pattern **and** is a real bug), or
+  - **A false positive** (does **not** match the target bug pattern **or** is **not** a real bug).
+
+Please evaluate thoroughly using the following process:
+
+- **First, understand** the reported code pattern and its control/data flow.
+- **Then, compare** it against the target bug pattern characteristics.
+- **Finally, validate** against the **pre-/post-patch** behavior:
+  - The reported case demonstrates the same root cause pattern as the target bug pattern/function and would be addressed by a similar fix.
+
+- **Numeric / bounds feasibility** (if applicable):
+  - Infer tight **min/max** ranges for all involved variables from types, prior checks, and loop bounds.
+  - Show whether overflow/underflow or OOB is actually triggerable (compute the smallest/largest values that violate constraints).
+
+- **Null-pointer dereference feasibility** (if applicable):
+  1. **Identify the pointer source** and return convention of the producing function(s) in this path (e.g., returns **NULL**, **ERR_PTR**, negative error code via cast, or never-null).
+  2. **Check real-world feasibility in this specific driver/socket/filesystem/etc.**:
+     - Enumerate concrete conditions under which the producer can return **NULL/ERR_PTR** here (e.g., missing DT/ACPI property, absent PCI device/function, probe ordering, hotplug/race, Kconfig options, chip revision/quirks).
+     - Verify whether those conditions can occur given the driver’s init/probe sequence and the kernel helpers used.
+  3. **Lifetime & concurrency**: consider teardown paths, RCU usage, refcounting (`get/put`), and whether the pointer can become invalid/NULL across yields or callbacks.
+  4. If the producer is provably non-NULL in this context (by spec or preceding checks), classify as **false positive**.
+
+If there is any uncertainty in the classification, **err on the side of caution and classify it as a false positive**. Your analysis will be used to improve the static analyzer's accuracy.
+
+## Patch Description
+
+tty: n_gsm: Fix use-after-free in gsm_cleanup_mux
+
+BUG: KASAN: slab-use-after-free in gsm_cleanup_mux+0x77b/0x7b0
+drivers/tty/n_gsm.c:3160 [n_gsm]
+Read of size 8 at addr ffff88815fe99c00 by task poc/3379
+CPU: 0 UID: 0 PID: 3379 Comm: poc Not tainted 6.11.0+ #56
+Hardware name: VMware, Inc. VMware Virtual Platform/440BX
+Desktop Reference Platform, BIOS 6.00 11/12/2020
+Call Trace:
+ <TASK>
+ gsm_cleanup_mux+0x77b/0x7b0 drivers/tty/n_gsm.c:3160 [n_gsm]
+ __pfx_gsm_cleanup_mux+0x10/0x10 drivers/tty/n_gsm.c:3124 [n_gsm]
+ __pfx_sched_clock_cpu+0x10/0x10 kernel/sched/clock.c:389
+ update_load_avg+0x1c1/0x27b0 kernel/sched/fair.c:4500
+ __pfx_min_vruntime_cb_rotate+0x10/0x10 kernel/sched/fair.c:846
+ __rb_insert_augmented+0x492/0xbf0 lib/rbtree.c:161
+ gsmld_ioctl+0x395/0x1450 drivers/tty/n_gsm.c:3408 [n_gsm]
+ _raw_spin_lock_irqsave+0x92/0xf0 arch/x86/include/asm/atomic.h:107
+ __pfx_gsmld_ioctl+0x10/0x10 drivers/tty/n_gsm.c:3822 [n_gsm]
+ ktime_get+0x5e/0x140 kernel/time/timekeeping.c:195
+ ldsem_down_read+0x94/0x4e0 arch/x86/include/asm/atomic64_64.h:79
+ __pfx_ldsem_down_read+0x10/0x10 drivers/tty/tty_ldsem.c:338
+ __pfx_do_vfs_ioctl+0x10/0x10 fs/ioctl.c:805
+ tty_ioctl+0x643/0x1100 drivers/tty/tty_io.c:2818
+
+Allocated by task 65:
+ gsm_data_alloc.constprop.0+0x27/0x190 drivers/tty/n_gsm.c:926 [n_gsm]
+ gsm_send+0x2c/0x580 drivers/tty/n_gsm.c:819 [n_gsm]
+ gsm1_receive+0x547/0xad0 drivers/tty/n_gsm.c:3038 [n_gsm]
+ gsmld_receive_buf+0x176/0x280 drivers/tty/n_gsm.c:3609 [n_gsm]
+ tty_ldisc_receive_buf+0x101/0x1e0 drivers/tty/tty_buffer.c:391
+ tty_port_default_receive_buf+0x61/0xa0 drivers/tty/tty_port.c:39
+ flush_to_ldisc+0x1b0/0x750 drivers/tty/tty_buffer.c:445
+ process_scheduled_works+0x2b0/0x10d0 kernel/workqueue.c:3229
+ worker_thread+0x3dc/0x950 kernel/workqueue.c:3391
+ kthread+0x2a3/0x370 kernel/kthread.c:389
+ ret_from_fork+0x2d/0x70 arch/x86/kernel/process.c:147
+ ret_from_fork_asm+0x1a/0x30 arch/x86/entry/entry_64.S:257
+
+Freed by task 3367:
+ kfree+0x126/0x420 mm/slub.c:4580
+ gsm_cleanup_mux+0x36c/0x7b0 drivers/tty/n_gsm.c:3160 [n_gsm]
+ gsmld_ioctl+0x395/0x1450 drivers/tty/n_gsm.c:3408 [n_gsm]
+ tty_ioctl+0x643/0x1100 drivers/tty/tty_io.c:2818
+
+[Analysis]
+gsm_msg on the tx_ctrl_list or tx_data_list of gsm_mux
+can be freed by multi threads through ioctl,which leads
+to the occurrence of uaf. Protect it by gsm tx lock.
+
+Signed-off-by: Longlong Xia <xialonglong@kylinos.cn>
+Cc: stable <stable@kernel.org>
+Suggested-by: Jiri Slaby <jirislaby@kernel.org>
+Link: https://lore.kernel.org/r/20240926130213.531959-1-xialonglong@kylinos.cn
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+
+## Buggy Code
+
+```c
+// Function: gsm_cleanup_mux in drivers/tty/n_gsm.c
+static void gsm_cleanup_mux(struct gsm_mux *gsm, bool disc)
+{
+	int i;
+	struct gsm_dlci *dlci;
+	struct gsm_msg *txq, *ntxq;
+
+	gsm->dead = true;
+	mutex_lock(&gsm->mutex);
+
+	dlci = gsm->dlci[0];
+	if (dlci) {
+		if (disc && dlci->state != DLCI_CLOSED) {
+			gsm_dlci_begin_close(dlci);
+			wait_event(gsm->event, dlci->state == DLCI_CLOSED);
+		}
+		dlci->dead = true;
+	}
+
+	/* Finish outstanding timers, making sure they are done */
+	del_timer_sync(&gsm->kick_timer);
+	del_timer_sync(&gsm->t2_timer);
+	del_timer_sync(&gsm->ka_timer);
+
+	/* Finish writing to ldisc */
+	flush_work(&gsm->tx_work);
+
+	/* Free up any link layer users and finally the control channel */
+	if (gsm->has_devices) {
+		gsm_unregister_devices(gsm_tty_driver, gsm->num);
+		gsm->has_devices = false;
+	}
+	for (i = NUM_DLCI - 1; i >= 0; i--)
+		if (gsm->dlci[i])
+			gsm_dlci_release(gsm->dlci[i]);
+	mutex_unlock(&gsm->mutex);
+	/* Now wipe the queues */
+	tty_ldisc_flush(gsm->tty);
+	list_for_each_entry_safe(txq, ntxq, &gsm->tx_ctrl_list, list)
+		kfree(txq);
+	INIT_LIST_HEAD(&gsm->tx_ctrl_list);
+	list_for_each_entry_safe(txq, ntxq, &gsm->tx_data_list, list)
+		kfree(txq);
+	INIT_LIST_HEAD(&gsm->tx_data_list);
+}
+```
+
+## Bug Fix Patch
+
+```diff
+diff --git a/drivers/tty/n_gsm.c b/drivers/tty/n_gsm.c
+index 5d37a0984916..252849910588 100644
+--- a/drivers/tty/n_gsm.c
++++ b/drivers/tty/n_gsm.c
+@@ -3157,6 +3157,8 @@ static void gsm_cleanup_mux(struct gsm_mux *gsm, bool disc)
+ 	mutex_unlock(&gsm->mutex);
+ 	/* Now wipe the queues */
+ 	tty_ldisc_flush(gsm->tty);
++
++	guard(spinlock_irqsave)(&gsm->tx_lock);
+ 	list_for_each_entry_safe(txq, ntxq, &gsm->tx_ctrl_list, list)
+ 		kfree(txq);
+ 	INIT_LIST_HEAD(&gsm->tx_ctrl_list);
+```
+
+
+## Bug Pattern
+
+Traversing and freeing elements of a shared kernel list without holding the list’s protecting spinlock, while other contexts can concurrently manipulate or free the same list entries. Specifically, using list_for_each_entry_safe() to kfree() nodes of tx_ctrl_list/tx_data_list after dropping the mutex, but without acquiring gsm->tx_lock, allows concurrent frees (e.g., via ioctl), causing use-after-free.
+
+
+# Report
+
+BuildSource:| drivers/tty/n_gsm.c
+### Report Summary
+
+File:| n_gsm.c  
+---|---  
+Warning:| line 872, column 3  
+Freeing tx_* list entries without holding tx_lock (possible UAF)  
+  
+### Annotated Source Code
+
+
+804   |  *	@addr: address for control frame
+805   |  *	@cr: command/response bit seen as initiator
+806   |  *	@control:  control byte including PF bit
+807   |  *
+808   |  *	Format up and transmit a control frame. These should be transmitted
+809   |  *	ahead of data when they are needed.
+810   |  */
+811   | static int gsm_send(struct gsm_mux *gsm, int addr, int cr, int control)
+812   | {
+813   |  struct gsm_msg *msg;
+814   | 	u8 *dp;
+815   |  int ocr;
+816   |  unsigned long flags;
+817   |  
+818   | 	msg = gsm_data_alloc(gsm, addr, 0, control);
+819   |  if (!msg)
+820   |  return -ENOMEM;
+821   |  
+822   |  /* toggle C/R coding if not initiator */
+823   | 	ocr = cr ^ (gsm->initiator ? 0 : 1);
+824   |  
+825   | 	msg->data -= 3;
+826   | 	dp = msg->data;
+827   | 	*dp++ = (addr << 2) | (ocr << 1) | EA;
+828   | 	*dp++ = control;
+829   |  
+830   |  if (gsm->encoding == GSM_BASIC_OPT)
+831   | 		*dp++ = EA; /* Length of data = 0 */
+832   |  
+833   | 	*dp = 0xFF - gsm_fcs_add_block(INIT_FCS, msg->data, dp - msg->data);
+834   | 	msg->len = (dp - msg->data) + 1;
+835   |  
+836   | 	gsm_print_packet("Q->", addr, cr, control, NULL, 0);
+837   |  
+838   |  spin_lock_irqsave(&gsm->tx_lock, flags);
+839   | 	list_add_tail(&msg->list, &gsm->tx_ctrl_list);
+840   | 	gsm->tx_bytes += msg->len;
+841   | 	spin_unlock_irqrestore(&gsm->tx_lock, flags);
+842   | 	gsmld_write_trigger(gsm);
+843   |  
+844   |  return 0;
+845   | }
+846   |  
+847   | /**
+848   |  *	gsm_dlci_clear_queues	-	remove outstanding data for a DLCI
+849   |  *	@gsm: mux
+850   |  *	@dlci: clear for this DLCI
+851   |  *
+852   |  *	Clears the data queues for a given DLCI.
+853   |  */
+854   | static void gsm_dlci_clear_queues(struct gsm_mux *gsm, struct gsm_dlci *dlci)
+855   | {
+856   |  struct gsm_msg *msg, *nmsg;
+857   |  int addr = dlci->addr;
+858   |  unsigned long flags;
+859   |  
+860   |  /* Clear DLCI write fifo first */
+861   |  spin_lock_irqsave(&dlci->lock, flags);
+    23←Loop condition is false.  Exiting loop→
+    24←Loop condition is false.  Exiting loop→
+862   |  kfifo_reset(&dlci->fifo);
+863   |  spin_unlock_irqrestore(&dlci->lock, flags);
+864   |  
+865   |  /* Clear data packets in MUX write queue */
+866   |  spin_lock_irqsave(&gsm->tx_lock, flags);
+    25←Loop condition is false.  Exiting loop→
+    26←Loop condition is false.  Exiting loop→
+867   |  list_for_each_entry_safe(msg, nmsg, &gsm->tx_data_list, list) {
+    27←Loop condition is true.  Entering loop body→
+868   |  if (msg->addr != addr)
+    28←Assuming 'addr' is equal to field 'addr'→
+    29←Taking false branch→
+869   |  continue;
+870   |  gsm->tx_bytes -= msg->len;
+871   | 		list_del(&msg->list);
+872   |  kfree(msg);
+    30←Freeing tx_* list entries without holding tx_lock (possible UAF)
+873   | 	}
+874   | 	spin_unlock_irqrestore(&gsm->tx_lock, flags);
+875   | }
+876   |  
+877   | /**
+878   |  *	gsm_response	-	send a control response
+879   |  *	@gsm: our GSM mux
+880   |  *	@addr: address for control frame
+881   |  *	@control:  control byte including PF bit
+882   |  *
+883   |  *	Format up and transmit a link level response frame.
+884   |  */
+885   |  
+886   | static inline void gsm_response(struct gsm_mux *gsm, int addr, int control)
+887   | {
+888   | 	gsm_send(gsm, addr, 0, control);
+889   | }
+890   |  
+891   | /**
+892   |  *	gsm_command	-	send a control command
+893   |  *	@gsm: our GSM mux
+894   |  *	@addr: address for control frame
+895   |  *	@control:  control byte including PF bit
+896   |  *
+897   |  *	Format up and transmit a link level command frame.
+898   |  */
+899   |  
+900   | static inline void gsm_command(struct gsm_mux *gsm, int addr, int control)
+901   | {
+902   | 	gsm_send(gsm, addr, 1, control);
+2082  | 	gsm->pending_cmd = ctrl;
+2083  |  
+2084  |  /* If DLCI0 is in ADM mode skip retries, it won't respond */
+2085  |  if (gsm->dlci[0]->mode == DLCI_MODE_ADM)
+2086  | 		gsm->cretries = 0;
+2087  |  else
+2088  | 		gsm->cretries = gsm->n2;
+2089  |  
+2090  | 	mod_timer(&gsm->t2_timer, jiffies + gsm->t2 * HZ / 100);
+2091  | 	gsm_control_transmit(gsm, ctrl);
+2092  | 	spin_unlock_irqrestore(&gsm->control_lock, flags);
+2093  |  return ctrl;
+2094  | }
+2095  |  
+2096  | /**
+2097  |  *	gsm_control_wait	-	wait for a control to finish
+2098  |  *	@gsm: GSM mux
+2099  |  *	@control: control we are waiting on
+2100  |  *
+2101  |  *	Waits for the control to complete or time out. Frees any used
+2102  |  *	resources and returns 0 for success, or an error if the remote
+2103  |  *	rejected or ignored the request.
+2104  |  */
+2105  |  
+2106  | static int gsm_control_wait(struct gsm_mux *gsm, struct gsm_control *control)
+2107  | {
+2108  |  int err;
+2109  |  wait_event(gsm->event, control->done == 1);
+2110  | 	err = control->error;
+2111  | 	kfree(control);
+2112  |  return err;
+2113  | }
+2114  |  
+2115  |  
+2116  | /*
+2117  |  *	DLCI level handling: Needs krefs
+2118  |  */
+2119  |  
+2120  | /*
+2121  |  *	State transitions and timers
+2122  |  */
+2123  |  
+2124  | /**
+2125  |  *	gsm_dlci_close		-	a DLCI has closed
+2126  |  *	@dlci: DLCI that closed
+2127  |  *
+2128  |  *	Perform processing when moving a DLCI into closed state. If there
+2129  |  *	is an attached tty this is hung up
+2130  |  */
+2131  |  
+2132  | static void gsm_dlci_close(struct gsm_dlci *dlci)
+2133  | {
+2134  |  del_timer(&dlci->t1);
+2135  |  if (debug & DBG_ERRORS)
+    18←Assuming the condition is false→
+    19←Taking false branch→
+2136  |  pr_debug("DLCI %d goes closed.\n", dlci->addr);
+2137  |  dlci->state = DLCI_CLOSED;
+2138  |  /* Prevent us from sending data before the link is up again */
+2139  | 	dlci->constipated = true;
+2140  |  if (dlci->addr != 0) {
+    20←Assuming field 'addr' is not equal to 0→
+    21←Taking true branch→
+2141  |  tty_port_tty_hangup(&dlci->port, false);
+2142  |  gsm_dlci_clear_queues(dlci->gsm, dlci);
+    22←Calling 'gsm_dlci_clear_queues'→
+2143  |  /* Ensure that gsmtty_open() can return. */
+2144  | 		tty_port_set_initialized(&dlci->port, false);
+2145  |  wake_up_interruptible(&dlci->port.open_wait);
+2146  | 	} else {
+2147  | 		del_timer(&dlci->gsm->ka_timer);
+2148  | 		dlci->gsm->dead = true;
+2149  | 	}
+2150  |  /* A DLCI 0 close is a MUX termination so we need to kick that
+2151  |  back to userspace somehow */
+2152  | 	gsm_dlci_data_kick(dlci);
+2153  |  wake_up_all(&dlci->gsm->event);
+2154  | }
+2155  |  
+2156  | /**
+2157  |  *	gsm_dlci_open		-	a DLCI has opened
+2158  |  *	@dlci: DLCI that opened
+2159  |  *
+2160  |  *	Perform processing when moving a DLCI into open state.
+2161  |  */
+2162  |  
+2163  | static void gsm_dlci_open(struct gsm_dlci *dlci)
+2164  | {
+2165  |  struct gsm_mux *gsm = dlci->gsm;
+2166  |  
+2167  |  /* Note that SABM UA .. SABM UA first UA lost can mean that we go
+2168  |  open -> open */
+2169  | 	del_timer(&dlci->t1);
+2170  |  /* This will let a tty open continue */
+2171  | 	dlci->state = DLCI_OPEN;
+2172  | 	dlci->constipated = false;
+2173  |  if (debug & DBG_ERRORS)
+2174  |  pr_debug("DLCI %d goes open.\n", dlci->addr);
+2175  |  /* Send current modem state */
+2176  |  if (dlci->addr) {
+2177  | 		gsm_modem_update(dlci, 0);
+2178  | 	} else {
+2179  |  /* Start keep-alive control */
+2180  | 		gsm->ka_num = 0;
+2181  | 		gsm->ka_retries = -1;
+2182  | 		mod_timer(&gsm->ka_timer,
+2183  | 			  jiffies + gsm->keep_alive * HZ / 100);
+2184  | 	}
+2185  | 	gsm_dlci_data_kick(dlci);
+2186  |  wake_up(&dlci->gsm->event);
+2187  | }
+2188  |  
+2189  | /**
+2190  |  * gsm_dlci_negotiate	-	start parameter negotiation
+2191  |  * @dlci: DLCI to open
+2192  |  *
+2193  |  * Starts the parameter negotiation for the new DLCI. This needs to be done
+2194  |  * before the DLCI initialized the channel via SABM.
+2195  |  */
+2196  | static int gsm_dlci_negotiate(struct gsm_dlci *dlci)
+2197  | {
+2198  |  struct gsm_mux *gsm = dlci->gsm;
+2199  |  struct gsm_dlci_param_bits params;
+2200  |  int ret;
+2201  |  
+2202  | 	ret = gsm_encode_params(dlci, ¶ms);
+2203  |  if (ret != 0)
+2204  |  return ret;
+2205  |  
+2206  |  /* We cannot asynchronous wait for the command response with
+2207  |  * gsm_command() and gsm_control_wait() at this point.
+2208  |  */
+2209  | 	ret = gsm_control_command(gsm, CMD_PN, (const u8 *)¶ms,
+2210  |  sizeof(params));
+2211  |  
+2212  |  return ret;
+2213  | }
+2214  |  
+2215  | /**
+2216  |  *	gsm_dlci_t1		-	T1 timer expiry
+2217  |  *	@t: timer contained in the DLCI that opened
+2218  |  *
+2219  |  *	The T1 timer handles retransmits of control frames (essentially of
+2220  |  *	SABM and DISC). We resend the command until the retry count runs out
+2221  |  *	in which case an opening port goes back to closed and a closing port
+2222  |  *	is simply put into closed state (any further frames from the other
+2223  |  *	end will get a DM response)
+2224  |  *
+2225  |  *	Some control dlci can stay in ADM mode with other dlci working just
+2226  |  *	fine. In that case we can just keep the control dlci open after the
+2227  |  *	DLCI_OPENING retries time out.
+2228  |  */
+2229  |  
+2230  | static void gsm_dlci_t1(struct timer_list *t)
+2231  | {
+2232  |  struct gsm_dlci *dlci = from_timer(dlci, t, t1);
+2233  |  struct gsm_mux *gsm = dlci->gsm;
+2234  |  
+2237  |  if (dlci->retries && gsm_dlci_negotiate(dlci) == 0) {
+2238  | 			dlci->retries--;
+2239  | 			mod_timer(&dlci->t1, jiffies + gsm->t1 * HZ / 100);
+2240  | 		} else {
+2241  | 			gsm->open_error++;
+2242  | 			gsm_dlci_begin_close(dlci); /* prevent half open link */
+2243  | 		}
+2244  |  break;
+2245  |  case DLCI_OPENING:
+2246  |  if (dlci->retries) {
+2247  | 			dlci->retries--;
+2248  | 			gsm_command(dlci->gsm, dlci->addr, SABM|PF);
+2249  | 			mod_timer(&dlci->t1, jiffies + gsm->t1 * HZ / 100);
+2250  | 		} else if (!dlci->addr && gsm->control == (DM | PF)) {
+2251  |  if (debug & DBG_ERRORS)
+2252  |  pr_info("DLCI %d opening in ADM mode.\n",
+2253  |  dlci->addr);
+2254  | 			dlci->mode = DLCI_MODE_ADM;
+2255  | 			gsm_dlci_open(dlci);
+2256  | 		} else {
+2257  | 			gsm->open_error++;
+2258  | 			gsm_dlci_begin_close(dlci); /* prevent half open link */
+2259  | 		}
+2260  |  
+2261  |  break;
+2262  |  case DLCI_CLOSING:
+2263  |  if (dlci->retries) {
+2264  | 			dlci->retries--;
+2265  | 			gsm_command(dlci->gsm, dlci->addr, DISC|PF);
+2266  | 			mod_timer(&dlci->t1, jiffies + gsm->t1 * HZ / 100);
+2267  | 		} else
+2268  | 			gsm_dlci_close(dlci);
+2269  |  break;
+2270  |  default:
+2271  |  pr_debug("%s: unhandled state: %d\n", __func__, dlci->state);
+2272  |  break;
+2273  | 	}
+2274  | }
+2275  |  
+2276  | /**
+2277  |  *	gsm_dlci_begin_open	-	start channel open procedure
+2278  |  *	@dlci: DLCI to open
+2279  |  *
+2280  |  *	Commence opening a DLCI from the Linux side. We issue SABM messages
+2281  |  *	to the modem which should then reply with a UA or ADM, at which point
+2282  |  *	we will move into open state. Opening is done asynchronously with retry
+2283  |  *	running off timers and the responses.
+2284  |  *	Parameter negotiation is performed before SABM if required.
+2285  |  */
+2286  |  
+2287  | static void gsm_dlci_begin_open(struct gsm_dlci *dlci)
+2288  | {
+2289  |  struct gsm_mux *gsm = dlci5.1'dlci' is non-null ? dlci->gsm : NULL;
+    6←'?' condition is true→
+2290  | 	bool need_pn = false;
+2291  |  
+2292  |  if (!gsm6.1'gsm' is non-null)
+    7←Taking false branch→
+2293  |  return;
+2294  |  
+2295  |  if (dlci->addr != 0) {
+    8←Assuming field 'addr' is not equal to 0→
+2296  |  if (gsm->adaption != 1 || gsm->adaption != dlci->adaption)
+    9←Assuming field 'adaption' is not equal to 1→
+2297  |  need_pn = true;
+2298  |  if (dlci->prio != (roundup(dlci->addr + 1, 8) - 1))
+    10←Assuming the condition is false→
+    11←Taking false branch→
+2299  | 			need_pn = true;
+2300  |  if (gsm->ftype != dlci->ftype)
+    12←Assuming 'gsm->ftype' is equal to 'dlci->ftype'→
+    13←Taking false branch→
+2301  | 			need_pn = true;
+2302  | 	}
+2303  |  
+2304  |  switch (dlci->state) {
+    14←Control jumps to 'case DLCI_CLOSING:'  at line 2307→
+2305  |  case DLCI_CLOSED:
+2306  |  case DLCI_WAITING_CONFIG:
+2307  |  case DLCI_CLOSING:
+2308  |  dlci->retries = gsm->n2;
+2309  |  if (!need_pn14.1'need_pn' is true) {
+    15←Taking false branch→
+2310  | 			dlci->state = DLCI_OPENING;
+2311  | 			gsm_command(gsm, dlci->addr, SABM|PF);
+2312  | 		} else {
+2313  |  /* Configure DLCI before setup */
+2314  |  dlci->state = DLCI_CONFIGURE;
+2315  |  if (gsm_dlci_negotiate(dlci) != 0) {
+    16←Taking true branch→
+2316  |  gsm_dlci_close(dlci);
+    17←Calling 'gsm_dlci_close'→
+2317  |  return;
+2318  | 			}
+2319  | 		}
+2320  | 		mod_timer(&dlci->t1, jiffies + gsm->t1 * HZ / 100);
+2321  |  break;
+2322  |  default:
+2323  |  break;
+2324  | 	}
+2325  | }
+2326  |  
+2327  | /**
+2328  |  *	gsm_dlci_set_opening	-	change state to opening
+2329  |  *	@dlci: DLCI to open
+2330  |  *
+2331  |  *	Change internal state to wait for DLCI open from initiator side.
+2332  |  *	We set off timers and responses upon reception of an SABM.
+2333  |  */
+2334  | static void gsm_dlci_set_opening(struct gsm_dlci *dlci)
+2335  | {
+2336  |  switch (dlci->state) {
+2337  |  case DLCI_CLOSED:
+2338  |  case DLCI_WAITING_CONFIG:
+2339  |  case DLCI_CLOSING:
+2340  | 		dlci->state = DLCI_OPENING;
+2341  |  break;
+2342  |  default:
+2343  |  break;
+2344  | 	}
+2345  | }
+2346  |  
+4257  | 	bool alloc = false;
+4258  |  int ret;
+4259  |  
+4260  | 	line = line & 0x3F;
+4261  |  
+4262  |  if (mux >= MAX_MUX)
+4263  |  return -ENXIO;
+4264  |  /* FIXME: we need to lock gsm_mux for lifetimes of ttys eventually */
+4265  |  if (gsm_mux[mux] == NULL)
+4266  |  return -EUNATCH;
+4267  |  if (line == 0 || line > 61)	/* 62/63 reserved */
+4268  |  return -ECHRNG;
+4269  | 	gsm = gsm_mux[mux];
+4270  |  if (gsm->dead)
+4271  |  return -EL2HLT;
+4272  |  /* If DLCI 0 is not yet fully open return an error.
+4273  |  This is ok from a locking
+4274  |  perspective as we don't have to worry about this
+4275  |  if DLCI0 is lost */
+4276  |  mutex_lock(&gsm->mutex);
+4277  |  if (gsm->dlci[0] && gsm->dlci[0]->state != DLCI_OPEN) {
+4278  | 		mutex_unlock(&gsm->mutex);
+4279  |  return -EL2NSYNC;
+4280  | 	}
+4281  | 	dlci = gsm->dlci[line];
+4282  |  if (dlci == NULL) {
+4283  | 		alloc = true;
+4284  | 		dlci = gsm_dlci_alloc(gsm, line);
+4285  | 	}
+4286  |  if (dlci == NULL) {
+4287  | 		mutex_unlock(&gsm->mutex);
+4288  |  return -ENOMEM;
+4289  | 	}
+4290  | 	ret = tty_port_install(&dlci->port, driver, tty);
+4291  |  if (ret) {
+4292  |  if (alloc)
+4293  | 			dlci_put(dlci);
+4294  | 		mutex_unlock(&gsm->mutex);
+4295  |  return ret;
+4296  | 	}
+4297  |  
+4298  | 	dlci_get(dlci);
+4299  | 	dlci_get(gsm->dlci[0]);
+4300  | 	mux_get(gsm);
+4301  | 	tty->driver_data = dlci;
+4302  | 	mutex_unlock(&gsm->mutex);
+4303  |  
+4304  |  return 0;
+4305  | }
+4306  |  
+4307  | static int gsmtty_open(struct tty_struct *tty, struct file *filp)
+4308  | {
+4309  |  struct gsm_dlci *dlci = tty->driver_data;
+4310  |  struct tty_port *port = &dlci->port;
+4311  |  
+4312  | 	port->count++;
+4313  | 	tty_port_tty_set(port, tty);
+4314  |  
+4315  | 	dlci->modem_rx = 0;
+4316  |  /* We could in theory open and close before we wait - eg if we get
+4317  |  a DM straight back. This is ok as that will have caused a hangup */
+4318  | 	tty_port_set_initialized(port, true);
+4319  |  /* Start sending off SABM messages */
+4320  |  if (!dlci->gsm->wait_config) {
+    1Assuming field 'wait_config' is false→
+    2←Taking true branch→
+4321  |  /* Start sending off SABM messages */
+4322  |  if (dlci->gsm->initiator)
+    3←Assuming field 'initiator' is not equal to 0→
+    4←Taking true branch→
+4323  |  gsm_dlci_begin_open(dlci);
+    5←Calling 'gsm_dlci_begin_open'→
+4324  |  else
+4325  | 			gsm_dlci_set_opening(dlci);
+4326  | 	} else {
+4327  | 		gsm_dlci_set_wait_config(dlci);
+4328  | 	}
+4329  |  /* And wait for virtual carrier */
+4330  |  return tty_port_block_til_ready(port, tty, filp);
+4331  | }
+4332  |  
+4333  | static void gsmtty_close(struct tty_struct *tty, struct file *filp)
+4334  | {
+4335  |  struct gsm_dlci *dlci = tty->driver_data;
+4336  |  
+4337  |  if (dlci == NULL)
+4338  |  return;
+4339  |  if (dlci->state == DLCI_CLOSED)
+4340  |  return;
+4341  |  mutex_lock(&dlci->mutex);
+4342  | 	gsm_destroy_network(dlci);
+4343  | 	mutex_unlock(&dlci->mutex);
+4344  |  if (tty_port_close_start(&dlci->port, tty, filp) == 0)
+4345  |  return;
+4346  | 	gsm_dlci_begin_close(dlci);
+4347  |  if (tty_port_initialized(&dlci->port) && C_HUPCL(tty))
+4348  | 		tty_port_lower_dtr_rts(&dlci->port);
+4349  | 	tty_port_close_end(&dlci->port, tty);
+4350  | 	tty_port_tty_set(&dlci->port, NULL);
+4351  |  return;
+4352  | }
+4353  |  
+
+# Formatting
+
+Please provide your answer in the following format:
+
+- Decision: {Bug/NotABug}
+- Reason: {Your reason here}

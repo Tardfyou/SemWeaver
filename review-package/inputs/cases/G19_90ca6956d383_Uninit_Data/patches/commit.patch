@@ -1,0 +1,59 @@
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index db4b2844e1f71..d9f6cc71d900a 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -1002,8 +1002,8 @@ static void ice_get_itr_intrl_gran(struct ice_hw *hw)
+  */
+ int ice_init_hw(struct ice_hw *hw)
+ {
+-	struct ice_aqc_get_phy_caps_data *pcaps __free(kfree);
+-	void *mac_buf __free(kfree);
++	struct ice_aqc_get_phy_caps_data *pcaps __free(kfree) = NULL;
++	void *mac_buf __free(kfree) = NULL;
+ 	u16 mac_buf_len;
+ 	int status;
+ 
+@@ -3272,7 +3272,7 @@ int ice_update_link_info(struct ice_port_info *pi)
+ 		return status;
+ 
+ 	if (li->link_info & ICE_AQ_MEDIA_AVAILABLE) {
+-		struct ice_aqc_get_phy_caps_data *pcaps __free(kfree);
++		struct ice_aqc_get_phy_caps_data *pcaps __free(kfree) = NULL;
+ 
+ 		pcaps = kzalloc(sizeof(*pcaps), GFP_KERNEL);
+ 		if (!pcaps)
+@@ -3420,7 +3420,7 @@ ice_cfg_phy_fc(struct ice_port_info *pi, struct ice_aqc_set_phy_cfg_data *cfg,
+ int
+ ice_set_fc(struct ice_port_info *pi, u8 *aq_failures, bool ena_auto_link_update)
+ {
+-	struct ice_aqc_get_phy_caps_data *pcaps __free(kfree);
++	struct ice_aqc_get_phy_caps_data *pcaps __free(kfree) = NULL;
+ 	struct ice_aqc_set_phy_cfg_data cfg = { 0 };
+ 	struct ice_hw *hw;
+ 	int status;
+@@ -3561,7 +3561,7 @@ int
+ ice_cfg_phy_fec(struct ice_port_info *pi, struct ice_aqc_set_phy_cfg_data *cfg,
+ 		enum ice_fec_mode fec)
+ {
+-	struct ice_aqc_get_phy_caps_data *pcaps __free(kfree);
++	struct ice_aqc_get_phy_caps_data *pcaps __free(kfree) = NULL;
+ 	struct ice_hw *hw;
+ 	int status;
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+index 255a9c8151b45..78b833b3e1d7e 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+@@ -941,11 +941,11 @@ static u64 ice_loopback_test(struct net_device *netdev)
+ 	struct ice_netdev_priv *np = netdev_priv(netdev);
+ 	struct ice_vsi *orig_vsi = np->vsi, *test_vsi;
+ 	struct ice_pf *pf = orig_vsi->back;
++	u8 *tx_frame __free(kfree) = NULL;
+ 	u8 broadcast[ETH_ALEN], ret = 0;
+ 	int num_frames, valid_frames;
+ 	struct ice_tx_ring *tx_ring;
+ 	struct ice_rx_ring *rx_ring;
+-	u8 *tx_frame __free(kfree);
+ 	int i;
+ 
+ 	netdev_info(netdev, "loopback test\n");

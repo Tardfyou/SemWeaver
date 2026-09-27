@@ -1,0 +1,90 @@
+{
+  "cache_key": {
+    "cache_version": 16,
+    "patch_path": "/work/artifacts/fse_revision/generate_only_materialized_v1/cases/G18_8ede3db5061b_Integer_Overflow/patches/commit.patch",
+    "evidence_dir": "/work/SemWeaver/artifacts/external/linux-evidence-clone-v8b",
+    "validate_path": "",
+    "source_files": [
+      "io_uring/net.c"
+    ],
+    "compile_commands_sha256": "9544d7bb2bb7ebf15788836de67e41c0466dfe47f9d25ab987ced488116c1e4d"
+  },
+  "data": {
+    "available": true,
+    "clang_path": "/usr/lib/llvm-18/bin/clang",
+    "cfg_snapshots": [
+      {
+        "source_file": "io_uring/net.c",
+        "function_name": "io_recvmsg_mshot_prep",
+        "anchor_line": 565,
+        "branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "if [B4.13]",
+          "if [B6.12]",
+          "if [B8.13]",
+          "if [B9.14]"
+        ],
+        "resolved_branch_conditions": [
+          "if (req (ImplicitCastExpr, LValueToRValue, struct io_kiocb *)->flags (ImplicitCastExpr, LValueToRValue, io_req_flags_t) & (REQ_F_APOLL_MULTISHOT | REQ_F_BUFFER_SELECT) (ImplicitCastExpr, IntegralCast, io_req_flags_t)) == (REQ_F_APOLL_MULTISHOT | REQ_F_BUFFER_SELECT) (ImplicitCastExpr, IntegralCast, io_req_flags_t)",
+          "if __must_check_overflow (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(bool))(__builtin_add_overflow (ImplicitCastExpr, BuiltinFnToFnPtr, _Bool (*)())(hdr (ImplicitCastExpr, LValueToRValue, int), (int)controllen (ImplicitCastExpr, LValueToRValue, size_t) (CStyleCastExpr, IntegralCast, int), &hdr))",
+          "if __must_check_overflow (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(bool))(__builtin_add_overflow (ImplicitCastExpr, BuiltinFnToFnPtr, _Bool (*)())((int)sizeof(struct io_uring_recvmsg_out) (CStyleCastExpr, IntegralCast, int), namelen (ImplicitCastExpr, LValueToRValue, int), &hdr))",
+          "if __builtin_expect (ImplicitCastExpr, BuiltinFnToFnPtr, long (*)(long, long))(!!(namelen (ImplicitCastExpr, LValueToRValue, int) < 0) (ImplicitCastExpr, IntegralCast, long), 0 (ImplicitCastExpr, IntegralCast, long))"
+        ],
+        "cfg_value_bindings": [
+          "(req (ImplicitCastExpr, LValueToRValue, struct io_kiocb *)->flags (ImplicitCastExpr, LValueToRValue, io_req_flags_t) & (REQ_F_APOLL_MULTISHOT | REQ_F_BUFFER_SELECT) (ImplicitCastExpr, IntegralCast, io_req_flags_t)) == (REQ_F_APOLL_MULTISHOT | REQ_F_BUFFER_SELECT) (ImplicitCastExpr, IntegralCast, io_req_flags_t)",
+          "iomsg (ImplicitCastExpr, LValueToRValue, struct io_async_msghdr *)->namelen = namelen (ImplicitCastExpr, LValueToRValue, int)",
+          "iomsg (ImplicitCastExpr, LValueToRValue, struct io_async_msghdr *)->controllen = controllen (ImplicitCastExpr, LValueToRValue, size_t)"
+        ],
+        "call_edges": [
+          "io_recvmsg_mshot_prep -> __builtin_expect",
+          "io_recvmsg_mshot_prep -> __must_check_overflow",
+          "io_recvmsg_mshot_prep -> __builtin_add_overflow"
+        ],
+        "call_targets": [
+          "__builtin_expect",
+          "__must_check_overflow",
+          "__builtin_add_overflow"
+        ],
+        "state_statements": [
+          "return [B1.1];",
+          "[B2.4]->",
+          "[B2.7] = [B2.2]",
+          "[B2.12]->",
+          "[B2.15] = [B2.10]",
+          "return [B2.17];",
+          "return [B3.2];",
+          "return [B5.2];",
+          "sizeof(struct io_uring_recvmsg_out)",
+          "return [B7.2];",
+          "[B9.2]->flags",
+          "([B9.9]) == [B9.13]"
+        ],
+        "field_accesses": [],
+        "return_statements": [
+          "return [B1.1];",
+          "return [B2.17];",
+          "return [B3.2];",
+          "return [B5.2];",
+          "return [B7.2];"
+        ],
+        "dump_excerpt": " --- Call graph Dump --- \n  Function: < root > calls: offset_to_ptr __kasan_check_read __kasan_check_write kasan_check_read kasan_check_write __read_once_word_nocheck read_word_at_a_time gen_endbr gen_endbr_poison is_endbr array_index_mask_nospec generic___set_bit generic___clear_bit generic___change_bit generic___test_and_set_bit generic___test_and_clear_bit generic___test_and_change_bit generic_test_bit generic_test_bit_acquire __compiletime_assert_0 __compiletime_assert_1 const_test_bit arch_set_bit __builtin_constant_p arch___set_bit arch_clear_bit arch_clear_bit_unlock arch___clear_bit arch_xor_unlock_is_negative_byte arch___clear_bit_unlock arch___change_bit arch_change_bit arch_test_and_set_bit arch_test_and_set_bit_lock arch___test_and_set_bit arch_test_and_clear_bit arch___test_and_clear_bit arch___test_and_change_bit arch_test_and_change_bit constant_test_bit constant_test_bit_acquire variable_test_bit arch_test_bit arch_test_bit_acquire variable__ffs variable_ffz __fls __builtin_clzl variable_ffs fls __builtin_clz fls64 __builtin_clzll sched_find_first_bit __builtin_ctzl __arch_hweight32 __arch_hweight16 __arch_hweight8 __arch_hweight64 kmsan_poison_memory kmsan_unpoison_memory kmsan_check_memory kmsan_copy_to_user instrument_read __kcsan_check_access instrument_write instrument_read_write instrument_atomic_read instrument_atomic_write instrument_atomic_read_write instrument_copy_to_user instrument_copy_from_user_before instrument_copy_from_user_after set_bit clear_bit change_bit test_and_set_bit __atomic_signal_fence test_and_clear_bit test_and_change_bit ___set_bit ___clear_bit ___change_bit __instrument_read_write_bitop ___test_and_set_bit ___test_and_clear_bit ___test_and_change_bit _test_bit _test_bit_acquire clear_bit_unlock __clear_bit_unlock test_and_set_bit_lock xor_unlock_is_negative_byte __arch_swab32 __arch_swab64 __fswab16 __fswab32 __fswab64 __fswahw32 __fswahb32 __swab __builtin_bswap64 __swab16p __builtin_bswap16 __swab32p __builtin_bswap32 __swab64p __swahw32p __swahb32p __swab16s __swab32s __swab64s __swahw32s __swahb32s swab16_array swab32_array swab64_array __cpu_to_le64p __le64_to_cpup __cpu_to_le32p __le32_to_cpup __cpu_to_le16p __le16_to_cpup __cpu_to_be64p __be64_to_cpup __cpu_to_be32p __be32_to_cpup __cpu_to_be16p __be16_to_cpup le16_add_cpu le32_add_cpu le64_add_cpu le32_to_cpu_array cpu_to_le32_array be16_add_cpu be32_add_cpu be64_add_cpu cpu_to_be32_array be32_to_cpu_array test_bit_le set_bit_le clear_bit_le __set_bit_le __clear_bit_le test_and_set_bit_le test_and_clear_bit_le __test_and_set_bit_le __test_and_clear_bit_le get_bitmask_order hweight_long rol64 ror64 rol32 ror32 rol16 ror16 rol8 ror8 sign_extend32 sign_extend64 fls_long get_count_order get_count_order_long __ffs64 fns assign_bit __assign_bit hex_byte_pack hex_byte_pack_upper kstrtoul kstrtoull _kstrtoul kstrtol kstrtoll _kstrtol kstrtou64 kstrtos64 kstrtou32 kstrtouint kstrtos32 kstrtoint kstrtou64_from_user kstrtoull_from_user kstrtos64_from_user kstrtoll_from_user kstrtou32_from_user kstrtouint_from_user kstrtos32_from_user kstrtoint_from_user __ilog2_u32 __ilog2_u64 is_power_of_2 __roundup_pow_of_two __rounddown_pow_of_two __order_base_2 __bits_per mul_u64_u64_div_u64 mul_u64_u32_div reciprocal_scale int_sqrt64 int_sqrt in_range64 in_range32 set_arch_panic_timeout initcall_from_entry printk_get_level printk_skip_level printk_skip_headers arch_static_branch arch_static_branch_jump jump_entry_code jump_entry_target jump_entry_key jump_entry_is_branch jump_entry_is_init jump_entry_set_init jump_entry_size arch_jump_entry_size static_key_false static_key_true might_resched ____trace_printk_check_format __must_check_fn fput_light fput fdput __to_fd fdget __fdget fdget_raw __fdget_raw fdget_pos __fdget_pos fdput_pos __f_unlock_pos class_fd_destructor class_fd_constructor class_get_unused_fd_destructor put_unused_fd class_get_unused_fd_constructor get_unused_fd_flags x86_this_cpu_constant_test_bit x86_this_cpu_variable_test_bit ",
+        "error": "",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/generate_only_evidence_all39_v8_r5/G18_8ede3db5061b_Integer_Overflow/csa/patchweaver_runtime/csa_raw/io_uring-net.c-io_recvmsg_mshot_prep.txt",
+        "raw_output_sha256": "f28151444af2f1a167e8fc26e3c29034089c06b9c30aaa914522d995249fd2c9",
+        "command_sha256": "b696656c101da2c23d727d248c08cfbd720b7b74aa34026ccfe9fc58f4a29989",
+        "clang_command_preview": "/usr/lib/llvm-18/bin/clang --analyze -nostdinc -I./arch/x86/include -I./arch/x86/include/generated -I./include -I./arch/x86/include/uapi -I./arch/x86/include/generated/uapi -I./...",
+        "return_code": 0
+      }
+    ],
+    "call_edges": [
+      "io_recvmsg_mshot_prep -> __builtin_expect",
+      "io_recvmsg_mshot_prep -> __must_check_overflow",
+      "io_recvmsg_mshot_prep -> __builtin_add_overflow"
+    ],
+    "error": ""
+  }
+}

@@ -1,0 +1,380 @@
+{
+  "vulnerability_patterns": [
+    {
+      "type": "out_of_bound",
+      "description": "## Bug Pattern\n\nTrusting a device-provided size field without validation against a driver-defined maximum and then using it to size/copy into fixed-size buffers. Specifically, reading rss_max_key_size from the virtio config and using it as the RSS key length without checking it is ≤ VIRTIO_NET_RSS_MAX_KEY_SIZE can lead to out-of-bounds reads/writes when setting/reading the hash key.\n",
+      "source": "upstream_generator_pattern_text"
+    }
+  ],
+  "detection_strategy": {
+    "primary_pattern": "out_of_bound"
+  },
+  "analysis_backend": "deterministic_projection_of_upstream_generation_metadata",
+  "analysis_confidence": 0,
+  "patchweaver": {
+    "summary": "Patch suggests out_of_bound semantics across 0 file(s); added guards=1, removed risky operations=0, fix patterns=0, metadata refs=0.",
+    "patch_facts": [
+      {
+        "fact_type": "patch_overview",
+        "label": "Patch overview",
+        "attributes": {
+          "patch_path": "/artifact/work/artifacts/fse_revision/generate_only_materialized_v1/cases/G07_3f7d9c1964fc_Out_of_Bound/patches/commit.patch",
+          "changed_files": [],
+          "changed_file_count": 0,
+          "added_line_count": 6,
+          "deleted_line_count": 0
+        }
+      },
+      {
+        "fact_type": "vulnerability_patterns",
+        "label": "Vulnerability patterns inferred from patch",
+        "attributes": {
+          "patterns": [
+            "out_of_bound"
+          ],
+          "descriptions": [
+            "## Bug Pattern\n\nTrusting a device-provided size field without validation against a driver-defined maximum and then using it to size/copy into fixed-size buffers. Specifically, reading rss_max_key_size from the virtio config and using it as the RSS key length without checking it is ≤ VIRTIO_NET_RSS_MAX_KEY_SIZE can lead to out-of-bounds reads/writes when setting/reading the hash key.\n"
+          ]
+        }
+      },
+      {
+        "fact_type": "affected_functions",
+        "label": "Functions implicated by removed or fixed code",
+        "attributes": {
+          "functions": []
+        }
+      },
+      {
+        "fact_type": "detection_strategy",
+        "label": "Existing patch analysis detection strategy",
+        "attributes": {
+          "primary_pattern": "out_of_bound"
+        }
+      },
+      {
+        "fact_type": "added_guards",
+        "label": "Patch introduces or strengthens guards",
+        "attributes": {
+          "guards": [
+            "if (vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE) {"
+          ]
+        }
+      },
+      {
+        "fact_type": "added_api_calls",
+        "label": "Patch introduces or highlights API usage",
+        "attributes": {
+          "apis": [
+            "dev_err"
+          ]
+        }
+      }
+    ],
+    "mechanism_graph": {
+      "summary": "Patch suggests out_of_bound semantics across 0 file(s); added guards=1, removed risky operations=0, fix patterns=0, metadata refs=0.",
+      "primary_patterns": [
+        "out_of_bound"
+      ],
+      "nodes": [
+        {
+          "node_id": "patch",
+          "kind": "patch",
+          "label": "Security patch",
+          "attributes": {
+            "changed_files": []
+          }
+        },
+        {
+          "node_id": "pattern_0",
+          "kind": "pattern",
+          "label": "out_of_bound",
+          "attributes": {
+            "type": "out_of_bound",
+            "description": "## Bug Pattern\n\nTrusting a device-provided size field without validation against a driver-defined maximum and then using it to size/copy into fixed-size buffers. Specifically, reading rss_max_key_size from the virtio config and using it as the RSS key length without checking it is ≤ VIRTIO_NET_RSS_MAX_KEY_SIZE can lead to out-of-bounds reads/writes when setting/reading the hash key.\n",
+            "source": "upstream_generator_pattern_text"
+          }
+        },
+        {
+          "node_id": "strategy",
+          "kind": "strategy",
+          "label": "out_of_bound",
+          "attributes": {
+            "primary_pattern": "out_of_bound"
+          }
+        },
+        {
+          "node_id": "guard_1",
+          "kind": "guard",
+          "label": "if (vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE) {",
+          "attributes": {
+            "condition": "if (vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE) {",
+            "source": "patch_fact"
+          }
+        },
+        {
+          "node_id": "fix_1",
+          "kind": "fix",
+          "label": "dev_err",
+          "attributes": {
+            "kind": "added_api_calls",
+            "value": "dev_err"
+          }
+        }
+      ],
+      "edges": [
+        {
+          "source": "patch",
+          "target": "pattern_0",
+          "relation": "indicates",
+          "confidence": 0.9
+        },
+        {
+          "source": "patch",
+          "target": "strategy",
+          "relation": "guides",
+          "confidence": 0.85
+        },
+        {
+          "source": "patch",
+          "target": "guard_1",
+          "relation": "adds_guard",
+          "confidence": 0.84
+        },
+        {
+          "source": "patch",
+          "target": "fix_1",
+          "relation": "introduces",
+          "confidence": 0.8
+        }
+      ]
+    },
+    "evidence_plan": {
+      "primary_pattern": "out_of_bound",
+      "hypotheses": [
+        "Patch likely encodes a reusable vulnerability mechanism but available metadata is weak; keep evidence collection broad."
+      ],
+      "requirements": [
+        {
+          "evidence_type": "patch_fact",
+          "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+          "priority": 100,
+          "preferred_analyzers": [],
+          "confidence": 1.0,
+          "mechanism_refs": [
+            "patch"
+          ]
+        }
+      ],
+      "recommended_analyzers": [],
+      "planner_notes": [
+        "Added guards detected in patch diff; path-sensitive evidence should stay near top priority."
+      ],
+      "coverage_gaps": [],
+      "uncertainty_budget": "medium",
+      "escalation_triggers": [
+        "no_anchor_function"
+      ]
+    },
+    "evidence_bundle": {
+      "records": [
+        {
+          "evidence_id": "pf_000",
+          "type": "patch_fact",
+          "analyzer": "patch",
+          "scope": {
+            "repo": "commit.patch",
+            "file": "",
+            "function": ""
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "fact_type": "patch_overview",
+            "label": "Patch overview",
+            "attributes": {
+              "patch_path": "/artifact/work/artifacts/fse_revision/generate_only_materialized_v1/cases/G07_3f7d9c1964fc_Out_of_Bound/patches/commit.patch",
+              "changed_files": [],
+              "changed_file_count": 0,
+              "added_line_count": 6,
+              "deleted_line_count": 0
+            }
+          },
+          "provenance": {
+            "tool": "patch-analysis",
+            "artifact": "patch_overview",
+            "confidence": 0.95,
+            "origin": "source_derived"
+          },
+          "evidence_slice": {}
+        },
+        {
+          "evidence_id": "pf_001",
+          "type": "patch_fact",
+          "analyzer": "patch",
+          "scope": {
+            "repo": "commit.patch",
+            "file": "",
+            "function": ""
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "fact_type": "vulnerability_patterns",
+            "label": "Vulnerability patterns inferred from patch",
+            "attributes": {
+              "patterns": [
+                "out_of_bound"
+              ],
+              "descriptions": [
+                "## Bug Pattern\n\nTrusting a device-provided size field without validation against a driver-defined maximum and then using it to size/copy into fixed-size buffers. Specifically, reading rss_max_key_size from the virtio config and using it as the RSS key length without checking it is ≤ VIRTIO_NET_RSS_MAX_KEY_SIZE can lead to out-of-bounds reads/writes when setting/reading the hash key.\n"
+              ]
+            }
+          },
+          "provenance": {
+            "tool": "patch-analysis",
+            "artifact": "vulnerability_patterns",
+            "confidence": 0.95,
+            "origin": "source_derived"
+          },
+          "evidence_slice": {}
+        },
+        {
+          "evidence_id": "pf_002",
+          "type": "patch_fact",
+          "analyzer": "patch",
+          "scope": {
+            "repo": "commit.patch",
+            "file": "",
+            "function": ""
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "fact_type": "affected_functions",
+            "label": "Functions implicated by removed or fixed code",
+            "attributes": {
+              "functions": []
+            }
+          },
+          "provenance": {
+            "tool": "patch-analysis",
+            "artifact": "affected_functions",
+            "confidence": 0.95,
+            "origin": "source_derived"
+          },
+          "evidence_slice": {}
+        },
+        {
+          "evidence_id": "pf_003",
+          "type": "patch_fact",
+          "analyzer": "patch",
+          "scope": {
+            "repo": "commit.patch",
+            "file": "",
+            "function": ""
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "fact_type": "detection_strategy",
+            "label": "Existing patch analysis detection strategy",
+            "attributes": {
+              "primary_pattern": "out_of_bound"
+            }
+          },
+          "provenance": {
+            "tool": "patch-analysis",
+            "artifact": "detection_strategy",
+            "confidence": 0.95,
+            "origin": "source_derived"
+          },
+          "evidence_slice": {}
+        },
+        {
+          "evidence_id": "pf_004",
+          "type": "patch_fact",
+          "analyzer": "patch",
+          "scope": {
+            "repo": "commit.patch",
+            "file": "",
+            "function": ""
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "fact_type": "added_guards",
+            "label": "Patch introduces or strengthens guards",
+            "attributes": {
+              "guards": [
+                "if (vi->rss_key_size > VIRTIO_NET_RSS_MAX_KEY_SIZE) {"
+              ]
+            }
+          },
+          "provenance": {
+            "tool": "patch-analysis",
+            "artifact": "added_guards",
+            "confidence": 0.95,
+            "origin": "source_derived"
+          },
+          "evidence_slice": {}
+        },
+        {
+          "evidence_id": "pf_005",
+          "type": "patch_fact",
+          "analyzer": "patch",
+          "scope": {
+            "repo": "commit.patch",
+            "file": "",
+            "function": ""
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "fact_type": "added_api_calls",
+            "label": "Patch introduces or highlights API usage",
+            "attributes": {
+              "apis": [
+                "dev_err"
+              ]
+            }
+          },
+          "provenance": {
+            "tool": "patch-analysis",
+            "artifact": "added_api_calls",
+            "confidence": 0.95,
+            "origin": "source_derived"
+          },
+          "evidence_slice": {}
+        }
+      ],
+      "missing_evidence": [],
+      "collected_analyzers": [
+        "patch"
+      ],
+      "provenance_summary": {
+        "total_records": 6,
+        "origin_counts": {
+          "source_derived": 6
+        },
+        "analyzer_internal_records": 0,
+        "analyzer_internal_fraction": 0.0,
+        "analyzer_backed_records": 0,
+        "analyzer_backed_fraction": 0.0,
+        "source_derived_records": 6,
+        "source_derived_fraction": 1.0
+      }
+    }
+  }
+}

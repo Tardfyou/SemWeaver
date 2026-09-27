@@ -1,0 +1,113 @@
+BuildSource:| drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c
+### Report Summary
+
+File:| fweh.c  
+---|---  
+Warning:| line 505, column 2  
+Flexible-array accessed before initializing its __counted_by counter  
+  
+### Annotated Source Code
+
+
+420   |  brcmf_dbg(TRACE, "event handler cleared for %s\n",
+421   |  brcmf_fweh_event_name(code));
+422   | 	brcmf_fweh_map_event_code(drvr->fweh, code, &evt_handler_idx);
+423   | 	drvr->fweh->evt_handler[evt_handler_idx] = NULL;
+424   | }
+425   |  
+426   | /**
+427   |  * brcmf_fweh_activate_events() - enables firmware events registered.
+428   |  *
+429   |  * @ifp: primary interface object.
+430   |  */
+431   | int brcmf_fweh_activate_events(struct brcmf_if *ifp)
+432   | {
+433   |  struct brcmf_fweh_info *fweh = ifp->drvr->fweh;
+434   |  enum brcmf_fweh_event_code code;
+435   |  int i, err;
+436   |  
+437   |  memset(fweh->event_mask, 0, fweh->event_mask_len);
+438   |  for (i = 0; i < fweh->num_event_codes; i++) {
+439   |  if (fweh->evt_handler[i]) {
+440   | 			brcmf_fweh_map_fwevt_code(fweh, i, &code);
+441   |  brcmf_dbg(EVENT, "enable event %s\n",
+442   |  brcmf_fweh_event_name(code));
+443   |  setbit(fweh->event_mask, i);
+444   | 		}
+445   | 	}
+446   |  
+447   |  /* want to handle IF event as well */
+448   |  brcmf_dbg(EVENT, "enable event IF\n");
+449   |  setbit(fweh->event_mask, BRCMF_E_IF);
+450   |  
+451   | 	err = brcmf_fil_iovar_data_set(ifp, "event_msgs", fweh->event_mask,
+452   | 				       fweh->event_mask_len);
+453   |  if (err)
+454   |  bphy_err(fweh->drvr, "Set event_msgs error (%d)\n", err);
+455   |  
+456   |  return err;
+457   | }
+458   |  
+459   | /**
+460   |  * brcmf_fweh_process_event() - process skb as firmware event.
+461   |  *
+462   |  * @drvr: driver information object.
+463   |  * @event_packet: event packet to process.
+464   |  * @packet_len: length of the packet
+465   |  * @gfp: memory allocation flags.
+466   |  *
+467   |  * If the packet buffer contains a firmware event message it will
+468   |  * dispatch the event to a registered handler (using worker).
+469   |  */
+470   | void brcmf_fweh_process_event(struct brcmf_pub *drvr,
+471   |  struct brcmf_event *event_packet,
+472   | 			      u32 packet_len, gfp_t gfp)
+473   | {
+474   |  u32 fwevt_idx;
+475   |  struct brcmf_fweh_info *fweh = drvr->fweh;
+476   |  struct brcmf_fweh_queue_item *event;
+477   |  void *data;
+478   | 	u32 datalen;
+479   |  
+480   |  /* get event info */
+481   | 	fwevt_idx = get_unaligned_be32(&event_packet->msg.event_type);
+482   | 	datalen = get_unaligned_be32(&event_packet->msg.datalen);
+483   | 	data = &event_packet[1];
+484   |  
+485   |  if (fwevt_idx >= fweh->num_event_codes)
+    1Assuming 'fwevt_idx' is < field 'num_event_codes'→
+486   |  return;
+487   |  
+488   |  if (fwevt_idx != BRCMF_E_IF && !fweh->evt_handler[fwevt_idx])
+    2←Assuming 'fwevt_idx' is equal to BRCMF_E_IF→
+489   |  return;
+490   |  
+491   |  if (datalen > BRCMF_DCMD_MAXLEN ||
+    3←Assuming 'datalen' is <= BRCMF_DCMD_MAXLEN→
+    5←Taking false branch→
+492   |  datalen + sizeof(*event_packet) > packet_len)
+    4←Assuming the condition is false→
+493   |  return;
+494   |  
+495   |  event = kzalloc(struct_size(event, data, datalen), gfp);
+496   |  if (!event)
+    6←Assuming 'event' is non-null→
+    7←Taking false branch→
+497   |  return;
+498   |  
+499   |  event->code = fwevt_idx;
+500   | 	event->datalen = datalen;
+501   |  event->ifidx = event_packet->msg.ifidx;
+502   |  
+503   |  /* use memcpy to get aligned event message */
+504   |  memcpy(&event->emsg, &event_packet->msg, sizeof(event->emsg));
+    8←Taking false branch→
+    9←Taking false branch→
+505   |  memcpy(event->data, data, datalen);
+    10←Taking false branch→
+    11←Taking false branch→
+    12←Flexible-array accessed before initializing its __counted_by counter
+506   |  memcpy(event->ifaddr, event_packet->eth.h_dest, ETH_ALEN);
+507   |  
+508   | 	brcmf_fweh_queue_event(fweh, event);
+509   | }

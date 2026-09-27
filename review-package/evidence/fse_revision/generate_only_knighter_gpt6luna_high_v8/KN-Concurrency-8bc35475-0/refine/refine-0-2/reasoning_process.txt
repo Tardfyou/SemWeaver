@@ -1,0 +1,9 @@
+Refinement Plan:
+
+The false positive comes from `isPotentialRacyRead()` treating every `->` member expression as a read. In `__refcount_add()`, the previous statement calls `atomic_fetch_add_relaxed(i, &r->refs)`. The member expression `r->refs` is used to form an address for an atomic operation, not read speculatively. The checker then sees `old` used only under `if (oldp)` and reports it.
+
+The fix is to make the AST scan context-aware: ignore subtrees used only as the operand of address-of, and remove the source-text checks that can match member syntax inside larger expressions. Actual dereferences and arrow-member reads remain detectable, including `data = *work_data_bits(work)`, so the target buggy code is still reported.
+
+Refined Code:
+```cpp
+```

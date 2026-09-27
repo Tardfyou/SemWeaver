@@ -1,0 +1,1179 @@
+{
+  "analyzer_id": "csa",
+  "detector_artifact": "checker_plugin",
+  "primary_pattern": "out_of_bound",
+  "objective": "Synthesize a path-sensitive out_of_bound detector that encodes the same local state, guards, and lifecycle mechanism evidenced by the patch, while still generalizing to semantically equivalent sites.",
+  "mechanism_contract": {
+    "mechanism_family": "generic_vulnerability_mechanism",
+    "semantic_dimensions": [
+      "vulnerability trigger",
+      "patch-introduced barrier",
+      "local state or flow relation"
+    ],
+    "trigger_invariants": [
+      "the vulnerable mechanism is reachable on a feasible path",
+      "the path lacks the barrier introduced by the patch",
+      "Patch-backed trigger clue: added guard: if (i >= VG_NUM_DCFCLK_DPM_LEVELS)"
+    ],
+    "silence_invariants": [
+      "patch-introduced guards, barriers, or safe APIs must suppress findings",
+      "length/capacity guard present: if (i >= VG_NUM_DCFCLK_DPM_LEVELS)"
+    ],
+    "transfer_axes": [
+      "only generalize along evidence-backed state, guard, flow, or API-role equivalence",
+      "equivalent guard or barrier predicates on sibling paths",
+      "equivalent local state transitions around the same sink or dereference",
+      "equivalent ownership or release/reinit lifecycle on the same symbolic resource"
+    ],
+    "forbidden_shortcuts": [
+      "bind the detector to fixed file paths, line numbers, or exact patch strings",
+      "broaden into unrelated bug families just to improve hit count",
+      "use the patch text itself as the matching rule",
+      "widen to unrelated bug families without evidence",
+      "placeholder helper logic or empty ProgramState modeling"
+    ],
+    "evidence_backed_axes": [
+      "path guards and barrier conditions",
+      "semantic trigger slice",
+      "state transitions",
+      "resource lifecycle"
+    ]
+  },
+  "detector_name_hint": "",
+  "focus_files": [],
+  "focus_functions": [],
+  "hypotheses": [
+    "Patch likely encodes a reusable vulnerability mechanism but available metadata is weak; keep evidence collection broad."
+  ],
+  "required_evidence_types": [
+    "patch_fact"
+  ],
+  "missing_evidence_types": [],
+  "evidence_degraded": false,
+  "patch_mechanism_signals": [
+    "added guard: if (i >= VG_NUM_DCFCLK_DPM_LEVELS)"
+  ],
+  "silencing_conditions": [
+    "length/capacity guard present: if (i >= VG_NUM_DCFCLK_DPM_LEVELS)"
+  ],
+  "retry_guidance": [],
+  "selected_evidence_ids": [
+    "csa_guard_0",
+    "csa_guard_1",
+    "csa_semantic_slice_0",
+    "csa_state_0",
+    "csa_validation_allocation_lifecycle_0"
+  ],
+  "selected_evidence": [
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/dc/clk_mgr/dcn301/vg_clk_mgr.c",
+        "function": "find_dcfclk_for_voltage"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "i >= VG_NUM_DCFCLK_DPM_LEVELS",
+        "summary": "find_dcfclk_for_voltage introduces patch guard `i >= VG_NUM_DCFCLK_DPM_LEVELS` before vg_clk_mgr_helper_populate_bw_params.",
+        "summary_line": 546,
+        "state_before": [
+          "input(i)",
+          "input(VG_NUM_DCFCLK_DPM_LEVELS)"
+        ],
+        "state_after": [
+          "guard(i >= VG_NUM_DCFCLK_DPM_LEVELS)",
+          "current_call(vg_clk_mgr_helper_populate_bw_params)"
+        ],
+        "tracked_symbols": [
+          "i",
+          "VG_NUM_DCFCLK_DPM_LEVELS",
+          "break"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "find_dcfclk_for_voltage"
+        ],
+        "call_targets": [
+          "vg_clk_mgr_helper_populate_bw_params"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "i >= VG_NUM_DCFCLK_DPM_LEVELS"
+        ],
+        "call_edges": [
+          "find_dcfclk_for_voltage -> vg_clk_mgr_helper_populate_bw_params"
+        ],
+        "state_statements": [
+          "if (i >= VG_NUM_DCFCLK_DPM_LEVELS)",
+          "break;"
+        ],
+        "source_file": "drivers/gpu/drm/amd/display/dc/clk_mgr/dcn301/vg_clk_mgr.c"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/amd/display/dc/clk_mgr/dcn301/vg_clk_mgr.c",
+          "hunk_index": 0,
+          "source_line": 546
+        },
+        "summary": "find_dcfclk_for_voltage introduces patch guard `i >= VG_NUM_DCFCLK_DPM_LEVELS` before vg_clk_mgr_helper_populate_bw_params.",
+        "statements": [
+          "if (i >= VG_NUM_DCFCLK_DPM_LEVELS)",
+          "break;"
+        ],
+        "guards": [
+          "i >= VG_NUM_DCFCLK_DPM_LEVELS"
+        ],
+        "call_boundary": [
+          "vg_clk_mgr_helper_populate_bw_params"
+        ],
+        "call_edges": [
+          "find_dcfclk_for_voltage -> vg_clk_mgr_helper_populate_bw_params"
+        ],
+        "state_transitions": [
+          "guard(i >= VG_NUM_DCFCLK_DPM_LEVELS)",
+          "current_call(vg_clk_mgr_helper_populate_bw_params)"
+        ],
+        "api_terms": [
+          "vg_clk_mgr_helper_populate_bw_params"
+        ],
+        "related_symbols": [
+          "i",
+          "VG_NUM_DCFCLK_DPM_LEVELS",
+          "break"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_guard_1",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/dc/clk_mgr/dcn301/vg_clk_mgr.c",
+        "function": "find_dcfclk_for_voltage"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "if clock_table (ImplicitCastExpr, LValueToRValue, const struct vg_dpm_clocks *)->SocVoltage (ImplicitCastExpr, ArrayToPointerDecay, const uint32_t *)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, uint32_t) == voltage (ImplicitCastExpr, LValueToRValue, unsigned int)",
+        "summary": "Analyzer CFG for find_dcfclk_for_voltage in drivers/gpu/drm/amd/display/dc/clk_mgr/dcn301/vg_clk_mgr.c: bindings: i = 0; clock_table (ImplicitCastExpr, LValueToRValue, const struct vg_dpm_clocks *)->SocVoltage (ImplicitCastExpr, ArrayToPointerDecay, const uint32_t *)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, uint32_t) == voltage (ImplicitCastExpr, LValueToRValue, unsigned int) | branches: if clock_table (ImplicitCastExpr, LValueToRValue, const struct vg_dpm_clocks *)->SocVoltage (ImplicitCastExpr, ArrayToPointerDecay, const uint32_t *)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, uint32_t) == voltage (ImplicitCastExpr, LValueToRValue, unsigned int); for (...; i (ImplicitCastExpr, LValueToRValue, int) < 8; ...) | calls: find_dcfclk_for_voltage -> __builtin_expect; find_dcfclk_for_voltage -> kgdb_breakpoint",
+        "summary_line": 546,
+        "state_before": [
+          "buffer(clock_table->SocVoltage)",
+          "buffer(clock_table->DcfClocks)",
+          "sinks(find_dcfclk_for_voltage, vg_clk_mgr_helper_populate_bw_params)"
+        ],
+        "state_after": [
+          "cfg_binding(i = 0)",
+          "cfg_binding(clock_table (ImplicitCastExpr, LValueToRValue, const struct vg_dpm_clocks *)->SocVoltage (ImplicitCastExpr, ArrayToPointerDecay, const uint32_t *)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, uint32_t) == voltage (ImplicitCastExpr, LValueToRValue, unsigned int))",
+          "cfg_branch(if clock_table (ImplicitCastExpr, LValueToRValue, const struct vg_dpm_clocks *)->SocVoltage (ImplicitCastExpr, ArrayToPointerDecay, const uint32_t *)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, uint32_t) == voltage (ImplicitCastExpr, LValueToRValue, unsigned int))",
+          "cfg_branch(for (...; i (ImplicitCastExpr, LValueToRValue, int) < 8; ...))"
+        ],
+        "tracked_symbols": [
+          "clock_table->SocVoltage",
+          "clock_table->DcfClocks",
+          "clk_mgr->base",
+          "clock_table->DfPstateTable"
+        ],
+        "buffer_fields": [
+          "clock_table->SocVoltage",
+          "clock_table->DcfClocks",
+          "clk_mgr->base",
+          "clock_table->DfPstateTable"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "find_dcfclk_for_voltage"
+        ],
+        "call_targets": [
+          "find_dcfclk_for_voltage",
+          "vg_clk_mgr_helper_populate_bw_params",
+          "__builtin_expect",
+          "kgdb_breakpoint"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,drivers/gpu/drm/amd/amdgpu/../display/dc/clk_mgr/dcn301/.vg_clk_mgr.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./inc...",
+        "cfg_branch_kinds": [
+          "if",
+          "for"
+        ],
+        "branch_conditions": [
+          "do ... while [B2.1]",
+          "if [B4.11]",
+          "do ... while [B5.1]",
+          "do ... while [B7.1]",
+          "if [B12.15]",
+          "if [B16.11]"
+        ],
+        "call_edges": [
+          "find_dcfclk_for_voltage -> __builtin_expect",
+          "find_dcfclk_for_voltage -> kgdb_breakpoint"
+        ],
+        "state_statements": [
+          "return [B1.2];",
+          "sizeof(struct bug_entry)",
+          "__auto_type __flags = (1 << 0) | ((1 << 1) | ((9) << 8));",
+          "int __ret_warn_on = !!(!(0));",
+          "[B14.1]++",
+          "[B15.2]->DcfClocks"
+        ],
+        "source_file": "drivers/gpu/drm/amd/display/dc/clk_mgr/dcn301/vg_clk_mgr.c"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/amd/display/dc/clk_mgr/dcn301/vg_clk_mgr.c",
+          "hunk_index": 0,
+          "source_line": 546
+        },
+        "summary": "Analyzer CFG for find_dcfclk_for_voltage in drivers/gpu/drm/amd/display/dc/clk_mgr/dcn301/vg_clk_mgr.c: bindings: i = 0; clock_table (ImplicitCastExpr, LValueToRValue, const struct vg_dpm_clocks *)->SocVoltage (ImplicitCastExpr, ArrayToPointerDecay, const uint32_t *)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, uint32_t) == voltage (ImplicitCastExpr, LValueToRValue, unsigned int) | branches: if clock_table (ImplicitCastExpr, LValueToRValue, const struct vg_dpm_clocks *)->SocVoltage (ImplicitCastExpr, ArrayToPointerDecay, const uint32_t *)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, uint32_t) == voltage (ImplicitCastExpr, LValueToRValue, unsigned int); for (...; i (ImplicitCastExpr, LValueToRValue, int) < 8; ...) | calls: find_dcfclk_for_voltage -> __builtin_expect; find_dcfclk_for_voltage -> kgdb_breakpoint",
+        "statements": [
+          "514: \t\t\t\t.socclk_mhz = 0,",
+          "515: \t\t\t},",
+          "516: \t\t\t{",
+          "517: \t\t\t\t.voltage = 0,",
+          "518: \t\t\t\t.dcfclk_mhz = 738,",
+          "519: \t\t\t\t.fclk_mhz = 1333,"
+        ],
+        "guards": [
+          "if clock_table (ImplicitCastExpr, LValueToRValue, const struct vg_dpm_clocks *)->SocVoltage (ImplicitCastExpr, ArrayToPointerDecay, const uint32_t *)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, uint32_t) == voltage (ImplicitCastExpr, LValueToRValue, unsigned int)",
+          "for (...; i (ImplicitCastExpr, LValueToRValue, int) < 8; ...)",
+          "do ... while 0",
+          "if ({ ... ; __builtin_expect (ImplicitCastExpr, BuiltinFnToFnPtr, long (*)(long, long))(!!(__ret_warn_on) (ImplicitCastExpr, LValueToRValue, int) (ImplicitCastExpr, IntegralCast, long), 0 (ImplicitCastExpr, IntegralCast, long)) })"
+        ],
+        "call_boundary": [
+          "find_dcfclk_for_voltage",
+          "vg_clk_mgr_helper_populate_bw_params",
+          "__builtin_expect",
+          "kgdb_breakpoint"
+        ],
+        "call_edges": [
+          "find_dcfclk_for_voltage -> __builtin_expect",
+          "find_dcfclk_for_voltage -> kgdb_breakpoint"
+        ],
+        "state_transitions": [
+          "cfg_binding(i = 0)",
+          "cfg_binding(clock_table (ImplicitCastExpr, LValueToRValue, const struct vg_dpm_clocks *)->SocVoltage (ImplicitCastExpr, ArrayToPointerDecay, const uint32_t *)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, uint32_t) == voltage (ImplicitCastExpr, LValueToRValue, unsigned int))",
+          "cfg_branch(if clock_table (ImplicitCastExpr, LValueToRValue, const struct vg_dpm_clocks *)->SocVoltage (ImplicitCastExpr, ArrayToPointerDecay, const uint32_t *)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, uint32_t) == voltage (ImplicitCastExpr, LValueToRValue, unsigned int))",
+          "cfg_branch(for (...; i (ImplicitCastExpr, LValueToRValue, int) < 8; ...))",
+          "return [B1.2];",
+          "sizeof(struct bug_entry)"
+        ],
+        "api_terms": [
+          "__builtin_expect",
+          "kgdb_breakpoint"
+        ],
+        "related_symbols": [
+          "clock_table->SocVoltage",
+          "clock_table->DcfClocks",
+          "clk_mgr->base",
+          "clock_table->DfPstateTable"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/dc/clk_mgr/dcn301/vg_clk_mgr.c",
+        "function": "find_dcfclk_for_voltage"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "find_dcfclk_for_voltage adds patch barrier `i >= VG_NUM_DCFCLK_DPM_LEVELS` around vg_clk_mgr_helper_populate_bw_params.",
+        "tracked_symbols": [
+          "i",
+          "VG_NUM_DCFCLK_DPM_LEVELS",
+          "break"
+        ],
+        "coverage_status": "full",
+        "source_file": "drivers/gpu/drm/amd/display/dc/clk_mgr/dcn301/vg_clk_mgr.c"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/amd/display/dc/clk_mgr/dcn301/vg_clk_mgr.c",
+          "hunk_index": 0,
+          "source_line": 546
+        },
+        "summary": "find_dcfclk_for_voltage adds patch barrier `i >= VG_NUM_DCFCLK_DPM_LEVELS` around vg_clk_mgr_helper_populate_bw_params.",
+        "statements": [
+          "if (i >= VG_NUM_DCFCLK_DPM_LEVELS)",
+          "break;"
+        ],
+        "guards": [
+          "i >= VG_NUM_DCFCLK_DPM_LEVELS"
+        ],
+        "call_boundary": [
+          "vg_clk_mgr_helper_populate_bw_params"
+        ],
+        "call_edges": [
+          "find_dcfclk_for_voltage -> vg_clk_mgr_helper_populate_bw_params"
+        ],
+        "state_transitions": [
+          "",
+          "report when a risky write proceeds without the patch-style barrier",
+          "stay silent when the nearby guard proves the current write is blocked or bounded"
+        ],
+        "api_terms": [
+          "vg_clk_mgr_helper_populate_bw_params"
+        ],
+        "related_symbols": [
+          "i",
+          "VG_NUM_DCFCLK_DPM_LEVELS",
+          "break"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/dc/clk_mgr/dcn301/vg_clk_mgr.c",
+        "function": "find_dcfclk_for_voltage"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "find_dcfclk_for_voltage adds patch barrier `i >= VG_NUM_DCFCLK_DPM_LEVELS` around vg_clk_mgr_helper_populate_bw_params.",
+        "state_before": [
+          "input(i)",
+          "input(VG_NUM_DCFCLK_DPM_LEVELS)"
+        ],
+        "state_after": [
+          "guard(i >= VG_NUM_DCFCLK_DPM_LEVELS)",
+          "sink(vg_clk_mgr_helper_populate_bw_params)"
+        ],
+        "tracked_symbols": [
+          "i",
+          "VG_NUM_DCFCLK_DPM_LEVELS",
+          "break"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "find_dcfclk_for_voltage"
+        ],
+        "call_targets": [
+          "vg_clk_mgr_helper_populate_bw_params"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "i >= VG_NUM_DCFCLK_DPM_LEVELS"
+        ],
+        "call_edges": [
+          "find_dcfclk_for_voltage -> vg_clk_mgr_helper_populate_bw_params"
+        ],
+        "state_statements": [
+          "if (i >= VG_NUM_DCFCLK_DPM_LEVELS)",
+          "break;"
+        ],
+        "source_file": "drivers/gpu/drm/amd/display/dc/clk_mgr/dcn301/vg_clk_mgr.c"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/amd/display/dc/clk_mgr/dcn301/vg_clk_mgr.c",
+          "hunk_index": 0,
+          "source_line": 546
+        },
+        "summary": "find_dcfclk_for_voltage adds patch barrier `i >= VG_NUM_DCFCLK_DPM_LEVELS` around vg_clk_mgr_helper_populate_bw_params.",
+        "statements": [
+          "if (i >= VG_NUM_DCFCLK_DPM_LEVELS)",
+          "break;"
+        ],
+        "guards": [
+          "i >= VG_NUM_DCFCLK_DPM_LEVELS"
+        ],
+        "call_boundary": [
+          "vg_clk_mgr_helper_populate_bw_params"
+        ],
+        "call_edges": [
+          "find_dcfclk_for_voltage -> vg_clk_mgr_helper_populate_bw_params"
+        ],
+        "state_transitions": [
+          "guard(i >= VG_NUM_DCFCLK_DPM_LEVELS)",
+          "sink(vg_clk_mgr_helper_populate_bw_params)"
+        ],
+        "api_terms": [
+          "vg_clk_mgr_helper_populate_bw_params"
+        ],
+        "related_symbols": [
+          "i",
+          "VG_NUM_DCFCLK_DPM_LEVELS",
+          "break"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      },
+      "confidence": 0.9
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_0",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/dc/clk_mgr/dcn301/vg_clk_mgr.c",
+        "function": "find_dcfclk_for_voltage"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "find_dcfclk_for_voltage in drivers/gpu/drm/amd/display/dc/clk_mgr/dcn301/vg_clk_mgr.c provides CSA-backed pointer/resource lifecycle context near line 546",
+        "state_before": [
+          "buffer(clock_table->SocVoltage)",
+          "buffer(clock_table->DcfClocks)",
+          "sinks(find_dcfclk_for_voltage, vg_clk_mgr_helper_populate_bw_params)"
+        ],
+        "state_after": [
+          "operation(for (i = 0; i < num_clocks; ++i) {)",
+          "operation(for (i = 0; i < VG_NUM_SOC_VOLTAGE_LEVELS; i++) {)",
+          "operation(for (i = VG_NUM_FCLK_DPM_LEVELS - 1; i >= 0; i--) {)",
+          "operation(return [B1.2];)"
+        ],
+        "tracked_symbols": [
+          "i",
+          "VG_NUM_DCFCLK_DPM_LEVELS",
+          "break"
+        ],
+        "buffer_fields": [
+          "clock_table->SocVoltage",
+          "clock_table->DcfClocks",
+          "clk_mgr->base",
+          "clock_table->DfPstateTable"
+        ],
+        "coverage_status": "partial",
+        "operations": [
+          "for (i = 0; i < num_clocks; ++i) {",
+          "for (i = 0; i < VG_NUM_SOC_VOLTAGE_LEVELS; i++) {",
+          "for (i = VG_NUM_FCLK_DPM_LEVELS - 1; i >= 0; i--) {",
+          "return [B1.2];",
+          "sizeof(struct bug_entry)",
+          "__auto_type __flags = (1 << 0) | ((1 << 1) | ((9) << 8));"
+        ],
+        "functions": [
+          "find_dcfclk_for_voltage"
+        ],
+        "call_targets": [
+          "find_dcfclk_for_voltage",
+          "vg_clk_mgr_helper_populate_bw_params",
+          "__builtin_expect",
+          "kgdb_breakpoint"
+        ],
+        "call_edges": [
+          "find_dcfclk_for_voltage -> __builtin_expect",
+          "find_dcfclk_for_voltage -> kgdb_breakpoint"
+        ],
+        "state_statements": [
+          "for (i = 0; i < num_clocks; ++i) {",
+          "for (i = 0; i < VG_NUM_SOC_VOLTAGE_LEVELS; i++) {",
+          "for (i = VG_NUM_FCLK_DPM_LEVELS - 1; i >= 0; i--) {",
+          "return [B1.2];",
+          "sizeof(struct bug_entry)",
+          "__auto_type __flags = (1 << 0) | ((1 << 1) | ((9) << 8));"
+        ],
+        "source_file": "drivers/gpu/drm/amd/display/dc/clk_mgr/dcn301/vg_clk_mgr.c"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/amd/display/dc/clk_mgr/dcn301/vg_clk_mgr.c",
+          "hunk_index": 0,
+          "source_line": 546
+        },
+        "summary": "find_dcfclk_for_voltage in drivers/gpu/drm/amd/display/dc/clk_mgr/dcn301/vg_clk_mgr.c provides CSA-backed pointer/resource lifecycle context near line 546",
+        "statements": [
+          "514: \t\t\t\t.socclk_mhz = 0,",
+          "515: \t\t\t},",
+          "516: \t\t\t{",
+          "517: \t\t\t\t.voltage = 0,",
+          "518: \t\t\t\t.dcfclk_mhz = 738,",
+          "519: \t\t\t\t.fclk_mhz = 1333,"
+        ],
+        "guards": [
+          "i = 0; i < num_clocks; ++i",
+          "clocks[i] > max",
+          "i = 0; i < VG_NUM_SOC_VOLTAGE_LEVELS; i++",
+          "clock_table->SocVoltage[i] == voltage"
+        ],
+        "call_boundary": [
+          "find_dcfclk_for_voltage",
+          "vg_clk_mgr_helper_populate_bw_params",
+          "__builtin_expect",
+          "kgdb_breakpoint"
+        ],
+        "call_edges": [
+          "find_dcfclk_for_voltage -> __builtin_expect",
+          "find_dcfclk_for_voltage -> kgdb_breakpoint"
+        ],
+        "state_transitions": [
+          "operation(for (i = 0; i < num_clocks; ++i) {)",
+          "operation(for (i = 0; i < VG_NUM_SOC_VOLTAGE_LEVELS; i++) {)",
+          "operation(for (i = VG_NUM_FCLK_DPM_LEVELS - 1; i >= 0; i--) {)",
+          "operation(return [B1.2];)"
+        ],
+        "api_terms": [
+          "for (i = 0; i < num_clocks; ++i) {",
+          "for (i = 0; i < VG_NUM_SOC_VOLTAGE_LEVELS; i++) {",
+          "for (i = VG_NUM_FCLK_DPM_LEVELS - 1; i >= 0; i--) {",
+          "return [B1.2];",
+          "sizeof(struct bug_entry)",
+          "__auto_type __flags = (1 << 0) | ((1 << 1) | ((9) << 8));"
+        ],
+        "related_symbols": [
+          "i",
+          "VG_NUM_DCFCLK_DPM_LEVELS",
+          "break"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      },
+      "confidence": 0.72
+    }
+  ],
+  "semantic_slice_count": 5,
+  "context_summary_count": 0,
+  "semantic_slice_coverage": "partial",
+  "selected_semantic_slice_ids": [
+    "csa_guard_0",
+    "csa_guard_1",
+    "csa_semantic_slice_0",
+    "csa_state_0",
+    "csa_validation_allocation_lifecycle_0"
+  ],
+  "selected_context_summary_ids": [],
+  "selected_semantic_slices": [
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/dc/clk_mgr/dcn301/vg_clk_mgr.c",
+        "function": "find_dcfclk_for_voltage"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "i >= VG_NUM_DCFCLK_DPM_LEVELS",
+        "summary": "find_dcfclk_for_voltage introduces patch guard `i >= VG_NUM_DCFCLK_DPM_LEVELS` before vg_clk_mgr_helper_populate_bw_params.",
+        "summary_line": 546,
+        "state_before": [
+          "input(i)",
+          "input(VG_NUM_DCFCLK_DPM_LEVELS)"
+        ],
+        "state_after": [
+          "guard(i >= VG_NUM_DCFCLK_DPM_LEVELS)",
+          "current_call(vg_clk_mgr_helper_populate_bw_params)"
+        ],
+        "tracked_symbols": [
+          "i",
+          "VG_NUM_DCFCLK_DPM_LEVELS",
+          "break"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "find_dcfclk_for_voltage"
+        ],
+        "call_targets": [
+          "vg_clk_mgr_helper_populate_bw_params"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "i >= VG_NUM_DCFCLK_DPM_LEVELS"
+        ],
+        "call_edges": [
+          "find_dcfclk_for_voltage -> vg_clk_mgr_helper_populate_bw_params"
+        ],
+        "state_statements": [
+          "if (i >= VG_NUM_DCFCLK_DPM_LEVELS)",
+          "break;"
+        ],
+        "source_file": "drivers/gpu/drm/amd/display/dc/clk_mgr/dcn301/vg_clk_mgr.c"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/amd/display/dc/clk_mgr/dcn301/vg_clk_mgr.c",
+          "hunk_index": 0,
+          "source_line": 546
+        },
+        "summary": "find_dcfclk_for_voltage introduces patch guard `i >= VG_NUM_DCFCLK_DPM_LEVELS` before vg_clk_mgr_helper_populate_bw_params.",
+        "statements": [
+          "if (i >= VG_NUM_DCFCLK_DPM_LEVELS)",
+          "break;"
+        ],
+        "guards": [
+          "i >= VG_NUM_DCFCLK_DPM_LEVELS"
+        ],
+        "call_boundary": [
+          "vg_clk_mgr_helper_populate_bw_params"
+        ],
+        "call_edges": [
+          "find_dcfclk_for_voltage -> vg_clk_mgr_helper_populate_bw_params"
+        ],
+        "state_transitions": [
+          "guard(i >= VG_NUM_DCFCLK_DPM_LEVELS)",
+          "current_call(vg_clk_mgr_helper_populate_bw_params)"
+        ],
+        "api_terms": [
+          "vg_clk_mgr_helper_populate_bw_params"
+        ],
+        "related_symbols": [
+          "i",
+          "VG_NUM_DCFCLK_DPM_LEVELS",
+          "break"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_guard_1",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/dc/clk_mgr/dcn301/vg_clk_mgr.c",
+        "function": "find_dcfclk_for_voltage"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "if clock_table (ImplicitCastExpr, LValueToRValue, const struct vg_dpm_clocks *)->SocVoltage (ImplicitCastExpr, ArrayToPointerDecay, const uint32_t *)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, uint32_t) == voltage (ImplicitCastExpr, LValueToRValue, unsigned int)",
+        "summary": "Analyzer CFG for find_dcfclk_for_voltage in drivers/gpu/drm/amd/display/dc/clk_mgr/dcn301/vg_clk_mgr.c: bindings: i = 0; clock_table (ImplicitCastExpr, LValueToRValue, const struct vg_dpm_clocks *)->SocVoltage (ImplicitCastExpr, ArrayToPointerDecay, const uint32_t *)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, uint32_t) == voltage (ImplicitCastExpr, LValueToRValue, unsigned int) | branches: if clock_table (ImplicitCastExpr, LValueToRValue, const struct vg_dpm_clocks *)->SocVoltage (ImplicitCastExpr, ArrayToPointerDecay, const uint32_t *)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, uint32_t) == voltage (ImplicitCastExpr, LValueToRValue, unsigned int); for (...; i (ImplicitCastExpr, LValueToRValue, int) < 8; ...) | calls: find_dcfclk_for_voltage -> __builtin_expect; find_dcfclk_for_voltage -> kgdb_breakpoint",
+        "summary_line": 546,
+        "state_before": [
+          "buffer(clock_table->SocVoltage)",
+          "buffer(clock_table->DcfClocks)",
+          "sinks(find_dcfclk_for_voltage, vg_clk_mgr_helper_populate_bw_params)"
+        ],
+        "state_after": [
+          "cfg_binding(i = 0)",
+          "cfg_binding(clock_table (ImplicitCastExpr, LValueToRValue, const struct vg_dpm_clocks *)->SocVoltage (ImplicitCastExpr, ArrayToPointerDecay, const uint32_t *)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, uint32_t) == voltage (ImplicitCastExpr, LValueToRValue, unsigned int))",
+          "cfg_branch(if clock_table (ImplicitCastExpr, LValueToRValue, const struct vg_dpm_clocks *)->SocVoltage (ImplicitCastExpr, ArrayToPointerDecay, const uint32_t *)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, uint32_t) == voltage (ImplicitCastExpr, LValueToRValue, unsigned int))",
+          "cfg_branch(for (...; i (ImplicitCastExpr, LValueToRValue, int) < 8; ...))"
+        ],
+        "tracked_symbols": [
+          "clock_table->SocVoltage",
+          "clock_table->DcfClocks",
+          "clk_mgr->base",
+          "clock_table->DfPstateTable"
+        ],
+        "buffer_fields": [
+          "clock_table->SocVoltage",
+          "clock_table->DcfClocks",
+          "clk_mgr->base",
+          "clock_table->DfPstateTable"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "find_dcfclk_for_voltage"
+        ],
+        "call_targets": [
+          "find_dcfclk_for_voltage",
+          "vg_clk_mgr_helper_populate_bw_params",
+          "__builtin_expect",
+          "kgdb_breakpoint"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,drivers/gpu/drm/amd/amdgpu/../display/dc/clk_mgr/dcn301/.vg_clk_mgr.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./inc...",
+        "cfg_branch_kinds": [
+          "if",
+          "for"
+        ],
+        "branch_conditions": [
+          "do ... while [B2.1]",
+          "if [B4.11]",
+          "do ... while [B5.1]",
+          "do ... while [B7.1]",
+          "if [B12.15]",
+          "if [B16.11]"
+        ],
+        "call_edges": [
+          "find_dcfclk_for_voltage -> __builtin_expect",
+          "find_dcfclk_for_voltage -> kgdb_breakpoint"
+        ],
+        "state_statements": [
+          "return [B1.2];",
+          "sizeof(struct bug_entry)",
+          "__auto_type __flags = (1 << 0) | ((1 << 1) | ((9) << 8));",
+          "int __ret_warn_on = !!(!(0));",
+          "[B14.1]++",
+          "[B15.2]->DcfClocks"
+        ],
+        "source_file": "drivers/gpu/drm/amd/display/dc/clk_mgr/dcn301/vg_clk_mgr.c"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/amd/display/dc/clk_mgr/dcn301/vg_clk_mgr.c",
+          "hunk_index": 0,
+          "source_line": 546
+        },
+        "summary": "Analyzer CFG for find_dcfclk_for_voltage in drivers/gpu/drm/amd/display/dc/clk_mgr/dcn301/vg_clk_mgr.c: bindings: i = 0; clock_table (ImplicitCastExpr, LValueToRValue, const struct vg_dpm_clocks *)->SocVoltage (ImplicitCastExpr, ArrayToPointerDecay, const uint32_t *)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, uint32_t) == voltage (ImplicitCastExpr, LValueToRValue, unsigned int) | branches: if clock_table (ImplicitCastExpr, LValueToRValue, const struct vg_dpm_clocks *)->SocVoltage (ImplicitCastExpr, ArrayToPointerDecay, const uint32_t *)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, uint32_t) == voltage (ImplicitCastExpr, LValueToRValue, unsigned int); for (...; i (ImplicitCastExpr, LValueToRValue, int) < 8; ...) | calls: find_dcfclk_for_voltage -> __builtin_expect; find_dcfclk_for_voltage -> kgdb_breakpoint",
+        "statements": [
+          "514: \t\t\t\t.socclk_mhz = 0,",
+          "515: \t\t\t},",
+          "516: \t\t\t{",
+          "517: \t\t\t\t.voltage = 0,",
+          "518: \t\t\t\t.dcfclk_mhz = 738,",
+          "519: \t\t\t\t.fclk_mhz = 1333,"
+        ],
+        "guards": [
+          "if clock_table (ImplicitCastExpr, LValueToRValue, const struct vg_dpm_clocks *)->SocVoltage (ImplicitCastExpr, ArrayToPointerDecay, const uint32_t *)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, uint32_t) == voltage (ImplicitCastExpr, LValueToRValue, unsigned int)",
+          "for (...; i (ImplicitCastExpr, LValueToRValue, int) < 8; ...)",
+          "do ... while 0",
+          "if ({ ... ; __builtin_expect (ImplicitCastExpr, BuiltinFnToFnPtr, long (*)(long, long))(!!(__ret_warn_on) (ImplicitCastExpr, LValueToRValue, int) (ImplicitCastExpr, IntegralCast, long), 0 (ImplicitCastExpr, IntegralCast, long)) })"
+        ],
+        "call_boundary": [
+          "find_dcfclk_for_voltage",
+          "vg_clk_mgr_helper_populate_bw_params",
+          "__builtin_expect",
+          "kgdb_breakpoint"
+        ],
+        "call_edges": [
+          "find_dcfclk_for_voltage -> __builtin_expect",
+          "find_dcfclk_for_voltage -> kgdb_breakpoint"
+        ],
+        "state_transitions": [
+          "cfg_binding(i = 0)",
+          "cfg_binding(clock_table (ImplicitCastExpr, LValueToRValue, const struct vg_dpm_clocks *)->SocVoltage (ImplicitCastExpr, ArrayToPointerDecay, const uint32_t *)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, uint32_t) == voltage (ImplicitCastExpr, LValueToRValue, unsigned int))",
+          "cfg_branch(if clock_table (ImplicitCastExpr, LValueToRValue, const struct vg_dpm_clocks *)->SocVoltage (ImplicitCastExpr, ArrayToPointerDecay, const uint32_t *)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, uint32_t) == voltage (ImplicitCastExpr, LValueToRValue, unsigned int))",
+          "cfg_branch(for (...; i (ImplicitCastExpr, LValueToRValue, int) < 8; ...))",
+          "return [B1.2];",
+          "sizeof(struct bug_entry)"
+        ],
+        "api_terms": [
+          "__builtin_expect",
+          "kgdb_breakpoint"
+        ],
+        "related_symbols": [
+          "clock_table->SocVoltage",
+          "clock_table->DcfClocks",
+          "clk_mgr->base",
+          "clock_table->DfPstateTable"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/dc/clk_mgr/dcn301/vg_clk_mgr.c",
+        "function": "find_dcfclk_for_voltage"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "find_dcfclk_for_voltage adds patch barrier `i >= VG_NUM_DCFCLK_DPM_LEVELS` around vg_clk_mgr_helper_populate_bw_params.",
+        "tracked_symbols": [
+          "i",
+          "VG_NUM_DCFCLK_DPM_LEVELS",
+          "break"
+        ],
+        "coverage_status": "full",
+        "source_file": "drivers/gpu/drm/amd/display/dc/clk_mgr/dcn301/vg_clk_mgr.c"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/amd/display/dc/clk_mgr/dcn301/vg_clk_mgr.c",
+          "hunk_index": 0,
+          "source_line": 546
+        },
+        "summary": "find_dcfclk_for_voltage adds patch barrier `i >= VG_NUM_DCFCLK_DPM_LEVELS` around vg_clk_mgr_helper_populate_bw_params.",
+        "statements": [
+          "if (i >= VG_NUM_DCFCLK_DPM_LEVELS)",
+          "break;"
+        ],
+        "guards": [
+          "i >= VG_NUM_DCFCLK_DPM_LEVELS"
+        ],
+        "call_boundary": [
+          "vg_clk_mgr_helper_populate_bw_params"
+        ],
+        "call_edges": [
+          "find_dcfclk_for_voltage -> vg_clk_mgr_helper_populate_bw_params"
+        ],
+        "state_transitions": [
+          "",
+          "report when a risky write proceeds without the patch-style barrier",
+          "stay silent when the nearby guard proves the current write is blocked or bounded"
+        ],
+        "api_terms": [
+          "vg_clk_mgr_helper_populate_bw_params"
+        ],
+        "related_symbols": [
+          "i",
+          "VG_NUM_DCFCLK_DPM_LEVELS",
+          "break"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/dc/clk_mgr/dcn301/vg_clk_mgr.c",
+        "function": "find_dcfclk_for_voltage"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "find_dcfclk_for_voltage adds patch barrier `i >= VG_NUM_DCFCLK_DPM_LEVELS` around vg_clk_mgr_helper_populate_bw_params.",
+        "state_before": [
+          "input(i)",
+          "input(VG_NUM_DCFCLK_DPM_LEVELS)"
+        ],
+        "state_after": [
+          "guard(i >= VG_NUM_DCFCLK_DPM_LEVELS)",
+          "sink(vg_clk_mgr_helper_populate_bw_params)"
+        ],
+        "tracked_symbols": [
+          "i",
+          "VG_NUM_DCFCLK_DPM_LEVELS",
+          "break"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "find_dcfclk_for_voltage"
+        ],
+        "call_targets": [
+          "vg_clk_mgr_helper_populate_bw_params"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "i >= VG_NUM_DCFCLK_DPM_LEVELS"
+        ],
+        "call_edges": [
+          "find_dcfclk_for_voltage -> vg_clk_mgr_helper_populate_bw_params"
+        ],
+        "state_statements": [
+          "if (i >= VG_NUM_DCFCLK_DPM_LEVELS)",
+          "break;"
+        ],
+        "source_file": "drivers/gpu/drm/amd/display/dc/clk_mgr/dcn301/vg_clk_mgr.c"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/amd/display/dc/clk_mgr/dcn301/vg_clk_mgr.c",
+          "hunk_index": 0,
+          "source_line": 546
+        },
+        "summary": "find_dcfclk_for_voltage adds patch barrier `i >= VG_NUM_DCFCLK_DPM_LEVELS` around vg_clk_mgr_helper_populate_bw_params.",
+        "statements": [
+          "if (i >= VG_NUM_DCFCLK_DPM_LEVELS)",
+          "break;"
+        ],
+        "guards": [
+          "i >= VG_NUM_DCFCLK_DPM_LEVELS"
+        ],
+        "call_boundary": [
+          "vg_clk_mgr_helper_populate_bw_params"
+        ],
+        "call_edges": [
+          "find_dcfclk_for_voltage -> vg_clk_mgr_helper_populate_bw_params"
+        ],
+        "state_transitions": [
+          "guard(i >= VG_NUM_DCFCLK_DPM_LEVELS)",
+          "sink(vg_clk_mgr_helper_populate_bw_params)"
+        ],
+        "api_terms": [
+          "vg_clk_mgr_helper_populate_bw_params"
+        ],
+        "related_symbols": [
+          "i",
+          "VG_NUM_DCFCLK_DPM_LEVELS",
+          "break"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      },
+      "confidence": 0.9
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_0",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/dc/clk_mgr/dcn301/vg_clk_mgr.c",
+        "function": "find_dcfclk_for_voltage"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "find_dcfclk_for_voltage in drivers/gpu/drm/amd/display/dc/clk_mgr/dcn301/vg_clk_mgr.c provides CSA-backed pointer/resource lifecycle context near line 546",
+        "state_before": [
+          "buffer(clock_table->SocVoltage)",
+          "buffer(clock_table->DcfClocks)",
+          "sinks(find_dcfclk_for_voltage, vg_clk_mgr_helper_populate_bw_params)"
+        ],
+        "state_after": [
+          "operation(for (i = 0; i < num_clocks; ++i) {)",
+          "operation(for (i = 0; i < VG_NUM_SOC_VOLTAGE_LEVELS; i++) {)",
+          "operation(for (i = VG_NUM_FCLK_DPM_LEVELS - 1; i >= 0; i--) {)",
+          "operation(return [B1.2];)"
+        ],
+        "tracked_symbols": [
+          "i",
+          "VG_NUM_DCFCLK_DPM_LEVELS",
+          "break"
+        ],
+        "buffer_fields": [
+          "clock_table->SocVoltage",
+          "clock_table->DcfClocks",
+          "clk_mgr->base",
+          "clock_table->DfPstateTable"
+        ],
+        "coverage_status": "partial",
+        "operations": [
+          "for (i = 0; i < num_clocks; ++i) {",
+          "for (i = 0; i < VG_NUM_SOC_VOLTAGE_LEVELS; i++) {",
+          "for (i = VG_NUM_FCLK_DPM_LEVELS - 1; i >= 0; i--) {",
+          "return [B1.2];",
+          "sizeof(struct bug_entry)",
+          "__auto_type __flags = (1 << 0) | ((1 << 1) | ((9) << 8));"
+        ],
+        "functions": [
+          "find_dcfclk_for_voltage"
+        ],
+        "call_targets": [
+          "find_dcfclk_for_voltage",
+          "vg_clk_mgr_helper_populate_bw_params",
+          "__builtin_expect",
+          "kgdb_breakpoint"
+        ],
+        "call_edges": [
+          "find_dcfclk_for_voltage -> __builtin_expect",
+          "find_dcfclk_for_voltage -> kgdb_breakpoint"
+        ],
+        "state_statements": [
+          "for (i = 0; i < num_clocks; ++i) {",
+          "for (i = 0; i < VG_NUM_SOC_VOLTAGE_LEVELS; i++) {",
+          "for (i = VG_NUM_FCLK_DPM_LEVELS - 1; i >= 0; i--) {",
+          "return [B1.2];",
+          "sizeof(struct bug_entry)",
+          "__auto_type __flags = (1 << 0) | ((1 << 1) | ((9) << 8));"
+        ],
+        "source_file": "drivers/gpu/drm/amd/display/dc/clk_mgr/dcn301/vg_clk_mgr.c"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/amd/display/dc/clk_mgr/dcn301/vg_clk_mgr.c",
+          "hunk_index": 0,
+          "source_line": 546
+        },
+        "summary": "find_dcfclk_for_voltage in drivers/gpu/drm/amd/display/dc/clk_mgr/dcn301/vg_clk_mgr.c provides CSA-backed pointer/resource lifecycle context near line 546",
+        "statements": [
+          "514: \t\t\t\t.socclk_mhz = 0,",
+          "515: \t\t\t},",
+          "516: \t\t\t{",
+          "517: \t\t\t\t.voltage = 0,",
+          "518: \t\t\t\t.dcfclk_mhz = 738,",
+          "519: \t\t\t\t.fclk_mhz = 1333,"
+        ],
+        "guards": [
+          "i = 0; i < num_clocks; ++i",
+          "clocks[i] > max",
+          "i = 0; i < VG_NUM_SOC_VOLTAGE_LEVELS; i++",
+          "clock_table->SocVoltage[i] == voltage"
+        ],
+        "call_boundary": [
+          "find_dcfclk_for_voltage",
+          "vg_clk_mgr_helper_populate_bw_params",
+          "__builtin_expect",
+          "kgdb_breakpoint"
+        ],
+        "call_edges": [
+          "find_dcfclk_for_voltage -> __builtin_expect",
+          "find_dcfclk_for_voltage -> kgdb_breakpoint"
+        ],
+        "state_transitions": [
+          "operation(for (i = 0; i < num_clocks; ++i) {)",
+          "operation(for (i = 0; i < VG_NUM_SOC_VOLTAGE_LEVELS; i++) {)",
+          "operation(for (i = VG_NUM_FCLK_DPM_LEVELS - 1; i >= 0; i--) {)",
+          "operation(return [B1.2];)"
+        ],
+        "api_terms": [
+          "for (i = 0; i < num_clocks; ++i) {",
+          "for (i = 0; i < VG_NUM_SOC_VOLTAGE_LEVELS; i++) {",
+          "for (i = VG_NUM_FCLK_DPM_LEVELS - 1; i >= 0; i--) {",
+          "return [B1.2];",
+          "sizeof(struct bug_entry)",
+          "__auto_type __flags = (1 << 0) | ((1 << 1) | ((9) << 8));"
+        ],
+        "related_symbols": [
+          "i",
+          "VG_NUM_DCFCLK_DPM_LEVELS",
+          "break"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      },
+      "confidence": 0.72
+    }
+  ],
+  "selected_context_summaries": [],
+  "semantic_clause_plan": [
+    {
+      "clause_id": "vulnerable_trigger_clause",
+      "intent": "Trigger on the vulnerable out_of_bound mechanism using evidence-backed path/flow semantics.",
+      "supporting_evidence_ids": [
+        "csa_guard_0",
+        "csa_guard_1",
+        "csa_semantic_slice_0",
+        "csa_state_0",
+        "csa_validation_allocation_lifecycle_0"
+      ],
+      "repair_when": [
+        "semantic_no_hits"
+      ],
+      "focus_functions": []
+    },
+    {
+      "clause_id": "patched_silence_clause",
+      "intent": "Stay silent on patched code when patch-added guards, barriers, or safe APIs prove the mechanism is blocked.",
+      "supporting_evidence_ids": [
+        "csa_guard_0",
+        "csa_guard_1",
+        "csa_semantic_slice_0",
+        "csa_state_0"
+      ],
+      "repair_when": [],
+      "silencing_conditions": [
+        "length/capacity guard present: if (i >= VG_NUM_DCFCLK_DPM_LEVELS)"
+      ]
+    },
+    {
+      "clause_id": "semantic_transfer_clause",
+      "intent": "Generalize along semantic slices and call-chain evidence rather than patch-local syntax.",
+      "supporting_evidence_ids": [
+        "csa_semantic_slice_0"
+      ],
+      "repair_when": [],
+      "analyzer_id": "csa"
+    },
+    {
+      "clause_id": "analyzer_interface_clause",
+      "intent": "Preserve valid analyzer-facing syntax and interfaces while keeping semantics unchanged.",
+      "supporting_evidence_ids": [],
+      "repair_when": [
+        "semantic_execution_error"
+      ],
+      "analyzer_id": "csa"
+    }
+  ],
+  "repair_directives": [],
+  "constraints": [
+    {
+      "title": "Generalize beyond patch site",
+      "description": "Do not bind the detector to fixed file paths, line numbers, or exact patch strings.",
+      "priority": "high"
+    },
+    {
+      "title": "Preserve vulnerability semantics",
+      "description": "Keep the detector focused on the vulnerability family implied by the patch and evidence.",
+      "priority": "high"
+    },
+    {
+      "title": "Respect analyzer-native form",
+      "description": "Output must be a valid checker_plugin for csa.",
+      "priority": "high"
+    },
+    {
+      "title": "Stay within proven mechanism scope",
+      "description": "Generalize only along evidence-supported semantic dimensions. Do not broaden the detector into unrelated globals, APIs, or bug families.",
+      "priority": "high"
+    },
+    {
+      "title": "Honor mechanism contract",
+      "description": "Preserve the mechanism family `generic_vulnerability_mechanism` by keeping trigger invariants the vulnerable mechanism is reachable on a feasible path; the path lacks the barrier introduced by the patch; Patch-backed trigger clue: added guard: if (i >= VG_NUM_DCFCLK_DPM_LEVELS).",
+      "priority": "high"
+    },
+    {
+      "title": "Generalize only on contract axes",
+      "description": "Reuse semantics only along these transfer axes: only generalize along evidence-backed state, guard, flow, or API-role equivalence; equivalent guard or barrier predicates on sibling paths; equivalent local state transitions around the same sink or dereference.",
+      "priority": "high"
+    },
+    {
+      "title": "Encode the patch-added barrier",
+      "description": "treat guards such as if (i >= VG_NUM_DCFCLK_DPM_LEVELS) as semantic barriers.",
+      "priority": "high"
+    },
+    {
+      "title": "Respect patched silence",
+      "description": "Use these no-report conditions when they are semantically proven: length/capacity guard present: if (i >= VG_NUM_DCFCLK_DPM_LEVELS).",
+      "priority": "high"
+    },
+    {
+      "title": "Use path-sensitive evidence",
+      "description": "Prefer guards, state transitions, and lifecycle facts over broad textual matching.",
+      "priority": "high"
+    },
+    {
+      "title": "No placeholder helper logic",
+      "description": "Helper predicates must inspect AST/program state and must not be unconditional return-true/return-false stubs.",
+      "priority": "high"
+    }
+  ],
+  "implementation_hints": [
+    "Mechanism family: generic_vulnerability_mechanism",
+    "Mechanism dimensions: vulnerability trigger, patch-introduced barrier, local state or flow relation",
+    "Trigger invariants: the vulnerable mechanism is reachable on a feasible path, the path lacks the barrier introduced by the patch, Patch-backed trigger clue: added guard: if (i >= VG_NUM_DCFCLK_DPM_LEVELS)",
+    "Silence invariants: patch-introduced guards, barriers, or safe APIs must suppress findings, length/capacity guard present: if (i >= VG_NUM_DCFCLK_DPM_LEVELS)",
+    "Transfer axes: only generalize along evidence-backed state, guard, flow, or API-role equivalence, equivalent guard or barrier predicates on sibling paths, equivalent local state transitions around the same sink or dereference",
+    "Silence condition: length/capacity guard present: if (i >= VG_NUM_DCFCLK_DPM_LEVELS)",
+    "Patch mechanism: added guard: if (i >= VG_NUM_DCFCLK_DPM_LEVELS)",
+    "Semantic slice (path_witness): find_dcfclk_for_voltage introduces patch guard `i >= VG_NUM_DCFCLK_DPM_LEVELS` before vg_clk_mgr_helper_populate_bw_params."
+  ],
+  "validation_expectations": [
+    "Vulnerable version should trigger a out_of_bound finding.",
+    "Patched version should stay silent for the same mechanism.",
+    "Semantic validation that executes but returns zero hits is not acceptable; recover coverage with evidence-backed semantics.",
+    "Repair phase may fix syntax/interfaces only; it must not simplify away the core detection logic.",
+    "Generalization must stay inside the mechanism contract transfer axes instead of widening to adjacent bug families.",
+    "Trigger invariant: the vulnerable mechanism is reachable on a feasible path.",
+    "Trigger invariant: the path lacks the barrier introduced by the patch.",
+    "Patched silence depends on: length/capacity guard present: if (i >= VG_NUM_DCFCLK_DPM_LEVELS)."
+  ]
+}

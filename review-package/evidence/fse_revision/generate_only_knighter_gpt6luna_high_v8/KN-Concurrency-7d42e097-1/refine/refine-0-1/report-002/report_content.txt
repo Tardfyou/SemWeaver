@@ -1,0 +1,143 @@
+BuildSource:| drivers/crypto/intel/qat/qat_common/adf_aer.c
+### Report Summary
+
+File:| adf_aer.c  
+---|---  
+Warning:| line 163, column 1  
+Missing completion_done() guard in worker; submitter with timed wait may free
+the context  
+  
+### Annotated Source Code
+
+
+71    | 	u16 bridge_ctl = 0;
+72    |  
+73    |  if (!parent)
+74    | 		parent = pdev;
+75    |  
+76    |  if (!pci_wait_for_pending_transaction(pdev))
+77    |  dev_info(&GET_DEV(accel_dev),
+78    |  "Transaction still in progress. Proceeding\n");
+79    |  
+80    |  dev_info(&GET_DEV(accel_dev), "Secondary bus reset\n");
+81    |  
+82    | 	pci_read_config_word(parent, PCI_BRIDGE_CONTROL, &bridge_ctl);
+83    | 	bridge_ctl |= PCI_BRIDGE_CTL_BUS_RESET;
+84    | 	pci_write_config_word(parent, PCI_BRIDGE_CONTROL, bridge_ctl);
+85    | 	msleep(100);
+86    | 	bridge_ctl &= ~PCI_BRIDGE_CTL_BUS_RESET;
+87    | 	pci_write_config_word(parent, PCI_BRIDGE_CONTROL, bridge_ctl);
+88    | 	msleep(100);
+89    | }
+90    | EXPORT_SYMBOL_GPL(adf_reset_sbr);
+91    |  
+92    | void adf_reset_flr(struct adf_accel_dev *accel_dev)
+93    | {
+94    | 	pcie_flr(accel_to_pci_dev(accel_dev));
+95    | }
+96    | EXPORT_SYMBOL_GPL(adf_reset_flr);
+97    |  
+98    | void adf_dev_restore(struct adf_accel_dev *accel_dev)
+99    | {
+100   |  struct adf_hw_device_data *hw_device = accel_dev->hw_device;
+101   |  struct pci_dev *pdev = accel_to_pci_dev(accel_dev);
+102   |  
+103   |  if (hw_device->reset_device) {
+104   |  dev_info(&GET_DEV(accel_dev), "Resetting device qat_dev%d\n",
+105   |  accel_dev->accel_id);
+106   | 		hw_device->reset_device(accel_dev);
+107   | 		pci_restore_state(pdev);
+108   | 		pci_save_state(pdev);
+109   | 	}
+110   | }
+111   |  
+112   | static void adf_device_sriov_worker(struct work_struct *work)
+113   | {
+114   |  struct adf_sriov_dev_data *sriov_data =
+115   |  container_of(work, struct adf_sriov_dev_data, sriov_work);
+116   |  
+117   | 	adf_reenable_sriov(sriov_data->accel_dev);
+118   | 	complete(&sriov_data->compl);
+119   | }
+120   |  
+121   | static void adf_device_reset_worker(struct work_struct *work)
+122   | {
+123   |  struct adf_reset_dev_data *reset_data =
+124   |  container_of(work, struct adf_reset_dev_data, reset_work);
+125   |  struct adf_accel_dev *accel_dev = reset_data->accel_dev;
+126   |  unsigned long wait_jiffies = msecs_to_jiffies(10000);
+127   |  struct adf_sriov_dev_data sriov_data;
+128   |  
+129   | 	adf_dev_restarting_notify(accel_dev);
+130   |  if (adf_dev_restart(accel_dev)) {
+    1Assuming the condition is false→
+    2←Taking false branch→
+131   |  /* The device hanged and we can't restart it so stop here */
+132   |  dev_err(&GET_DEV(accel_dev), "Restart device failed\n");
+133   |  if (reset_data->mode == ADF_DEV_RESET_ASYNC ||
+134   | 		    completion_done(&reset_data->compl))
+135   | 			kfree(reset_data);
+136   |  WARN(1, "QAT: device restart failed. Device is unusable\n");
+137   |  return;
+138   | 	}
+139   |  
+140   |  sriov_data.accel_dev = accel_dev;
+141   |  init_completion(&sriov_data.compl);
+142   |  INIT_WORK(&sriov_data.sriov_work, adf_device_sriov_worker);
+    3←Loop condition is false.  Exiting loop→
+    4←Loop condition is false.  Exiting loop→
+143   |  queue_work(device_sriov_wq, &sriov_data.sriov_work);
+144   |  if (wait_for_completion_timeout(&sriov_data.compl, wait_jiffies))
+    5←Assuming the condition is false→
+    6←Taking false branch→
+145   | 		adf_pf2vf_notify_restarted(accel_dev);
+146   |  
+147   |  adf_dev_restarted_notify(accel_dev);
+148   | 	clear_bit(ADF_STATUS_RESTARTING, &accel_dev->status);
+149   |  
+150   |  /*
+151   |  * The dev is back alive. Notify the caller if in sync mode
+152   |  *
+153   |  * If device restart will take a more time than expected,
+154   |  * the schedule_reset() function can timeout and exit. This can be
+155   |  * detected by calling the completion_done() function. In this case
+156   |  * the reset_data structure needs to be freed here.
+157   |  */
+158   |  if (reset_data->mode == ADF_DEV_RESET_ASYNC ||
+    7←Assuming field 'mode' is equal to ADF_DEV_RESET_ASYNC→
+159   | 	    completion_done(&reset_data->compl))
+160   |  kfree(reset_data);
+161   |  else
+162   | 		complete(&reset_data->compl);
+163   | }
+    8←Missing completion_done() guard in worker; submitter with timed wait may free the context
+164   |  
+165   | static int adf_dev_aer_schedule_reset(struct adf_accel_dev *accel_dev,
+166   |  enum adf_dev_reset_mode mode)
+167   | {
+168   |  struct adf_reset_dev_data *reset_data;
+169   |  
+170   |  if (!adf_dev_started(accel_dev) ||
+171   |  test_bit(ADF_STATUS_RESTARTING, &accel_dev->status))
+172   |  return 0;
+173   |  
+174   | 	set_bit(ADF_STATUS_RESTARTING, &accel_dev->status);
+175   | 	reset_data = kzalloc(sizeof(*reset_data), GFP_KERNEL);
+176   |  if (!reset_data)
+177   |  return -ENOMEM;
+178   | 	reset_data->accel_dev = accel_dev;
+179   | 	init_completion(&reset_data->compl);
+180   | 	reset_data->mode = mode;
+181   |  INIT_WORK(&reset_data->reset_work, adf_device_reset_worker);
+182   | 	queue_work(device_reset_wq, &reset_data->reset_work);
+183   |  
+184   |  /* If in sync mode wait for the result */
+185   |  if (mode == ADF_DEV_RESET_SYNC) {
+186   |  int ret = 0;
+187   |  /* Maximum device reset time is 10 seconds */
+188   |  unsigned long wait_jiffies = msecs_to_jiffies(10000);
+189   |  unsigned long timeout = wait_for_completion_timeout(
+190   | 				   &reset_data->compl, wait_jiffies);
+191   |  if (!timeout) {
+192   |  dev_err(&GET_DEV(accel_dev),
+193   |  "Reset device timeout expired\n");

@@ -1,0 +1,293 @@
+{
+  "vulnerability_patterns": [
+    {
+      "type": "use_after_free",
+      "description": "## Bug Pattern\n\nA long-lived struct stores a reference-counted pointer (here, device->bdev_file) that is released (fput/close) but not cleared to NULL. Later code uses a non-NULL check on that field as a validity flag and reuses/fputs it again, leading to use-after-free. Specifically, cleanup sets related fields (device->bdev) to NULL but leaves device->bdev_file dangling, so subsequent paths that test if (device->bdev_file) will operate on freed memory.\n",
+      "source": "upstream_generator_pattern_text"
+    }
+  ],
+  "detection_strategy": {
+    "primary_pattern": "use_after_free"
+  },
+  "analysis_backend": "deterministic_projection_of_upstream_generation_metadata",
+  "analysis_confidence": 0,
+  "patchweaver": {
+    "summary": "Patch suggests use_after_free semantics across 0 file(s); added guards=0, removed risky operations=0, fix patterns=0, metadata refs=0.",
+    "patch_facts": [
+      {
+        "fact_type": "patch_overview",
+        "label": "Patch overview",
+        "attributes": {
+          "patch_path": "/artifact/work/artifacts/fse_revision/generate_only_materialized_v1/cases/G24_aec8e6bf8391_UAF/patches/commit.patch",
+          "changed_files": [],
+          "changed_file_count": 0,
+          "added_line_count": 1,
+          "deleted_line_count": 0
+        }
+      },
+      {
+        "fact_type": "vulnerability_patterns",
+        "label": "Vulnerability patterns inferred from patch",
+        "attributes": {
+          "patterns": [
+            "use_after_free"
+          ],
+          "descriptions": [
+            "## Bug Pattern\n\nA long-lived struct stores a reference-counted pointer (here, device->bdev_file) that is released (fput/close) but not cleared to NULL. Later code uses a non-NULL check on that field as a validity flag and reuses/fputs it again, leading to use-after-free. Specifically, cleanup sets related fields (device->bdev) to NULL but leaves device->bdev_file dangling, so subsequent paths that test if (device->bdev_file) will operate on freed memory.\n"
+          ]
+        }
+      },
+      {
+        "fact_type": "affected_functions",
+        "label": "Functions implicated by removed or fixed code",
+        "attributes": {
+          "functions": []
+        }
+      },
+      {
+        "fact_type": "detection_strategy",
+        "label": "Existing patch analysis detection strategy",
+        "attributes": {
+          "primary_pattern": "use_after_free"
+        }
+      }
+    ],
+    "mechanism_graph": {
+      "summary": "Patch suggests use_after_free semantics across 0 file(s); added guards=0, removed risky operations=0, fix patterns=0, metadata refs=0.",
+      "primary_patterns": [
+        "use_after_free"
+      ],
+      "nodes": [
+        {
+          "node_id": "patch",
+          "kind": "patch",
+          "label": "Security patch",
+          "attributes": {
+            "changed_files": []
+          }
+        },
+        {
+          "node_id": "pattern_0",
+          "kind": "pattern",
+          "label": "use_after_free",
+          "attributes": {
+            "type": "use_after_free",
+            "description": "## Bug Pattern\n\nA long-lived struct stores a reference-counted pointer (here, device->bdev_file) that is released (fput/close) but not cleared to NULL. Later code uses a non-NULL check on that field as a validity flag and reuses/fputs it again, leading to use-after-free. Specifically, cleanup sets related fields (device->bdev) to NULL but leaves device->bdev_file dangling, so subsequent paths that test if (device->bdev_file) will operate on freed memory.\n",
+            "source": "upstream_generator_pattern_text"
+          }
+        },
+        {
+          "node_id": "strategy",
+          "kind": "strategy",
+          "label": "use_after_free",
+          "attributes": {
+            "primary_pattern": "use_after_free"
+          }
+        }
+      ],
+      "edges": [
+        {
+          "source": "patch",
+          "target": "pattern_0",
+          "relation": "indicates",
+          "confidence": 0.9
+        },
+        {
+          "source": "patch",
+          "target": "strategy",
+          "relation": "guides",
+          "confidence": 0.85
+        }
+      ]
+    },
+    "evidence_plan": {
+      "primary_pattern": "use_after_free",
+      "hypotheses": [
+        "The patch likely changes a resource lifecycle or stale-state transition."
+      ],
+      "requirements": [
+        {
+          "evidence_type": "patch_fact",
+          "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+          "priority": 100,
+          "preferred_analyzers": [],
+          "confidence": 1.0,
+          "mechanism_refs": [
+            "patch"
+          ]
+        },
+        {
+          "evidence_type": "allocation_lifecycle",
+          "reason": "Lifetime-sensitive bug family requires allocation/free reasoning.",
+          "priority": 92,
+          "preferred_analyzers": [],
+          "confidence": 0.92,
+          "mechanism_refs": [
+            "pattern_0"
+          ]
+        },
+        {
+          "evidence_type": "state_transition",
+          "reason": "Need local state transitions around free/delete and later uses.",
+          "priority": 89,
+          "preferred_analyzers": [],
+          "confidence": 0.88,
+          "mechanism_refs": [
+            "pattern_0"
+          ]
+        }
+      ],
+      "recommended_analyzers": [],
+      "planner_notes": [],
+      "coverage_gaps": [],
+      "uncertainty_budget": "medium",
+      "escalation_triggers": [
+        "no_anchor_function"
+      ]
+    },
+    "evidence_bundle": {
+      "records": [
+        {
+          "evidence_id": "pf_000",
+          "type": "patch_fact",
+          "analyzer": "patch",
+          "scope": {
+            "repo": "commit.patch",
+            "file": "",
+            "function": ""
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "fact_type": "patch_overview",
+            "label": "Patch overview",
+            "attributes": {
+              "patch_path": "/artifact/work/artifacts/fse_revision/generate_only_materialized_v1/cases/G24_aec8e6bf8391_UAF/patches/commit.patch",
+              "changed_files": [],
+              "changed_file_count": 0,
+              "added_line_count": 1,
+              "deleted_line_count": 0
+            }
+          },
+          "provenance": {
+            "tool": "patch-analysis",
+            "artifact": "patch_overview",
+            "confidence": 0.95,
+            "origin": "source_derived"
+          },
+          "evidence_slice": {}
+        },
+        {
+          "evidence_id": "pf_001",
+          "type": "patch_fact",
+          "analyzer": "patch",
+          "scope": {
+            "repo": "commit.patch",
+            "file": "",
+            "function": ""
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "fact_type": "vulnerability_patterns",
+            "label": "Vulnerability patterns inferred from patch",
+            "attributes": {
+              "patterns": [
+                "use_after_free"
+              ],
+              "descriptions": [
+                "## Bug Pattern\n\nA long-lived struct stores a reference-counted pointer (here, device->bdev_file) that is released (fput/close) but not cleared to NULL. Later code uses a non-NULL check on that field as a validity flag and reuses/fputs it again, leading to use-after-free. Specifically, cleanup sets related fields (device->bdev) to NULL but leaves device->bdev_file dangling, so subsequent paths that test if (device->bdev_file) will operate on freed memory.\n"
+              ]
+            }
+          },
+          "provenance": {
+            "tool": "patch-analysis",
+            "artifact": "vulnerability_patterns",
+            "confidence": 0.95,
+            "origin": "source_derived"
+          },
+          "evidence_slice": {}
+        },
+        {
+          "evidence_id": "pf_002",
+          "type": "patch_fact",
+          "analyzer": "patch",
+          "scope": {
+            "repo": "commit.patch",
+            "file": "",
+            "function": ""
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "fact_type": "affected_functions",
+            "label": "Functions implicated by removed or fixed code",
+            "attributes": {
+              "functions": []
+            }
+          },
+          "provenance": {
+            "tool": "patch-analysis",
+            "artifact": "affected_functions",
+            "confidence": 0.95,
+            "origin": "source_derived"
+          },
+          "evidence_slice": {}
+        },
+        {
+          "evidence_id": "pf_003",
+          "type": "patch_fact",
+          "analyzer": "patch",
+          "scope": {
+            "repo": "commit.patch",
+            "file": "",
+            "function": ""
+          },
+          "location": {
+            "line": 0,
+            "column": 0
+          },
+          "semantic_payload": {
+            "fact_type": "detection_strategy",
+            "label": "Existing patch analysis detection strategy",
+            "attributes": {
+              "primary_pattern": "use_after_free"
+            }
+          },
+          "provenance": {
+            "tool": "patch-analysis",
+            "artifact": "detection_strategy",
+            "confidence": 0.95,
+            "origin": "source_derived"
+          },
+          "evidence_slice": {}
+        }
+      ],
+      "missing_evidence": [
+        "allocation_lifecycle",
+        "state_transition"
+      ],
+      "collected_analyzers": [
+        "patch"
+      ],
+      "provenance_summary": {
+        "total_records": 4,
+        "origin_counts": {
+          "source_derived": 4
+        },
+        "analyzer_internal_records": 0,
+        "analyzer_internal_fraction": 0.0,
+        "analyzer_backed_records": 0,
+        "analyzer_backed_fraction": 0.0,
+        "source_derived_records": 4,
+        "source_derived_fraction": 1.0
+      }
+    }
+  }
+}

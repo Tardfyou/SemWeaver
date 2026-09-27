@@ -1,0 +1,4 @@
+- Decision: NotABug
+- Reason: The report does not match the target bug pattern. The target is a use-after-free read of `subflow->request_join` after `mptcp_close_ssk()` may release the subflow. The patch fixes it by reading that field before closing the subflow.
+
+  This report instead concerns `__flush_addrs()`: it removes an address entry with `list_del_rcu()` and then frees it. Both callers ensure the required RCU grace period has elapsed before calling `__flush_addrs()`—`mptcp_pm_nl_flush_addrs_doit()` calls `synchronize_rcu()`, and the per-net exit path documents that netns teardown has already waited for a grace period. The list links are updated before the entry is freed, and the loop advances via the list head. Thus the reported access in `list.h` is not a demonstrated use-after-free, and the subflow fix does not apply.

@@ -1,0 +1,706 @@
+{
+  "records": [
+    {
+      "evidence_id": "csa_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/thermal/mediatek/lvts_thermal.c",
+        "function": "lvts_calibration_read"
+      },
+      "location": {
+        "line": 719,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "lvts_calibration_read adds patch barrier `!lvts_td->calib` around PTR_ERR, lvts_td->calib = devm_krealloc(dev, lvts_td->calib,.",
+        "contract_type": "patch_barrier",
+        "same_call_binding": "tie the guard to the current downstream sink or protected state transition instead of any unrelated if-statement",
+        "trigger_contract": "report when a risky write proceeds without the patch-style barrier",
+        "silence_contract": "stay silent when the nearby guard proves the current write is blocked or bounded",
+        "guard_exprs": [
+          "!lvts_td->calib"
+        ],
+        "removed_calls": [],
+        "added_calls": [
+          "kfree"
+        ],
+        "tracked_symbols": [
+          "lvts_td",
+          "calib",
+          "kfree",
+          "efuse"
+        ],
+        "widened_variables": [],
+        "state_resets": [],
+        "old_numeric_type": "",
+        "new_numeric_type": "",
+        "numeric_domain_change": "",
+        "arithmetic_operations": [],
+        "sink_calls": [
+          "PTR_ERR",
+          "lvts_td->calib = devm_krealloc(dev, lvts_td->calib,",
+          "memcpy",
+          "kfree"
+        ],
+        "buffer_fields": [
+          "lvts_td->calib"
+        ],
+        "source_file": "drivers/thermal/mediatek/lvts_thermal.c",
+        "function": "lvts_calibration_read",
+        "source_excerpt": "690:  * buffer so it can be read sequentially when initializing the\n691:  * calibration data.\n692:  */\n693: static int lvts_calibration_read(struct device *dev, struct lvts_domain *lvts_td,\n694: \t\t\t\t\tconst struct lvts_data *lvts_data)\n695: {\n696: \tstruct device_node *np = dev_of_node(dev);\n697: \tstruct nvmem_cell *cell;\n698: \tstruct property *prop;\n699: \tconst char *cell_name;\n700: \n701: \tof_property_for_each_string(np, \"nvmem-cell-names\", prop, cell_name) {\n702: \t\tsize_t len;\n703: \t\tu8 *efuse;\n704: \n705: \t\tcell = of_nvmem_cell_get(np, cell_name);\n706: \t\tif (IS_ERR(cell)) {\n707: \t\t\tdev_err(dev, \"Failed to get cell '%s'\\n\", cell_name);\n708: \t\t\treturn PTR_ERR(cell);\n709: \t\t}\n710: \n711: \t\tefuse = nvmem_cell_read(cell, &len);\n712: \n713: \t\tnvmem_cell_put(cell);\n714: \n715: \t\tif (IS_ERR(efuse)) {\n716: \t\t\tdev_err(dev, \"Failed to read cell '%s'\\n\", cell_name);\n717: \t\t\treturn PTR_ERR(efuse);\n718: \t\t}\n719: \n720: \t\tlvts_td->calib = devm_krealloc(dev, lvts_td->calib,\n721: \t\t\t\t\t       lvts_td->calib_len + len, GFP_KERNEL);\n722: \t\tif (!lvts_td->calib)\n723: \t\t\treturn -ENOMEM;\n724: \n725: \t\tmemcpy(lvts_td->calib + lvts_td->calib_len, efuse, len);\n726: \n727: \t\tlvts_td->calib_len += len;\n728: \n729: \t\tkfree(efuse);\n730: \t}\n731: \n732: \treturn 0;\n733: }\n734: \n735: static int lvts_golden_temp_init(struct device *dev, u32 *value, int temp_offset)\n736: {\n737: \tu32 gt;\n738: \n739: \tgt = (*value) >> 24;\n740: \n741: \tif (gt && gt < LVTS_GOLDEN_TEMP_MAX)\n742: \t\tgolden_temp = gt;\n743: \n744: \tgolden_temp_offset = golden_temp * 500 + temp_offset;\n745: \n746: \treturn 0;\n747: }\n748: \n749: static int lvts_ctrl_init(struct device *dev, struct lvts_domain *lvts_td,\n750: \t\t\t\t\tconst struct lvts_data *lvts_data)\n751: {\n752: \tsize_t size = sizeof(*lvts_td->lvts_ctrl) * lvts_data->num_lvts_ctrl;\n753: \tstruct lvts_ctrl *lvts_ctrl;\n754: \tint i, ret;",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:semantic-contract",
+        "confidence": 0.92,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "drivers/thermal/mediatek/lvts_thermal.c",
+          "hunk_index": 0,
+          "source_line": 719
+        },
+        "summary": "lvts_calibration_read adds patch barrier `!lvts_td->calib` around PTR_ERR, lvts_td->calib = devm_krealloc(dev, lvts_td->calib,.",
+        "statements": [
+          "if (!lvts_td->calib) {",
+          "kfree(efuse);",
+          "}"
+        ],
+        "guards": [
+          "!lvts_td->calib"
+        ],
+        "call_boundary": [
+          "PTR_ERR",
+          "lvts_td->calib = devm_krealloc(dev, lvts_td->calib,",
+          "memcpy",
+          "kfree"
+        ],
+        "call_edges": [
+          "lvts_calibration_read -> PTR_ERR",
+          "lvts_calibration_read -> lvts_td->calib = devm_krealloc(dev, lvts_td->calib,",
+          "lvts_calibration_read -> memcpy"
+        ],
+        "state_transitions": [
+          "",
+          "report when a risky write proceeds without the patch-style barrier",
+          "stay silent when the nearby guard proves the current write is blocked or bounded"
+        ],
+        "api_terms": [
+          "PTR_ERR",
+          "lvts_td->calib = devm_krealloc(dev, lvts_td->calib,",
+          "memcpy",
+          "kfree"
+        ],
+        "related_symbols": [
+          "lvts_td",
+          "calib",
+          "kfree",
+          "efuse"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/thermal/mediatek/lvts_thermal.c",
+        "function": "lvts_calibration_read"
+      },
+      "location": {
+        "line": 719,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "!lvts_td->calib",
+        "summary": "lvts_calibration_read introduces patch guard `!lvts_td->calib` before PTR_ERR, lvts_td->calib = devm_krealloc(dev, lvts_td->calib,.",
+        "state_before": [
+          "input(lvts_td)",
+          "input(calib)",
+          "buffer(lvts_td->calib)"
+        ],
+        "state_after": [
+          "guard(!lvts_td->calib)",
+          "current_call(PTR_ERR)",
+          "current_call(lvts_td->calib = devm_krealloc(dev, lvts_td->calib,)"
+        ],
+        "functions": [
+          "lvts_calibration_read"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "lvts_td",
+          "calib",
+          "kfree",
+          "efuse"
+        ],
+        "buffer_fields": [
+          "lvts_td->calib"
+        ],
+        "call_targets": [
+          "PTR_ERR",
+          "lvts_td->calib = devm_krealloc(dev, lvts_td->calib,",
+          "memcpy",
+          "kfree"
+        ],
+        "call_edges": [
+          "lvts_calibration_read -> PTR_ERR",
+          "lvts_calibration_read -> lvts_td->calib = devm_krealloc(dev, lvts_td->calib,",
+          "lvts_calibration_read -> memcpy"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "!lvts_td->calib"
+        ],
+        "state_statements": [
+          "if (!lvts_td->calib) {",
+          "kfree(efuse);",
+          "}"
+        ],
+        "compile_command_preview": "",
+        "source_file": "drivers/thermal/mediatek/lvts_thermal.c",
+        "source_excerpt": "690:  * buffer so it can be read sequentially when initializing the\n691:  * calibration data.\n692:  */\n693: static int lvts_calibration_read(struct device *dev, struct lvts_domain *lvts_td,\n694: \t\t\t\t\tconst struct lvts_data *lvts_data)\n695: {\n696: \tstruct device_node *np = dev_of_node(dev);\n697: \tstruct nvmem_cell *cell;\n698: \tstruct property *prop;\n699: \tconst char *cell_name;\n700: \n701: \tof_property_for_each_string(np, \"nvmem-cell-names\", prop, cell_name) {\n702: \t\tsize_t len;\n703: \t\tu8 *efuse;\n704: \n705: \t\tcell = of_nvmem_cell_get(np, cell_name);\n706: \t\tif (IS_ERR(cell)) {\n707: \t\t\tdev_err(dev, \"Failed to get cell '%s'\\n\", cell_name);\n708: \t\t\treturn PTR_ERR(cell);\n709: \t\t}\n710: \n711: \t\tefuse = nvmem_cell_read(cell, &len);\n712: \n713: \t\tnvmem_cell_put(cell);\n714: \n715: \t\tif (IS_ERR(efuse)) {\n716: \t\t\tdev_err(dev, \"Failed to read cell '%s'\\n\", cell_name);\n717: \t\t\treturn PTR_ERR(efuse);\n718: \t\t}\n719: \n720: \t\tlvts_td->calib = devm_krealloc(dev, lvts_td->calib,\n721: \t\t\t\t\t       lvts_td->calib_len + len, GFP_KERNEL);\n722: \t\tif (!lvts_td->calib)\n723: \t\t\treturn -ENOMEM;\n724: \n725: \t\tmemcpy(lvts_td->calib + lvts_td->calib_len, efuse, len);\n726: \n727: \t\tlvts_td->calib_len += len;\n728: \n729: \t\tkfree(efuse);\n730: \t}\n731: \n732: \treturn 0;\n733: }\n734: \n735: static int lvts_golden_temp_init(struct device *dev, u32 *value, int temp_offset)\n736: {\n737: \tu32 gt;\n738: \n739: \tgt = (*value) >> 24;\n740: \n741: \tif (gt && gt < LVTS_GOLDEN_TEMP_MAX)\n742: \t\tgolden_temp = gt;\n743: \n744: \tgolden_temp_offset = golden_temp * 500 + temp_offset;\n745: \n746: \treturn 0;\n747: }\n748: \n749: static int lvts_ctrl_init(struct device *dev, struct lvts_domain *lvts_td,\n750: \t\t\t\t\tconst struct lvts_data *lvts_data)\n751: {\n752: \tsize_t size = sizeof(*lvts_td->lvts_ctrl) * lvts_data->num_lvts_ctrl;\n753: \tstruct lvts_ctrl *lvts_ctrl;\n754: \tint i, ret;",
+        "summary_line": 719,
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:path-guard",
+        "confidence": 0.92,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/thermal/mediatek/lvts_thermal.c",
+          "hunk_index": 0,
+          "source_line": 719
+        },
+        "summary": "lvts_calibration_read introduces patch guard `!lvts_td->calib` before PTR_ERR, lvts_td->calib = devm_krealloc(dev, lvts_td->calib,.",
+        "statements": [
+          "if (!lvts_td->calib) {",
+          "kfree(efuse);",
+          "}"
+        ],
+        "guards": [
+          "!lvts_td->calib"
+        ],
+        "call_boundary": [
+          "PTR_ERR",
+          "lvts_td->calib = devm_krealloc(dev, lvts_td->calib,",
+          "memcpy",
+          "kfree"
+        ],
+        "call_edges": [
+          "lvts_calibration_read -> PTR_ERR",
+          "lvts_calibration_read -> lvts_td->calib = devm_krealloc(dev, lvts_td->calib,",
+          "lvts_calibration_read -> memcpy"
+        ],
+        "state_transitions": [
+          "guard(!lvts_td->calib)",
+          "current_call(PTR_ERR)",
+          "current_call(lvts_td->calib = devm_krealloc(dev, lvts_td->calib,)"
+        ],
+        "api_terms": [
+          "PTR_ERR",
+          "lvts_td->calib = devm_krealloc(dev, lvts_td->calib,",
+          "memcpy"
+        ],
+        "related_symbols": [
+          "lvts_td",
+          "calib",
+          "kfree",
+          "efuse"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_guard_1",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/thermal/mediatek/lvts_thermal.c",
+        "function": "lvts_calibration_read"
+      },
+      "location": {
+        "line": 722,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"Failed to read cell '%s'\\n\" (ImplicitCastExpr, ArrayToPointerDecay, char *)) ? ... : ...",
+        "summary": "Analyzer CFG for lvts_calibration_read in drivers/thermal/mediatek/lvts_thermal.c: bindings: efuse = nvmem_cell_read (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(struct nvmem_cell *, size_t *))(cell (ImplicitCastExpr, LValueToRValue, struct nvmem_cell *), &len) (ImplicitCastExpr, BitCast, u8 *); cell = of_nvmem_cell_get (ImplicitCastExpr, FunctionToPointerDecay, struct nvmem_cell *(*)(struct device_node *, const char *))(np (ImplicitCastExpr, LValueToRValue, struct device_node *), cell_name (ImplicitCastExpr, LValueToRValue, const char *)) | branches: __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"Failed to read cell '%s'\\n\" (ImplicitCastExpr, ArrayToPointerDecay, char *)) ? ... : ...; if __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"Failed to read cell '%s'\\n\" (ImplicitCastExpr, ArrayToPointerDecay, char *)) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"\\0013\" (ImplicitCastExpr, ArrayToPointerDecay, char *)) | calls: lvts_calibration_read -> dev_of_node; lvts_calibration_read -> of_find_property",
+        "state_before": [
+          "buffer(lvts_td->calib)",
+          "buffer(lvts_td->calib_len)",
+          "sinks(lvts_calibration_read, dev_of_node)"
+        ],
+        "state_after": [
+          "cfg_binding(efuse = nvmem_cell_read (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(struct nvmem_cell *, size_t *))(cell (ImplicitCastExpr, LValueToRValue, struct nvmem_cell *), &len) (ImplicitCastExpr, BitCast, u8 *))",
+          "cfg_binding(cell = of_nvmem_cell_get (ImplicitCastExpr, FunctionToPointerDecay, struct nvmem_cell *(*)(struct device_node *, const char *))(np (ImplicitCastExpr, LValueToRValue, struct device_node *), cell_name (ImplicitCastExpr, LValueToRValue, const char *)))",
+          "cfg_branch(__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"Failed to read cell '%s'\\n\" (ImplicitCastExpr, ArrayToPointerDecay, char *)) ? ... : ...)",
+          "cfg_branch(if __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"Failed to read cell '%s'\\n\" (ImplicitCastExpr, ArrayToPointerDecay, char *)) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"\\0013\" (ImplicitCastExpr, ArrayToPointerDecay, char *)))"
+        ],
+        "functions": [
+          "lvts_calibration_read"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "lvts_td->calib",
+          "lvts_td->calib_len",
+          "lvts_td->lvts_ctrl",
+          "lvts_data->num_lvts_ctrl"
+        ],
+        "buffer_fields": [
+          "lvts_td->calib",
+          "lvts_td->calib_len",
+          "lvts_td->lvts_ctrl",
+          "lvts_data->num_lvts_ctrl"
+        ],
+        "call_targets": [
+          "lvts_calibration_read",
+          "dev_of_node",
+          "of_nvmem_cell_get",
+          "dev_err",
+          "nvmem_cell_read",
+          "nvmem_cell_put",
+          "devm_krealloc",
+          "memcpy"
+        ],
+        "call_edges": [
+          "lvts_calibration_read -> dev_of_node",
+          "lvts_calibration_read -> of_find_property",
+          "lvts_calibration_read -> of_prop_next_string",
+          "lvts_calibration_read -> of_nvmem_cell_get",
+          "lvts_calibration_read -> IS_ERR",
+          "lvts_calibration_read -> __builtin_constant_p"
+        ],
+        "cfg_branch_kinds": [
+          "if",
+          "for"
+        ],
+        "branch_conditions": [
+          "do ... while [B5.1]",
+          "do ... while [B7.1]",
+          "do ... while [B9.1]",
+          "if [B16.14]",
+          "if [B17.11]",
+          "if [B19.7]"
+        ],
+        "resolved_branch_conditions": [
+          "__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"Failed to read cell '%s'\\n\" (ImplicitCastExpr, ArrayToPointerDecay, char *)) ? ... : ...",
+          "if __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"Failed to read cell '%s'\\n\" (ImplicitCastExpr, ArrayToPointerDecay, char *)) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"\\0013\" (ImplicitCastExpr, ArrayToPointerDecay, char *))",
+          "__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"Failed to read cell '%s'\\n\" (ImplicitCastExpr, ArrayToPointerDecay, char *)) && ...",
+          "if IS_ERR (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const void *))(efuse (ImplicitCastExpr, LValueToRValue, u8 *) (ImplicitCastExpr, BitCast, const void *))",
+          "__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"Failed to get cell '%s'\\n\" (ImplicitCastExpr, ArrayToPointerDecay, char *)) ? ... : ...",
+          "if __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"Failed to get cell '%s'\\n\" (ImplicitCastExpr, ArrayToPointerDecay, char *)) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"\\0013\" (ImplicitCastExpr, ArrayToPointerDecay, char *))"
+        ],
+        "cfg_value_bindings": [
+          "efuse = nvmem_cell_read (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(struct nvmem_cell *, size_t *))(cell (ImplicitCastExpr, LValueToRValue, struct nvmem_cell *), &len) (ImplicitCastExpr, BitCast, u8 *)",
+          "cell = of_nvmem_cell_get (ImplicitCastExpr, FunctionToPointerDecay, struct nvmem_cell *(*)(struct device_node *, const char *))(np (ImplicitCastExpr, LValueToRValue, struct device_node *), cell_name (ImplicitCastExpr, LValueToRValue, const char *))",
+          "static const struct pi_entry _entry __attribute__((used)) = {.fmt = __builtin_constant_p(\"Failed to get cell '%s'\\n\") ? (\"Failed to get cell '%s'\\n\") : ((void *)0), .func = __func__, .file = \"/work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/thermal/mediatek/lvts_thermal.c\", .line = 707, .level = __builtin_constant_p(\"\\0013\") ? (\"\\0013\") : ((void *)0), .subsys_fmt_prefix = \"%s %s: \"};",
+          "static const struct pi_entry _entry __attribute__((used)) = {.fmt = __builtin_constant_p(\"Failed to read cell '%s'\\n\") ? (\"Failed to read cell '%s'\\n\") : ((void *)0), .func = __func__, .file = \"/work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/thermal/mediatek/lvts_thermal.c\", .line = 716, .level = __builtin_constant_p(\"\\0013\") ? (\"\\0013\") : ((void *)0), .subsys_fmt_prefix = \"%s %s: \"};",
+          "prop = of_find_property (ImplicitCastExpr, FunctionToPointerDecay, struct property *(*)(const struct device_node *, const char *, int *))(np (ImplicitCastExpr, LValueToRValue, struct device_node *) (ImplicitCastExpr, NoOp, const struct device_node *), \"nvmem-cell-names\" (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *), ((void *)0 (CStyleCastExpr, NullToPointer, void *)) (ImplicitCastExpr, NullToPointer, int *))",
+          "{.fmt = __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"Failed to get cell '%s'\\n\" (ImplicitCastExpr, ArrayToPointerDecay, char *)) ? (\"Failed to get cell '%s'\\n\") (ImplicitCastExpr, ArrayToPointerDecay, char *) : ((void *)0 (CStyleCastExpr, NullToPointer, void *)) (ImplicitCastExpr, NullToPointer, char *) (ImplicitCastExpr, NoOp, const char *), .func = __func__ (ImplicitCastExpr, ArrayToPointerDecay, const char *), .file = \"/work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/thermal/mediatek/lvts_thermal.c\" (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *), .line = 707 (ImplicitCastExpr, IntegralCast, unsigned int), .level = __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"\\0013\" (ImplicitCastExpr, ArrayToPointerDecay, char *)) ? (\"\\0013\") (ImplicitCastExpr, ArrayToPointerDecay, char *) : ((void *)0 (CStyleCastExpr, NullToPointer, void *)) (ImplicitCastExpr, NullToPointer, char *) (ImplicitCastExpr, NoOp, const char *), .subsys_fmt_prefix = \"%s %s: \" (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *)}"
+        ],
+        "state_statements": [
+          "return [B1.1];",
+          "[B2.8] = [B2.7]",
+          "__builtin_memcpy",
+          "[B3.15]->calib",
+          "[B3.19]->calib_len",
+          "[B3.32]->calib_len"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,drivers/thermal/mediatek/.lvts_thermal.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/uap...",
+        "source_file": "drivers/thermal/mediatek/lvts_thermal.c",
+        "source_excerpt": "690:  * buffer so it can be read sequentially when initializing the\n691:  * calibration data.\n692:  */\n693: static int lvts_calibration_read(struct device *dev, struct lvts_domain *lvts_td,\n694: \t\t\t\t\tconst struct lvts_data *lvts_data)\n695: {\n696: \tstruct device_node *np = dev_of_node(dev);\n697: \tstruct nvmem_cell *cell;\n698: \tstruct property *prop;\n699: \tconst char *cell_name;\n700: \n701: \tof_property_for_each_string(np, \"nvmem-cell-names\", prop, cell_name) {\n702: \t\tsize_t len;\n703: \t\tu8 *efuse;\n704: \n705: \t\tcell = of_nvmem_cell_get(np, cell_name);\n706: \t\tif (IS_ERR(cell)) {\n707: \t\t\tdev_err(dev, \"Failed to get cell '%s'\\n\", cell_name);\n708: \t\t\treturn PTR_ERR(cell);\n709: \t\t}\n710: \n711: \t\tefuse = nvmem_cell_read(cell, &len);\n712: \n713: \t\tnvmem_cell_put(cell);\n714: \n715: \t\tif (IS_ERR(efuse)) {\n716: \t\t\tdev_err(dev, \"Failed to read cell '%s'\\n\", cell_name);\n717: \t\t\treturn PTR_ERR(efuse);\n718: \t\t}\n719: \n720: \t\tlvts_td->calib = devm_krealloc(dev, lvts_td->calib,\n721: \t\t\t\t\t       lvts_td->calib_len + len, GFP_KERNEL);\n722: \t\tif (!lvts_td->calib)\n723: \t\t\treturn -ENOMEM;\n724: \n725: \t\tmemcpy(lvts_td->calib + lvts_td->calib_len, efuse, len);\n726: \n727: \t\tlvts_td->calib_len += len;\n728: \n729: \t\tkfree(efuse);\n730: \t}\n731: \n732: \treturn 0;\n733: }\n734: \n735: static int lvts_golden_temp_init(struct device *dev, u32 *value, int temp_offset)\n736: {\n737: \tu32 gt;\n738: \n739: \tgt = (*value) >> 24;\n740: \n741: \tif (gt && gt < LVTS_GOLDEN_TEMP_MAX)\n742: \t\tgolden_temp = gt;\n743: \n744: \tgolden_temp_offset = golden_temp * 500 + temp_offset;\n745: \n746: \treturn 0;\n747: }\n748: \n749: static int lvts_ctrl_init(struct device *dev, struct lvts_domain *lvts_td,\n750: \t\t\t\t\tconst struct lvts_data *lvts_data)\n751: {\n752: \tsize_t size = sizeof(*lvts_td->lvts_ctrl) * lvts_data->num_lvts_ctrl;\n753: \tstruct lvts_ctrl *lvts_ctrl;\n754: \tint i, ret;",
+        "summary_line": 722,
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/generate_only_evidence_all39_v8_r5/G29_ca93bf607a44_Memory_Leak/csa/patchweaver_runtime/csa_raw/drivers-thermal-mediatek-lvts_thermal.c-lvts_calibration_read.txt",
+        "raw_output_sha256": "6686ab43ae73b3cadd8ba858dbb155fceaeb80a62bcd24c4e53fb80f5109feaa",
+        "command_sha256": "7aef3ef6df134bb3aca5d3a158d8770fb31d5b455b7596eecaca154d10dc12df"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:debug-cfg",
+        "confidence": 0.92,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/thermal/mediatek/lvts_thermal.c",
+          "hunk_index": 0,
+          "source_line": 722
+        },
+        "summary": "Analyzer CFG for lvts_calibration_read in drivers/thermal/mediatek/lvts_thermal.c: bindings: efuse = nvmem_cell_read (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(struct nvmem_cell *, size_t *))(cell (ImplicitCastExpr, LValueToRValue, struct nvmem_cell *), &len) (ImplicitCastExpr, BitCast, u8 *); cell = of_nvmem_cell_get (ImplicitCastExpr, FunctionToPointerDecay, struct nvmem_cell *(*)(struct device_node *, const char *))(np (ImplicitCastExpr, LValueToRValue, struct device_node *), cell_name (ImplicitCastExpr, LValueToRValue, const char *)) | branches: __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"Failed to read cell '%s'\\n\" (ImplicitCastExpr, ArrayToPointerDecay, char *)) ? ... : ...; if __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"Failed to read cell '%s'\\n\" (ImplicitCastExpr, ArrayToPointerDecay, char *)) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"\\0013\" (ImplicitCastExpr, ArrayToPointerDecay, char *)) | calls: lvts_calibration_read -> dev_of_node; lvts_calibration_read -> of_find_property",
+        "statements": [
+          "690:  * buffer so it can be read sequentially when initializing the",
+          "691:  * calibration data.",
+          "692:  */",
+          "693: static int lvts_calibration_read(struct device *dev, struct lvts_domain *lvts_td,",
+          "694: \t\t\t\t\tconst struct lvts_data *lvts_data)",
+          "695: {"
+        ],
+        "guards": [
+          "__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"Failed to read cell '%s'\\n\" (ImplicitCastExpr, ArrayToPointerDecay, char *)) ? ... : ...",
+          "if __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"Failed to read cell '%s'\\n\" (ImplicitCastExpr, ArrayToPointerDecay, char *)) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"\\0013\" (ImplicitCastExpr, ArrayToPointerDecay, char *))",
+          "__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"Failed to read cell '%s'\\n\" (ImplicitCastExpr, ArrayToPointerDecay, char *)) && ...",
+          "if IS_ERR (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const void *))(efuse (ImplicitCastExpr, LValueToRValue, u8 *) (ImplicitCastExpr, BitCast, const void *))"
+        ],
+        "call_boundary": [
+          "lvts_calibration_read",
+          "dev_of_node",
+          "of_nvmem_cell_get",
+          "dev_err",
+          "nvmem_cell_read",
+          "nvmem_cell_put"
+        ],
+        "call_edges": [
+          "lvts_calibration_read -> dev_of_node",
+          "lvts_calibration_read -> of_find_property",
+          "lvts_calibration_read -> of_prop_next_string",
+          "lvts_calibration_read -> of_nvmem_cell_get",
+          "lvts_calibration_read -> IS_ERR",
+          "lvts_calibration_read -> __builtin_constant_p",
+          "lvts_calibration_read -> _dev_err",
+          "lvts_calibration_read -> PTR_ERR"
+        ],
+        "state_transitions": [
+          "cfg_binding(efuse = nvmem_cell_read (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(struct nvmem_cell *, size_t *))(cell (ImplicitCastExpr, LValueToRValue, struct nvmem_cell *), &len) (ImplicitCastExpr, BitCast, u8 *))",
+          "cfg_binding(cell = of_nvmem_cell_get (ImplicitCastExpr, FunctionToPointerDecay, struct nvmem_cell *(*)(struct device_node *, const char *))(np (ImplicitCastExpr, LValueToRValue, struct device_node *), cell_name (ImplicitCastExpr, LValueToRValue, const char *)))",
+          "cfg_branch(__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"Failed to read cell '%s'\\n\" (ImplicitCastExpr, ArrayToPointerDecay, char *)) ? ... : ...)",
+          "cfg_branch(if __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"Failed to read cell '%s'\\n\" (ImplicitCastExpr, ArrayToPointerDecay, char *)) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(\"\\0013\" (ImplicitCastExpr, ArrayToPointerDecay, char *)))",
+          "return [B1.1];",
+          "[B2.8] = [B2.7]"
+        ],
+        "api_terms": [
+          "dev_of_node",
+          "of_find_property",
+          "of_prop_next_string",
+          "of_nvmem_cell_get",
+          "IS_ERR",
+          "__builtin_constant_p"
+        ],
+        "related_symbols": [
+          "lvts_td->calib",
+          "lvts_td->calib_len",
+          "lvts_td->lvts_ctrl",
+          "lvts_data->num_lvts_ctrl"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/thermal/mediatek/lvts_thermal.c",
+        "function": "lvts_calibration_read"
+      },
+      "location": {
+        "line": 719,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "lvts_calibration_read adds patch barrier `!lvts_td->calib` around PTR_ERR, lvts_td->calib = devm_krealloc(dev, lvts_td->calib,.",
+        "state_before": [
+          "input(lvts_td)",
+          "input(calib)",
+          "buffer(lvts_td->calib)"
+        ],
+        "state_after": [
+          "guard(!lvts_td->calib)",
+          "sink(PTR_ERR)",
+          "sink(lvts_td->calib = devm_krealloc(dev, lvts_td->calib,)"
+        ],
+        "functions": [
+          "lvts_calibration_read"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "lvts_td",
+          "calib",
+          "kfree",
+          "efuse"
+        ],
+        "buffer_fields": [
+          "lvts_td->calib"
+        ],
+        "call_targets": [
+          "PTR_ERR",
+          "lvts_td->calib = devm_krealloc(dev, lvts_td->calib,",
+          "memcpy",
+          "kfree"
+        ],
+        "call_edges": [
+          "lvts_calibration_read -> PTR_ERR",
+          "lvts_calibration_read -> lvts_td->calib = devm_krealloc(dev, lvts_td->calib,",
+          "lvts_calibration_read -> memcpy"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "!lvts_td->calib"
+        ],
+        "state_statements": [
+          "if (!lvts_td->calib) {",
+          "kfree(efuse);",
+          "}"
+        ],
+        "return_statements": [],
+        "source_file": "drivers/thermal/mediatek/lvts_thermal.c",
+        "source_excerpt": "690:  * buffer so it can be read sequentially when initializing the\n691:  * calibration data.\n692:  */\n693: static int lvts_calibration_read(struct device *dev, struct lvts_domain *lvts_td,\n694: \t\t\t\t\tconst struct lvts_data *lvts_data)\n695: {\n696: \tstruct device_node *np = dev_of_node(dev);\n697: \tstruct nvmem_cell *cell;\n698: \tstruct property *prop;\n699: \tconst char *cell_name;\n700: \n701: \tof_property_for_each_string(np, \"nvmem-cell-names\", prop, cell_name) {\n702: \t\tsize_t len;\n703: \t\tu8 *efuse;\n704: \n705: \t\tcell = of_nvmem_cell_get(np, cell_name);\n706: \t\tif (IS_ERR(cell)) {\n707: \t\t\tdev_err(dev, \"Failed to get cell '%s'\\n\", cell_name);\n708: \t\t\treturn PTR_ERR(cell);\n709: \t\t}\n710: \n711: \t\tefuse = nvmem_cell_read(cell, &len);\n712: \n713: \t\tnvmem_cell_put(cell);\n714: \n715: \t\tif (IS_ERR(efuse)) {\n716: \t\t\tdev_err(dev, \"Failed to read cell '%s'\\n\", cell_name);\n717: \t\t\treturn PTR_ERR(efuse);\n718: \t\t}\n719: \n720: \t\tlvts_td->calib = devm_krealloc(dev, lvts_td->calib,\n721: \t\t\t\t\t       lvts_td->calib_len + len, GFP_KERNEL);\n722: \t\tif (!lvts_td->calib)\n723: \t\t\treturn -ENOMEM;\n724: \n725: \t\tmemcpy(lvts_td->calib + lvts_td->calib_len, efuse, len);\n726: \n727: \t\tlvts_td->calib_len += len;\n728: \n729: \t\tkfree(efuse);\n730: \t}\n731: \n732: \treturn 0;\n733: }\n734: \n735: static int lvts_golden_temp_init(struct device *dev, u32 *value, int temp_offset)\n736: {\n737: \tu32 gt;\n738: \n739: \tgt = (*value) >> 24;\n740: \n741: \tif (gt && gt < LVTS_GOLDEN_TEMP_MAX)\n742: \t\tgolden_temp = gt;\n743: \n744: \tgolden_temp_offset = golden_temp * 500 + temp_offset;\n745: \n746: \treturn 0;\n747: }\n748: \n749: static int lvts_ctrl_init(struct device *dev, struct lvts_domain *lvts_td,\n750: \t\t\t\t\tconst struct lvts_data *lvts_data)\n751: {\n752: \tsize_t size = sizeof(*lvts_td->lvts_ctrl) * lvts_data->num_lvts_ctrl;\n753: \tstruct lvts_ctrl *lvts_ctrl;\n754: \tint i, ret;",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:guarded-state",
+        "confidence": 0.9,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "drivers/thermal/mediatek/lvts_thermal.c",
+          "hunk_index": 0,
+          "source_line": 719
+        },
+        "summary": "lvts_calibration_read adds patch barrier `!lvts_td->calib` around PTR_ERR, lvts_td->calib = devm_krealloc(dev, lvts_td->calib,.",
+        "statements": [
+          "if (!lvts_td->calib) {",
+          "kfree(efuse);",
+          "}"
+        ],
+        "guards": [
+          "!lvts_td->calib"
+        ],
+        "call_boundary": [
+          "PTR_ERR",
+          "lvts_td->calib = devm_krealloc(dev, lvts_td->calib,",
+          "memcpy",
+          "kfree"
+        ],
+        "call_edges": [
+          "lvts_calibration_read -> PTR_ERR",
+          "lvts_calibration_read -> lvts_td->calib = devm_krealloc(dev, lvts_td->calib,",
+          "lvts_calibration_read -> memcpy"
+        ],
+        "state_transitions": [
+          "guard(!lvts_td->calib)",
+          "sink(PTR_ERR)",
+          "sink(lvts_td->calib = devm_krealloc(dev, lvts_td->calib,)"
+        ],
+        "api_terms": [
+          "PTR_ERR",
+          "lvts_td->calib = devm_krealloc(dev, lvts_td->calib,",
+          "memcpy"
+        ],
+        "related_symbols": [
+          "lvts_td",
+          "calib",
+          "kfree",
+          "efuse"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_0",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/thermal/mediatek/lvts_thermal.c",
+        "function": "lvts_calibration_read"
+      },
+      "location": {
+        "line": 722,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "lvts_calibration_read in drivers/thermal/mediatek/lvts_thermal.c provides CSA-backed pointer/resource lifecycle context near line 722",
+        "diagnostic_message": "",
+        "diagnostic_checker": "",
+        "state_before": [
+          "buffer(lvts_td->calib)",
+          "buffer(lvts_td->calib_len)",
+          "sinks(lvts_calibration_read, dev_of_node)"
+        ],
+        "state_after": [
+          "operation(memcpy)",
+          "operation(return [B1.1];)",
+          "operation([B2.8] = [B2.7])",
+          "operation(__builtin_memcpy)"
+        ],
+        "functions": [
+          "lvts_calibration_read"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "lvts_td",
+          "calib",
+          "kfree",
+          "efuse"
+        ],
+        "buffer_fields": [
+          "lvts_td->calib",
+          "lvts_td->calib_len",
+          "lvts_td->lvts_ctrl",
+          "lvts_data->num_lvts_ctrl"
+        ],
+        "call_targets": [
+          "lvts_calibration_read",
+          "dev_of_node",
+          "of_nvmem_cell_get",
+          "dev_err",
+          "nvmem_cell_read",
+          "nvmem_cell_put"
+        ],
+        "call_edges": [
+          "lvts_calibration_read -> dev_of_node",
+          "lvts_calibration_read -> of_find_property",
+          "lvts_calibration_read -> of_prop_next_string",
+          "lvts_calibration_read -> of_nvmem_cell_get",
+          "lvts_calibration_read -> IS_ERR",
+          "lvts_calibration_read -> __builtin_constant_p"
+        ],
+        "state_statements": [
+          "return [B1.1];",
+          "[B2.8] = [B2.7]",
+          "__builtin_memcpy",
+          "[B3.15]->calib",
+          "[B3.19]->calib_len",
+          "[B3.32]->calib_len"
+        ],
+        "source_file": "drivers/thermal/mediatek/lvts_thermal.c",
+        "source_excerpt": "690:  * buffer so it can be read sequentially when initializing the\n691:  * calibration data.\n692:  */\n693: static int lvts_calibration_read(struct device *dev, struct lvts_domain *lvts_td,\n694: \t\t\t\t\tconst struct lvts_data *lvts_data)\n695: {\n696: \tstruct device_node *np = dev_of_node(dev);\n697: \tstruct nvmem_cell *cell;\n698: \tstruct property *prop;\n699: \tconst char *cell_name;\n700: \n701: \tof_property_for_each_string(np, \"nvmem-cell-names\", prop, cell_name) {\n702: \t\tsize_t len;\n703: \t\tu8 *efuse;\n704: \n705: \t\tcell = of_nvmem_cell_get(np, cell_name);\n706: \t\tif (IS_ERR(cell)) {\n707: \t\t\tdev_err(dev, \"Failed to get cell '%s'\\n\", cell_name);\n708: \t\t\treturn PTR_ERR(cell);\n709: \t\t}\n710: \n711: \t\tefuse = nvmem_cell_read(cell, &len);\n712: \n713: \t\tnvmem_cell_put(cell);\n714: \n715: \t\tif (IS_ERR(efuse)) {\n716: \t\t\tdev_err(dev, \"Failed to read cell '%s'\\n\", cell_name);\n717: \t\t\treturn PTR_ERR(efuse);\n718: \t\t}\n719: \n720: \t\tlvts_td->calib = devm_krealloc(dev, lvts_td->calib,\n721: \t\t\t\t\t       lvts_td->calib_len + len, GFP_KERNEL);\n722: \t\tif (!lvts_td->calib)\n723: \t\t\treturn -ENOMEM;\n724: \n725: \t\tmemcpy(lvts_td->calib + lvts_td->calib_len, efuse, len);\n726: \n727: \t\tlvts_td->calib_len += len;\n728: \n729: \t\tkfree(efuse);\n730: \t}\n731: \n732: \treturn 0;\n733: }\n734: \n735: static int lvts_golden_temp_init(struct device *dev, u32 *value, int temp_offset)\n736: {\n737: \tu32 gt;\n738: \n739: \tgt = (*value) >> 24;\n740: \n741: \tif (gt && gt < LVTS_GOLDEN_TEMP_MAX)\n742: \t\tgolden_temp = gt;\n743: \n744: \tgolden_temp_offset = golden_temp * 500 + temp_offset;\n745: \n746: \treturn 0;\n747: }\n748: \n749: static int lvts_ctrl_init(struct device *dev, struct lvts_domain *lvts_td,\n750: \t\t\t\t\tconst struct lvts_data *lvts_data)\n751: {\n752: \tsize_t size = sizeof(*lvts_td->lvts_ctrl) * lvts_data->num_lvts_ctrl;\n753: \tstruct lvts_ctrl *lvts_ctrl;\n754: \tint i, ret;",
+        "coverage_status": "partial",
+        "operations": [
+          "memcpy",
+          "return [B1.1];",
+          "[B2.8] = [B2.7]",
+          "__builtin_memcpy",
+          "[B3.15]->calib",
+          "[B3.19]->calib_len"
+        ],
+        "acquisition_ops": [],
+        "release_ops": []
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.72,
+        "origin": "analyzer_output"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "drivers/thermal/mediatek/lvts_thermal.c",
+          "hunk_index": 0,
+          "source_line": 722
+        },
+        "summary": "lvts_calibration_read in drivers/thermal/mediatek/lvts_thermal.c provides CSA-backed pointer/resource lifecycle context near line 722",
+        "statements": [
+          "690:  * buffer so it can be read sequentially when initializing the",
+          "691:  * calibration data.",
+          "692:  */",
+          "693: static int lvts_calibration_read(struct device *dev, struct lvts_domain *lvts_td,",
+          "694: \t\t\t\t\tconst struct lvts_data *lvts_data)",
+          "695: {"
+        ],
+        "guards": [
+          "IS_ERR(cell)",
+          "IS_ERR(efuse)",
+          "!lvts_td->calib",
+          "gt && gt < LVTS_GOLDEN_TEMP_MAX"
+        ],
+        "call_boundary": [
+          "lvts_calibration_read",
+          "dev_of_node",
+          "of_nvmem_cell_get",
+          "dev_err",
+          "nvmem_cell_read",
+          "nvmem_cell_put"
+        ],
+        "call_edges": [
+          "lvts_calibration_read -> dev_of_node",
+          "lvts_calibration_read -> of_find_property",
+          "lvts_calibration_read -> of_prop_next_string",
+          "lvts_calibration_read -> of_nvmem_cell_get",
+          "lvts_calibration_read -> IS_ERR",
+          "lvts_calibration_read -> __builtin_constant_p"
+        ],
+        "state_transitions": [
+          "operation(memcpy)",
+          "operation(return [B1.1];)",
+          "operation([B2.8] = [B2.7])",
+          "operation(__builtin_memcpy)"
+        ],
+        "api_terms": [
+          "memcpy",
+          "return [B1.1];",
+          "[B2.8] = [B2.7]",
+          "__builtin_memcpy",
+          "[B3.15]->calib",
+          "[B3.19]->calib_len"
+        ],
+        "related_symbols": [
+          "lvts_td",
+          "calib",
+          "kfree",
+          "efuse"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "collected_analyzers": [
+    "csa"
+  ],
+  "provenance_summary": {
+    "total_records": 5,
+    "origin_counts": {
+      "analyzer_internal": 1,
+      "analyzer_output": 1,
+      "source_derived": 3
+    },
+    "analyzer_internal_records": 1,
+    "analyzer_internal_fraction": 0.2,
+    "analyzer_backed_records": 2,
+    "analyzer_backed_fraction": 0.4,
+    "source_derived_records": 3,
+    "source_derived_fraction": 0.6
+  }
+}

@@ -1,0 +1,2 @@
+- Decision: NotABug
+- Reason: The reported function already clamps `nbytes` before calling `copy_from_user()`: values greater than `sizeof(mybuf) - 1` become 63, and smaller values remain unchanged. Thus the copy length is always 0–63 bytes for the 64-byte `mybuf`, so it cannot overflow the buffer. The target bug pattern is an unbounded user length; this report does not match it. The separate `mybuf[6]` write handler shown also clamps its copy length to at most 5 bytes.

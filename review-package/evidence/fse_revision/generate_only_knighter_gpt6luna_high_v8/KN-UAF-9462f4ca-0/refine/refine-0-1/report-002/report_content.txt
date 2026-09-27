@@ -1,0 +1,248 @@
+BuildSource:| drivers/tty/n_gsm.c
+### Report Summary
+
+File:| n_gsm.c  
+---|---  
+Warning:| line 1036, column 4  
+Freeing tx_* list entries without holding tx_lock (possible UAF)  
+  
+### Annotated Source Code
+
+
+932   | 	INIT_LIST_HEAD(&m->list);
+933   |  return m;
+934   | }
+935   |  
+936   | /**
+937   |  *	gsm_send_packet	-	sends a single packet
+938   |  *	@gsm: GSM Mux
+939   |  *	@msg: packet to send
+940   |  *
+941   |  *	The given packet is encoded and sent out. No memory is freed.
+942   |  *	The caller must hold the gsm tx lock.
+943   |  */
+944   | static int gsm_send_packet(struct gsm_mux *gsm, struct gsm_msg *msg)
+945   | {
+946   |  int len, ret;
+947   |  
+948   |  
+949   |  if (gsm->encoding == GSM_BASIC_OPT) {
+950   | 		gsm->txframe[0] = GSM0_SOF;
+951   |  memcpy(gsm->txframe + 1, msg->data, msg->len);
+952   | 		gsm->txframe[msg->len + 1] = GSM0_SOF;
+953   | 		len = msg->len + 2;
+954   | 	} else {
+955   | 		gsm->txframe[0] = GSM1_SOF;
+956   | 		len = gsm_stuff_frame(msg->data, gsm->txframe + 1, msg->len);
+957   | 		gsm->txframe[len + 1] = GSM1_SOF;
+958   | 		len += 2;
+959   | 	}
+960   |  
+961   |  if (debug & DBG_DATA)
+962   | 		gsm_hex_dump_bytes(__func__, gsm->txframe, len);
+963   | 	gsm_print_packet("-->", msg->addr, gsm->initiator, msg->ctrl, msg->data,
+964   | 			 msg->len);
+965   |  
+966   | 	ret = gsmld_output(gsm, gsm->txframe, len);
+967   |  if (ret <= 0)
+968   |  return ret;
+969   |  /* FIXME: Can eliminate one SOF in many more cases */
+970   | 	gsm->tx_bytes -= msg->len;
+971   |  
+972   |  return 0;
+973   | }
+974   |  
+975   | /**
+976   |  *	gsm_is_flow_ctrl_msg	-	checks if flow control message
+977   |  *	@msg: message to check
+978   |  *
+979   |  *	Returns true if the given message is a flow control command of the
+980   |  *	control channel. False is returned in any other case.
+981   |  */
+982   | static bool gsm_is_flow_ctrl_msg(struct gsm_msg *msg)
+983   | {
+984   |  unsigned int cmd;
+985   |  
+986   |  if (msg->addr > 0)
+987   |  return false;
+988   |  
+989   |  switch (msg->ctrl & ~PF) {
+990   |  case UI:
+991   |  case UIH:
+992   | 		cmd = 0;
+993   |  if (gsm_read_ea_val(&cmd, msg->data + 2, msg->len - 2) < 1)
+994   |  break;
+995   |  switch (cmd & ~PF) {
+996   |  case CMD_FCOFF:
+997   |  case CMD_FCON:
+998   |  return true;
+999   | 		}
+1000  |  break;
+1001  | 	}
+1002  |  
+1003  |  return false;
+1004  | }
+1005  |  
+1006  | /**
+1007  |  *	gsm_data_kick	-	poke the queue
+1008  |  *	@gsm: GSM Mux
+1009  |  *
+1010  |  *	The tty device has called us to indicate that room has appeared in
+1011  |  *	the transmit queue. Ram more data into the pipe if we have any.
+1012  |  *	If we have been flow-stopped by a CMD_FCOFF, then we can only
+1013  |  *	send messages on DLCI0 until CMD_FCON. The caller must hold
+1014  |  *	the gsm tx lock.
+1015  |  */
+1016  | static int gsm_data_kick(struct gsm_mux *gsm)
+1017  | {
+1018  |  struct gsm_msg *msg, *nmsg;
+1019  |  struct gsm_dlci *dlci;
+1020  |  int ret;
+1021  |  
+1022  |  clear_bit(TTY_DO_WRITE_WAKEUP, &gsm->tty->flags);
+1023  |  
+1024  |  /* Serialize control messages and control channel messages first */
+1025  |  list_for_each_entry_safe(msg, nmsg, &gsm->tx_ctrl_list, list) {
+1026  |  if (gsm->constipated && !gsm_is_flow_ctrl_msg(msg))
+    6←Assuming field 'constipated' is true→
+    7←Taking false branch→
+1027  |  continue;
+1028  |  ret = gsm_send_packet(gsm, msg);
+1029  |  switch (ret) {
+    8←Control jumps to 'case -19:'  at line 1032→
+1030  |  case -ENOSPC:
+1031  |  return -ENOSPC;
+1032  |  case -ENODEV:
+1033  |  /* ldisc not open */
+1034  |  gsm->tx_bytes -= msg->len;
+1035  |  list_del(&msg->list);
+1036  |  kfree(msg);
+    9←Freeing tx_* list entries without holding tx_lock (possible UAF)
+1037  |  continue;
+1038  |  default:
+1039  |  if (ret >= 0) {
+1040  | 				list_del(&msg->list);
+1041  | 				kfree(msg);
+1042  | 			}
+1043  |  break;
+1044  | 		}
+1045  | 	}
+1046  |  
+1047  |  if (gsm->constipated)
+1048  |  return -EAGAIN;
+1049  |  
+1050  |  /* Serialize other channels */
+1051  |  if (list_empty(&gsm->tx_data_list))
+1052  |  return 0;
+1053  |  list_for_each_entry_safe(msg, nmsg, &gsm->tx_data_list, list) {
+1054  | 		dlci = gsm->dlci[msg->addr];
+1055  |  /* Send only messages for DLCIs with valid state */
+1056  |  if (dlci->state != DLCI_OPEN) {
+1057  | 			gsm->tx_bytes -= msg->len;
+1058  | 			list_del(&msg->list);
+1059  | 			kfree(msg);
+1060  |  continue;
+1061  | 		}
+1062  | 		ret = gsm_send_packet(gsm, msg);
+1063  |  switch (ret) {
+1064  |  case -ENOSPC:
+1065  |  return -ENOSPC;
+1066  |  case -ENODEV:
+3490  |  if (ret)
+3491  |  return ret;
+3492  |  if (gsm->initiator)
+3493  | 			gsm_dlci_begin_open(gsm->dlci[0]);
+3494  | 	}
+3495  |  
+3496  |  return 0;
+3497  | }
+3498  |  
+3499  | /**
+3500  |  *	gsmld_output		-	write to link
+3501  |  *	@gsm: our mux
+3502  |  *	@data: bytes to output
+3503  |  *	@len: size
+3504  |  *
+3505  |  *	Write a block of data from the GSM mux to the data channel. This
+3506  |  *	will eventually be serialized from above but at the moment isn't.
+3507  |  */
+3508  |  
+3509  | static int gsmld_output(struct gsm_mux *gsm, u8 *data, int len)
+3510  | {
+3511  |  if (tty_write_room(gsm->tty) < len) {
+3512  | 		set_bit(TTY_DO_WRITE_WAKEUP, &gsm->tty->flags);
+3513  |  return -ENOSPC;
+3514  | 	}
+3515  |  if (debug & DBG_DATA)
+3516  | 		gsm_hex_dump_bytes(__func__, data, len);
+3517  |  return gsm->tty->ops->write(gsm->tty, data, len);
+3518  | }
+3519  |  
+3520  |  
+3521  | /**
+3522  |  *	gsmld_write_trigger	-	schedule ldisc write task
+3523  |  *	@gsm: our mux
+3524  |  */
+3525  | static void gsmld_write_trigger(struct gsm_mux *gsm)
+3526  | {
+3527  |  if (!gsm || !gsm->dlci[0] || gsm->dlci[0]->dead)
+3528  |  return;
+3529  | 	schedule_work(&gsm->tx_work);
+3530  | }
+3531  |  
+3532  |  
+3533  | /**
+3534  |  *	gsmld_write_task	-	ldisc write task
+3535  |  *	@work: our tx write work
+3536  |  *
+3537  |  *	Writes out data to the ldisc if possible. We are doing this here to
+3538  |  *	avoid dead-locking. This returns if no space or data is left for output.
+3539  |  */
+3540  | static void gsmld_write_task(struct work_struct *work)
+3541  | {
+3542  |  struct gsm_mux *gsm = container_of(work, struct gsm_mux, tx_work);
+3543  |  unsigned long flags;
+3544  |  int i, ret;
+3545  |  
+3546  |  /* All outstanding control channel and control messages and one data
+3547  |  * frame is sent.
+3548  |  */
+3549  |  ret = -ENODEV;
+3550  |  spin_lock_irqsave(&gsm->tx_lock, flags);
+    1Loop condition is false.  Exiting loop→
+    2←Loop condition is false.  Exiting loop→
+3551  |  if (gsm->tty)
+    3←Assuming field 'tty' is non-null→
+    4←Taking true branch→
+3552  |  ret = gsm_data_kick(gsm);
+    5←Calling 'gsm_data_kick'→
+3553  | 	spin_unlock_irqrestore(&gsm->tx_lock, flags);
+3554  |  
+3555  |  if (ret >= 0)
+3556  |  for (i = 0; i < NUM_DLCI; i++)
+3557  |  if (gsm->dlci[i])
+3558  | 				tty_port_tty_wakeup(&gsm->dlci[i]->port);
+3559  | }
+3560  |  
+3561  | /**
+3562  |  *	gsmld_attach_gsm	-	mode set up
+3563  |  *	@tty: our tty structure
+3564  |  *	@gsm: our mux
+3565  |  *
+3566  |  *	Set up the MUX for basic mode and commence connecting to the
+3567  |  *	modem. Currently called from the line discipline set up but
+3568  |  *	will need moving to an ioctl path.
+3569  |  */
+3570  |  
+3571  | static void gsmld_attach_gsm(struct tty_struct *tty, struct gsm_mux *gsm)
+3572  | {
+3573  | 	gsm->tty = tty_kref_get(tty);
+3574  |  /* Turn off tty XON/XOFF handling to handle it explicitly. */
+3575  | 	gsm->old_c_iflag = tty->termios.c_iflag;
+3576  | 	tty->termios.c_iflag &= (IXON | IXOFF);
+3577  | }
+3578  |  
+3579  | /**
+3580  |  *	gsmld_detach_gsm	-	stop doing 0710 mux
+3581  |  *	@tty: tty attached to the mux
+3582  |  *	@gsm: mux

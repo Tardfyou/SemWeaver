@@ -1,0 +1,40 @@
+{
+  "A": [
+    "enum { N = MAX_PIPES * 2 };  // figure alias",
+    "struct dc_link *links[N];",
+    "// get_host_router_total_dp_tunnel_bw(...)",
+    "...",
+    "- for (uint8_t i=0; i<N; ++i) {",
+    "+ for (uint8_t i=0; i<N-1; ++i) {",
+    "    if (!dc->links[i] || ...) continue;",
+    "    ...",
+    "    if (hr_index_temp == hr_index) {",
+    "      primary = dc->links[i];",
+    "      secondary=dc->links[i+1];",
+    "      ...;",
+    "      break;",
+    "    }",
+    "  }"
+  ],
+  "B": [
+    "checkASTCodeBody(F):",
+    "  for each recognized loop i < B:",
+    "    find look-ahead access A[i + 1]",
+    "    if no recognized body guard:",
+    "      report(A[i + 1])",
+    "  // Missing: compare loop reach",
+    "  // with the declared capacity of A"
+  ],
+  "C": [
+    "checkASTCodeBody(F):  // retained",
+    "  retain loop and access discovery",
+    "  N = declared capacity of A",
+    "  max_index = (B - 1) + 1",
+    "  if max_index < N is established:",
+    "    suppress the false alarm",
+    "  otherwise retain the warning",
+    "  // normalize supported guards/tests",
+    "  // no patch-name or line allowlist"
+  ],
+  "note": "Abbreviated logic; use the hash-bound full candidate for exact implementation."
+}

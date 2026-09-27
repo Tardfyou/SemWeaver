@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "case_id": "G21_97cba232549b_Buffer_Overflow",
+  "candidate_sha256": "40b4f7fe0e3601bd90ae3dee10bb0ca5a8026ee6fb875eae82bed3a6bb491346",
+  "scope": "post_hoc_development_only",
+  "diagnostic_results": ["results/quality_r1_core/RESULT.json", "results/quality_r1_boundary/RESULT.json"],
+  "core_fixture_count": 28,
+  "core_passed": 28,
+  "boundary_fixture_count": 6,
+  "boundary_passed": 4,
+  "summary": "The prior model repair compiles and still independently produces vulnerable/fixed 1/0 on the original Linux patch. All 28 constant-array core diagnostics pass. Four of six boundary diagnostics pass; two remaining failures are an equivalent safe early-continue guard (false alarm) and an equivalent non-strict canonical loop comparison (missed unsafe access). Correct the GENERAL integer-bound and control-flow reasoning, not fixtures. Normalize strict/non-strict and reversed loop comparisons to their maximum reachable loop index; include the look-ahead offset to compare against the actual array extent. Normalize guard comparison direction and branch polarity, and handle early continue/break that dominates this access within the same loop. A conditional break nested under an unrelated predicate does not protect all paths. A syntactically plausible guard against a larger unrelated bound cannot prove safety for a smaller array. A guard's else arm has the opposite predicate. A logical OR proves safety only if each permitted alternative entails the required bound. Do not suppress solely based on variable spellings, a subtraction token, a preceding source location, or an unrelated enclosing if. Keep generic declaration identity and actual array type/capacity; preserve conservative reporting when a proof is unavailable. Maintain the preexisting ASTCodeBody architecture and original Linux paired PDS. The original and previous candidates must remain archived; only the model may edit this new candidate. Do not read the fixture files. Return a compilable checker under Clang 18 and describe any deliberately unsupported cases. This is a post-hoc development refinement outside formal 39-case outcome counts."
+}

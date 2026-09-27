@@ -1,0 +1,8 @@
+The false positive is caused by `checkEndFunction`: it reports every tracked release at any function return, even when the containing object is immediately freed and the field can never be reused. I’ll remove that return-time diagnostic, retain reports on actual later condition/call use, and clear tracked fields when their owner is deallocated so stale state cannot leak into unrelated paths.Refinment Plan:
+- The false positive comes from `checkEndFunction`, which treats “released and not cleared by this return” as a bug. That is too broad: in the reported path, `srcdev` is freed after `btrfs_close_bdev`, so the field is not retained for later reuse. The list operations are incidental to that return-time report.
+- Remove the return-time warning. Keep diagnostics when a released field is subsequently tested as a validity condition or passed to a call, which preserves detection of the target pattern.
+- Clear tracked fields when their containing object is deallocated. This prevents released-field state from surviving after the owner’s lifetime ends.
+
+Refined Code:
+```cpp
+```

@@ -1,0 +1,665 @@
+{
+  "records": [
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/mptcp/pm_netlink.c",
+        "function": "mptcp_pm_nl_rm_addr_or_subflow"
+      },
+      "location": {
+        "line": 881,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "if !((sizeof (msk->pm.accept_addr) == sizeof(char) || sizeof (msk->pm.accept_addr) == sizeof(short) || sizeof (msk->pm.accept_addr) == sizeof(int) || sizeof (msk->pm.accept_addr) == sizeof(long)) || sizeof (msk->pm.accept_addr) == sizeof(long long))",
+        "summary": "Analyzer CFG for mptcp_pm_nl_rm_addr_or_subflow in net/mptcp/pm_netlink.c: bindings: struct sock *sk = (struct sock *)msk;; sizeof (msk->pm.accept_addr) == sizeof(int) | branches: if !((sizeof (msk->pm.accept_addr) == sizeof(char) || sizeof (msk->pm.accept_addr) == sizeof(short) || sizeof (msk->pm.accept_addr) == sizeof(int) || sizeof (msk->pm.accept_addr) == sizeof(long)) || sizeof (msk->pm.accept_addr) == sizeof(long long)); (sizeof (msk->pm.accept_addr) == sizeof(char) || sizeof (msk->pm.accept_addr) == sizeof(short) || sizeof (msk->pm.accept_addr) == sizeof(int) || sizeof (msk->pm.accept_addr) == sizeof(long)) || ... | calls: mptcp_pm_nl_rm_addr_or_subflow -> __compiletime_assert_2005; mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch_jump",
+        "state_before": [
+          "buffer(msk->pm)",
+          "buffer(subflow->remote_id)",
+          "sinks(mptcp_subflow_tcp_sock, subflow_get_local_id)"
+        ],
+        "state_after": [
+          "cfg_binding(struct sock *sk = (struct sock *)msk;)",
+          "cfg_binding(sizeof (msk->pm.accept_addr) == sizeof(int))",
+          "cfg_branch(if !((sizeof (msk->pm.accept_addr) == sizeof(char) || sizeof (msk->pm.accept_addr) == sizeof(short) || sizeof (msk->pm.accept_addr) == sizeof(int) || sizeof (msk->pm.accept_addr) == sizeof(long)) || sizeof (msk->pm.accept_addr) == sizeof(long long)))",
+          "cfg_branch((sizeof (msk->pm.accept_addr) == sizeof(char) || sizeof (msk->pm.accept_addr) == sizeof(short) || sizeof (msk->pm.accept_addr) == sizeof(int) || sizeof (msk->pm.accept_addr) == sizeof(long)) || ...)"
+        ],
+        "functions": [
+          "mptcp_pm_nl_rm_addr_or_subflow"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "msk->pm",
+          "subflow->remote_id",
+          "rm_list->ids",
+          "msk->conn_list",
+          "rm_list->nr",
+          "msk->mpc_endpoint_id"
+        ],
+        "buffer_fields": [
+          "msk->pm",
+          "subflow->remote_id",
+          "rm_list->ids",
+          "msk->conn_list",
+          "rm_list->nr",
+          "msk->mpc_endpoint_id"
+        ],
+        "call_targets": [
+          "mptcp_subflow_tcp_sock",
+          "subflow_get_local_id",
+          "inet_sk_state_load",
+          "pr_debug",
+          "spin_unlock_bh",
+          "mptcp_subflow_shutdown",
+          "mptcp_close_ssk",
+          "spin_lock_bh"
+        ],
+        "call_edges": [
+          "mptcp_pm_nl_rm_addr_or_subflow -> __compiletime_assert_2005",
+          "mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch_jump",
+          "mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch",
+          "mptcp_pm_nl_rm_addr_or_subflow -> ____wrong_branch_error",
+          "mptcp_pm_nl_rm_addr_or_subflow -> __builtin_expect",
+          "mptcp_pm_nl_rm_addr_or_subflow -> __dynamic_pr_debug"
+        ],
+        "cfg_branch_kinds": [
+          "if",
+          "for"
+        ],
+        "branch_conditions": [
+          "do ... while [B2.1]",
+          "do ... while [B3.1]",
+          "do ... while [B6.1]",
+          "if [B8.2]",
+          "([B13.3] || [B12.3] || [B11.3] || [B10.3]) || ...",
+          "[B13.3] || [B12.3] || [B11.3] || ..."
+        ],
+        "resolved_branch_conditions": [
+          "if !((sizeof (msk->pm.accept_addr) == sizeof(char) || sizeof (msk->pm.accept_addr) == sizeof(short) || sizeof (msk->pm.accept_addr) == sizeof(int) || sizeof (msk->pm.accept_addr) == sizeof(long)) || sizeof (msk->pm.accept_addr) == sizeof(long long))",
+          "(sizeof (msk->pm.accept_addr) == sizeof(char) || sizeof (msk->pm.accept_addr) == sizeof(short) || sizeof (msk->pm.accept_addr) == sizeof(int) || sizeof (msk->pm.accept_addr) == sizeof(long)) || ...",
+          "sizeof (msk->pm.accept_addr) == sizeof(char) || sizeof (msk->pm.accept_addr) == sizeof(short) || sizeof (msk->pm.accept_addr) == sizeof(int) || ...",
+          "sizeof (msk->pm.accept_addr) == sizeof(char) || sizeof (msk->pm.accept_addr) == sizeof(short) || ...",
+          "sizeof (msk->pm.accept_addr) == sizeof(char) || ...",
+          "if --msk (ImplicitCastExpr, LValueToRValue, struct mptcp_sock *)->pm.add_addr_accepted (ImplicitCastExpr, IntegralCast, unsigned int) < mptcp_pm_get_add_addr_accept_max (ImplicitCastExpr, FunctionToPointerDecay, unsigned int (*)(const struct mptcp_sock *))(msk (ImplicitCastExpr, LValueToRValue, struct mptcp_sock *) (ImplicitCastExpr, NoOp, const struct mptcp_sock *))"
+        ],
+        "cfg_value_bindings": [
+          "struct sock *sk = (struct sock *)msk;",
+          "sizeof (msk->pm.accept_addr) == sizeof(int)",
+          "sizeof (msk->pm.accept_addr) == sizeof(long)",
+          "sizeof (msk->pm.accept_addr) == sizeof(char)",
+          "sizeof (msk->pm.accept_addr) == sizeof(short)",
+          "sizeof (msk->pm.accept_addr) == sizeof(long long)"
+        ],
+        "state_statements": [
+          "[B1.1]++",
+          "([B4.1]) (ImplicitCastExpr, IntegralToBoolean, typeof (msk->pm.accept_addr))",
+          "[B4.4]->pm",
+          "(volatile typeof (msk->pm.accept_addr) *)[B4.7] (CStyleCastExpr, NoOp, volatile typeof (msk->pm.accept_addr) *)",
+          "[B4.9] = [B4.2]",
+          "sizeof (msk->pm.accept_addr)"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,net/mptcp/.pm_netlink.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/uapi -I./arch/x86/in...",
+        "source_file": "net/mptcp/pm_netlink.c",
+        "source_excerpt": "849: \n850: \tif (list_empty(&msk->conn_list))\n851: \t\treturn;\n852: \n853: \tfor (i = 0; i < rm_list->nr; i++) {\n854: \t\tu8 rm_id = rm_list->ids[i];\n855: \t\tbool removed = false;\n856: \n857: \t\tmptcp_for_each_subflow_safe(msk, subflow, tmp) {\n858: \t\t\tstruct sock *ssk = mptcp_subflow_tcp_sock(subflow);\n859: \t\t\tu8 remote_id = READ_ONCE(subflow->remote_id);\n860: \t\t\tint how = RCV_SHUTDOWN | SEND_SHUTDOWN;\n861: \t\t\tu8 id = subflow_get_local_id(subflow);\n862: \n863: \t\t\tif ((1 << inet_sk_state_load(ssk)) &\n864: \t\t\t    (TCPF_FIN_WAIT1 | TCPF_FIN_WAIT2 | TCPF_CLOSING | TCPF_CLOSE))\n865: \t\t\t\tcontinue;\n866: \t\t\tif (rm_type == MPTCP_MIB_RMADDR && remote_id != rm_id)\n867: \t\t\t\tcontinue;\n868: \t\t\tif (rm_type == MPTCP_MIB_RMSUBFLOW && id != rm_id)\n869: \t\t\t\tcontinue;\n870: \n871: \t\t\tpr_debug(\" -> %s rm_list_ids[%d]=%u local_id=%u remote_id=%u mpc_id=%u\\n\",\n872: \t\t\t\t rm_type == MPTCP_MIB_RMADDR ? \"address\" : \"subflow\",\n873: \t\t\t\t i, rm_id, id, remote_id, msk->mpc_endpoint_id);\n874: \t\t\tspin_unlock_bh(&msk->pm.lock);\n875: \t\t\tmptcp_subflow_shutdown(sk, ssk, how);\n876: \n877: \t\t\t/* the following takes care of updating the subflows counter */\n878: \t\t\tmptcp_close_ssk(sk, ssk, subflow);\n879: \t\t\tspin_lock_bh(&msk->pm.lock);\n880: \n881: \t\t\tremoved |= subflow->request_join;\n882: \t\t\tif (rm_type == MPTCP_MIB_RMSUBFLOW)\n883: \t\t\t\t__MPTCP_INC_STATS(sock_net(sk), rm_type);\n884: \t\t}\n885: \n886: \t\tif (rm_type == MPTCP_MIB_RMADDR)\n887: \t\t\t__MPTCP_INC_STATS(sock_net(sk), rm_type);\n888: \n889: \t\tif (!removed)\n890: \t\t\tcontinue;\n891: \n892: \t\tif (!mptcp_pm_is_kernel(msk))\n893: \t\t\tcontinue;\n894: \n895: \t\tif (rm_type == MPTCP_MIB_RMADDR && rm_id &&\n896: \t\t    !WARN_ON_ONCE(msk->pm.add_addr_accepted == 0)) {\n897: \t\t\t/* Note: if the subflow has been closed before, this\n898: \t\t\t * add_addr_accepted counter will not be decremented.\n899: \t\t\t */\n900: \t\t\tif (--msk->pm.add_addr_accepted < mptcp_pm_get_add_addr_accept_max(msk))\n901: \t\t\t\tWRITE_ONCE(msk->pm.accept_addr, true);\n902: \t\t}\n903: \t}\n904: }\n905: \n906: static void mptcp_pm_nl_rm_addr_received(struct mptcp_sock *msk)\n907: {\n908: \tmptcp_pm_nl_rm_addr_or_subflow(msk, &msk->pm.rm_list_rx, MPTCP_MIB_RMADDR);\n909: }\n910: \n911: static void mptcp_pm_nl_rm_subflow_received(struct mptcp_sock *msk,\n912: \t\t\t\t\t    const struct mptcp_rm_list *rm_list)\n913: {",
+        "summary_line": 881,
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/generate_only_evidence_all39_v8_r5/G15_7decd1f5904a_UAF/csa/patchweaver_runtime/csa_raw/net-mptcp-pm_netlink.c-mptcp_pm_nl_rm_addr_or_subflow.txt",
+        "raw_output_sha256": "bebee83e64bc635a25b2b3fe6cbafd74490b35b544c9247be8b85a91b7b314ad",
+        "command_sha256": "a0f1ab0f64c4c3a25a1cbbc5b9cabc2fd0bd4b3a11132e91dc946744ac25ef42"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:debug-cfg",
+        "confidence": 0.92,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "net/mptcp/pm_netlink.c",
+          "hunk_index": 0,
+          "source_line": 881
+        },
+        "summary": "Analyzer CFG for mptcp_pm_nl_rm_addr_or_subflow in net/mptcp/pm_netlink.c: bindings: struct sock *sk = (struct sock *)msk;; sizeof (msk->pm.accept_addr) == sizeof(int) | branches: if !((sizeof (msk->pm.accept_addr) == sizeof(char) || sizeof (msk->pm.accept_addr) == sizeof(short) || sizeof (msk->pm.accept_addr) == sizeof(int) || sizeof (msk->pm.accept_addr) == sizeof(long)) || sizeof (msk->pm.accept_addr) == sizeof(long long)); (sizeof (msk->pm.accept_addr) == sizeof(char) || sizeof (msk->pm.accept_addr) == sizeof(short) || sizeof (msk->pm.accept_addr) == sizeof(int) || sizeof (msk->pm.accept_addr) == sizeof(long)) || ... | calls: mptcp_pm_nl_rm_addr_or_subflow -> __compiletime_assert_2005; mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch_jump",
+        "statements": [
+          "849:",
+          "850: \tif (list_empty(&msk->conn_list))",
+          "851: \t\treturn;",
+          "852:",
+          "853: \tfor (i = 0; i < rm_list->nr; i++) {",
+          "854: \t\tu8 rm_id = rm_list->ids[i];"
+        ],
+        "guards": [
+          "if !((sizeof (msk->pm.accept_addr) == sizeof(char) || sizeof (msk->pm.accept_addr) == sizeof(short) || sizeof (msk->pm.accept_addr) == sizeof(int) || sizeof (msk->pm.accept_addr) == sizeof(long)) || sizeof (msk->pm.accept_addr) == sizeof(long long))",
+          "(sizeof (msk->pm.accept_addr) == sizeof(char) || sizeof (msk->pm.accept_addr) == sizeof(short) || sizeof (msk->pm.accept_addr) == sizeof(int) || sizeof (msk->pm.accept_addr) == sizeof(long)) || ...",
+          "sizeof (msk->pm.accept_addr) == sizeof(char) || sizeof (msk->pm.accept_addr) == sizeof(short) || sizeof (msk->pm.accept_addr) == sizeof(int) || ...",
+          "sizeof (msk->pm.accept_addr) == sizeof(char) || sizeof (msk->pm.accept_addr) == sizeof(short) || ..."
+        ],
+        "call_boundary": [
+          "mptcp_subflow_tcp_sock",
+          "subflow_get_local_id",
+          "inet_sk_state_load",
+          "pr_debug",
+          "spin_unlock_bh",
+          "mptcp_subflow_shutdown"
+        ],
+        "call_edges": [
+          "mptcp_pm_nl_rm_addr_or_subflow -> __compiletime_assert_2005",
+          "mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch_jump",
+          "mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch",
+          "mptcp_pm_nl_rm_addr_or_subflow -> ____wrong_branch_error",
+          "mptcp_pm_nl_rm_addr_or_subflow -> __builtin_expect",
+          "mptcp_pm_nl_rm_addr_or_subflow -> __dynamic_pr_debug",
+          "mptcp_pm_nl_rm_addr_or_subflow -> msk_owned_by_me",
+          "mptcp_pm_nl_rm_addr_or_subflow -> list_empty"
+        ],
+        "state_transitions": [
+          "cfg_binding(struct sock *sk = (struct sock *)msk;)",
+          "cfg_binding(sizeof (msk->pm.accept_addr) == sizeof(int))",
+          "cfg_branch(if !((sizeof (msk->pm.accept_addr) == sizeof(char) || sizeof (msk->pm.accept_addr) == sizeof(short) || sizeof (msk->pm.accept_addr) == sizeof(int) || sizeof (msk->pm.accept_addr) == sizeof(long)) || sizeof (msk->pm.accept_addr) == sizeof(long long)))",
+          "cfg_branch((sizeof (msk->pm.accept_addr) == sizeof(char) || sizeof (msk->pm.accept_addr) == sizeof(short) || sizeof (msk->pm.accept_addr) == sizeof(int) || sizeof (msk->pm.accept_addr) == sizeof(long)) || ...)",
+          "[B1.1]++",
+          "([B4.1]) (ImplicitCastExpr, IntegralToBoolean, typeof (msk->pm.accept_addr))"
+        ],
+        "api_terms": [
+          "__compiletime_assert_2005",
+          "arch_static_branch_jump",
+          "arch_static_branch",
+          "____wrong_branch_error",
+          "__builtin_expect",
+          "__dynamic_pr_debug"
+        ],
+        "related_symbols": [
+          "msk->pm",
+          "subflow->remote_id",
+          "rm_list->ids",
+          "msk->conn_list",
+          "rm_list->nr",
+          "msk->mpc_endpoint_id"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/mptcp/pm_netlink.c",
+        "function": "mptcp_pm_nl_rm_addr_or_subflow"
+      },
+      "location": {
+        "line": 881,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "mptcp_pm_nl_rm_addr_or_subflow in net/mptcp/pm_netlink.c: locks=spin_unlock_bh, spin_lock_bh | state_ops=for (i = 0; i < rm_list->nr; i++) {; if (--msk->pm.add_addr_accepted < mptcp_pm_get_add_addr_accept_max(msk)) | cfg_calls=mptcp_pm_nl_rm_addr_or_subflow -> __compiletime_assert_2005; mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch_jump",
+        "state_before": [
+          "buffer(msk->pm)",
+          "buffer(subflow->remote_id)",
+          "sinks(mptcp_subflow_tcp_sock, subflow_get_local_id)"
+        ],
+        "state_after": [
+          "transition(for (i = 0; i < rm_list->nr; i++) {)",
+          "transition(if (--msk->pm.add_addr_accepted < mptcp_pm_get_add_addr_accept_max(msk)))",
+          "transition([B1.1]++)",
+          "locked(spin_unlock_bh, spin_lock_bh)"
+        ],
+        "functions": [
+          "mptcp_pm_nl_rm_addr_or_subflow"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "msk->pm",
+          "subflow->remote_id",
+          "rm_list->ids",
+          "msk->conn_list",
+          "rm_list->nr",
+          "msk->mpc_endpoint_id"
+        ],
+        "buffer_fields": [
+          "msk->pm",
+          "subflow->remote_id",
+          "rm_list->ids",
+          "msk->conn_list",
+          "rm_list->nr",
+          "msk->mpc_endpoint_id"
+        ],
+        "call_targets": [
+          "mptcp_subflow_tcp_sock",
+          "subflow_get_local_id",
+          "inet_sk_state_load",
+          "pr_debug",
+          "spin_unlock_bh",
+          "mptcp_subflow_shutdown",
+          "mptcp_close_ssk",
+          "spin_lock_bh"
+        ],
+        "call_edges": [
+          "mptcp_pm_nl_rm_addr_or_subflow -> __compiletime_assert_2005",
+          "mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch_jump",
+          "mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch",
+          "mptcp_pm_nl_rm_addr_or_subflow -> ____wrong_branch_error",
+          "mptcp_pm_nl_rm_addr_or_subflow -> __builtin_expect",
+          "mptcp_pm_nl_rm_addr_or_subflow -> __dynamic_pr_debug"
+        ],
+        "cfg_branch_kinds": [
+          "if",
+          "for"
+        ],
+        "branch_conditions": [
+          "do ... while [B2.1]",
+          "do ... while [B3.1]",
+          "do ... while [B6.1]",
+          "if [B8.2]"
+        ],
+        "state_statements": [
+          "[B1.1]++",
+          "([B4.1]) (ImplicitCastExpr, IntegralToBoolean, typeof (msk->pm.accept_addr))",
+          "[B4.4]->pm",
+          "(volatile typeof (msk->pm.accept_addr) *)[B4.7] (CStyleCastExpr, NoOp, volatile typeof (msk->pm.accept_addr) *)",
+          "[B4.9] = [B4.2]",
+          "sizeof (msk->pm.accept_addr)",
+          "sizeof(long long)",
+          "[B9.1] == [B9.2]"
+        ],
+        "return_statements": [
+          "return;"
+        ],
+        "source_file": "net/mptcp/pm_netlink.c",
+        "source_excerpt": "849: \n850: \tif (list_empty(&msk->conn_list))\n851: \t\treturn;\n852: \n853: \tfor (i = 0; i < rm_list->nr; i++) {\n854: \t\tu8 rm_id = rm_list->ids[i];\n855: \t\tbool removed = false;\n856: \n857: \t\tmptcp_for_each_subflow_safe(msk, subflow, tmp) {\n858: \t\t\tstruct sock *ssk = mptcp_subflow_tcp_sock(subflow);\n859: \t\t\tu8 remote_id = READ_ONCE(subflow->remote_id);\n860: \t\t\tint how = RCV_SHUTDOWN | SEND_SHUTDOWN;\n861: \t\t\tu8 id = subflow_get_local_id(subflow);\n862: \n863: \t\t\tif ((1 << inet_sk_state_load(ssk)) &\n864: \t\t\t    (TCPF_FIN_WAIT1 | TCPF_FIN_WAIT2 | TCPF_CLOSING | TCPF_CLOSE))\n865: \t\t\t\tcontinue;\n866: \t\t\tif (rm_type == MPTCP_MIB_RMADDR && remote_id != rm_id)\n867: \t\t\t\tcontinue;\n868: \t\t\tif (rm_type == MPTCP_MIB_RMSUBFLOW && id != rm_id)\n869: \t\t\t\tcontinue;\n870: \n871: \t\t\tpr_debug(\" -> %s rm_list_ids[%d]=%u local_id=%u remote_id=%u mpc_id=%u\\n\",\n872: \t\t\t\t rm_type == MPTCP_MIB_RMADDR ? \"address\" : \"subflow\",\n873: \t\t\t\t i, rm_id, id, remote_id, msk->mpc_endpoint_id);\n874: \t\t\tspin_unlock_bh(&msk->pm.lock);\n875: \t\t\tmptcp_subflow_shutdown(sk, ssk, how);\n876: \n877: \t\t\t/* the following takes care of updating the subflows counter */\n878: \t\t\tmptcp_close_ssk(sk, ssk, subflow);\n879: \t\t\tspin_lock_bh(&msk->pm.lock);\n880: \n881: \t\t\tremoved |= subflow->request_join;\n882: \t\t\tif (rm_type == MPTCP_MIB_RMSUBFLOW)\n883: \t\t\t\t__MPTCP_INC_STATS(sock_net(sk), rm_type);\n884: \t\t}\n885: \n886: \t\tif (rm_type == MPTCP_MIB_RMADDR)\n887: \t\t\t__MPTCP_INC_STATS(sock_net(sk), rm_type);\n888: \n889: \t\tif (!removed)\n890: \t\t\tcontinue;\n891: \n892: \t\tif (!mptcp_pm_is_kernel(msk))\n893: \t\t\tcontinue;\n894: \n895: \t\tif (rm_type == MPTCP_MIB_RMADDR && rm_id &&\n896: \t\t    !WARN_ON_ONCE(msk->pm.add_addr_accepted == 0)) {\n897: \t\t\t/* Note: if the subflow has been closed before, this\n898: \t\t\t * add_addr_accepted counter will not be decremented.\n899: \t\t\t */\n900: \t\t\tif (--msk->pm.add_addr_accepted < mptcp_pm_get_add_addr_accept_max(msk))\n901: \t\t\t\tWRITE_ONCE(msk->pm.accept_addr, true);\n902: \t\t}\n903: \t}\n904: }\n905: \n906: static void mptcp_pm_nl_rm_addr_received(struct mptcp_sock *msk)\n907: {\n908: \tmptcp_pm_nl_rm_addr_or_subflow(msk, &msk->pm.rm_list_rx, MPTCP_MIB_RMADDR);\n909: }\n910: \n911: static void mptcp_pm_nl_rm_subflow_received(struct mptcp_sock *msk,\n912: \t\t\t\t\t    const struct mptcp_rm_list *rm_list)\n913: {",
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/generate_only_evidence_all39_v8_r5/G15_7decd1f5904a_UAF/csa/patchweaver_runtime/csa_raw/net-mptcp-pm_netlink.c-mptcp_pm_nl_rm_addr_or_subflow.txt",
+        "raw_output_sha256": "bebee83e64bc635a25b2b3fe6cbafd74490b35b544c9247be8b85a91b7b314ad",
+        "command_sha256": "a0f1ab0f64c4c3a25a1cbbc5b9cabc2fd0bd4b3a11132e91dc946744ac25ef42"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:symbolic-state",
+        "confidence": 0.88,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "net/mptcp/pm_netlink.c",
+          "hunk_index": 0,
+          "source_line": 881
+        },
+        "summary": "mptcp_pm_nl_rm_addr_or_subflow in net/mptcp/pm_netlink.c: locks=spin_unlock_bh, spin_lock_bh | state_ops=for (i = 0; i < rm_list->nr; i++) {; if (--msk->pm.add_addr_accepted < mptcp_pm_get_add_addr_accept_max(msk)) | cfg_calls=mptcp_pm_nl_rm_addr_or_subflow -> __compiletime_assert_2005; mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch_jump",
+        "statements": [
+          "849:",
+          "850: \tif (list_empty(&msk->conn_list))",
+          "851: \t\treturn;",
+          "852:",
+          "853: \tfor (i = 0; i < rm_list->nr; i++) {",
+          "854: \t\tu8 rm_id = rm_list->ids[i];"
+        ],
+        "guards": [
+          "do ... while [B2.1]",
+          "do ... while [B3.1]",
+          "do ... while [B6.1]"
+        ],
+        "call_boundary": [
+          "mptcp_subflow_tcp_sock",
+          "subflow_get_local_id",
+          "inet_sk_state_load",
+          "pr_debug",
+          "spin_unlock_bh",
+          "mptcp_subflow_shutdown"
+        ],
+        "call_edges": [
+          "mptcp_pm_nl_rm_addr_or_subflow -> __compiletime_assert_2005",
+          "mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch_jump",
+          "mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch",
+          "mptcp_pm_nl_rm_addr_or_subflow -> ____wrong_branch_error",
+          "mptcp_pm_nl_rm_addr_or_subflow -> __builtin_expect",
+          "mptcp_pm_nl_rm_addr_or_subflow -> __dynamic_pr_debug",
+          "mptcp_pm_nl_rm_addr_or_subflow -> msk_owned_by_me",
+          "mptcp_pm_nl_rm_addr_or_subflow -> list_empty"
+        ],
+        "state_transitions": [
+          "transition(for (i = 0; i < rm_list->nr; i++) {)",
+          "transition(if (--msk->pm.add_addr_accepted < mptcp_pm_get_add_addr_accept_max(msk)))",
+          "transition([B1.1]++)",
+          "locked(spin_unlock_bh, spin_lock_bh)",
+          "[B1.1]++",
+          "([B4.1]) (ImplicitCastExpr, IntegralToBoolean, typeof (msk->pm.accept_addr))"
+        ],
+        "api_terms": [
+          "spin_unlock_bh",
+          "spin_lock_bh",
+          "__compiletime_assert_2005",
+          "arch_static_branch_jump",
+          "arch_static_branch",
+          "____wrong_branch_error"
+        ],
+        "related_symbols": [
+          "msk->pm",
+          "subflow->remote_id",
+          "rm_list->ids",
+          "msk->conn_list",
+          "rm_list->nr",
+          "msk->mpc_endpoint_id"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_validation_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/mptcp/pm_netlink.c",
+        "function": "mptcp_pm_nl_rm_addr_or_subflow"
+      },
+      "location": {
+        "line": 881,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at net/mptcp/pm_netlink.c:881",
+        "diagnostic_message": "",
+        "diagnostic_checker": "",
+        "state_before": [
+          "buffer(msk->pm)",
+          "buffer(subflow->remote_id)",
+          "sinks(mptcp_subflow_tcp_sock, subflow_get_local_id)"
+        ],
+        "state_after": [
+          "diagnostic(csa)"
+        ],
+        "functions": [
+          "mptcp_pm_nl_rm_addr_or_subflow"
+        ],
+        "globals": [],
+        "tracked_symbols": [],
+        "buffer_fields": [
+          "msk->pm",
+          "subflow->remote_id",
+          "rm_list->ids",
+          "msk->conn_list",
+          "rm_list->nr",
+          "msk->mpc_endpoint_id"
+        ],
+        "call_targets": [
+          "mptcp_subflow_tcp_sock",
+          "subflow_get_local_id",
+          "inet_sk_state_load",
+          "pr_debug",
+          "spin_unlock_bh",
+          "mptcp_subflow_shutdown"
+        ],
+        "call_edges": [
+          "mptcp_pm_nl_rm_addr_or_subflow -> __compiletime_assert_2005",
+          "mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch_jump",
+          "mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch",
+          "mptcp_pm_nl_rm_addr_or_subflow -> ____wrong_branch_error",
+          "mptcp_pm_nl_rm_addr_or_subflow -> __builtin_expect",
+          "mptcp_pm_nl_rm_addr_or_subflow -> __dynamic_pr_debug"
+        ],
+        "state_statements": [
+          "for (i = 0; i < rm_list->nr; i++) {",
+          "if (--msk->pm.add_addr_accepted < mptcp_pm_get_add_addr_accept_max(msk))",
+          "[B1.1]++",
+          "([B4.1]) (ImplicitCastExpr, IntegralToBoolean, typeof (msk->pm.accept_addr))",
+          "[B4.4]->pm",
+          "(volatile typeof (msk->pm.accept_addr) *)[B4.7] (CStyleCastExpr, NoOp, volatile typeof (msk->pm.accept_addr) *)"
+        ],
+        "source_file": "net/mptcp/pm_netlink.c",
+        "source_excerpt": "849: \n850: \tif (list_empty(&msk->conn_list))\n851: \t\treturn;\n852: \n853: \tfor (i = 0; i < rm_list->nr; i++) {\n854: \t\tu8 rm_id = rm_list->ids[i];\n855: \t\tbool removed = false;\n856: \n857: \t\tmptcp_for_each_subflow_safe(msk, subflow, tmp) {\n858: \t\t\tstruct sock *ssk = mptcp_subflow_tcp_sock(subflow);\n859: \t\t\tu8 remote_id = READ_ONCE(subflow->remote_id);\n860: \t\t\tint how = RCV_SHUTDOWN | SEND_SHUTDOWN;\n861: \t\t\tu8 id = subflow_get_local_id(subflow);\n862: \n863: \t\t\tif ((1 << inet_sk_state_load(ssk)) &\n864: \t\t\t    (TCPF_FIN_WAIT1 | TCPF_FIN_WAIT2 | TCPF_CLOSING | TCPF_CLOSE))\n865: \t\t\t\tcontinue;\n866: \t\t\tif (rm_type == MPTCP_MIB_RMADDR && remote_id != rm_id)\n867: \t\t\t\tcontinue;\n868: \t\t\tif (rm_type == MPTCP_MIB_RMSUBFLOW && id != rm_id)\n869: \t\t\t\tcontinue;\n870: \n871: \t\t\tpr_debug(\" -> %s rm_list_ids[%d]=%u local_id=%u remote_id=%u mpc_id=%u\\n\",\n872: \t\t\t\t rm_type == MPTCP_MIB_RMADDR ? \"address\" : \"subflow\",\n873: \t\t\t\t i, rm_id, id, remote_id, msk->mpc_endpoint_id);\n874: \t\t\tspin_unlock_bh(&msk->pm.lock);\n875: \t\t\tmptcp_subflow_shutdown(sk, ssk, how);\n876: \n877: \t\t\t/* the following takes care of updating the subflows counter */\n878: \t\t\tmptcp_close_ssk(sk, ssk, subflow);\n879: \t\t\tspin_lock_bh(&msk->pm.lock);\n880: \n881: \t\t\tremoved |= subflow->request_join;\n882: \t\t\tif (rm_type == MPTCP_MIB_RMSUBFLOW)\n883: \t\t\t\t__MPTCP_INC_STATS(sock_net(sk), rm_type);\n884: \t\t}\n885: \n886: \t\tif (rm_type == MPTCP_MIB_RMADDR)\n887: \t\t\t__MPTCP_INC_STATS(sock_net(sk), rm_type);\n888: \n889: \t\tif (!removed)\n890: \t\t\tcontinue;\n891: \n892: \t\tif (!mptcp_pm_is_kernel(msk))\n893: \t\t\tcontinue;\n894: \n895: \t\tif (rm_type == MPTCP_MIB_RMADDR && rm_id &&\n896: \t\t    !WARN_ON_ONCE(msk->pm.add_addr_accepted == 0)) {\n897: \t\t\t/* Note: if the subflow has been closed before, this\n898: \t\t\t * add_addr_accepted counter will not be decremented.\n899: \t\t\t */\n900: \t\t\tif (--msk->pm.add_addr_accepted < mptcp_pm_get_add_addr_accept_max(msk))\n901: \t\t\t\tWRITE_ONCE(msk->pm.accept_addr, true);\n902: \t\t}\n903: \t}\n904: }\n905: \n906: static void mptcp_pm_nl_rm_addr_received(struct mptcp_sock *msk)\n907: {\n908: \tmptcp_pm_nl_rm_addr_or_subflow(msk, &msk->pm.rm_list_rx, MPTCP_MIB_RMADDR);\n909: }\n910: \n911: static void mptcp_pm_nl_rm_subflow_received(struct mptcp_sock *msk,\n912: \t\t\t\t\t    const struct mptcp_rm_list *rm_list)\n913: {",
+        "coverage_status": "partial",
+        "contract_type": "",
+        "guard_exprs": [
+          "list_empty(&msk->conn_list)",
+          "i = 0; i < rm_list->nr; i++",
+          "(1 << inet_sk_state_load(ssk)",
+          "rm_type == MPTCP_MIB_RMADDR && remote_id != rm_id"
+        ],
+        "sink_calls": [
+          "mptcp_subflow_tcp_sock",
+          "subflow_get_local_id",
+          "inet_sk_state_load",
+          "pr_debug"
+        ]
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.72,
+        "origin": "analyzer_output"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "net/mptcp/pm_netlink.c",
+          "hunk_index": 0,
+          "source_line": 881
+        },
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at net/mptcp/pm_netlink.c:881",
+        "statements": [
+          "849:",
+          "850: \tif (list_empty(&msk->conn_list))",
+          "851: \t\treturn;",
+          "852:",
+          "853: \tfor (i = 0; i < rm_list->nr; i++) {",
+          "854: \t\tu8 rm_id = rm_list->ids[i];"
+        ],
+        "guards": [
+          "list_empty(&msk->conn_list)",
+          "i = 0; i < rm_list->nr; i++",
+          "(1 << inet_sk_state_load(ssk)",
+          "rm_type == MPTCP_MIB_RMADDR && remote_id != rm_id"
+        ],
+        "call_boundary": [
+          "mptcp_subflow_tcp_sock",
+          "subflow_get_local_id",
+          "inet_sk_state_load",
+          "pr_debug",
+          "spin_unlock_bh",
+          "mptcp_subflow_shutdown"
+        ],
+        "call_edges": [
+          "mptcp_pm_nl_rm_addr_or_subflow -> __compiletime_assert_2005",
+          "mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch_jump",
+          "mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch",
+          "mptcp_pm_nl_rm_addr_or_subflow -> ____wrong_branch_error",
+          "mptcp_pm_nl_rm_addr_or_subflow -> __builtin_expect",
+          "mptcp_pm_nl_rm_addr_or_subflow -> __dynamic_pr_debug"
+        ],
+        "state_transitions": [
+          "diagnostic(csa)"
+        ],
+        "api_terms": [
+          "for (i = 0; i < rm_list->nr; i++) {",
+          "if (--msk->pm.add_addr_accepted < mptcp_pm_get_add_addr_accept_max(msk))",
+          "[B1.1]++",
+          "([B4.1]) (ImplicitCastExpr, IntegralToBoolean, typeof (msk->pm.accept_addr))",
+          "[B4.4]->pm",
+          "(volatile typeof (msk->pm.accept_addr) *)[B4.7] (CStyleCastExpr, NoOp, volatile typeof (msk->pm.accept_addr) *)"
+        ],
+        "related_symbols": [],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      }
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_1",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/mptcp/pm_netlink.c",
+        "function": "mptcp_pm_nl_rm_addr_or_subflow"
+      },
+      "location": {
+        "line": 881,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "mptcp_pm_nl_rm_addr_or_subflow in net/mptcp/pm_netlink.c provides CSA-backed pointer/resource lifecycle context near line 881",
+        "diagnostic_message": "",
+        "diagnostic_checker": "",
+        "state_before": [
+          "buffer(msk->pm)",
+          "buffer(subflow->remote_id)",
+          "sinks(mptcp_subflow_tcp_sock, subflow_get_local_id)"
+        ],
+        "state_after": [
+          "operation(for (i = 0; i < rm_list->nr; i++) {)",
+          "operation(if (--msk->pm.add_addr_accepted < mptcp_pm_get_add_addr_accept_max(msk)))",
+          "operation([B1.1]++)",
+          "operation(([B4.1]) (ImplicitCastExpr, IntegralToBoolean, typeof (msk->pm.accept_addr)))"
+        ],
+        "functions": [
+          "mptcp_pm_nl_rm_addr_or_subflow"
+        ],
+        "globals": [],
+        "tracked_symbols": [],
+        "buffer_fields": [
+          "msk->pm",
+          "subflow->remote_id",
+          "rm_list->ids",
+          "msk->conn_list",
+          "rm_list->nr",
+          "msk->mpc_endpoint_id"
+        ],
+        "call_targets": [
+          "mptcp_subflow_tcp_sock",
+          "subflow_get_local_id",
+          "inet_sk_state_load",
+          "pr_debug",
+          "spin_unlock_bh",
+          "mptcp_subflow_shutdown"
+        ],
+        "call_edges": [
+          "mptcp_pm_nl_rm_addr_or_subflow -> __compiletime_assert_2005",
+          "mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch_jump",
+          "mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch",
+          "mptcp_pm_nl_rm_addr_or_subflow -> ____wrong_branch_error",
+          "mptcp_pm_nl_rm_addr_or_subflow -> __builtin_expect",
+          "mptcp_pm_nl_rm_addr_or_subflow -> __dynamic_pr_debug"
+        ],
+        "state_statements": [
+          "for (i = 0; i < rm_list->nr; i++) {",
+          "if (--msk->pm.add_addr_accepted < mptcp_pm_get_add_addr_accept_max(msk))",
+          "[B1.1]++",
+          "([B4.1]) (ImplicitCastExpr, IntegralToBoolean, typeof (msk->pm.accept_addr))",
+          "[B4.4]->pm",
+          "(volatile typeof (msk->pm.accept_addr) *)[B4.7] (CStyleCastExpr, NoOp, volatile typeof (msk->pm.accept_addr) *)"
+        ],
+        "source_file": "net/mptcp/pm_netlink.c",
+        "source_excerpt": "849: \n850: \tif (list_empty(&msk->conn_list))\n851: \t\treturn;\n852: \n853: \tfor (i = 0; i < rm_list->nr; i++) {\n854: \t\tu8 rm_id = rm_list->ids[i];\n855: \t\tbool removed = false;\n856: \n857: \t\tmptcp_for_each_subflow_safe(msk, subflow, tmp) {\n858: \t\t\tstruct sock *ssk = mptcp_subflow_tcp_sock(subflow);\n859: \t\t\tu8 remote_id = READ_ONCE(subflow->remote_id);\n860: \t\t\tint how = RCV_SHUTDOWN | SEND_SHUTDOWN;\n861: \t\t\tu8 id = subflow_get_local_id(subflow);\n862: \n863: \t\t\tif ((1 << inet_sk_state_load(ssk)) &\n864: \t\t\t    (TCPF_FIN_WAIT1 | TCPF_FIN_WAIT2 | TCPF_CLOSING | TCPF_CLOSE))\n865: \t\t\t\tcontinue;\n866: \t\t\tif (rm_type == MPTCP_MIB_RMADDR && remote_id != rm_id)\n867: \t\t\t\tcontinue;\n868: \t\t\tif (rm_type == MPTCP_MIB_RMSUBFLOW && id != rm_id)\n869: \t\t\t\tcontinue;\n870: \n871: \t\t\tpr_debug(\" -> %s rm_list_ids[%d]=%u local_id=%u remote_id=%u mpc_id=%u\\n\",\n872: \t\t\t\t rm_type == MPTCP_MIB_RMADDR ? \"address\" : \"subflow\",\n873: \t\t\t\t i, rm_id, id, remote_id, msk->mpc_endpoint_id);\n874: \t\t\tspin_unlock_bh(&msk->pm.lock);\n875: \t\t\tmptcp_subflow_shutdown(sk, ssk, how);\n876: \n877: \t\t\t/* the following takes care of updating the subflows counter */\n878: \t\t\tmptcp_close_ssk(sk, ssk, subflow);\n879: \t\t\tspin_lock_bh(&msk->pm.lock);\n880: \n881: \t\t\tremoved |= subflow->request_join;\n882: \t\t\tif (rm_type == MPTCP_MIB_RMSUBFLOW)\n883: \t\t\t\t__MPTCP_INC_STATS(sock_net(sk), rm_type);\n884: \t\t}\n885: \n886: \t\tif (rm_type == MPTCP_MIB_RMADDR)\n887: \t\t\t__MPTCP_INC_STATS(sock_net(sk), rm_type);\n888: \n889: \t\tif (!removed)\n890: \t\t\tcontinue;\n891: \n892: \t\tif (!mptcp_pm_is_kernel(msk))\n893: \t\t\tcontinue;\n894: \n895: \t\tif (rm_type == MPTCP_MIB_RMADDR && rm_id &&\n896: \t\t    !WARN_ON_ONCE(msk->pm.add_addr_accepted == 0)) {\n897: \t\t\t/* Note: if the subflow has been closed before, this\n898: \t\t\t * add_addr_accepted counter will not be decremented.\n899: \t\t\t */\n900: \t\t\tif (--msk->pm.add_addr_accepted < mptcp_pm_get_add_addr_accept_max(msk))\n901: \t\t\t\tWRITE_ONCE(msk->pm.accept_addr, true);\n902: \t\t}\n903: \t}\n904: }\n905: \n906: static void mptcp_pm_nl_rm_addr_received(struct mptcp_sock *msk)\n907: {\n908: \tmptcp_pm_nl_rm_addr_or_subflow(msk, &msk->pm.rm_list_rx, MPTCP_MIB_RMADDR);\n909: }\n910: \n911: static void mptcp_pm_nl_rm_subflow_received(struct mptcp_sock *msk,\n912: \t\t\t\t\t    const struct mptcp_rm_list *rm_list)\n913: {",
+        "coverage_status": "partial",
+        "operations": [
+          "for (i = 0; i < rm_list->nr; i++) {",
+          "if (--msk->pm.add_addr_accepted < mptcp_pm_get_add_addr_accept_max(msk))",
+          "[B1.1]++",
+          "([B4.1]) (ImplicitCastExpr, IntegralToBoolean, typeof (msk->pm.accept_addr))",
+          "[B4.4]->pm",
+          "(volatile typeof (msk->pm.accept_addr) *)[B4.7] (CStyleCastExpr, NoOp, volatile typeof (msk->pm.accept_addr) *)"
+        ],
+        "acquisition_ops": [],
+        "release_ops": []
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.72,
+        "origin": "analyzer_output"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "net/mptcp/pm_netlink.c",
+          "hunk_index": 0,
+          "source_line": 881
+        },
+        "summary": "mptcp_pm_nl_rm_addr_or_subflow in net/mptcp/pm_netlink.c provides CSA-backed pointer/resource lifecycle context near line 881",
+        "statements": [
+          "849:",
+          "850: \tif (list_empty(&msk->conn_list))",
+          "851: \t\treturn;",
+          "852:",
+          "853: \tfor (i = 0; i < rm_list->nr; i++) {",
+          "854: \t\tu8 rm_id = rm_list->ids[i];"
+        ],
+        "guards": [
+          "list_empty(&msk->conn_list)",
+          "i = 0; i < rm_list->nr; i++",
+          "(1 << inet_sk_state_load(ssk)",
+          "rm_type == MPTCP_MIB_RMADDR && remote_id != rm_id"
+        ],
+        "call_boundary": [
+          "mptcp_subflow_tcp_sock",
+          "subflow_get_local_id",
+          "inet_sk_state_load",
+          "pr_debug",
+          "spin_unlock_bh",
+          "mptcp_subflow_shutdown"
+        ],
+        "call_edges": [
+          "mptcp_pm_nl_rm_addr_or_subflow -> __compiletime_assert_2005",
+          "mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch_jump",
+          "mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch",
+          "mptcp_pm_nl_rm_addr_or_subflow -> ____wrong_branch_error",
+          "mptcp_pm_nl_rm_addr_or_subflow -> __builtin_expect",
+          "mptcp_pm_nl_rm_addr_or_subflow -> __dynamic_pr_debug"
+        ],
+        "state_transitions": [
+          "operation(for (i = 0; i < rm_list->nr; i++) {)",
+          "operation(if (--msk->pm.add_addr_accepted < mptcp_pm_get_add_addr_accept_max(msk)))",
+          "operation([B1.1]++)",
+          "operation(([B4.1]) (ImplicitCastExpr, IntegralToBoolean, typeof (msk->pm.accept_addr)))"
+        ],
+        "api_terms": [
+          "for (i = 0; i < rm_list->nr; i++) {",
+          "if (--msk->pm.add_addr_accepted < mptcp_pm_get_add_addr_accept_max(msk))",
+          "[B1.1]++",
+          "([B4.1]) (ImplicitCastExpr, IntegralToBoolean, typeof (msk->pm.accept_addr))",
+          "[B4.4]->pm",
+          "(volatile typeof (msk->pm.accept_addr) *)[B4.7] (CStyleCastExpr, NoOp, volatile typeof (msk->pm.accept_addr) *)"
+        ],
+        "related_symbols": [],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "collected_analyzers": [
+    "csa"
+  ],
+  "provenance_summary": {
+    "total_records": 4,
+    "origin_counts": {
+      "analyzer_internal": 2,
+      "analyzer_output": 2
+    },
+    "analyzer_internal_records": 2,
+    "analyzer_internal_fraction": 0.5,
+    "analyzer_backed_records": 4,
+    "analyzer_backed_fraction": 1.0,
+    "source_derived_records": 0,
+    "source_derived_fraction": 0.0
+  }
+}

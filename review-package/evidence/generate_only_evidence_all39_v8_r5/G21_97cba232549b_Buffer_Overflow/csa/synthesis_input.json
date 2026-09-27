@@ -1,0 +1,1130 @@
+{
+  "analyzer_id": "csa",
+  "detector_artifact": "checker_plugin",
+  "primary_pattern": "out_of_bound",
+  "objective": "Synthesize a path-sensitive out_of_bound detector that encodes the same local state, guards, and lifecycle mechanism evidenced by the patch, while still generalizing to semantically equivalent sites.",
+  "mechanism_contract": {
+    "mechanism_family": "generic_vulnerability_mechanism",
+    "semantic_dimensions": [
+      "vulnerability trigger",
+      "patch-introduced barrier",
+      "local state or flow relation"
+    ],
+    "trigger_invariants": [
+      "the vulnerable mechanism is reachable on a feasible path",
+      "the path lacks the barrier introduced by the patch"
+    ],
+    "silence_invariants": [
+      "patch-introduced guards, barriers, or safe APIs must suppress findings"
+    ],
+    "transfer_axes": [
+      "only generalize along evidence-backed state, guard, flow, or API-role equivalence",
+      "equivalent guard or barrier predicates on sibling paths",
+      "equivalent local state transitions around the same sink or dereference",
+      "equivalent ownership or release/reinit lifecycle on the same symbolic resource"
+    ],
+    "forbidden_shortcuts": [
+      "bind the detector to fixed file paths, line numbers, or exact patch strings",
+      "broaden into unrelated bug families just to improve hit count",
+      "use the patch text itself as the matching rule",
+      "widen to unrelated bug families without evidence",
+      "placeholder helper logic or empty ProgramState modeling"
+    ],
+    "evidence_backed_axes": [
+      "path guards and barrier conditions",
+      "state transitions",
+      "resource lifecycle",
+      "semantic trigger slice"
+    ]
+  },
+  "detector_name_hint": "",
+  "focus_files": [],
+  "focus_functions": [],
+  "hypotheses": [
+    "Patch likely encodes a reusable vulnerability mechanism but available metadata is weak; keep evidence collection broad."
+  ],
+  "required_evidence_types": [
+    "patch_fact"
+  ],
+  "missing_evidence_types": [],
+  "evidence_degraded": false,
+  "patch_mechanism_signals": [],
+  "silencing_conditions": [],
+  "retry_guidance": [],
+  "selected_evidence_ids": [
+    "csa_guard_0",
+    "csa_state_0",
+    "csa_validation_allocation_lifecycle_1",
+    "csa_validation_semantic_slice_0"
+  ],
+  "selected_evidence": [
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/dc/link/protocols/link_dp_dpia_bw.c",
+        "function": "get_host_router_total_dp_tunnel_bw"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "if hr_index_temp (ImplicitCastExpr, LValueToRValue, uint8_t) (ImplicitCastExpr, IntegralCast, int) == hr_index (ImplicitCastExpr, LValueToRValue, uint8_t) (ImplicitCastExpr, IntegralCast, int)",
+        "summary": "Analyzer CFG for get_host_router_total_dp_tunnel_bw in drivers/gpu/drm/amd/display/dc/link/protocols/link_dp_dpia_bw.c: bindings: uint8_t lowest_dpia_index = get_lowest_dpia_index(dc->links[0]);; uint8_t i = 0; | branches: if hr_index_temp (ImplicitCastExpr, LValueToRValue, uint8_t) (ImplicitCastExpr, IntegralCast, int) == hr_index (ImplicitCastExpr, LValueToRValue, uint8_t) (ImplicitCastExpr, IntegralCast, int); if !dc (ImplicitCastExpr, LValueToRValue, const struct dc *)->links (ImplicitCastExpr, ArrayToPointerDecay, struct dc_link *const *)[i (ImplicitCastExpr, LValueToRValue, uint8_t)] (ImplicitCastExpr, LValueToRValue, struct dc_link *) || [B17.2]->links (ImplicitCastExpr, ArrayToPointerDecay, struct dc_link *const *)[i (ImplicitCastExpr, LValueToRValue, uint8_t)] (ImplicitCastExpr, LValueToRValue, struct dc_link *)->ep_type (ImplicitCastExpr, LValueToRValue, enum display_endpoint_type) (ImplicitCastExpr, IntegralCast, int) != DISPLAY_ENDPOINT_USB4_DPIA | calls: get_host_router_total_dp_tunnel_bw -> get_lowest_dpia_index",
+        "summary_line": 199,
+        "state_before": [
+          "input(dc)",
+          "input(hr_index)",
+          "buffer(dc->links)",
+          "buffer(link_dpia_primary->hpd_status)",
+          "sinks(get_lowest_dpia_index)"
+        ],
+        "state_after": [
+          "cfg_binding(uint8_t lowest_dpia_index = get_lowest_dpia_index(dc->links[0]);)",
+          "cfg_binding(uint8_t i = 0;)",
+          "cfg_branch(if hr_index_temp (ImplicitCastExpr, LValueToRValue, uint8_t) (ImplicitCastExpr, IntegralCast, int) == hr_index (ImplicitCastExpr, LValueToRValue, uint8_t) (ImplicitCastExpr, IntegralCast, int))",
+          "cfg_branch(if !dc (ImplicitCastExpr, LValueToRValue, const struct dc *)->links (ImplicitCastExpr, ArrayToPointerDecay, struct dc_link *const *)[i (ImplicitCastExpr, LValueToRValue, uint8_t)] (ImplicitCastExpr, LValueToRValue, struct dc_link *) || [B17.2]->links (ImplicitCastExpr, ArrayToPointerDecay, struct dc_link *const *)[i (ImplicitCastExpr, LValueToRValue, uint8_t)] (ImplicitCastExpr, LValueToRValue, struct dc_link *)->ep_type (ImplicitCastExpr, LValueToRValue, enum display_endpoint_type) (ImplicitCastExpr, IntegralCast, int) != DISPLAY_ENDPOINT_USB4_DPIA)"
+        ],
+        "tracked_symbols": [
+          "dc",
+          "hr_index",
+          "dc->links",
+          "link_dpia_primary->hpd_status",
+          "link_dpia_primary->dpia_bw_alloc_config",
+          "link_dpia_secondary->hpd_status",
+          "link_dpia_secondary->dpia_bw_alloc_config"
+        ],
+        "buffer_fields": [
+          "dc->links",
+          "link_dpia_primary->hpd_status",
+          "link_dpia_primary->dpia_bw_alloc_config",
+          "link_dpia_secondary->hpd_status",
+          "link_dpia_secondary->dpia_bw_alloc_config"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "get_host_router_total_dp_tunnel_bw"
+        ],
+        "call_targets": [
+          "get_lowest_dpia_index"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,drivers/gpu/drm/amd/amdgpu/../display/dc/link/protocols/.link_dp_dpia_bw.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I...",
+        "cfg_branch_kinds": [
+          "if",
+          "for"
+        ],
+        "branch_conditions": [
+          "break;",
+          "if [B6.5] && [B5.6]",
+          "[B6.5] && ...",
+          "if [B9.5] && [B8.6]",
+          "[B9.5] && ...",
+          "if ([B14.28] && [B13.6]) && ([B12.5] && [B11.6])"
+        ],
+        "call_edges": [
+          "get_host_router_total_dp_tunnel_bw -> get_lowest_dpia_index"
+        ],
+        "state_statements": [
+          "return [B1.2];",
+          "++[B2.1]",
+          "[B4.3]->dpia_bw_alloc_config",
+          "[B4.1] += [B4.6]",
+          "[B5.2]->dpia_bw_alloc_config",
+          "[B6.2]->hpd_status"
+        ],
+        "source_file": "drivers/gpu/drm/amd/display/dc/link/protocols/link_dp_dpia_bw.c"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/amd/display/dc/link/protocols/link_dp_dpia_bw.c",
+          "hunk_index": 0,
+          "source_line": 199
+        },
+        "summary": "Analyzer CFG for get_host_router_total_dp_tunnel_bw in drivers/gpu/drm/amd/display/dc/link/protocols/link_dp_dpia_bw.c: bindings: uint8_t lowest_dpia_index = get_lowest_dpia_index(dc->links[0]);; uint8_t i = 0; | branches: if hr_index_temp (ImplicitCastExpr, LValueToRValue, uint8_t) (ImplicitCastExpr, IntegralCast, int) == hr_index (ImplicitCastExpr, LValueToRValue, uint8_t) (ImplicitCastExpr, IntegralCast, int); if !dc (ImplicitCastExpr, LValueToRValue, const struct dc *)->links (ImplicitCastExpr, ArrayToPointerDecay, struct dc_link *const *)[i (ImplicitCastExpr, LValueToRValue, uint8_t)] (ImplicitCastExpr, LValueToRValue, struct dc_link *) || [B17.2]->links (ImplicitCastExpr, ArrayToPointerDecay, struct dc_link *const *)[i (ImplicitCastExpr, LValueToRValue, uint8_t)] (ImplicitCastExpr, LValueToRValue, struct dc_link *)->ep_type (ImplicitCastExpr, LValueToRValue, enum display_endpoint_type) (ImplicitCastExpr, IntegralCast, int) != DISPLAY_ENDPOINT_USB4_DPIA | calls: get_host_router_total_dp_tunnel_bw -> get_lowest_dpia_index",
+        "statements": [
+          "192: static int get_host_router_total_dp_tunnel_bw(const struct dc *dc, uint8_t hr_index)",
+          "193: {",
+          "194: \tuint8_t lowest_dpia_index = get_lowest_dpia_index(dc->links[0]);",
+          "195: \tuint8_t hr_index_temp = 0;",
+          "196: \tstruct dc_link *link_dpia_primary, *link_dpia_secondary;",
+          "197: \tint total_bw = 0;"
+        ],
+        "guards": [
+          "if hr_index_temp (ImplicitCastExpr, LValueToRValue, uint8_t) (ImplicitCastExpr, IntegralCast, int) == hr_index (ImplicitCastExpr, LValueToRValue, uint8_t) (ImplicitCastExpr, IntegralCast, int)",
+          "if !dc (ImplicitCastExpr, LValueToRValue, const struct dc *)->links (ImplicitCastExpr, ArrayToPointerDecay, struct dc_link *const *)[i (ImplicitCastExpr, LValueToRValue, uint8_t)] (ImplicitCastExpr, LValueToRValue, struct dc_link *) || [B17.2]->links (ImplicitCastExpr, ArrayToPointerDecay, struct dc_link *const *)[i (ImplicitCastExpr, LValueToRValue, uint8_t)] (ImplicitCastExpr, LValueToRValue, struct dc_link *)->ep_type (ImplicitCastExpr, LValueToRValue, enum display_endpoint_type) (ImplicitCastExpr, IntegralCast, int) != DISPLAY_ENDPOINT_USB4_DPIA",
+          "!dc (ImplicitCastExpr, LValueToRValue, const struct dc *)->links (ImplicitCastExpr, ArrayToPointerDecay, struct dc_link *const *)[i (ImplicitCastExpr, LValueToRValue, uint8_t)] (ImplicitCastExpr, LValueToRValue, struct dc_link *) || ...",
+          "for (...; i (ImplicitCastExpr, LValueToRValue, uint8_t) (ImplicitCastExpr, IntegralCast, int) < 6 * 2; ...)"
+        ],
+        "call_boundary": [
+          "get_lowest_dpia_index"
+        ],
+        "call_edges": [
+          "get_host_router_total_dp_tunnel_bw -> get_lowest_dpia_index"
+        ],
+        "state_transitions": [
+          "cfg_binding(uint8_t lowest_dpia_index = get_lowest_dpia_index(dc->links[0]);)",
+          "cfg_binding(uint8_t i = 0;)",
+          "cfg_branch(if hr_index_temp (ImplicitCastExpr, LValueToRValue, uint8_t) (ImplicitCastExpr, IntegralCast, int) == hr_index (ImplicitCastExpr, LValueToRValue, uint8_t) (ImplicitCastExpr, IntegralCast, int))",
+          "cfg_branch(if !dc (ImplicitCastExpr, LValueToRValue, const struct dc *)->links (ImplicitCastExpr, ArrayToPointerDecay, struct dc_link *const *)[i (ImplicitCastExpr, LValueToRValue, uint8_t)] (ImplicitCastExpr, LValueToRValue, struct dc_link *) || [B17.2]->links (ImplicitCastExpr, ArrayToPointerDecay, struct dc_link *const *)[i (ImplicitCastExpr, LValueToRValue, uint8_t)] (ImplicitCastExpr, LValueToRValue, struct dc_link *)->ep_type (ImplicitCastExpr, LValueToRValue, enum display_endpoint_type) (ImplicitCastExpr, IntegralCast, int) != DISPLAY_ENDPOINT_USB4_DPIA)",
+          "return [B1.2];",
+          "++[B2.1]"
+        ],
+        "api_terms": [
+          "get_lowest_dpia_index"
+        ],
+        "related_symbols": [
+          "dc",
+          "hr_index",
+          "dc->links",
+          "link_dpia_primary->hpd_status",
+          "link_dpia_primary->dpia_bw_alloc_config",
+          "link_dpia_secondary->hpd_status"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/dc/link/protocols/link_dp_dpia_bw.c",
+        "function": "get_host_router_total_dp_tunnel_bw"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "get_host_router_total_dp_tunnel_bw in drivers/gpu/drm/amd/display/dc/link/protocols/link_dp_dpia_bw.c: state_ops=for (uint8_t i = 0; i < MAX_PIPES * 2; ++i) { | cfg_calls=get_host_router_total_dp_tunnel_bw -> get_lowest_dpia_index",
+        "state_before": [
+          "input(dc)",
+          "input(hr_index)",
+          "buffer(dc->links)",
+          "buffer(link_dpia_primary->hpd_status)",
+          "sinks(get_lowest_dpia_index)"
+        ],
+        "state_after": [
+          "transition(for (uint8_t i = 0; i < MAX_PIPES * 2; ++i) {)",
+          "transition(return [B1.2];)",
+          "transition(++[B2.1])"
+        ],
+        "tracked_symbols": [
+          "dc",
+          "hr_index",
+          "dc->links",
+          "link_dpia_primary->hpd_status",
+          "link_dpia_primary->dpia_bw_alloc_config",
+          "link_dpia_secondary->hpd_status",
+          "link_dpia_secondary->dpia_bw_alloc_config"
+        ],
+        "buffer_fields": [
+          "dc->links",
+          "link_dpia_primary->hpd_status",
+          "link_dpia_primary->dpia_bw_alloc_config",
+          "link_dpia_secondary->hpd_status",
+          "link_dpia_secondary->dpia_bw_alloc_config"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "get_host_router_total_dp_tunnel_bw"
+        ],
+        "call_targets": [
+          "get_lowest_dpia_index"
+        ],
+        "cfg_branch_kinds": [
+          "if",
+          "for"
+        ],
+        "branch_conditions": [
+          "break;",
+          "if [B6.5] && [B5.6]",
+          "[B6.5] && ...",
+          "if [B9.5] && [B8.6]"
+        ],
+        "call_edges": [
+          "get_host_router_total_dp_tunnel_bw -> get_lowest_dpia_index"
+        ],
+        "state_statements": [
+          "return [B1.2];",
+          "++[B2.1]",
+          "[B4.3]->dpia_bw_alloc_config",
+          "[B4.1] += [B4.6]",
+          "[B5.2]->dpia_bw_alloc_config",
+          "[B6.2]->hpd_status",
+          "[B7.2]->dpia_bw_alloc_config",
+          "[B7.6] = [B7.5]"
+        ],
+        "return_statements": [
+          "return [B1.2];"
+        ],
+        "source_file": "drivers/gpu/drm/amd/display/dc/link/protocols/link_dp_dpia_bw.c"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/amd/display/dc/link/protocols/link_dp_dpia_bw.c",
+          "hunk_index": 0,
+          "source_line": 199
+        },
+        "summary": "get_host_router_total_dp_tunnel_bw in drivers/gpu/drm/amd/display/dc/link/protocols/link_dp_dpia_bw.c: state_ops=for (uint8_t i = 0; i < MAX_PIPES * 2; ++i) { | cfg_calls=get_host_router_total_dp_tunnel_bw -> get_lowest_dpia_index",
+        "statements": [
+          "192: static int get_host_router_total_dp_tunnel_bw(const struct dc *dc, uint8_t hr_index)",
+          "193: {",
+          "194: \tuint8_t lowest_dpia_index = get_lowest_dpia_index(dc->links[0]);",
+          "195: \tuint8_t hr_index_temp = 0;",
+          "196: \tstruct dc_link *link_dpia_primary, *link_dpia_secondary;",
+          "197: \tint total_bw = 0;"
+        ],
+        "guards": [
+          "break;",
+          "if [B6.5] && [B5.6]",
+          "[B6.5] && ..."
+        ],
+        "call_boundary": [
+          "get_lowest_dpia_index"
+        ],
+        "call_edges": [
+          "get_host_router_total_dp_tunnel_bw -> get_lowest_dpia_index"
+        ],
+        "state_transitions": [
+          "transition(for (uint8_t i = 0; i < MAX_PIPES * 2; ++i) {)",
+          "transition(return [B1.2];)",
+          "transition(++[B2.1])",
+          "return [B1.2];",
+          "++[B2.1]",
+          "[B4.3]->dpia_bw_alloc_config"
+        ],
+        "api_terms": [
+          "get_lowest_dpia_index"
+        ],
+        "related_symbols": [
+          "dc",
+          "hr_index",
+          "dc->links",
+          "link_dpia_primary->hpd_status",
+          "link_dpia_primary->dpia_bw_alloc_config",
+          "link_dpia_secondary->hpd_status"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.88
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_1",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/dc/link/protocols/link_dp_dpia_bw.c",
+        "function": "get_host_router_total_dp_tunnel_bw"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "get_host_router_total_dp_tunnel_bw in drivers/gpu/drm/amd/display/dc/link/protocols/link_dp_dpia_bw.c provides CSA-backed pointer/resource lifecycle context near line 199",
+        "state_before": [
+          "input(dc)",
+          "input(hr_index)",
+          "buffer(dc->links)",
+          "buffer(link_dpia_primary->hpd_status)",
+          "sinks(get_lowest_dpia_index)"
+        ],
+        "state_after": [
+          "operation(for (uint8_t i = 0; i < MAX_PIPES * 2; ++i) {)",
+          "operation(return [B1.2];)",
+          "operation(++[B2.1])",
+          "operation([B4.3]->dpia_bw_alloc_config)"
+        ],
+        "tracked_symbols": [
+          "dc",
+          "hr_index"
+        ],
+        "buffer_fields": [
+          "dc->links",
+          "link_dpia_primary->hpd_status",
+          "link_dpia_primary->dpia_bw_alloc_config",
+          "link_dpia_secondary->hpd_status",
+          "link_dpia_secondary->dpia_bw_alloc_config"
+        ],
+        "coverage_status": "partial",
+        "operations": [
+          "for (uint8_t i = 0; i < MAX_PIPES * 2; ++i) {",
+          "return [B1.2];",
+          "++[B2.1]",
+          "[B4.3]->dpia_bw_alloc_config",
+          "[B4.1] += [B4.6]",
+          "[B5.2]->dpia_bw_alloc_config"
+        ],
+        "functions": [
+          "get_host_router_total_dp_tunnel_bw"
+        ],
+        "call_targets": [
+          "get_lowest_dpia_index"
+        ],
+        "call_edges": [
+          "get_host_router_total_dp_tunnel_bw -> get_lowest_dpia_index"
+        ],
+        "state_statements": [
+          "for (uint8_t i = 0; i < MAX_PIPES * 2; ++i) {",
+          "return [B1.2];",
+          "++[B2.1]",
+          "[B4.3]->dpia_bw_alloc_config",
+          "[B4.1] += [B4.6]",
+          "[B5.2]->dpia_bw_alloc_config"
+        ],
+        "source_file": "drivers/gpu/drm/amd/display/dc/link/protocols/link_dp_dpia_bw.c"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/amd/display/dc/link/protocols/link_dp_dpia_bw.c",
+          "hunk_index": 0,
+          "source_line": 199
+        },
+        "summary": "get_host_router_total_dp_tunnel_bw in drivers/gpu/drm/amd/display/dc/link/protocols/link_dp_dpia_bw.c provides CSA-backed pointer/resource lifecycle context near line 199",
+        "statements": [
+          "192: static int get_host_router_total_dp_tunnel_bw(const struct dc *dc, uint8_t hr_index)",
+          "193: {",
+          "194: \tuint8_t lowest_dpia_index = get_lowest_dpia_index(dc->links[0]);",
+          "195: \tuint8_t hr_index_temp = 0;",
+          "196: \tstruct dc_link *link_dpia_primary, *link_dpia_secondary;",
+          "197: \tint total_bw = 0;"
+        ],
+        "guards": [
+          "uint8_t i = 0; i < MAX_PIPES * 2; ++i",
+          "!dc->links[i] || dc->links[i]->ep_type != DISPLAY_ENDPOINT_USB4_DPIA",
+          "hr_index_temp == hr_index",
+          "break;"
+        ],
+        "call_boundary": [
+          "get_lowest_dpia_index"
+        ],
+        "call_edges": [
+          "get_host_router_total_dp_tunnel_bw -> get_lowest_dpia_index"
+        ],
+        "state_transitions": [
+          "operation(for (uint8_t i = 0; i < MAX_PIPES * 2; ++i) {)",
+          "operation(return [B1.2];)",
+          "operation(++[B2.1])",
+          "operation([B4.3]->dpia_bw_alloc_config)"
+        ],
+        "api_terms": [
+          "for (uint8_t i = 0; i < MAX_PIPES * 2; ++i) {",
+          "return [B1.2];",
+          "++[B2.1]",
+          "[B4.3]->dpia_bw_alloc_config",
+          "[B4.1] += [B4.6]",
+          "[B5.2]->dpia_bw_alloc_config"
+        ],
+        "related_symbols": [
+          "dc",
+          "hr_index"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      },
+      "confidence": 0.72
+    },
+    {
+      "evidence_id": "csa_validation_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/dc/link/protocols/link_dp_dpia_bw.c",
+        "function": "get_host_router_total_dp_tunnel_bw"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at drivers/gpu/drm/amd/display/dc/link/protocols/link_dp_dpia_bw.c:199",
+        "state_before": [
+          "input(dc)",
+          "input(hr_index)",
+          "buffer(dc->links)",
+          "buffer(link_dpia_primary->hpd_status)",
+          "sinks(get_lowest_dpia_index)"
+        ],
+        "state_after": [
+          "diagnostic(csa)"
+        ],
+        "tracked_symbols": [
+          "dc",
+          "hr_index"
+        ],
+        "buffer_fields": [
+          "dc->links",
+          "link_dpia_primary->hpd_status",
+          "link_dpia_primary->dpia_bw_alloc_config",
+          "link_dpia_secondary->hpd_status",
+          "link_dpia_secondary->dpia_bw_alloc_config"
+        ],
+        "coverage_status": "partial",
+        "functions": [
+          "get_host_router_total_dp_tunnel_bw"
+        ],
+        "call_targets": [
+          "get_lowest_dpia_index"
+        ],
+        "call_edges": [
+          "get_host_router_total_dp_tunnel_bw -> get_lowest_dpia_index"
+        ],
+        "state_statements": [
+          "for (uint8_t i = 0; i < MAX_PIPES * 2; ++i) {",
+          "return [B1.2];",
+          "++[B2.1]",
+          "[B4.3]->dpia_bw_alloc_config",
+          "[B4.1] += [B4.6]",
+          "[B5.2]->dpia_bw_alloc_config"
+        ],
+        "source_file": "drivers/gpu/drm/amd/display/dc/link/protocols/link_dp_dpia_bw.c"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/amd/display/dc/link/protocols/link_dp_dpia_bw.c",
+          "hunk_index": 0,
+          "source_line": 199
+        },
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at drivers/gpu/drm/amd/display/dc/link/protocols/link_dp_dpia_bw.c:199",
+        "statements": [
+          "192: static int get_host_router_total_dp_tunnel_bw(const struct dc *dc, uint8_t hr_index)",
+          "193: {",
+          "194: \tuint8_t lowest_dpia_index = get_lowest_dpia_index(dc->links[0]);",
+          "195: \tuint8_t hr_index_temp = 0;",
+          "196: \tstruct dc_link *link_dpia_primary, *link_dpia_secondary;",
+          "197: \tint total_bw = 0;"
+        ],
+        "guards": [
+          "uint8_t i = 0; i < MAX_PIPES * 2; ++i",
+          "!dc->links[i] || dc->links[i]->ep_type != DISPLAY_ENDPOINT_USB4_DPIA",
+          "hr_index_temp == hr_index",
+          "break;"
+        ],
+        "call_boundary": [
+          "get_lowest_dpia_index"
+        ],
+        "call_edges": [
+          "get_host_router_total_dp_tunnel_bw -> get_lowest_dpia_index"
+        ],
+        "state_transitions": [
+          "diagnostic(csa)"
+        ],
+        "api_terms": [
+          "for (uint8_t i = 0; i < MAX_PIPES * 2; ++i) {",
+          "return [B1.2];",
+          "++[B2.1]",
+          "[B4.3]->dpia_bw_alloc_config",
+          "[B4.1] += [B4.6]",
+          "[B5.2]->dpia_bw_alloc_config"
+        ],
+        "related_symbols": [
+          "dc",
+          "hr_index"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      },
+      "confidence": 0.72
+    }
+  ],
+  "semantic_slice_count": 4,
+  "context_summary_count": 0,
+  "semantic_slice_coverage": "partial",
+  "selected_semantic_slice_ids": [
+    "csa_guard_0",
+    "csa_state_0",
+    "csa_validation_allocation_lifecycle_1",
+    "csa_validation_semantic_slice_0"
+  ],
+  "selected_context_summary_ids": [],
+  "selected_semantic_slices": [
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/dc/link/protocols/link_dp_dpia_bw.c",
+        "function": "get_host_router_total_dp_tunnel_bw"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "if hr_index_temp (ImplicitCastExpr, LValueToRValue, uint8_t) (ImplicitCastExpr, IntegralCast, int) == hr_index (ImplicitCastExpr, LValueToRValue, uint8_t) (ImplicitCastExpr, IntegralCast, int)",
+        "summary": "Analyzer CFG for get_host_router_total_dp_tunnel_bw in drivers/gpu/drm/amd/display/dc/link/protocols/link_dp_dpia_bw.c: bindings: uint8_t lowest_dpia_index = get_lowest_dpia_index(dc->links[0]);; uint8_t i = 0; | branches: if hr_index_temp (ImplicitCastExpr, LValueToRValue, uint8_t) (ImplicitCastExpr, IntegralCast, int) == hr_index (ImplicitCastExpr, LValueToRValue, uint8_t) (ImplicitCastExpr, IntegralCast, int); if !dc (ImplicitCastExpr, LValueToRValue, const struct dc *)->links (ImplicitCastExpr, ArrayToPointerDecay, struct dc_link *const *)[i (ImplicitCastExpr, LValueToRValue, uint8_t)] (ImplicitCastExpr, LValueToRValue, struct dc_link *) || [B17.2]->links (ImplicitCastExpr, ArrayToPointerDecay, struct dc_link *const *)[i (ImplicitCastExpr, LValueToRValue, uint8_t)] (ImplicitCastExpr, LValueToRValue, struct dc_link *)->ep_type (ImplicitCastExpr, LValueToRValue, enum display_endpoint_type) (ImplicitCastExpr, IntegralCast, int) != DISPLAY_ENDPOINT_USB4_DPIA | calls: get_host_router_total_dp_tunnel_bw -> get_lowest_dpia_index",
+        "summary_line": 199,
+        "state_before": [
+          "input(dc)",
+          "input(hr_index)",
+          "buffer(dc->links)",
+          "buffer(link_dpia_primary->hpd_status)",
+          "sinks(get_lowest_dpia_index)"
+        ],
+        "state_after": [
+          "cfg_binding(uint8_t lowest_dpia_index = get_lowest_dpia_index(dc->links[0]);)",
+          "cfg_binding(uint8_t i = 0;)",
+          "cfg_branch(if hr_index_temp (ImplicitCastExpr, LValueToRValue, uint8_t) (ImplicitCastExpr, IntegralCast, int) == hr_index (ImplicitCastExpr, LValueToRValue, uint8_t) (ImplicitCastExpr, IntegralCast, int))",
+          "cfg_branch(if !dc (ImplicitCastExpr, LValueToRValue, const struct dc *)->links (ImplicitCastExpr, ArrayToPointerDecay, struct dc_link *const *)[i (ImplicitCastExpr, LValueToRValue, uint8_t)] (ImplicitCastExpr, LValueToRValue, struct dc_link *) || [B17.2]->links (ImplicitCastExpr, ArrayToPointerDecay, struct dc_link *const *)[i (ImplicitCastExpr, LValueToRValue, uint8_t)] (ImplicitCastExpr, LValueToRValue, struct dc_link *)->ep_type (ImplicitCastExpr, LValueToRValue, enum display_endpoint_type) (ImplicitCastExpr, IntegralCast, int) != DISPLAY_ENDPOINT_USB4_DPIA)"
+        ],
+        "tracked_symbols": [
+          "dc",
+          "hr_index",
+          "dc->links",
+          "link_dpia_primary->hpd_status",
+          "link_dpia_primary->dpia_bw_alloc_config",
+          "link_dpia_secondary->hpd_status",
+          "link_dpia_secondary->dpia_bw_alloc_config"
+        ],
+        "buffer_fields": [
+          "dc->links",
+          "link_dpia_primary->hpd_status",
+          "link_dpia_primary->dpia_bw_alloc_config",
+          "link_dpia_secondary->hpd_status",
+          "link_dpia_secondary->dpia_bw_alloc_config"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "get_host_router_total_dp_tunnel_bw"
+        ],
+        "call_targets": [
+          "get_lowest_dpia_index"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,drivers/gpu/drm/amd/amdgpu/../display/dc/link/protocols/.link_dp_dpia_bw.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I...",
+        "cfg_branch_kinds": [
+          "if",
+          "for"
+        ],
+        "branch_conditions": [
+          "break;",
+          "if [B6.5] && [B5.6]",
+          "[B6.5] && ...",
+          "if [B9.5] && [B8.6]",
+          "[B9.5] && ...",
+          "if ([B14.28] && [B13.6]) && ([B12.5] && [B11.6])"
+        ],
+        "call_edges": [
+          "get_host_router_total_dp_tunnel_bw -> get_lowest_dpia_index"
+        ],
+        "state_statements": [
+          "return [B1.2];",
+          "++[B2.1]",
+          "[B4.3]->dpia_bw_alloc_config",
+          "[B4.1] += [B4.6]",
+          "[B5.2]->dpia_bw_alloc_config",
+          "[B6.2]->hpd_status"
+        ],
+        "source_file": "drivers/gpu/drm/amd/display/dc/link/protocols/link_dp_dpia_bw.c"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/amd/display/dc/link/protocols/link_dp_dpia_bw.c",
+          "hunk_index": 0,
+          "source_line": 199
+        },
+        "summary": "Analyzer CFG for get_host_router_total_dp_tunnel_bw in drivers/gpu/drm/amd/display/dc/link/protocols/link_dp_dpia_bw.c: bindings: uint8_t lowest_dpia_index = get_lowest_dpia_index(dc->links[0]);; uint8_t i = 0; | branches: if hr_index_temp (ImplicitCastExpr, LValueToRValue, uint8_t) (ImplicitCastExpr, IntegralCast, int) == hr_index (ImplicitCastExpr, LValueToRValue, uint8_t) (ImplicitCastExpr, IntegralCast, int); if !dc (ImplicitCastExpr, LValueToRValue, const struct dc *)->links (ImplicitCastExpr, ArrayToPointerDecay, struct dc_link *const *)[i (ImplicitCastExpr, LValueToRValue, uint8_t)] (ImplicitCastExpr, LValueToRValue, struct dc_link *) || [B17.2]->links (ImplicitCastExpr, ArrayToPointerDecay, struct dc_link *const *)[i (ImplicitCastExpr, LValueToRValue, uint8_t)] (ImplicitCastExpr, LValueToRValue, struct dc_link *)->ep_type (ImplicitCastExpr, LValueToRValue, enum display_endpoint_type) (ImplicitCastExpr, IntegralCast, int) != DISPLAY_ENDPOINT_USB4_DPIA | calls: get_host_router_total_dp_tunnel_bw -> get_lowest_dpia_index",
+        "statements": [
+          "192: static int get_host_router_total_dp_tunnel_bw(const struct dc *dc, uint8_t hr_index)",
+          "193: {",
+          "194: \tuint8_t lowest_dpia_index = get_lowest_dpia_index(dc->links[0]);",
+          "195: \tuint8_t hr_index_temp = 0;",
+          "196: \tstruct dc_link *link_dpia_primary, *link_dpia_secondary;",
+          "197: \tint total_bw = 0;"
+        ],
+        "guards": [
+          "if hr_index_temp (ImplicitCastExpr, LValueToRValue, uint8_t) (ImplicitCastExpr, IntegralCast, int) == hr_index (ImplicitCastExpr, LValueToRValue, uint8_t) (ImplicitCastExpr, IntegralCast, int)",
+          "if !dc (ImplicitCastExpr, LValueToRValue, const struct dc *)->links (ImplicitCastExpr, ArrayToPointerDecay, struct dc_link *const *)[i (ImplicitCastExpr, LValueToRValue, uint8_t)] (ImplicitCastExpr, LValueToRValue, struct dc_link *) || [B17.2]->links (ImplicitCastExpr, ArrayToPointerDecay, struct dc_link *const *)[i (ImplicitCastExpr, LValueToRValue, uint8_t)] (ImplicitCastExpr, LValueToRValue, struct dc_link *)->ep_type (ImplicitCastExpr, LValueToRValue, enum display_endpoint_type) (ImplicitCastExpr, IntegralCast, int) != DISPLAY_ENDPOINT_USB4_DPIA",
+          "!dc (ImplicitCastExpr, LValueToRValue, const struct dc *)->links (ImplicitCastExpr, ArrayToPointerDecay, struct dc_link *const *)[i (ImplicitCastExpr, LValueToRValue, uint8_t)] (ImplicitCastExpr, LValueToRValue, struct dc_link *) || ...",
+          "for (...; i (ImplicitCastExpr, LValueToRValue, uint8_t) (ImplicitCastExpr, IntegralCast, int) < 6 * 2; ...)"
+        ],
+        "call_boundary": [
+          "get_lowest_dpia_index"
+        ],
+        "call_edges": [
+          "get_host_router_total_dp_tunnel_bw -> get_lowest_dpia_index"
+        ],
+        "state_transitions": [
+          "cfg_binding(uint8_t lowest_dpia_index = get_lowest_dpia_index(dc->links[0]);)",
+          "cfg_binding(uint8_t i = 0;)",
+          "cfg_branch(if hr_index_temp (ImplicitCastExpr, LValueToRValue, uint8_t) (ImplicitCastExpr, IntegralCast, int) == hr_index (ImplicitCastExpr, LValueToRValue, uint8_t) (ImplicitCastExpr, IntegralCast, int))",
+          "cfg_branch(if !dc (ImplicitCastExpr, LValueToRValue, const struct dc *)->links (ImplicitCastExpr, ArrayToPointerDecay, struct dc_link *const *)[i (ImplicitCastExpr, LValueToRValue, uint8_t)] (ImplicitCastExpr, LValueToRValue, struct dc_link *) || [B17.2]->links (ImplicitCastExpr, ArrayToPointerDecay, struct dc_link *const *)[i (ImplicitCastExpr, LValueToRValue, uint8_t)] (ImplicitCastExpr, LValueToRValue, struct dc_link *)->ep_type (ImplicitCastExpr, LValueToRValue, enum display_endpoint_type) (ImplicitCastExpr, IntegralCast, int) != DISPLAY_ENDPOINT_USB4_DPIA)",
+          "return [B1.2];",
+          "++[B2.1]"
+        ],
+        "api_terms": [
+          "get_lowest_dpia_index"
+        ],
+        "related_symbols": [
+          "dc",
+          "hr_index",
+          "dc->links",
+          "link_dpia_primary->hpd_status",
+          "link_dpia_primary->dpia_bw_alloc_config",
+          "link_dpia_secondary->hpd_status"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/dc/link/protocols/link_dp_dpia_bw.c",
+        "function": "get_host_router_total_dp_tunnel_bw"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "get_host_router_total_dp_tunnel_bw in drivers/gpu/drm/amd/display/dc/link/protocols/link_dp_dpia_bw.c: state_ops=for (uint8_t i = 0; i < MAX_PIPES * 2; ++i) { | cfg_calls=get_host_router_total_dp_tunnel_bw -> get_lowest_dpia_index",
+        "state_before": [
+          "input(dc)",
+          "input(hr_index)",
+          "buffer(dc->links)",
+          "buffer(link_dpia_primary->hpd_status)",
+          "sinks(get_lowest_dpia_index)"
+        ],
+        "state_after": [
+          "transition(for (uint8_t i = 0; i < MAX_PIPES * 2; ++i) {)",
+          "transition(return [B1.2];)",
+          "transition(++[B2.1])"
+        ],
+        "tracked_symbols": [
+          "dc",
+          "hr_index",
+          "dc->links",
+          "link_dpia_primary->hpd_status",
+          "link_dpia_primary->dpia_bw_alloc_config",
+          "link_dpia_secondary->hpd_status",
+          "link_dpia_secondary->dpia_bw_alloc_config"
+        ],
+        "buffer_fields": [
+          "dc->links",
+          "link_dpia_primary->hpd_status",
+          "link_dpia_primary->dpia_bw_alloc_config",
+          "link_dpia_secondary->hpd_status",
+          "link_dpia_secondary->dpia_bw_alloc_config"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "get_host_router_total_dp_tunnel_bw"
+        ],
+        "call_targets": [
+          "get_lowest_dpia_index"
+        ],
+        "cfg_branch_kinds": [
+          "if",
+          "for"
+        ],
+        "branch_conditions": [
+          "break;",
+          "if [B6.5] && [B5.6]",
+          "[B6.5] && ...",
+          "if [B9.5] && [B8.6]"
+        ],
+        "call_edges": [
+          "get_host_router_total_dp_tunnel_bw -> get_lowest_dpia_index"
+        ],
+        "state_statements": [
+          "return [B1.2];",
+          "++[B2.1]",
+          "[B4.3]->dpia_bw_alloc_config",
+          "[B4.1] += [B4.6]",
+          "[B5.2]->dpia_bw_alloc_config",
+          "[B6.2]->hpd_status",
+          "[B7.2]->dpia_bw_alloc_config",
+          "[B7.6] = [B7.5]"
+        ],
+        "return_statements": [
+          "return [B1.2];"
+        ],
+        "source_file": "drivers/gpu/drm/amd/display/dc/link/protocols/link_dp_dpia_bw.c"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/amd/display/dc/link/protocols/link_dp_dpia_bw.c",
+          "hunk_index": 0,
+          "source_line": 199
+        },
+        "summary": "get_host_router_total_dp_tunnel_bw in drivers/gpu/drm/amd/display/dc/link/protocols/link_dp_dpia_bw.c: state_ops=for (uint8_t i = 0; i < MAX_PIPES * 2; ++i) { | cfg_calls=get_host_router_total_dp_tunnel_bw -> get_lowest_dpia_index",
+        "statements": [
+          "192: static int get_host_router_total_dp_tunnel_bw(const struct dc *dc, uint8_t hr_index)",
+          "193: {",
+          "194: \tuint8_t lowest_dpia_index = get_lowest_dpia_index(dc->links[0]);",
+          "195: \tuint8_t hr_index_temp = 0;",
+          "196: \tstruct dc_link *link_dpia_primary, *link_dpia_secondary;",
+          "197: \tint total_bw = 0;"
+        ],
+        "guards": [
+          "break;",
+          "if [B6.5] && [B5.6]",
+          "[B6.5] && ..."
+        ],
+        "call_boundary": [
+          "get_lowest_dpia_index"
+        ],
+        "call_edges": [
+          "get_host_router_total_dp_tunnel_bw -> get_lowest_dpia_index"
+        ],
+        "state_transitions": [
+          "transition(for (uint8_t i = 0; i < MAX_PIPES * 2; ++i) {)",
+          "transition(return [B1.2];)",
+          "transition(++[B2.1])",
+          "return [B1.2];",
+          "++[B2.1]",
+          "[B4.3]->dpia_bw_alloc_config"
+        ],
+        "api_terms": [
+          "get_lowest_dpia_index"
+        ],
+        "related_symbols": [
+          "dc",
+          "hr_index",
+          "dc->links",
+          "link_dpia_primary->hpd_status",
+          "link_dpia_primary->dpia_bw_alloc_config",
+          "link_dpia_secondary->hpd_status"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.88
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_1",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/dc/link/protocols/link_dp_dpia_bw.c",
+        "function": "get_host_router_total_dp_tunnel_bw"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "get_host_router_total_dp_tunnel_bw in drivers/gpu/drm/amd/display/dc/link/protocols/link_dp_dpia_bw.c provides CSA-backed pointer/resource lifecycle context near line 199",
+        "state_before": [
+          "input(dc)",
+          "input(hr_index)",
+          "buffer(dc->links)",
+          "buffer(link_dpia_primary->hpd_status)",
+          "sinks(get_lowest_dpia_index)"
+        ],
+        "state_after": [
+          "operation(for (uint8_t i = 0; i < MAX_PIPES * 2; ++i) {)",
+          "operation(return [B1.2];)",
+          "operation(++[B2.1])",
+          "operation([B4.3]->dpia_bw_alloc_config)"
+        ],
+        "tracked_symbols": [
+          "dc",
+          "hr_index"
+        ],
+        "buffer_fields": [
+          "dc->links",
+          "link_dpia_primary->hpd_status",
+          "link_dpia_primary->dpia_bw_alloc_config",
+          "link_dpia_secondary->hpd_status",
+          "link_dpia_secondary->dpia_bw_alloc_config"
+        ],
+        "coverage_status": "partial",
+        "operations": [
+          "for (uint8_t i = 0; i < MAX_PIPES * 2; ++i) {",
+          "return [B1.2];",
+          "++[B2.1]",
+          "[B4.3]->dpia_bw_alloc_config",
+          "[B4.1] += [B4.6]",
+          "[B5.2]->dpia_bw_alloc_config"
+        ],
+        "functions": [
+          "get_host_router_total_dp_tunnel_bw"
+        ],
+        "call_targets": [
+          "get_lowest_dpia_index"
+        ],
+        "call_edges": [
+          "get_host_router_total_dp_tunnel_bw -> get_lowest_dpia_index"
+        ],
+        "state_statements": [
+          "for (uint8_t i = 0; i < MAX_PIPES * 2; ++i) {",
+          "return [B1.2];",
+          "++[B2.1]",
+          "[B4.3]->dpia_bw_alloc_config",
+          "[B4.1] += [B4.6]",
+          "[B5.2]->dpia_bw_alloc_config"
+        ],
+        "source_file": "drivers/gpu/drm/amd/display/dc/link/protocols/link_dp_dpia_bw.c"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/amd/display/dc/link/protocols/link_dp_dpia_bw.c",
+          "hunk_index": 0,
+          "source_line": 199
+        },
+        "summary": "get_host_router_total_dp_tunnel_bw in drivers/gpu/drm/amd/display/dc/link/protocols/link_dp_dpia_bw.c provides CSA-backed pointer/resource lifecycle context near line 199",
+        "statements": [
+          "192: static int get_host_router_total_dp_tunnel_bw(const struct dc *dc, uint8_t hr_index)",
+          "193: {",
+          "194: \tuint8_t lowest_dpia_index = get_lowest_dpia_index(dc->links[0]);",
+          "195: \tuint8_t hr_index_temp = 0;",
+          "196: \tstruct dc_link *link_dpia_primary, *link_dpia_secondary;",
+          "197: \tint total_bw = 0;"
+        ],
+        "guards": [
+          "uint8_t i = 0; i < MAX_PIPES * 2; ++i",
+          "!dc->links[i] || dc->links[i]->ep_type != DISPLAY_ENDPOINT_USB4_DPIA",
+          "hr_index_temp == hr_index",
+          "break;"
+        ],
+        "call_boundary": [
+          "get_lowest_dpia_index"
+        ],
+        "call_edges": [
+          "get_host_router_total_dp_tunnel_bw -> get_lowest_dpia_index"
+        ],
+        "state_transitions": [
+          "operation(for (uint8_t i = 0; i < MAX_PIPES * 2; ++i) {)",
+          "operation(return [B1.2];)",
+          "operation(++[B2.1])",
+          "operation([B4.3]->dpia_bw_alloc_config)"
+        ],
+        "api_terms": [
+          "for (uint8_t i = 0; i < MAX_PIPES * 2; ++i) {",
+          "return [B1.2];",
+          "++[B2.1]",
+          "[B4.3]->dpia_bw_alloc_config",
+          "[B4.1] += [B4.6]",
+          "[B5.2]->dpia_bw_alloc_config"
+        ],
+        "related_symbols": [
+          "dc",
+          "hr_index"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      },
+      "confidence": 0.72
+    },
+    {
+      "evidence_id": "csa_validation_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/dc/link/protocols/link_dp_dpia_bw.c",
+        "function": "get_host_router_total_dp_tunnel_bw"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at drivers/gpu/drm/amd/display/dc/link/protocols/link_dp_dpia_bw.c:199",
+        "state_before": [
+          "input(dc)",
+          "input(hr_index)",
+          "buffer(dc->links)",
+          "buffer(link_dpia_primary->hpd_status)",
+          "sinks(get_lowest_dpia_index)"
+        ],
+        "state_after": [
+          "diagnostic(csa)"
+        ],
+        "tracked_symbols": [
+          "dc",
+          "hr_index"
+        ],
+        "buffer_fields": [
+          "dc->links",
+          "link_dpia_primary->hpd_status",
+          "link_dpia_primary->dpia_bw_alloc_config",
+          "link_dpia_secondary->hpd_status",
+          "link_dpia_secondary->dpia_bw_alloc_config"
+        ],
+        "coverage_status": "partial",
+        "functions": [
+          "get_host_router_total_dp_tunnel_bw"
+        ],
+        "call_targets": [
+          "get_lowest_dpia_index"
+        ],
+        "call_edges": [
+          "get_host_router_total_dp_tunnel_bw -> get_lowest_dpia_index"
+        ],
+        "state_statements": [
+          "for (uint8_t i = 0; i < MAX_PIPES * 2; ++i) {",
+          "return [B1.2];",
+          "++[B2.1]",
+          "[B4.3]->dpia_bw_alloc_config",
+          "[B4.1] += [B4.6]",
+          "[B5.2]->dpia_bw_alloc_config"
+        ],
+        "source_file": "drivers/gpu/drm/amd/display/dc/link/protocols/link_dp_dpia_bw.c"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/amd/display/dc/link/protocols/link_dp_dpia_bw.c",
+          "hunk_index": 0,
+          "source_line": 199
+        },
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at drivers/gpu/drm/amd/display/dc/link/protocols/link_dp_dpia_bw.c:199",
+        "statements": [
+          "192: static int get_host_router_total_dp_tunnel_bw(const struct dc *dc, uint8_t hr_index)",
+          "193: {",
+          "194: \tuint8_t lowest_dpia_index = get_lowest_dpia_index(dc->links[0]);",
+          "195: \tuint8_t hr_index_temp = 0;",
+          "196: \tstruct dc_link *link_dpia_primary, *link_dpia_secondary;",
+          "197: \tint total_bw = 0;"
+        ],
+        "guards": [
+          "uint8_t i = 0; i < MAX_PIPES * 2; ++i",
+          "!dc->links[i] || dc->links[i]->ep_type != DISPLAY_ENDPOINT_USB4_DPIA",
+          "hr_index_temp == hr_index",
+          "break;"
+        ],
+        "call_boundary": [
+          "get_lowest_dpia_index"
+        ],
+        "call_edges": [
+          "get_host_router_total_dp_tunnel_bw -> get_lowest_dpia_index"
+        ],
+        "state_transitions": [
+          "diagnostic(csa)"
+        ],
+        "api_terms": [
+          "for (uint8_t i = 0; i < MAX_PIPES * 2; ++i) {",
+          "return [B1.2];",
+          "++[B2.1]",
+          "[B4.3]->dpia_bw_alloc_config",
+          "[B4.1] += [B4.6]",
+          "[B5.2]->dpia_bw_alloc_config"
+        ],
+        "related_symbols": [
+          "dc",
+          "hr_index"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      },
+      "confidence": 0.72
+    }
+  ],
+  "selected_context_summaries": [],
+  "semantic_clause_plan": [
+    {
+      "clause_id": "vulnerable_trigger_clause",
+      "intent": "Trigger on the vulnerable out_of_bound mechanism using evidence-backed path/flow semantics.",
+      "supporting_evidence_ids": [
+        "csa_guard_0",
+        "csa_state_0",
+        "csa_validation_allocation_lifecycle_1",
+        "csa_validation_semantic_slice_0"
+      ],
+      "repair_when": [
+        "semantic_no_hits"
+      ],
+      "focus_functions": []
+    },
+    {
+      "clause_id": "patched_silence_clause",
+      "intent": "Stay silent on patched code when patch-added guards, barriers, or safe APIs prove the mechanism is blocked.",
+      "supporting_evidence_ids": [
+        "csa_guard_0",
+        "csa_state_0",
+        "csa_validation_semantic_slice_0"
+      ],
+      "repair_when": [],
+      "silencing_conditions": []
+    },
+    {
+      "clause_id": "semantic_transfer_clause",
+      "intent": "Generalize along semantic slices and call-chain evidence rather than patch-local syntax.",
+      "supporting_evidence_ids": [
+        "csa_validation_semantic_slice_0"
+      ],
+      "repair_when": [],
+      "analyzer_id": "csa"
+    },
+    {
+      "clause_id": "analyzer_interface_clause",
+      "intent": "Preserve valid analyzer-facing syntax and interfaces while keeping semantics unchanged.",
+      "supporting_evidence_ids": [],
+      "repair_when": [
+        "semantic_execution_error"
+      ],
+      "analyzer_id": "csa"
+    }
+  ],
+  "repair_directives": [],
+  "constraints": [
+    {
+      "title": "Generalize beyond patch site",
+      "description": "Do not bind the detector to fixed file paths, line numbers, or exact patch strings.",
+      "priority": "high"
+    },
+    {
+      "title": "Preserve vulnerability semantics",
+      "description": "Keep the detector focused on the vulnerability family implied by the patch and evidence.",
+      "priority": "high"
+    },
+    {
+      "title": "Respect analyzer-native form",
+      "description": "Output must be a valid checker_plugin for csa.",
+      "priority": "high"
+    },
+    {
+      "title": "Stay within proven mechanism scope",
+      "description": "Generalize only along evidence-supported semantic dimensions. Do not broaden the detector into unrelated globals, APIs, or bug families.",
+      "priority": "high"
+    },
+    {
+      "title": "Honor mechanism contract",
+      "description": "Preserve the mechanism family `generic_vulnerability_mechanism` by keeping trigger invariants the vulnerable mechanism is reachable on a feasible path; the path lacks the barrier introduced by the patch.",
+      "priority": "high"
+    },
+    {
+      "title": "Generalize only on contract axes",
+      "description": "Reuse semantics only along these transfer axes: only generalize along evidence-backed state, guard, flow, or API-role equivalence; equivalent guard or barrier predicates on sibling paths; equivalent local state transitions around the same sink or dereference.",
+      "priority": "high"
+    },
+    {
+      "title": "Use path-sensitive evidence",
+      "description": "Prefer guards, state transitions, and lifecycle facts over broad textual matching.",
+      "priority": "high"
+    },
+    {
+      "title": "No placeholder helper logic",
+      "description": "Helper predicates must inspect AST/program state and must not be unconditional return-true/return-false stubs.",
+      "priority": "high"
+    }
+  ],
+  "implementation_hints": [
+    "Mechanism family: generic_vulnerability_mechanism",
+    "Mechanism dimensions: vulnerability trigger, patch-introduced barrier, local state or flow relation",
+    "Trigger invariants: the vulnerable mechanism is reachable on a feasible path, the path lacks the barrier introduced by the patch",
+    "Silence invariants: patch-introduced guards, barriers, or safe APIs must suppress findings",
+    "Transfer axes: only generalize along evidence-backed state, guard, flow, or API-role equivalence, equivalent guard or barrier predicates on sibling paths, equivalent local state transitions around the same sink or dereference",
+    "Semantic slice (path_witness): Analyzer CFG for get_host_router_total_dp_tunnel_bw in drivers/gpu/drm/amd/display/dc/link/protocols/link_dp_dpia_bw.c: bindings: uint8_t lowest_dpia_index = get_lowest_dpia_index(dc->links[0]);; uint8_t i = 0; | branches: if hr_index_temp (ImplicitCastExpr, LValueToRValue, uint8_t) (ImplicitCastExpr, IntegralCast, int) == hr_index (ImplicitCastExpr, LValueToRValue, uint8_t) (ImplicitCastExpr, IntegralCast, int); if !dc (ImplicitCastExpr, LValueToRValue, const struct dc *)->links (ImplicitCastExpr, ArrayToPointerDecay, struct dc_link *const *)[i (ImplicitCastExpr, LValueToRValue, uint8_t)] (ImplicitCastExpr, LValueToRValue, struct dc_link *) || [B17.2]->links (ImplicitCastExpr, ArrayToPointerDecay, struct dc_link *const *)[i (ImplicitCastExpr, LValueToRValue, uint8_t)] (ImplicitCastExpr, LValueToRValue, struct dc_link *)->ep_type (ImplicitCastExpr, LValueToRValue, enum display_endpoint_type) (ImplicitCastExpr, IntegralCast, int) != DISPLAY_ENDPOINT_USB4_DPIA | calls: get_host_router_total_dp_tunnel_bw -> get_lowest_dpia_index",
+    "Slice guards: if hr_index_temp (ImplicitCastExpr, LValueToRValue, uint8_t) (ImplicitCastExpr, IntegralCast, int) == hr_index (ImplicitCastExpr, LValueToRValue, uint8_t) (ImplicitCastExpr, IntegralCast, int), if !dc (ImplicitCastExpr, LValueToRValue, const struct dc *)->links (ImplicitCastExpr, ArrayToPointerDecay, struct dc_link *const *)[i (ImplicitCastExpr, LValueToRValue, uint8_t)] (ImplicitCastExpr, LValueToRValue, struct dc_link *) || [B17.2]->links (ImplicitCastExpr, ArrayToPointerDecay, struct dc_link *const *)[i (ImplicitCastExpr, LValueToRValue, uint8_t)] (ImplicitCastExpr, LValueToRValue, struct dc_link *)->ep_type (ImplicitCastExpr, LValueToRValue, enum display_endpoint_type) (ImplicitCastExpr, IntegralCast, int) != DISPLAY_ENDPOINT_USB4_DPIA, !dc (ImplicitCastExpr, LValueToRValue, const struct dc *)->links (ImplicitCastExpr, ArrayToPointerDecay, struct dc_link *const *)[i (ImplicitCastExpr, LValueToRValue, uint8_t)] (ImplicitCastExpr, LValueToRValue, struct dc_link *) || ...",
+    "Slice transitions: cfg_binding(uint8_t lowest_dpia_index = get_lowest_dpia_index(dc->links[0]);), cfg_binding(uint8_t i = 0;), cfg_branch(if hr_index_temp (ImplicitCastExpr, LValueToRValue, uint8_t) (ImplicitCastExpr, IntegralCast, int) == hr_index (ImplicitCastExpr, LValueToRValue, uint8_t) (ImplicitCastExpr, IntegralCast, int))"
+  ],
+  "validation_expectations": [
+    "Vulnerable version should trigger a out_of_bound finding.",
+    "Patched version should stay silent for the same mechanism.",
+    "Semantic validation that executes but returns zero hits is not acceptable; recover coverage with evidence-backed semantics.",
+    "Repair phase may fix syntax/interfaces only; it must not simplify away the core detection logic.",
+    "Generalization must stay inside the mechanism contract transfer axes instead of widening to adjacent bug families.",
+    "Trigger invariant: the vulnerable mechanism is reachable on a feasible path.",
+    "Trigger invariant: the path lacks the barrier introduced by the patch."
+  ]
+}

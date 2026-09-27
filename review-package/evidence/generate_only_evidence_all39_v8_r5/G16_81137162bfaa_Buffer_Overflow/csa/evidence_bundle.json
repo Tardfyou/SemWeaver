@@ -1,0 +1,678 @@
+{
+  "records": [
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/bluetooth/hci_core.c",
+        "function": "hci_get_dev_info"
+      },
+      "location": {
+        "line": 911,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "if copy_to_user (ImplicitCastExpr, FunctionToPointerDecay, unsigned long (*)(void *, const void *, unsigned long))(arg (ImplicitCastExpr, LValueToRValue, void *), &di (ImplicitCastExpr, BitCast, const void *), sizeof (di))",
+        "summary": "Analyzer CFG for hci_get_dev_info in net/bluetooth/hci_core.c: bindings: hdev = hci_dev_get (ImplicitCastExpr, FunctionToPointerDecay, struct hci_dev *(*)(int))(di.dev_id (ImplicitCastExpr, LValueToRValue, __u16) (ImplicitCastExpr, IntegralCast, int)); di.sco_mtu = 0 (ImplicitCastExpr, IntegralCast, __u16) | branches: if copy_to_user (ImplicitCastExpr, FunctionToPointerDecay, unsigned long (*)(void *, const void *, unsigned long))(arg (ImplicitCastExpr, LValueToRValue, void *), &di (ImplicitCastExpr, BitCast, const void *), sizeof (di)); if copy_from_user (ImplicitCastExpr, FunctionToPointerDecay, unsigned long (*)(void *, const void *, unsigned long))(&di (ImplicitCastExpr, BitCast, void *), arg (ImplicitCastExpr, LValueToRValue, void *) (ImplicitCastExpr, NoOp, const void *), sizeof (di)) | calls: hci_get_dev_info -> copy_from_user; hci_get_dev_info -> hci_dev_get",
+        "state_before": [
+          "input(arg)",
+          "buffer(hdev->features)",
+          "buffer(hdev->stat)",
+          "sinks(hci_dev_get, strcpy)"
+        ],
+        "state_after": [
+          "cfg_binding(hdev = hci_dev_get (ImplicitCastExpr, FunctionToPointerDecay, struct hci_dev *(*)(int))(di.dev_id (ImplicitCastExpr, LValueToRValue, __u16) (ImplicitCastExpr, IntegralCast, int)))",
+          "cfg_binding(di.sco_mtu = 0 (ImplicitCastExpr, IntegralCast, __u16))",
+          "cfg_branch(if copy_to_user (ImplicitCastExpr, FunctionToPointerDecay, unsigned long (*)(void *, const void *, unsigned long))(arg (ImplicitCastExpr, LValueToRValue, void *), &di (ImplicitCastExpr, BitCast, const void *), sizeof (di)))",
+          "cfg_branch(if copy_from_user (ImplicitCastExpr, FunctionToPointerDecay, unsigned long (*)(void *, const void *, unsigned long))(&di (ImplicitCastExpr, BitCast, void *), arg (ImplicitCastExpr, LValueToRValue, void *) (ImplicitCastExpr, NoOp, const void *), sizeof (di)))"
+        ],
+        "functions": [
+          "hci_get_dev_info"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "arg",
+          "hdev->features",
+          "hdev->stat",
+          "hdev->flags",
+          "hdev->name",
+          "hdev->bdaddr",
+          "hdev->bus"
+        ],
+        "buffer_fields": [
+          "hdev->features",
+          "hdev->stat",
+          "hdev->flags",
+          "hdev->name",
+          "hdev->bdaddr",
+          "hdev->bus"
+        ],
+        "call_targets": [
+          "hci_dev_get",
+          "strcpy",
+          "memcpy",
+          "hci_dev_put",
+          "copy_from_user",
+          "__builtin_constant_p",
+          "const_test_bit",
+          "_test_bit"
+        ],
+        "call_edges": [
+          "hci_get_dev_info -> copy_from_user",
+          "hci_get_dev_info -> hci_dev_get",
+          "hci_get_dev_info -> __builtin_constant_p",
+          "hci_get_dev_info -> const_test_bit",
+          "hci_get_dev_info -> _test_bit",
+          "hci_get_dev_info -> strcpy"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "if [B3.35]",
+          "do ... while [B5.1]",
+          "do ... while [B7.1]",
+          "do ... while [B9.1]",
+          "if [B16.14]",
+          "if [B17.11]"
+        ],
+        "resolved_branch_conditions": [
+          "if copy_to_user (ImplicitCastExpr, FunctionToPointerDecay, unsigned long (*)(void *, const void *, unsigned long))(arg (ImplicitCastExpr, LValueToRValue, void *), &di (ImplicitCastExpr, BitCast, const void *), sizeof (di))",
+          "if copy_from_user (ImplicitCastExpr, FunctionToPointerDecay, unsigned long (*)(void *, const void *, unsigned long))(&di (ImplicitCastExpr, BitCast, void *), arg (ImplicitCastExpr, LValueToRValue, void *) (ImplicitCastExpr, NoOp, const void *), sizeof (di))",
+          "do ... while 0",
+          "if __builtin_expect (ImplicitCastExpr, BuiltinFnToFnPtr, long (*)(long, long))(!!(__ret_warn_on) (ImplicitCastExpr, LValueToRValue, int) (ImplicitCastExpr, IntegralCast, long), 0 (ImplicitCastExpr, IntegralCast, long))",
+          "if ({ ... ; __builtin_expect (ImplicitCastExpr, BuiltinFnToFnPtr, long (*)(long, long))(!!(__ret_once) (ImplicitCastExpr, LValueToRValue, bool) (ImplicitCastExpr, IntegralCast, long), 0 (ImplicitCastExpr, IntegralCast, long)) })",
+          "if __builtin_expect (ImplicitCastExpr, BuiltinFnToFnPtr, long (*)(long, long))(!!(__ret_cond (ImplicitCastExpr, LValueToRValue, bool) (ImplicitCastExpr, IntegralCast, int) && !__already_done (ImplicitCastExpr, LValueToRValue, bool)) (ImplicitCastExpr, IntegralCast, long), 0 (ImplicitCastExpr, IntegralCast, long))"
+        ],
+        "cfg_value_bindings": [
+          "hdev = hci_dev_get (ImplicitCastExpr, FunctionToPointerDecay, struct hci_dev *(*)(int))(di.dev_id (ImplicitCastExpr, LValueToRValue, __u16) (ImplicitCastExpr, IntegralCast, int))",
+          "di.sco_mtu = 0 (ImplicitCastExpr, IntegralCast, __u16)",
+          "di.sco_pkts = 0 (ImplicitCastExpr, IntegralCast, __u16)",
+          "const size_t __fortify_size = (size_t)(sizeof (di.stat));",
+          "const size_t __fortify_size = (size_t)(sizeof (di.features));",
+          "const size_t __p_size = (__builtin_dynamic_object_size(&di.stat, 0));"
+        ],
+        "state_statements": [
+          "return [B1.7];",
+          "[B2.3] = [B2.2]",
+          "__builtin_memcpy",
+          "[B3.19]->features",
+          "sizeof (di)",
+          "sizeof(struct bug_entry)"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,net/bluetooth/.hci_core.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/uapi -I./arch/x86/...",
+        "source_file": "net/bluetooth/hci_core.c",
+        "source_excerpt": "888: int hci_get_dev_info(void __user *arg)\n889: {\n890: \tstruct hci_dev *hdev;\n891: \tstruct hci_dev_info di;\n892: \tunsigned long flags;\n893: \tint err = 0;\n894: \n895: \tif (copy_from_user(&di, arg, sizeof(di)))\n896: \t\treturn -EFAULT;\n897: \n898: \thdev = hci_dev_get(di.dev_id);\n899: \tif (!hdev)\n900: \t\treturn -ENODEV;\n901: \n902: \t/* When the auto-off is configured it means the transport\n903: \t * is running, but in that case still indicate that the\n904: \t * device is actually down.\n905: \t */\n906: \tif (hci_dev_test_flag(hdev, HCI_AUTO_OFF))\n907: \t\tflags = hdev->flags & ~BIT(HCI_UP);\n908: \telse\n909: \t\tflags = hdev->flags;\n910: \n911: \tstrcpy(di.name, hdev->name);\n912: \tdi.bdaddr   = hdev->bdaddr;\n913: \tdi.type     = (hdev->bus & 0x0f) | ((hdev->dev_type & 0x03) << 4);\n914: \tdi.flags    = flags;\n915: \tdi.pkt_type = hdev->pkt_type;\n916: \tif (lmp_bredr_capable(hdev)) {\n917: \t\tdi.acl_mtu  = hdev->acl_mtu;\n918: \t\tdi.acl_pkts = hdev->acl_pkts;\n919: \t\tdi.sco_mtu  = hdev->sco_mtu;\n920: \t\tdi.sco_pkts = hdev->sco_pkts;\n921: \t} else {\n922: \t\tdi.acl_mtu  = hdev->le_mtu;\n923: \t\tdi.acl_pkts = hdev->le_pkts;\n924: \t\tdi.sco_mtu  = 0;\n925: \t\tdi.sco_pkts = 0;\n926: \t}\n927: \tdi.link_policy = hdev->link_policy;\n928: \tdi.link_mode   = hdev->link_mode;\n929: \n930: \tmemcpy(&di.stat, &hdev->stat, sizeof(di.stat));\n931: \tmemcpy(&di.features, &hdev->features, sizeof(di.features));\n932: \n933: \tif (copy_to_user(arg, &di, sizeof(di)))\n934: \t\terr = -EFAULT;\n935: \n936: \thci_dev_put(hdev);\n937: \n938: \treturn err;\n939: }",
+        "summary_line": 911,
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/generate_only_evidence_all39_v8_r5/G16_81137162bfaa_Buffer_Overflow/csa/patchweaver_runtime/csa_raw/net-bluetooth-hci_core.c-hci_get_dev_info.txt",
+        "raw_output_sha256": "567bb5bf6cd607c721a40f73f0d6ef6367534ddf712c90eda594bd6fa7bbe01f",
+        "command_sha256": "23a8c0941cee6830dba772d987cbfa3136b647faab8f6922c5c17ee05b6b2f3c"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:debug-cfg",
+        "confidence": 0.92,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "net/bluetooth/hci_core.c",
+          "hunk_index": 0,
+          "source_line": 911
+        },
+        "summary": "Analyzer CFG for hci_get_dev_info in net/bluetooth/hci_core.c: bindings: hdev = hci_dev_get (ImplicitCastExpr, FunctionToPointerDecay, struct hci_dev *(*)(int))(di.dev_id (ImplicitCastExpr, LValueToRValue, __u16) (ImplicitCastExpr, IntegralCast, int)); di.sco_mtu = 0 (ImplicitCastExpr, IntegralCast, __u16) | branches: if copy_to_user (ImplicitCastExpr, FunctionToPointerDecay, unsigned long (*)(void *, const void *, unsigned long))(arg (ImplicitCastExpr, LValueToRValue, void *), &di (ImplicitCastExpr, BitCast, const void *), sizeof (di)); if copy_from_user (ImplicitCastExpr, FunctionToPointerDecay, unsigned long (*)(void *, const void *, unsigned long))(&di (ImplicitCastExpr, BitCast, void *), arg (ImplicitCastExpr, LValueToRValue, void *) (ImplicitCastExpr, NoOp, const void *), sizeof (di)) | calls: hci_get_dev_info -> copy_from_user; hci_get_dev_info -> hci_dev_get",
+        "statements": [
+          "888: int hci_get_dev_info(void __user *arg)",
+          "889: {",
+          "890: \tstruct hci_dev *hdev;",
+          "891: \tstruct hci_dev_info di;",
+          "892: \tunsigned long flags;",
+          "893: \tint err = 0;"
+        ],
+        "guards": [
+          "if copy_to_user (ImplicitCastExpr, FunctionToPointerDecay, unsigned long (*)(void *, const void *, unsigned long))(arg (ImplicitCastExpr, LValueToRValue, void *), &di (ImplicitCastExpr, BitCast, const void *), sizeof (di))",
+          "if copy_from_user (ImplicitCastExpr, FunctionToPointerDecay, unsigned long (*)(void *, const void *, unsigned long))(&di (ImplicitCastExpr, BitCast, void *), arg (ImplicitCastExpr, LValueToRValue, void *) (ImplicitCastExpr, NoOp, const void *), sizeof (di))",
+          "do ... while 0",
+          "if __builtin_expect (ImplicitCastExpr, BuiltinFnToFnPtr, long (*)(long, long))(!!(__ret_warn_on) (ImplicitCastExpr, LValueToRValue, int) (ImplicitCastExpr, IntegralCast, long), 0 (ImplicitCastExpr, IntegralCast, long))"
+        ],
+        "call_boundary": [
+          "hci_dev_get",
+          "strcpy",
+          "memcpy",
+          "hci_dev_put",
+          "copy_from_user",
+          "__builtin_constant_p"
+        ],
+        "call_edges": [
+          "hci_get_dev_info -> copy_from_user",
+          "hci_get_dev_info -> hci_dev_get",
+          "hci_get_dev_info -> __builtin_constant_p",
+          "hci_get_dev_info -> const_test_bit",
+          "hci_get_dev_info -> _test_bit",
+          "hci_get_dev_info -> strcpy",
+          "hci_get_dev_info -> __builtin_dynamic_object_size",
+          "hci_get_dev_info -> fortify_memcpy_chk"
+        ],
+        "state_transitions": [
+          "cfg_binding(hdev = hci_dev_get (ImplicitCastExpr, FunctionToPointerDecay, struct hci_dev *(*)(int))(di.dev_id (ImplicitCastExpr, LValueToRValue, __u16) (ImplicitCastExpr, IntegralCast, int)))",
+          "cfg_binding(di.sco_mtu = 0 (ImplicitCastExpr, IntegralCast, __u16))",
+          "cfg_branch(if copy_to_user (ImplicitCastExpr, FunctionToPointerDecay, unsigned long (*)(void *, const void *, unsigned long))(arg (ImplicitCastExpr, LValueToRValue, void *), &di (ImplicitCastExpr, BitCast, const void *), sizeof (di)))",
+          "cfg_branch(if copy_from_user (ImplicitCastExpr, FunctionToPointerDecay, unsigned long (*)(void *, const void *, unsigned long))(&di (ImplicitCastExpr, BitCast, void *), arg (ImplicitCastExpr, LValueToRValue, void *) (ImplicitCastExpr, NoOp, const void *), sizeof (di)))",
+          "return [B1.7];",
+          "[B2.3] = [B2.2]"
+        ],
+        "api_terms": [
+          "copy_from_user",
+          "hci_dev_get",
+          "__builtin_constant_p",
+          "const_test_bit",
+          "_test_bit",
+          "strcpy"
+        ],
+        "related_symbols": [
+          "arg",
+          "hdev->features",
+          "hdev->stat",
+          "hdev->flags",
+          "hdev->name",
+          "hdev->bdaddr"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/bluetooth/hci_core.c",
+        "function": "hci_get_dev_info"
+      },
+      "location": {
+        "line": 911,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "hci_get_dev_info in net/bluetooth/hci_core.c: cfg_calls=hci_get_dev_info -> copy_from_user; hci_get_dev_info -> hci_dev_get | memory_ops=strcpy, memcpy",
+        "state_before": [
+          "input(arg)",
+          "buffer(hdev->features)",
+          "buffer(hdev->stat)",
+          "sinks(hci_dev_get, strcpy)"
+        ],
+        "state_after": [
+          "transition(return [B1.7];)",
+          "transition([B2.3] = [B2.2])",
+          "transition(__builtin_memcpy)"
+        ],
+        "functions": [
+          "hci_get_dev_info"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "arg",
+          "hdev->features",
+          "hdev->stat",
+          "hdev->flags",
+          "hdev->name",
+          "hdev->bdaddr",
+          "hdev->bus"
+        ],
+        "buffer_fields": [
+          "hdev->features",
+          "hdev->stat",
+          "hdev->flags",
+          "hdev->name",
+          "hdev->bdaddr",
+          "hdev->bus"
+        ],
+        "call_targets": [
+          "hci_dev_get",
+          "strcpy",
+          "memcpy",
+          "hci_dev_put",
+          "copy_from_user",
+          "__builtin_constant_p",
+          "const_test_bit",
+          "_test_bit"
+        ],
+        "call_edges": [
+          "hci_get_dev_info -> copy_from_user",
+          "hci_get_dev_info -> hci_dev_get",
+          "hci_get_dev_info -> __builtin_constant_p",
+          "hci_get_dev_info -> const_test_bit",
+          "hci_get_dev_info -> _test_bit",
+          "hci_get_dev_info -> strcpy"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "if [B3.35]",
+          "do ... while [B5.1]",
+          "do ... while [B7.1]",
+          "do ... while [B9.1]"
+        ],
+        "state_statements": [
+          "return [B1.7];",
+          "[B2.3] = [B2.2]",
+          "__builtin_memcpy",
+          "[B3.19]->features",
+          "sizeof (di)",
+          "sizeof(struct bug_entry)",
+          "__auto_type __flags = (1 << 0) | ((1 << 3) | ((9) << 8));",
+          "\"memcpy: detected field-spanning write (size %zu) of single %s (size %zu)\\n\""
+        ],
+        "return_statements": [
+          "return [B1.7];",
+          "return [B56.2];",
+          "return [B58.2];"
+        ],
+        "source_file": "net/bluetooth/hci_core.c",
+        "source_excerpt": "888: int hci_get_dev_info(void __user *arg)\n889: {\n890: \tstruct hci_dev *hdev;\n891: \tstruct hci_dev_info di;\n892: \tunsigned long flags;\n893: \tint err = 0;\n894: \n895: \tif (copy_from_user(&di, arg, sizeof(di)))\n896: \t\treturn -EFAULT;\n897: \n898: \thdev = hci_dev_get(di.dev_id);\n899: \tif (!hdev)\n900: \t\treturn -ENODEV;\n901: \n902: \t/* When the auto-off is configured it means the transport\n903: \t * is running, but in that case still indicate that the\n904: \t * device is actually down.\n905: \t */\n906: \tif (hci_dev_test_flag(hdev, HCI_AUTO_OFF))\n907: \t\tflags = hdev->flags & ~BIT(HCI_UP);\n908: \telse\n909: \t\tflags = hdev->flags;\n910: \n911: \tstrcpy(di.name, hdev->name);\n912: \tdi.bdaddr   = hdev->bdaddr;\n913: \tdi.type     = (hdev->bus & 0x0f) | ((hdev->dev_type & 0x03) << 4);\n914: \tdi.flags    = flags;\n915: \tdi.pkt_type = hdev->pkt_type;\n916: \tif (lmp_bredr_capable(hdev)) {\n917: \t\tdi.acl_mtu  = hdev->acl_mtu;\n918: \t\tdi.acl_pkts = hdev->acl_pkts;\n919: \t\tdi.sco_mtu  = hdev->sco_mtu;\n920: \t\tdi.sco_pkts = hdev->sco_pkts;\n921: \t} else {\n922: \t\tdi.acl_mtu  = hdev->le_mtu;\n923: \t\tdi.acl_pkts = hdev->le_pkts;\n924: \t\tdi.sco_mtu  = 0;\n925: \t\tdi.sco_pkts = 0;\n926: \t}\n927: \tdi.link_policy = hdev->link_policy;\n928: \tdi.link_mode   = hdev->link_mode;\n929: \n930: \tmemcpy(&di.stat, &hdev->stat, sizeof(di.stat));\n931: \tmemcpy(&di.features, &hdev->features, sizeof(di.features));\n932: \n933: \tif (copy_to_user(arg, &di, sizeof(di)))\n934: \t\terr = -EFAULT;\n935: \n936: \thci_dev_put(hdev);\n937: \n938: \treturn err;\n939: }",
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/generate_only_evidence_all39_v8_r5/G16_81137162bfaa_Buffer_Overflow/csa/patchweaver_runtime/csa_raw/net-bluetooth-hci_core.c-hci_get_dev_info.txt",
+        "raw_output_sha256": "567bb5bf6cd607c721a40f73f0d6ef6367534ddf712c90eda594bd6fa7bbe01f",
+        "command_sha256": "23a8c0941cee6830dba772d987cbfa3136b647faab8f6922c5c17ee05b6b2f3c"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:symbolic-state",
+        "confidence": 0.88,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "net/bluetooth/hci_core.c",
+          "hunk_index": 0,
+          "source_line": 911
+        },
+        "summary": "hci_get_dev_info in net/bluetooth/hci_core.c: cfg_calls=hci_get_dev_info -> copy_from_user; hci_get_dev_info -> hci_dev_get | memory_ops=strcpy, memcpy",
+        "statements": [
+          "888: int hci_get_dev_info(void __user *arg)",
+          "889: {",
+          "890: \tstruct hci_dev *hdev;",
+          "891: \tstruct hci_dev_info di;",
+          "892: \tunsigned long flags;",
+          "893: \tint err = 0;"
+        ],
+        "guards": [
+          "if [B3.35]",
+          "do ... while [B5.1]",
+          "do ... while [B7.1]"
+        ],
+        "call_boundary": [
+          "hci_dev_get",
+          "strcpy",
+          "memcpy",
+          "hci_dev_put",
+          "copy_from_user",
+          "__builtin_constant_p"
+        ],
+        "call_edges": [
+          "hci_get_dev_info -> copy_from_user",
+          "hci_get_dev_info -> hci_dev_get",
+          "hci_get_dev_info -> __builtin_constant_p",
+          "hci_get_dev_info -> const_test_bit",
+          "hci_get_dev_info -> _test_bit",
+          "hci_get_dev_info -> strcpy",
+          "hci_get_dev_info -> __builtin_dynamic_object_size",
+          "hci_get_dev_info -> fortify_memcpy_chk"
+        ],
+        "state_transitions": [
+          "transition(return [B1.7];)",
+          "transition([B2.3] = [B2.2])",
+          "transition(__builtin_memcpy)",
+          "return [B1.7];",
+          "[B2.3] = [B2.2]",
+          "__builtin_memcpy"
+        ],
+        "api_terms": [
+          "strcpy",
+          "memcpy",
+          "copy_from_user",
+          "hci_dev_get",
+          "__builtin_constant_p",
+          "const_test_bit"
+        ],
+        "related_symbols": [
+          "arg",
+          "hdev->features",
+          "hdev->stat",
+          "hdev->flags",
+          "hdev->name",
+          "hdev->bdaddr"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_validation_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/bluetooth/hci_core.c",
+        "function": "hci_get_dev_info"
+      },
+      "location": {
+        "line": 911,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at net/bluetooth/hci_core.c:911",
+        "diagnostic_message": "",
+        "diagnostic_checker": "",
+        "state_before": [
+          "input(arg)",
+          "buffer(hdev->features)",
+          "buffer(hdev->stat)",
+          "sinks(hci_dev_get, strcpy)"
+        ],
+        "state_after": [
+          "diagnostic(csa)"
+        ],
+        "functions": [
+          "hci_get_dev_info"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "arg"
+        ],
+        "buffer_fields": [
+          "hdev->features",
+          "hdev->stat",
+          "hdev->flags",
+          "hdev->name",
+          "hdev->bdaddr",
+          "hdev->bus"
+        ],
+        "call_targets": [
+          "hci_dev_get",
+          "strcpy",
+          "memcpy",
+          "hci_dev_put",
+          "copy_from_user",
+          "__builtin_constant_p"
+        ],
+        "call_edges": [
+          "hci_get_dev_info -> copy_from_user",
+          "hci_get_dev_info -> hci_dev_get",
+          "hci_get_dev_info -> __builtin_constant_p",
+          "hci_get_dev_info -> const_test_bit",
+          "hci_get_dev_info -> _test_bit",
+          "hci_get_dev_info -> strcpy"
+        ],
+        "state_statements": [
+          "return [B1.7];",
+          "[B2.3] = [B2.2]",
+          "__builtin_memcpy",
+          "[B3.19]->features",
+          "sizeof (di)",
+          "sizeof(struct bug_entry)"
+        ],
+        "source_file": "net/bluetooth/hci_core.c",
+        "source_excerpt": "888: int hci_get_dev_info(void __user *arg)\n889: {\n890: \tstruct hci_dev *hdev;\n891: \tstruct hci_dev_info di;\n892: \tunsigned long flags;\n893: \tint err = 0;\n894: \n895: \tif (copy_from_user(&di, arg, sizeof(di)))\n896: \t\treturn -EFAULT;\n897: \n898: \thdev = hci_dev_get(di.dev_id);\n899: \tif (!hdev)\n900: \t\treturn -ENODEV;\n901: \n902: \t/* When the auto-off is configured it means the transport\n903: \t * is running, but in that case still indicate that the\n904: \t * device is actually down.\n905: \t */\n906: \tif (hci_dev_test_flag(hdev, HCI_AUTO_OFF))\n907: \t\tflags = hdev->flags & ~BIT(HCI_UP);\n908: \telse\n909: \t\tflags = hdev->flags;\n910: \n911: \tstrcpy(di.name, hdev->name);\n912: \tdi.bdaddr   = hdev->bdaddr;\n913: \tdi.type     = (hdev->bus & 0x0f) | ((hdev->dev_type & 0x03) << 4);\n914: \tdi.flags    = flags;\n915: \tdi.pkt_type = hdev->pkt_type;\n916: \tif (lmp_bredr_capable(hdev)) {\n917: \t\tdi.acl_mtu  = hdev->acl_mtu;\n918: \t\tdi.acl_pkts = hdev->acl_pkts;\n919: \t\tdi.sco_mtu  = hdev->sco_mtu;\n920: \t\tdi.sco_pkts = hdev->sco_pkts;\n921: \t} else {\n922: \t\tdi.acl_mtu  = hdev->le_mtu;\n923: \t\tdi.acl_pkts = hdev->le_pkts;\n924: \t\tdi.sco_mtu  = 0;\n925: \t\tdi.sco_pkts = 0;\n926: \t}\n927: \tdi.link_policy = hdev->link_policy;\n928: \tdi.link_mode   = hdev->link_mode;\n929: \n930: \tmemcpy(&di.stat, &hdev->stat, sizeof(di.stat));\n931: \tmemcpy(&di.features, &hdev->features, sizeof(di.features));\n932: \n933: \tif (copy_to_user(arg, &di, sizeof(di)))\n934: \t\terr = -EFAULT;\n935: \n936: \thci_dev_put(hdev);\n937: \n938: \treturn err;\n939: }",
+        "coverage_status": "partial",
+        "contract_type": "",
+        "guard_exprs": [
+          "copy_from_user(&di, arg, sizeof(di))",
+          "!hdev",
+          "hci_dev_test_flag(hdev, HCI_AUTO_OFF)",
+          "lmp_bredr_capable(hdev)"
+        ],
+        "sink_calls": [
+          "hci_dev_get",
+          "strcpy",
+          "memcpy",
+          "hci_dev_put"
+        ]
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.72,
+        "origin": "analyzer_output"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "net/bluetooth/hci_core.c",
+          "hunk_index": 0,
+          "source_line": 911
+        },
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at net/bluetooth/hci_core.c:911",
+        "statements": [
+          "888: int hci_get_dev_info(void __user *arg)",
+          "889: {",
+          "890: \tstruct hci_dev *hdev;",
+          "891: \tstruct hci_dev_info di;",
+          "892: \tunsigned long flags;",
+          "893: \tint err = 0;"
+        ],
+        "guards": [
+          "copy_from_user(&di, arg, sizeof(di))",
+          "!hdev",
+          "hci_dev_test_flag(hdev, HCI_AUTO_OFF)",
+          "lmp_bredr_capable(hdev)"
+        ],
+        "call_boundary": [
+          "hci_dev_get",
+          "strcpy",
+          "memcpy",
+          "hci_dev_put",
+          "copy_from_user",
+          "__builtin_constant_p"
+        ],
+        "call_edges": [
+          "hci_get_dev_info -> copy_from_user",
+          "hci_get_dev_info -> hci_dev_get",
+          "hci_get_dev_info -> __builtin_constant_p",
+          "hci_get_dev_info -> const_test_bit",
+          "hci_get_dev_info -> _test_bit",
+          "hci_get_dev_info -> strcpy"
+        ],
+        "state_transitions": [
+          "diagnostic(csa)"
+        ],
+        "api_terms": [
+          "strcpy",
+          "memcpy",
+          "return [B1.7];",
+          "[B2.3] = [B2.2]",
+          "__builtin_memcpy",
+          "[B3.19]->features"
+        ],
+        "related_symbols": [
+          "arg"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      }
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_1",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/bluetooth/hci_core.c",
+        "function": "hci_get_dev_info"
+      },
+      "location": {
+        "line": 911,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "hci_get_dev_info in net/bluetooth/hci_core.c provides CSA-backed pointer/resource lifecycle context near line 911",
+        "diagnostic_message": "",
+        "diagnostic_checker": "",
+        "state_before": [
+          "input(arg)",
+          "buffer(hdev->features)",
+          "buffer(hdev->stat)",
+          "sinks(hci_dev_get, strcpy)"
+        ],
+        "state_after": [
+          "operation(strcpy)",
+          "operation(memcpy)",
+          "operation(return [B1.7];)",
+          "operation([B2.3] = [B2.2])"
+        ],
+        "functions": [
+          "hci_get_dev_info"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "arg"
+        ],
+        "buffer_fields": [
+          "hdev->features",
+          "hdev->stat",
+          "hdev->flags",
+          "hdev->name",
+          "hdev->bdaddr",
+          "hdev->bus"
+        ],
+        "call_targets": [
+          "hci_dev_get",
+          "strcpy",
+          "memcpy",
+          "hci_dev_put",
+          "copy_from_user",
+          "__builtin_constant_p"
+        ],
+        "call_edges": [
+          "hci_get_dev_info -> copy_from_user",
+          "hci_get_dev_info -> hci_dev_get",
+          "hci_get_dev_info -> __builtin_constant_p",
+          "hci_get_dev_info -> const_test_bit",
+          "hci_get_dev_info -> _test_bit",
+          "hci_get_dev_info -> strcpy"
+        ],
+        "state_statements": [
+          "return [B1.7];",
+          "[B2.3] = [B2.2]",
+          "__builtin_memcpy",
+          "[B3.19]->features",
+          "sizeof (di)",
+          "sizeof(struct bug_entry)"
+        ],
+        "source_file": "net/bluetooth/hci_core.c",
+        "source_excerpt": "888: int hci_get_dev_info(void __user *arg)\n889: {\n890: \tstruct hci_dev *hdev;\n891: \tstruct hci_dev_info di;\n892: \tunsigned long flags;\n893: \tint err = 0;\n894: \n895: \tif (copy_from_user(&di, arg, sizeof(di)))\n896: \t\treturn -EFAULT;\n897: \n898: \thdev = hci_dev_get(di.dev_id);\n899: \tif (!hdev)\n900: \t\treturn -ENODEV;\n901: \n902: \t/* When the auto-off is configured it means the transport\n903: \t * is running, but in that case still indicate that the\n904: \t * device is actually down.\n905: \t */\n906: \tif (hci_dev_test_flag(hdev, HCI_AUTO_OFF))\n907: \t\tflags = hdev->flags & ~BIT(HCI_UP);\n908: \telse\n909: \t\tflags = hdev->flags;\n910: \n911: \tstrcpy(di.name, hdev->name);\n912: \tdi.bdaddr   = hdev->bdaddr;\n913: \tdi.type     = (hdev->bus & 0x0f) | ((hdev->dev_type & 0x03) << 4);\n914: \tdi.flags    = flags;\n915: \tdi.pkt_type = hdev->pkt_type;\n916: \tif (lmp_bredr_capable(hdev)) {\n917: \t\tdi.acl_mtu  = hdev->acl_mtu;\n918: \t\tdi.acl_pkts = hdev->acl_pkts;\n919: \t\tdi.sco_mtu  = hdev->sco_mtu;\n920: \t\tdi.sco_pkts = hdev->sco_pkts;\n921: \t} else {\n922: \t\tdi.acl_mtu  = hdev->le_mtu;\n923: \t\tdi.acl_pkts = hdev->le_pkts;\n924: \t\tdi.sco_mtu  = 0;\n925: \t\tdi.sco_pkts = 0;\n926: \t}\n927: \tdi.link_policy = hdev->link_policy;\n928: \tdi.link_mode   = hdev->link_mode;\n929: \n930: \tmemcpy(&di.stat, &hdev->stat, sizeof(di.stat));\n931: \tmemcpy(&di.features, &hdev->features, sizeof(di.features));\n932: \n933: \tif (copy_to_user(arg, &di, sizeof(di)))\n934: \t\terr = -EFAULT;\n935: \n936: \thci_dev_put(hdev);\n937: \n938: \treturn err;\n939: }",
+        "coverage_status": "partial",
+        "operations": [
+          "strcpy",
+          "memcpy",
+          "return [B1.7];",
+          "[B2.3] = [B2.2]",
+          "__builtin_memcpy",
+          "[B3.19]->features"
+        ],
+        "acquisition_ops": [],
+        "release_ops": []
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.72,
+        "origin": "analyzer_output"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "net/bluetooth/hci_core.c",
+          "hunk_index": 0,
+          "source_line": 911
+        },
+        "summary": "hci_get_dev_info in net/bluetooth/hci_core.c provides CSA-backed pointer/resource lifecycle context near line 911",
+        "statements": [
+          "888: int hci_get_dev_info(void __user *arg)",
+          "889: {",
+          "890: \tstruct hci_dev *hdev;",
+          "891: \tstruct hci_dev_info di;",
+          "892: \tunsigned long flags;",
+          "893: \tint err = 0;"
+        ],
+        "guards": [
+          "copy_from_user(&di, arg, sizeof(di))",
+          "!hdev",
+          "hci_dev_test_flag(hdev, HCI_AUTO_OFF)",
+          "lmp_bredr_capable(hdev)"
+        ],
+        "call_boundary": [
+          "hci_dev_get",
+          "strcpy",
+          "memcpy",
+          "hci_dev_put",
+          "copy_from_user",
+          "__builtin_constant_p"
+        ],
+        "call_edges": [
+          "hci_get_dev_info -> copy_from_user",
+          "hci_get_dev_info -> hci_dev_get",
+          "hci_get_dev_info -> __builtin_constant_p",
+          "hci_get_dev_info -> const_test_bit",
+          "hci_get_dev_info -> _test_bit",
+          "hci_get_dev_info -> strcpy"
+        ],
+        "state_transitions": [
+          "operation(strcpy)",
+          "operation(memcpy)",
+          "operation(return [B1.7];)",
+          "operation([B2.3] = [B2.2])"
+        ],
+        "api_terms": [
+          "strcpy",
+          "memcpy",
+          "return [B1.7];",
+          "[B2.3] = [B2.2]",
+          "__builtin_memcpy",
+          "[B3.19]->features"
+        ],
+        "related_symbols": [
+          "arg"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "collected_analyzers": [
+    "csa"
+  ],
+  "provenance_summary": {
+    "total_records": 4,
+    "origin_counts": {
+      "analyzer_internal": 2,
+      "analyzer_output": 2
+    },
+    "analyzer_internal_records": 2,
+    "analyzer_internal_fraction": 0.5,
+    "analyzer_backed_records": 4,
+    "analyzer_backed_fraction": 1.0,
+    "source_derived_records": 0,
+    "source_derived_fraction": 0.0
+  }
+}

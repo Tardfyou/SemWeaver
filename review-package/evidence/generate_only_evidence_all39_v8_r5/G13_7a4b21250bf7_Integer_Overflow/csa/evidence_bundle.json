@@ -1,0 +1,751 @@
+{
+  "records": [
+    {
+      "evidence_id": "csa_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "kernel/bpf/stackmap.c",
+        "function": "stack_map_alloc"
+      },
+      "location": {
+        "line": 91,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "stack_map_alloc adds patch barrier `attr->max_entries > 1UL << 31` around stack_map_alloc, roundup_pow_of_two.",
+        "contract_type": "patch_barrier",
+        "same_call_binding": "tie the guard to the current downstream sink or protected state transition instead of any unrelated if-statement",
+        "trigger_contract": "report when a risky write proceeds without the patch-style barrier",
+        "silence_contract": "stay silent when the nearby guard proves the current write is blocked or bounded",
+        "guard_exprs": [
+          "attr->max_entries > 1UL << 31"
+        ],
+        "removed_calls": [
+          "roundup_pow_of_two"
+        ],
+        "added_calls": [
+          "roundup_pow_of_two"
+        ],
+        "tracked_symbols": [
+          "attr",
+          "max_entries",
+          "hash",
+          "table",
+          "size",
+          "must",
+          "be",
+          "power"
+        ],
+        "widened_variables": [],
+        "state_resets": [],
+        "old_numeric_type": "",
+        "new_numeric_type": "",
+        "numeric_domain_change": "",
+        "arithmetic_operations": [],
+        "sink_calls": [
+          "stack_map_alloc",
+          "roundup_pow_of_two",
+          "bpf_map_area_alloc",
+          "bpf_map_init_from_attr"
+        ],
+        "buffer_fields": [
+          "attr->max_entries"
+        ],
+        "source_file": "kernel/bpf/stackmap.c",
+        "function": "stack_map_alloc",
+        "source_excerpt": "70: static struct bpf_map *stack_map_alloc(union bpf_attr *attr)\n71: {\n72: \tu32 value_size = attr->value_size;\n73: \tstruct bpf_stack_map *smap;\n74: \tu64 cost, n_buckets;\n75: \tint err;\n76: \n77: \tif (attr->map_flags & ~STACK_CREATE_FLAG_MASK)\n78: \t\treturn ERR_PTR(-EINVAL);\n79: \n80: \t/* check sanity of attributes */\n81: \tif (attr->max_entries == 0 || attr->key_size != 4 ||\n82: \t    value_size < 8 || value_size % 8)\n83: \t\treturn ERR_PTR(-EINVAL);\n84: \n85: \tBUILD_BUG_ON(sizeof(struct bpf_stack_build_id) % sizeof(u64));\n86: \tif (attr->map_flags & BPF_F_STACK_BUILD_ID) {\n87: \t\tif (value_size % sizeof(struct bpf_stack_build_id) ||\n88: \t\t    value_size / sizeof(struct bpf_stack_build_id)\n89: \t\t    > sysctl_perf_event_max_stack)\n90: \t\t\treturn ERR_PTR(-EINVAL);\n91: \t} else if (value_size / 8 > sysctl_perf_event_max_stack)\n92: \t\treturn ERR_PTR(-EINVAL);\n93: \n94: \t/* hash table size must be power of 2 */\n95: \tn_buckets = roundup_pow_of_two(attr->max_entries);\n96: \tif (!n_buckets)\n97: \t\treturn ERR_PTR(-E2BIG);\n98: \n99: \tcost = n_buckets * sizeof(struct stack_map_bucket *) + sizeof(*smap);\n100: \tsmap = bpf_map_area_alloc(cost, bpf_map_attr_numa_node(attr));\n101: \tif (!smap)\n102: \t\treturn ERR_PTR(-ENOMEM);\n103: \n104: \tbpf_map_init_from_attr(&smap->map, attr);\n105: \tsmap->n_buckets = n_buckets;\n106: \n107: \terr = get_callchain_buffers(sysctl_perf_event_max_stack);\n108: \tif (err)\n109: \t\tgoto free_smap;\n110: \n111: \terr = prealloc_elems_and_freelist(smap);\n112: \tif (err)\n113: \t\tgoto put_buffers;\n114: \n115: \treturn &smap->map;\n116: \n117: put_buffers:\n118: \tput_callchain_buffers();\n119: free_smap:\n120: \tbpf_map_area_free(smap);\n121: \treturn ERR_PTR(err);\n122: }",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:semantic-contract",
+        "confidence": 0.92,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "kernel/bpf/stackmap.c",
+          "hunk_index": 0,
+          "source_line": 91
+        },
+        "summary": "stack_map_alloc adds patch barrier `attr->max_entries > 1UL << 31` around stack_map_alloc, roundup_pow_of_two.",
+        "statements": [
+          "/* hash table size must be power of 2; roundup_pow_of_two() can overflow",
+          "* into UB on 32-bit arches, so check that first",
+          "*/",
+          "if (attr->max_entries > 1UL << 31)",
+          "n_buckets = roundup_pow_of_two(attr->max_entries);"
+        ],
+        "guards": [
+          "attr->max_entries > 1UL << 31"
+        ],
+        "call_boundary": [
+          "stack_map_alloc",
+          "roundup_pow_of_two",
+          "bpf_map_area_alloc",
+          "bpf_map_init_from_attr"
+        ],
+        "call_edges": [
+          "stack_map_alloc -> stack_map_alloc",
+          "stack_map_alloc -> roundup_pow_of_two",
+          "stack_map_alloc -> bpf_map_area_alloc"
+        ],
+        "state_transitions": [
+          "",
+          "report when a risky write proceeds without the patch-style barrier",
+          "stay silent when the nearby guard proves the current write is blocked or bounded"
+        ],
+        "api_terms": [
+          "stack_map_alloc",
+          "roundup_pow_of_two",
+          "bpf_map_area_alloc",
+          "roundup_pow_of_two",
+          "roundup_pow_of_two"
+        ],
+        "related_symbols": [
+          "attr",
+          "max_entries",
+          "hash",
+          "table",
+          "size",
+          "must"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "kernel/bpf/stackmap.c",
+        "function": "stack_map_alloc"
+      },
+      "location": {
+        "line": 91,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "attr->max_entries > 1UL << 31",
+        "summary": "stack_map_alloc introduces patch guard `attr->max_entries > 1UL << 31` before stack_map_alloc, roundup_pow_of_two.",
+        "state_before": [
+          "input(attr)",
+          "input(max_entries)",
+          "buffer(attr->max_entries)",
+          "risky(roundup_pow_of_two)"
+        ],
+        "state_after": [
+          "guard(attr->max_entries > 1UL << 31)",
+          "current_call(stack_map_alloc)",
+          "current_call(roundup_pow_of_two)"
+        ],
+        "functions": [
+          "stack_map_alloc"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "attr",
+          "max_entries",
+          "hash",
+          "table",
+          "size",
+          "must"
+        ],
+        "buffer_fields": [
+          "attr->max_entries"
+        ],
+        "call_targets": [
+          "stack_map_alloc",
+          "roundup_pow_of_two",
+          "bpf_map_area_alloc",
+          "bpf_map_init_from_attr"
+        ],
+        "call_edges": [
+          "stack_map_alloc -> stack_map_alloc",
+          "stack_map_alloc -> roundup_pow_of_two",
+          "stack_map_alloc -> bpf_map_area_alloc"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "attr->max_entries > 1UL << 31"
+        ],
+        "state_statements": [
+          "/* hash table size must be power of 2; roundup_pow_of_two() can overflow",
+          "* into UB on 32-bit arches, so check that first",
+          "*/",
+          "if (attr->max_entries > 1UL << 31)",
+          "n_buckets = roundup_pow_of_two(attr->max_entries);"
+        ],
+        "compile_command_preview": "",
+        "source_file": "kernel/bpf/stackmap.c",
+        "source_excerpt": "70: static struct bpf_map *stack_map_alloc(union bpf_attr *attr)\n71: {\n72: \tu32 value_size = attr->value_size;\n73: \tstruct bpf_stack_map *smap;\n74: \tu64 cost, n_buckets;\n75: \tint err;\n76: \n77: \tif (attr->map_flags & ~STACK_CREATE_FLAG_MASK)\n78: \t\treturn ERR_PTR(-EINVAL);\n79: \n80: \t/* check sanity of attributes */\n81: \tif (attr->max_entries == 0 || attr->key_size != 4 ||\n82: \t    value_size < 8 || value_size % 8)\n83: \t\treturn ERR_PTR(-EINVAL);\n84: \n85: \tBUILD_BUG_ON(sizeof(struct bpf_stack_build_id) % sizeof(u64));\n86: \tif (attr->map_flags & BPF_F_STACK_BUILD_ID) {\n87: \t\tif (value_size % sizeof(struct bpf_stack_build_id) ||\n88: \t\t    value_size / sizeof(struct bpf_stack_build_id)\n89: \t\t    > sysctl_perf_event_max_stack)\n90: \t\t\treturn ERR_PTR(-EINVAL);\n91: \t} else if (value_size / 8 > sysctl_perf_event_max_stack)\n92: \t\treturn ERR_PTR(-EINVAL);\n93: \n94: \t/* hash table size must be power of 2 */\n95: \tn_buckets = roundup_pow_of_two(attr->max_entries);\n96: \tif (!n_buckets)\n97: \t\treturn ERR_PTR(-E2BIG);\n98: \n99: \tcost = n_buckets * sizeof(struct stack_map_bucket *) + sizeof(*smap);\n100: \tsmap = bpf_map_area_alloc(cost, bpf_map_attr_numa_node(attr));\n101: \tif (!smap)\n102: \t\treturn ERR_PTR(-ENOMEM);\n103: \n104: \tbpf_map_init_from_attr(&smap->map, attr);\n105: \tsmap->n_buckets = n_buckets;\n106: \n107: \terr = get_callchain_buffers(sysctl_perf_event_max_stack);\n108: \tif (err)\n109: \t\tgoto free_smap;\n110: \n111: \terr = prealloc_elems_and_freelist(smap);\n112: \tif (err)\n113: \t\tgoto put_buffers;\n114: \n115: \treturn &smap->map;\n116: \n117: put_buffers:\n118: \tput_callchain_buffers();\n119: free_smap:\n120: \tbpf_map_area_free(smap);\n121: \treturn ERR_PTR(err);\n122: }",
+        "summary_line": 91,
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:path-guard",
+        "confidence": 0.92,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "kernel/bpf/stackmap.c",
+          "hunk_index": 0,
+          "source_line": 91
+        },
+        "summary": "stack_map_alloc introduces patch guard `attr->max_entries > 1UL << 31` before stack_map_alloc, roundup_pow_of_two.",
+        "statements": [
+          "/* hash table size must be power of 2; roundup_pow_of_two() can overflow",
+          "* into UB on 32-bit arches, so check that first",
+          "*/",
+          "if (attr->max_entries > 1UL << 31)",
+          "n_buckets = roundup_pow_of_two(attr->max_entries);"
+        ],
+        "guards": [
+          "attr->max_entries > 1UL << 31"
+        ],
+        "call_boundary": [
+          "stack_map_alloc",
+          "roundup_pow_of_two",
+          "bpf_map_area_alloc",
+          "bpf_map_init_from_attr"
+        ],
+        "call_edges": [
+          "stack_map_alloc -> stack_map_alloc",
+          "stack_map_alloc -> roundup_pow_of_two",
+          "stack_map_alloc -> bpf_map_area_alloc"
+        ],
+        "state_transitions": [
+          "guard(attr->max_entries > 1UL << 31)",
+          "current_call(stack_map_alloc)",
+          "current_call(roundup_pow_of_two)"
+        ],
+        "api_terms": [
+          "stack_map_alloc",
+          "roundup_pow_of_two",
+          "bpf_map_area_alloc"
+        ],
+        "related_symbols": [
+          "attr",
+          "max_entries",
+          "hash",
+          "table",
+          "size",
+          "must"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_guard_1",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "kernel/bpf/stackmap.c",
+        "function": "stack_map_alloc"
+      },
+      "location": {
+        "line": 94,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "((attr (ImplicitCastExpr, LValueToRValue, union bpf_attr *)->max_entries) (ImplicitCastExpr, LValueToRValue, __u32) - 1 (ImplicitCastExpr, IntegralCast, __u32)) < 2 (ImplicitCastExpr, IntegralCast, __u32) ? ... : ...",
+        "summary": "Analyzer CFG for stack_map_alloc in kernel/bpf/stackmap.c: bindings: smap = bpf_map_area_alloc (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(u64, int))(cost (ImplicitCastExpr, LValueToRValue, u64), bpf_map_attr_numa_node (ImplicitCastExpr, FunctionToPointerDecay, int (*)(const union bpf_attr *))(attr (ImplicitCastExpr, LValueToRValue, union bpf_attr *) (ImplicitCastExpr, NoOp, const union bpf_attr *))) (ImplicitCastExpr, BitCast, struct bpf_stack_map *); n_buckets = (__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(attr (ImplicitCastExpr, LValueToRValue, union bpf_attr *)->max_entries (ImplicitCastExpr, LValueToRValue, __u32)) ? ((([B24.1] (ImplicitCastExpr, LValueToRValue, union bpf_attr *)->max_entries) (ImplicitCastExpr, LValueToRValue, __u32) == 1 (ImplicitCastExpr, IntegralCast, __u32)) ? 1 (ImplicitCastExpr, IntegralCast, unsigned long) : (1UL << (([B23.2] (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())([B23.8] - [B23.10]) ? (([B18.8]) < [B18.10] ? 0 : [B17.1] - [B17.13]) : ([B22.1] <= [B22.3]) ? [B20.2]([B20.10]) : [B21.2]([B21.11])) + 1))) : __roundup_pow_of_two (ImplicitCastExpr, FunctionToPointerDecay, unsigned long (*)(unsigned long))([B25.3] (ImplicitCastExpr, LValueToRValue, union bpf_attr *)->max_entries (ImplicitCastExpr, LValueToRValue, __u32) (ImplicitCastExpr, IntegralCast, unsigned long))) (ImplicitCastExpr, IntegralCast, u64) | branches: ((attr (ImplicitCastExpr, LValueToRValue, union bpf_attr *)->max_entries) (ImplicitCastExpr, LValueToRValue, __u32) - 1 (ImplicitCastExpr, IntegralCast, __u32)) < 2 (ImplicitCastExpr, IntegralCast, __u32) ? ... : ...; (sizeof ((attr->max_entries) - 1) <= 4 (ImplicitCastExpr, IntegralCast, unsigned long)) ? ... : ... | calls: stack_map_alloc -> ERR_PTR; stack_map_alloc -> __compiletime_assert_1317",
+        "state_before": [
+          "input(attr)",
+          "buffer(attr->max_entries)",
+          "buffer(attr->value_size)",
+          "sinks(roundup_pow_of_two, bpf_map_area_alloc)"
+        ],
+        "state_after": [
+          "cfg_binding(smap = bpf_map_area_alloc (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(u64, int))(cost (ImplicitCastExpr, LValueToRValue, u64), bpf_map_attr_numa_node (ImplicitCastExpr, FunctionToPointerDecay, int (*)(const union bpf_attr *))(attr (ImplicitCastExpr, LValueToRValue, union bpf_attr *) (ImplicitCastExpr, NoOp, const union bpf_attr *))) (ImplicitCastExpr, BitCast, struct bpf_stack_map *))",
+          "cfg_binding(n_buckets = (__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(attr (ImplicitCastExpr, LValueToRValue, union bpf_attr *)->max_entries (ImplicitCastExpr, LValueToRValue, __u32)) ? ((([B24.1] (ImplicitCastExpr, LValueToRValue, union bpf_attr *)->max_entries) (ImplicitCastExpr, LValueToRValue, __u32) == 1 (ImplicitCastExpr, IntegralCast, __u32)) ? 1 (ImplicitCastExpr, IntegralCast, unsigned long) : (1UL << (([B23.2] (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())([B23.8] - [B23.10]) ? (([B18.8]) < [B18.10] ? 0 : [B17.1] - [B17.13]) : ([B22.1] <= [B22.3]) ? [B20.2]([B20.10]) : [B21.2]([B21.11])) + 1))) : __roundup_pow_of_two (ImplicitCastExpr, FunctionToPointerDecay, unsigned long (*)(unsigned long))([B25.3] (ImplicitCastExpr, LValueToRValue, union bpf_attr *)->max_entries (ImplicitCastExpr, LValueToRValue, __u32) (ImplicitCastExpr, IntegralCast, unsigned long))) (ImplicitCastExpr, IntegralCast, u64))",
+          "cfg_branch(((attr (ImplicitCastExpr, LValueToRValue, union bpf_attr *)->max_entries) (ImplicitCastExpr, LValueToRValue, __u32) - 1 (ImplicitCastExpr, IntegralCast, __u32)) < 2 (ImplicitCastExpr, IntegralCast, __u32) ? ... : ...)",
+          "cfg_branch((sizeof ((attr->max_entries) - 1) <= 4 (ImplicitCastExpr, IntegralCast, unsigned long)) ? ... : ...)"
+        ],
+        "functions": [
+          "stack_map_alloc"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "attr",
+          "attr->max_entries",
+          "attr->value_size",
+          "attr->map_flags",
+          "attr->key_size",
+          "smap->map",
+          "smap->n_buckets"
+        ],
+        "buffer_fields": [
+          "attr->max_entries",
+          "attr->value_size",
+          "attr->map_flags",
+          "attr->key_size",
+          "smap->map",
+          "smap->n_buckets"
+        ],
+        "call_targets": [
+          "roundup_pow_of_two",
+          "bpf_map_area_alloc",
+          "bpf_map_attr_numa_node",
+          "bpf_map_init_from_attr",
+          "get_callchain_buffers",
+          "prealloc_elems_and_freelist",
+          "put_callchain_buffers",
+          "bpf_map_area_free"
+        ],
+        "call_edges": [
+          "stack_map_alloc -> ERR_PTR",
+          "stack_map_alloc -> __compiletime_assert_1317",
+          "stack_map_alloc -> __builtin_constant_p",
+          "stack_map_alloc -> __builtin_clzll",
+          "stack_map_alloc -> __ilog2_u32",
+          "stack_map_alloc -> __ilog2_u64"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "goto put_buffers;",
+          "if [B5.9]",
+          "goto free_smap;",
+          "if [B7.25]",
+          "if [B9.27]",
+          "if [B11.7]"
+        ],
+        "resolved_branch_conditions": [
+          "((attr (ImplicitCastExpr, LValueToRValue, union bpf_attr *)->max_entries) (ImplicitCastExpr, LValueToRValue, __u32) - 1 (ImplicitCastExpr, IntegralCast, __u32)) < 2 (ImplicitCastExpr, IntegralCast, __u32) ? ... : ...",
+          "(sizeof ((attr->max_entries) - 1) <= 4 (ImplicitCastExpr, IntegralCast, unsigned long)) ? ... : ...",
+          "__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((attr (ImplicitCastExpr, LValueToRValue, union bpf_attr *)->max_entries) (ImplicitCastExpr, LValueToRValue, __u32) - 1 (ImplicitCastExpr, IntegralCast, __u32)) ? ... : ...",
+          "((attr (ImplicitCastExpr, LValueToRValue, union bpf_attr *)->max_entries) (ImplicitCastExpr, LValueToRValue, __u32) == 1 (ImplicitCastExpr, IntegralCast, __u32)) ? ... : ...",
+          "__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(attr (ImplicitCastExpr, LValueToRValue, union bpf_attr *)->max_entries (ImplicitCastExpr, LValueToRValue, __u32)) ? ... : ...",
+          "if attr (ImplicitCastExpr, LValueToRValue, union bpf_attr *)->map_flags (ImplicitCastExpr, LValueToRValue, __u32) & BPF_F_STACK_BUILD_ID (ImplicitCastExpr, IntegralCast, __u32)"
+        ],
+        "cfg_value_bindings": [
+          "smap = bpf_map_area_alloc (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(u64, int))(cost (ImplicitCastExpr, LValueToRValue, u64), bpf_map_attr_numa_node (ImplicitCastExpr, FunctionToPointerDecay, int (*)(const union bpf_attr *))(attr (ImplicitCastExpr, LValueToRValue, union bpf_attr *) (ImplicitCastExpr, NoOp, const union bpf_attr *))) (ImplicitCastExpr, BitCast, struct bpf_stack_map *)",
+          "n_buckets = (__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(attr (ImplicitCastExpr, LValueToRValue, union bpf_attr *)->max_entries (ImplicitCastExpr, LValueToRValue, __u32)) ? ((([B24.1] (ImplicitCastExpr, LValueToRValue, union bpf_attr *)->max_entries) (ImplicitCastExpr, LValueToRValue, __u32) == 1 (ImplicitCastExpr, IntegralCast, __u32)) ? 1 (ImplicitCastExpr, IntegralCast, unsigned long) : (1UL << (([B23.2] (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())([B23.8] - [B23.10]) ? (([B18.8]) < [B18.10] ? 0 : [B17.1] - [B17.13]) : ([B22.1] <= [B22.3]) ? [B20.2]([B20.10]) : [B21.2]([B21.11])) + 1))) : __roundup_pow_of_two (ImplicitCastExpr, FunctionToPointerDecay, unsigned long (*)(unsigned long))([B25.3] (ImplicitCastExpr, LValueToRValue, union bpf_attr *)->max_entries (ImplicitCastExpr, LValueToRValue, __u32) (ImplicitCastExpr, IntegralCast, unsigned long))) (ImplicitCastExpr, IntegralCast, u64)",
+          "u32 value_size = attr->value_size;",
+          "sizeof ((attr->max_entries) - 1) <= 4 (ImplicitCastExpr, IntegralCast, unsigned long)",
+          "attr (ImplicitCastExpr, LValueToRValue, union bpf_attr *)->key_size (ImplicitCastExpr, LValueToRValue, __u32) != 4 (ImplicitCastExpr, IntegralCast, __u32)",
+          "attr (ImplicitCastExpr, LValueToRValue, union bpf_attr *)->max_entries (ImplicitCastExpr, LValueToRValue, __u32) == 0 (ImplicitCastExpr, IntegralCast, __u32)"
+        ],
+        "state_statements": [
+          "bpf_map_area_free",
+          "return [B1.13];",
+          "[B3.2]->map",
+          "return [B3.4];",
+          "prealloc_elems_and_freelist",
+          "[B5.6] = [B5.5]"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,kernel/bpf/.stackmap.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/uapi -I./arch/x86/inc...",
+        "source_file": "kernel/bpf/stackmap.c",
+        "source_excerpt": "70: static struct bpf_map *stack_map_alloc(union bpf_attr *attr)\n71: {\n72: \tu32 value_size = attr->value_size;\n73: \tstruct bpf_stack_map *smap;\n74: \tu64 cost, n_buckets;\n75: \tint err;\n76: \n77: \tif (attr->map_flags & ~STACK_CREATE_FLAG_MASK)\n78: \t\treturn ERR_PTR(-EINVAL);\n79: \n80: \t/* check sanity of attributes */\n81: \tif (attr->max_entries == 0 || attr->key_size != 4 ||\n82: \t    value_size < 8 || value_size % 8)\n83: \t\treturn ERR_PTR(-EINVAL);\n84: \n85: \tBUILD_BUG_ON(sizeof(struct bpf_stack_build_id) % sizeof(u64));\n86: \tif (attr->map_flags & BPF_F_STACK_BUILD_ID) {\n87: \t\tif (value_size % sizeof(struct bpf_stack_build_id) ||\n88: \t\t    value_size / sizeof(struct bpf_stack_build_id)\n89: \t\t    > sysctl_perf_event_max_stack)\n90: \t\t\treturn ERR_PTR(-EINVAL);\n91: \t} else if (value_size / 8 > sysctl_perf_event_max_stack)\n92: \t\treturn ERR_PTR(-EINVAL);\n93: \n94: \t/* hash table size must be power of 2 */\n95: \tn_buckets = roundup_pow_of_two(attr->max_entries);\n96: \tif (!n_buckets)\n97: \t\treturn ERR_PTR(-E2BIG);\n98: \n99: \tcost = n_buckets * sizeof(struct stack_map_bucket *) + sizeof(*smap);\n100: \tsmap = bpf_map_area_alloc(cost, bpf_map_attr_numa_node(attr));\n101: \tif (!smap)\n102: \t\treturn ERR_PTR(-ENOMEM);\n103: \n104: \tbpf_map_init_from_attr(&smap->map, attr);\n105: \tsmap->n_buckets = n_buckets;\n106: \n107: \terr = get_callchain_buffers(sysctl_perf_event_max_stack);\n108: \tif (err)\n109: \t\tgoto free_smap;\n110: \n111: \terr = prealloc_elems_and_freelist(smap);\n112: \tif (err)\n113: \t\tgoto put_buffers;\n114: \n115: \treturn &smap->map;\n116: \n117: put_buffers:\n118: \tput_callchain_buffers();\n119: free_smap:\n120: \tbpf_map_area_free(smap);\n121: \treturn ERR_PTR(err);\n122: }",
+        "summary_line": 94,
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/generate_only_evidence_all39_v8_r5/G13_7a4b21250bf7_Integer_Overflow/csa/patchweaver_runtime/csa_raw/kernel-bpf-stackmap.c-stack_map_alloc.txt",
+        "raw_output_sha256": "0d38d82d464f9c858313ef9b5af3198a286f8df55b911a9522a43fb823cd00f9",
+        "command_sha256": "ac8d3b0f044d1e3fc025c0c14921df54c801b56cfff89cd544ea3b6eeddeef07"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:debug-cfg",
+        "confidence": 0.92,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "kernel/bpf/stackmap.c",
+          "hunk_index": 0,
+          "source_line": 94
+        },
+        "summary": "Analyzer CFG for stack_map_alloc in kernel/bpf/stackmap.c: bindings: smap = bpf_map_area_alloc (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(u64, int))(cost (ImplicitCastExpr, LValueToRValue, u64), bpf_map_attr_numa_node (ImplicitCastExpr, FunctionToPointerDecay, int (*)(const union bpf_attr *))(attr (ImplicitCastExpr, LValueToRValue, union bpf_attr *) (ImplicitCastExpr, NoOp, const union bpf_attr *))) (ImplicitCastExpr, BitCast, struct bpf_stack_map *); n_buckets = (__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(attr (ImplicitCastExpr, LValueToRValue, union bpf_attr *)->max_entries (ImplicitCastExpr, LValueToRValue, __u32)) ? ((([B24.1] (ImplicitCastExpr, LValueToRValue, union bpf_attr *)->max_entries) (ImplicitCastExpr, LValueToRValue, __u32) == 1 (ImplicitCastExpr, IntegralCast, __u32)) ? 1 (ImplicitCastExpr, IntegralCast, unsigned long) : (1UL << (([B23.2] (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())([B23.8] - [B23.10]) ? (([B18.8]) < [B18.10] ? 0 : [B17.1] - [B17.13]) : ([B22.1] <= [B22.3]) ? [B20.2]([B20.10]) : [B21.2]([B21.11])) + 1))) : __roundup_pow_of_two (ImplicitCastExpr, FunctionToPointerDecay, unsigned long (*)(unsigned long))([B25.3] (ImplicitCastExpr, LValueToRValue, union bpf_attr *)->max_entries (ImplicitCastExpr, LValueToRValue, __u32) (ImplicitCastExpr, IntegralCast, unsigned long))) (ImplicitCastExpr, IntegralCast, u64) | branches: ((attr (ImplicitCastExpr, LValueToRValue, union bpf_attr *)->max_entries) (ImplicitCastExpr, LValueToRValue, __u32) - 1 (ImplicitCastExpr, IntegralCast, __u32)) < 2 (ImplicitCastExpr, IntegralCast, __u32) ? ... : ...; (sizeof ((attr->max_entries) - 1) <= 4 (ImplicitCastExpr, IntegralCast, unsigned long)) ? ... : ... | calls: stack_map_alloc -> ERR_PTR; stack_map_alloc -> __compiletime_assert_1317",
+        "statements": [
+          "70: static struct bpf_map *stack_map_alloc(union bpf_attr *attr)",
+          "71: {",
+          "72: \tu32 value_size = attr->value_size;",
+          "73: \tstruct bpf_stack_map *smap;",
+          "74: \tu64 cost, n_buckets;",
+          "75: \tint err;"
+        ],
+        "guards": [
+          "((attr (ImplicitCastExpr, LValueToRValue, union bpf_attr *)->max_entries) (ImplicitCastExpr, LValueToRValue, __u32) - 1 (ImplicitCastExpr, IntegralCast, __u32)) < 2 (ImplicitCastExpr, IntegralCast, __u32) ? ... : ...",
+          "(sizeof ((attr->max_entries) - 1) <= 4 (ImplicitCastExpr, IntegralCast, unsigned long)) ? ... : ...",
+          "__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((attr (ImplicitCastExpr, LValueToRValue, union bpf_attr *)->max_entries) (ImplicitCastExpr, LValueToRValue, __u32) - 1 (ImplicitCastExpr, IntegralCast, __u32)) ? ... : ...",
+          "((attr (ImplicitCastExpr, LValueToRValue, union bpf_attr *)->max_entries) (ImplicitCastExpr, LValueToRValue, __u32) == 1 (ImplicitCastExpr, IntegralCast, __u32)) ? ... : ..."
+        ],
+        "call_boundary": [
+          "roundup_pow_of_two",
+          "bpf_map_area_alloc",
+          "bpf_map_attr_numa_node",
+          "bpf_map_init_from_attr",
+          "get_callchain_buffers",
+          "prealloc_elems_and_freelist"
+        ],
+        "call_edges": [
+          "stack_map_alloc -> ERR_PTR",
+          "stack_map_alloc -> __compiletime_assert_1317",
+          "stack_map_alloc -> __builtin_constant_p",
+          "stack_map_alloc -> __builtin_clzll",
+          "stack_map_alloc -> __ilog2_u32",
+          "stack_map_alloc -> __ilog2_u64",
+          "stack_map_alloc -> __roundup_pow_of_two",
+          "stack_map_alloc -> bpf_map_area_alloc"
+        ],
+        "state_transitions": [
+          "cfg_binding(smap = bpf_map_area_alloc (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(u64, int))(cost (ImplicitCastExpr, LValueToRValue, u64), bpf_map_attr_numa_node (ImplicitCastExpr, FunctionToPointerDecay, int (*)(const union bpf_attr *))(attr (ImplicitCastExpr, LValueToRValue, union bpf_attr *) (ImplicitCastExpr, NoOp, const union bpf_attr *))) (ImplicitCastExpr, BitCast, struct bpf_stack_map *))",
+          "cfg_binding(n_buckets = (__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(attr (ImplicitCastExpr, LValueToRValue, union bpf_attr *)->max_entries (ImplicitCastExpr, LValueToRValue, __u32)) ? ((([B24.1] (ImplicitCastExpr, LValueToRValue, union bpf_attr *)->max_entries) (ImplicitCastExpr, LValueToRValue, __u32) == 1 (ImplicitCastExpr, IntegralCast, __u32)) ? 1 (ImplicitCastExpr, IntegralCast, unsigned long) : (1UL << (([B23.2] (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())([B23.8] - [B23.10]) ? (([B18.8]) < [B18.10] ? 0 : [B17.1] - [B17.13]) : ([B22.1] <= [B22.3]) ? [B20.2]([B20.10]) : [B21.2]([B21.11])) + 1))) : __roundup_pow_of_two (ImplicitCastExpr, FunctionToPointerDecay, unsigned long (*)(unsigned long))([B25.3] (ImplicitCastExpr, LValueToRValue, union bpf_attr *)->max_entries (ImplicitCastExpr, LValueToRValue, __u32) (ImplicitCastExpr, IntegralCast, unsigned long))) (ImplicitCastExpr, IntegralCast, u64))",
+          "cfg_branch(((attr (ImplicitCastExpr, LValueToRValue, union bpf_attr *)->max_entries) (ImplicitCastExpr, LValueToRValue, __u32) - 1 (ImplicitCastExpr, IntegralCast, __u32)) < 2 (ImplicitCastExpr, IntegralCast, __u32) ? ... : ...)",
+          "cfg_branch((sizeof ((attr->max_entries) - 1) <= 4 (ImplicitCastExpr, IntegralCast, unsigned long)) ? ... : ...)",
+          "bpf_map_area_free",
+          "return [B1.13];"
+        ],
+        "api_terms": [
+          "ERR_PTR",
+          "__compiletime_assert_1317",
+          "__builtin_constant_p",
+          "__builtin_clzll",
+          "__ilog2_u32",
+          "__ilog2_u64"
+        ],
+        "related_symbols": [
+          "attr",
+          "attr->max_entries",
+          "attr->value_size",
+          "attr->map_flags",
+          "attr->key_size",
+          "smap->map"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "kernel/bpf/stackmap.c",
+        "function": "stack_map_alloc"
+      },
+      "location": {
+        "line": 91,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "stack_map_alloc adds patch barrier `attr->max_entries > 1UL << 31` around stack_map_alloc, roundup_pow_of_two.",
+        "state_before": [
+          "input(attr)",
+          "input(max_entries)",
+          "buffer(attr->max_entries)",
+          "risky(roundup_pow_of_two)"
+        ],
+        "state_after": [
+          "guard(attr->max_entries > 1UL << 31)",
+          "sink(stack_map_alloc)",
+          "sink(roundup_pow_of_two)",
+          "replaces(roundup_pow_of_two)"
+        ],
+        "functions": [
+          "stack_map_alloc"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "attr",
+          "max_entries",
+          "hash",
+          "table",
+          "size",
+          "must"
+        ],
+        "buffer_fields": [
+          "attr->max_entries"
+        ],
+        "call_targets": [
+          "stack_map_alloc",
+          "roundup_pow_of_two",
+          "bpf_map_area_alloc",
+          "bpf_map_init_from_attr"
+        ],
+        "call_edges": [
+          "stack_map_alloc -> stack_map_alloc",
+          "stack_map_alloc -> roundup_pow_of_two",
+          "stack_map_alloc -> bpf_map_area_alloc"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "attr->max_entries > 1UL << 31"
+        ],
+        "state_statements": [
+          "/* hash table size must be power of 2; roundup_pow_of_two() can overflow",
+          "* into UB on 32-bit arches, so check that first",
+          "*/",
+          "if (attr->max_entries > 1UL << 31)",
+          "n_buckets = roundup_pow_of_two(attr->max_entries);"
+        ],
+        "return_statements": [],
+        "source_file": "kernel/bpf/stackmap.c",
+        "source_excerpt": "70: static struct bpf_map *stack_map_alloc(union bpf_attr *attr)\n71: {\n72: \tu32 value_size = attr->value_size;\n73: \tstruct bpf_stack_map *smap;\n74: \tu64 cost, n_buckets;\n75: \tint err;\n76: \n77: \tif (attr->map_flags & ~STACK_CREATE_FLAG_MASK)\n78: \t\treturn ERR_PTR(-EINVAL);\n79: \n80: \t/* check sanity of attributes */\n81: \tif (attr->max_entries == 0 || attr->key_size != 4 ||\n82: \t    value_size < 8 || value_size % 8)\n83: \t\treturn ERR_PTR(-EINVAL);\n84: \n85: \tBUILD_BUG_ON(sizeof(struct bpf_stack_build_id) % sizeof(u64));\n86: \tif (attr->map_flags & BPF_F_STACK_BUILD_ID) {\n87: \t\tif (value_size % sizeof(struct bpf_stack_build_id) ||\n88: \t\t    value_size / sizeof(struct bpf_stack_build_id)\n89: \t\t    > sysctl_perf_event_max_stack)\n90: \t\t\treturn ERR_PTR(-EINVAL);\n91: \t} else if (value_size / 8 > sysctl_perf_event_max_stack)\n92: \t\treturn ERR_PTR(-EINVAL);\n93: \n94: \t/* hash table size must be power of 2 */\n95: \tn_buckets = roundup_pow_of_two(attr->max_entries);\n96: \tif (!n_buckets)\n97: \t\treturn ERR_PTR(-E2BIG);\n98: \n99: \tcost = n_buckets * sizeof(struct stack_map_bucket *) + sizeof(*smap);\n100: \tsmap = bpf_map_area_alloc(cost, bpf_map_attr_numa_node(attr));\n101: \tif (!smap)\n102: \t\treturn ERR_PTR(-ENOMEM);\n103: \n104: \tbpf_map_init_from_attr(&smap->map, attr);\n105: \tsmap->n_buckets = n_buckets;\n106: \n107: \terr = get_callchain_buffers(sysctl_perf_event_max_stack);\n108: \tif (err)\n109: \t\tgoto free_smap;\n110: \n111: \terr = prealloc_elems_and_freelist(smap);\n112: \tif (err)\n113: \t\tgoto put_buffers;\n114: \n115: \treturn &smap->map;\n116: \n117: put_buffers:\n118: \tput_callchain_buffers();\n119: free_smap:\n120: \tbpf_map_area_free(smap);\n121: \treturn ERR_PTR(err);\n122: }",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:guarded-state",
+        "confidence": 0.9,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "kernel/bpf/stackmap.c",
+          "hunk_index": 0,
+          "source_line": 91
+        },
+        "summary": "stack_map_alloc adds patch barrier `attr->max_entries > 1UL << 31` around stack_map_alloc, roundup_pow_of_two.",
+        "statements": [
+          "/* hash table size must be power of 2; roundup_pow_of_two() can overflow",
+          "* into UB on 32-bit arches, so check that first",
+          "*/",
+          "if (attr->max_entries > 1UL << 31)",
+          "n_buckets = roundup_pow_of_two(attr->max_entries);"
+        ],
+        "guards": [
+          "attr->max_entries > 1UL << 31"
+        ],
+        "call_boundary": [
+          "stack_map_alloc",
+          "roundup_pow_of_two",
+          "bpf_map_area_alloc",
+          "bpf_map_init_from_attr"
+        ],
+        "call_edges": [
+          "stack_map_alloc -> stack_map_alloc",
+          "stack_map_alloc -> roundup_pow_of_two",
+          "stack_map_alloc -> bpf_map_area_alloc"
+        ],
+        "state_transitions": [
+          "guard(attr->max_entries > 1UL << 31)",
+          "sink(stack_map_alloc)",
+          "sink(roundup_pow_of_two)",
+          "replaces(roundup_pow_of_two)"
+        ],
+        "api_terms": [
+          "stack_map_alloc",
+          "roundup_pow_of_two",
+          "bpf_map_area_alloc"
+        ],
+        "related_symbols": [
+          "attr",
+          "max_entries",
+          "hash",
+          "table",
+          "size",
+          "must"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_0",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "kernel/bpf/stackmap.c",
+        "function": "stack_map_alloc"
+      },
+      "location": {
+        "line": 94,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "stack_map_alloc in kernel/bpf/stackmap.c provides CSA-backed pointer/resource lifecycle context near line 94",
+        "diagnostic_message": "",
+        "diagnostic_checker": "",
+        "state_before": [
+          "input(attr)",
+          "buffer(attr->max_entries)",
+          "buffer(attr->value_size)",
+          "sinks(roundup_pow_of_two, bpf_map_area_alloc)"
+        ],
+        "state_after": [
+          "operation(put_callchain_buffers)",
+          "operation(bpf_map_area_free)",
+          "operation(return [B1.13];)",
+          "operation([B3.2]->map)"
+        ],
+        "functions": [
+          "stack_map_alloc"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "attr",
+          "max_entries",
+          "hash",
+          "table",
+          "size",
+          "must"
+        ],
+        "buffer_fields": [
+          "attr->max_entries",
+          "attr->value_size",
+          "attr->map_flags",
+          "attr->key_size",
+          "smap->map",
+          "smap->n_buckets"
+        ],
+        "call_targets": [
+          "roundup_pow_of_two",
+          "bpf_map_area_alloc",
+          "bpf_map_attr_numa_node",
+          "bpf_map_init_from_attr",
+          "get_callchain_buffers",
+          "prealloc_elems_and_freelist"
+        ],
+        "call_edges": [
+          "stack_map_alloc -> ERR_PTR",
+          "stack_map_alloc -> __compiletime_assert_1317",
+          "stack_map_alloc -> __builtin_constant_p",
+          "stack_map_alloc -> __builtin_clzll",
+          "stack_map_alloc -> __ilog2_u32",
+          "stack_map_alloc -> __ilog2_u64"
+        ],
+        "state_statements": [
+          "bpf_map_area_free",
+          "return [B1.13];",
+          "[B3.2]->map",
+          "return [B3.4];",
+          "prealloc_elems_and_freelist",
+          "[B5.6] = [B5.5]"
+        ],
+        "source_file": "kernel/bpf/stackmap.c",
+        "source_excerpt": "70: static struct bpf_map *stack_map_alloc(union bpf_attr *attr)\n71: {\n72: \tu32 value_size = attr->value_size;\n73: \tstruct bpf_stack_map *smap;\n74: \tu64 cost, n_buckets;\n75: \tint err;\n76: \n77: \tif (attr->map_flags & ~STACK_CREATE_FLAG_MASK)\n78: \t\treturn ERR_PTR(-EINVAL);\n79: \n80: \t/* check sanity of attributes */\n81: \tif (attr->max_entries == 0 || attr->key_size != 4 ||\n82: \t    value_size < 8 || value_size % 8)\n83: \t\treturn ERR_PTR(-EINVAL);\n84: \n85: \tBUILD_BUG_ON(sizeof(struct bpf_stack_build_id) % sizeof(u64));\n86: \tif (attr->map_flags & BPF_F_STACK_BUILD_ID) {\n87: \t\tif (value_size % sizeof(struct bpf_stack_build_id) ||\n88: \t\t    value_size / sizeof(struct bpf_stack_build_id)\n89: \t\t    > sysctl_perf_event_max_stack)\n90: \t\t\treturn ERR_PTR(-EINVAL);\n91: \t} else if (value_size / 8 > sysctl_perf_event_max_stack)\n92: \t\treturn ERR_PTR(-EINVAL);\n93: \n94: \t/* hash table size must be power of 2 */\n95: \tn_buckets = roundup_pow_of_two(attr->max_entries);\n96: \tif (!n_buckets)\n97: \t\treturn ERR_PTR(-E2BIG);\n98: \n99: \tcost = n_buckets * sizeof(struct stack_map_bucket *) + sizeof(*smap);\n100: \tsmap = bpf_map_area_alloc(cost, bpf_map_attr_numa_node(attr));\n101: \tif (!smap)\n102: \t\treturn ERR_PTR(-ENOMEM);\n103: \n104: \tbpf_map_init_from_attr(&smap->map, attr);\n105: \tsmap->n_buckets = n_buckets;\n106: \n107: \terr = get_callchain_buffers(sysctl_perf_event_max_stack);\n108: \tif (err)\n109: \t\tgoto free_smap;\n110: \n111: \terr = prealloc_elems_and_freelist(smap);\n112: \tif (err)\n113: \t\tgoto put_buffers;\n114: \n115: \treturn &smap->map;\n116: \n117: put_buffers:\n118: \tput_callchain_buffers();\n119: free_smap:\n120: \tbpf_map_area_free(smap);\n121: \treturn ERR_PTR(err);\n122: }",
+        "coverage_status": "partial",
+        "operations": [
+          "put_callchain_buffers",
+          "bpf_map_area_free",
+          "return [B1.13];",
+          "[B3.2]->map",
+          "return [B3.4];",
+          "prealloc_elems_and_freelist"
+        ],
+        "acquisition_ops": [],
+        "release_ops": []
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.72,
+        "origin": "analyzer_output"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "kernel/bpf/stackmap.c",
+          "hunk_index": 0,
+          "source_line": 94
+        },
+        "summary": "stack_map_alloc in kernel/bpf/stackmap.c provides CSA-backed pointer/resource lifecycle context near line 94",
+        "statements": [
+          "70: static struct bpf_map *stack_map_alloc(union bpf_attr *attr)",
+          "71: {",
+          "72: \tu32 value_size = attr->value_size;",
+          "73: \tstruct bpf_stack_map *smap;",
+          "74: \tu64 cost, n_buckets;",
+          "75: \tint err;"
+        ],
+        "guards": [
+          "attr->map_flags & ~STACK_CREATE_FLAG_MASK",
+          "attr->map_flags & BPF_F_STACK_BUILD_ID",
+          "value_size % sizeof(struct bpf_stack_build_id",
+          "value_size / 8 > sysctl_perf_event_max_stack"
+        ],
+        "call_boundary": [
+          "roundup_pow_of_two",
+          "bpf_map_area_alloc",
+          "bpf_map_attr_numa_node",
+          "bpf_map_init_from_attr",
+          "get_callchain_buffers",
+          "prealloc_elems_and_freelist"
+        ],
+        "call_edges": [
+          "stack_map_alloc -> ERR_PTR",
+          "stack_map_alloc -> __compiletime_assert_1317",
+          "stack_map_alloc -> __builtin_constant_p",
+          "stack_map_alloc -> __builtin_clzll",
+          "stack_map_alloc -> __ilog2_u32",
+          "stack_map_alloc -> __ilog2_u64"
+        ],
+        "state_transitions": [
+          "operation(put_callchain_buffers)",
+          "operation(bpf_map_area_free)",
+          "operation(return [B1.13];)",
+          "operation([B3.2]->map)"
+        ],
+        "api_terms": [
+          "put_callchain_buffers",
+          "bpf_map_area_free",
+          "return [B1.13];",
+          "[B3.2]->map",
+          "return [B3.4];",
+          "prealloc_elems_and_freelist"
+        ],
+        "related_symbols": [
+          "attr",
+          "max_entries",
+          "hash",
+          "table",
+          "size",
+          "must"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "collected_analyzers": [
+    "csa"
+  ],
+  "provenance_summary": {
+    "total_records": 5,
+    "origin_counts": {
+      "analyzer_internal": 1,
+      "analyzer_output": 1,
+      "source_derived": 3
+    },
+    "analyzer_internal_records": 1,
+    "analyzer_internal_fraction": 0.2,
+    "analyzer_backed_records": 2,
+    "analyzer_backed_fraction": 0.4,
+    "source_derived_records": 3,
+    "source_derived_fraction": 0.6
+  }
+}

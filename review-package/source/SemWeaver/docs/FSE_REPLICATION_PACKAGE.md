@@ -1,108 +1,56 @@
-# FSE Replication Package Contract
+# FSE replication package
 
-The FSE package is evidence-complete rather than source-only. It must contain
-every input and output used by a paper numerator, denominator, table, or figure.
+The final review package wraps this source tree. Its root README and
+`results/corrected/RESULT.json` are the authoritative protocol and numerical
+results. Historical protocol documents in this source tree describe development
+stages; their example cohort sizes and result fields are not current findings.
 
-## Required layout
+## Final layout
 
-```text
-artifact/
-├── ARTIFACT_MANIFEST.json
-├── environment/
-│   ├── container-images.txt
-│   ├── tool-versions.json
-│   └── hardware.json
-├── cohorts/
-│   ├── e1_frozen.csv
-│   ├── e2_frozen.csv
-│   └── exclusions.csv
-├── prompts/
-│   ├── current_en/
-│   └── historical_exact/
-├── routing/
-│   ├── annotations/
-│   ├── gold.csv
-│   ├── predictions.csv
-│   └── router_metrics.json
-├── runs/
-│   └── <run-id>/
-│       ├── RUN_MANIFEST.json
-│       ├── input_detector/
-│       ├── patch/
-│       ├── evidence/
-│       ├── prompts_and_raw_responses/
-│       ├── candidates/
-│       ├── validation/
-│       └── final/
-├── robustness/
-│   └── <case-id>/
-│       ├── manifest.csv
-│       ├── fixtures/
-│       ├── raw_logs/
-│       └── metamorphic_report.json
-├── derived/
-│   ├── tables/
-│   └── figures/
-└── audits/
-    ├── evidence_provenance.json
-    ├── result_integrity.json
-    └── artifact_consistency.json
-```
+- `source/SemWeaver/`: corrected implementation and English prompt templates.
+- `source/frozen-implementations/`: historical implementations used by retained runs.
+- `source/manuscript/`, `paper/main.pdf`: manuscript source and compiled paper.
+- `inputs/`: all 39 frozen generated checkers, patches, metadata and selection provenance.
+- `evidence/`: native dumps, origin bindings, raw model/tool exchanges, candidate source, paired logs, corrections, example diagnostics and CodeQL cost records.
+- `results/corrected/`: only the authoritative version-level result aggregation.
+- `environment/`: analyzer recipe and measured tool/dependency inventory.
+- `scripts/`: offline verification and deterministic reaggregation.
+- `ARTIFACT_MANIFEST.json` and `REDACTIONS.json`: file integrity and anonymization crosswalks.
 
-## Run manifest
+## Offline verification
 
-Every run manifest records:
+From the package root:
 
-- immutable run id, cohort id, case id, analyzer, method, and repetition;
-- hashes for the patch, source revision, starting detector, prompt files,
-  configuration, evidence bundle, and transformation manifest;
-- exact model identifier, endpoint class, sampling settings, request ordering,
-  iteration/token/time limits, and observed usage;
-- execution health independent of scientific outcome;
-- one intervention label: `automatic`, `human_assisted`, `environment_error`,
-  or `excluded`;
-- PDS components, deterministic review, evidence-origin eligibility,
-  metamorphic outcomes, and RRS;
-- paths to raw prompts/responses, candidates, compile/query logs, and validation
-  diagnostics.
+~~~bash
+python3 scripts/verify_corrected_review_package.py .
+python3 scripts/reaggregate_scanfix.py --data-root evidence/fse_revision \
+  --redactions REDACTIONS.json --output-dir /tmp/semweaver-recomputed-unique
+~~~
 
-## Required verification
+Use a fresh output directory. Neither command calls a model or executes a
+generated checker. Full paired reruns require a dedicated disposable Linux
+checkout, the measured toolchain and the frozen input/candidate.
 
-Before packaging:
+## Interpretation and provenance
 
-```bash
-python3 experiments/audit_evidence_provenance.py artifact/runs \
-  --output-json artifact/audits/evidence_provenance.json \
-  --output-csv artifact/audits/evidence_provenance.csv
+PDS means a warning-positive vulnerable revision and silent fixed revision,
+within patch-related build objects. It does not independently establish correct
+target localization. F1 describes paired patch-version decisions, not deployment
+precision or target-vulnerability recall. Fixed-side warning counts measure
+inspection burden.
 
-python3 experiments/audit_result_integrity.py \
-  artifact/derived/tables/automatic_results.csv \
-  --require-automatic \
-  --output-json artifact/audits/result_integrity.json
+The 39 starting subjects are retained throughout: 15 warn on both revisions and
+24 are initially silent. The same 12 repeated subjects split 5/7. KNighter's actual
+no-report branch makes no model edit, so the 15-case matched task and broader
+39-case system comparison answer different questions. The full-cohort native
+evidence ablation ties; universal causal benefit is not established.
 
-python3 experiments/routing/score_router.py \
-  --gold artifact/routing/gold.csv \
-  --predictions artifact/routing/predictions.csv \
-  --output artifact/routing/router_metrics.json
-```
+Raw superseded executions remain for audit but are not authoritative. Corrected
+hash-bound references and replacement queues define scored outcomes; invalid
+execution or uncaught SDK exceptions are never successful zero-warning scans.
+Source-derived fallbacks, analyzer outputs and analyzer-internal records keep
+separate origins. Exact historical traces are not reconstructed if missing.
 
-The table/figure regeneration command must read only frozen manifests and raw
-records. It must fail on missing files, hash mismatch, duplicate run ids,
-unlabelled intervention, or denominator drift.
-
-## Security and anonymity
-
-- Never package `API_KEYS.txt`, `.env`, credential helpers, endpoint secrets,
-  absolute home paths, author names, editor metadata, or Git history.
-- Scan both file contents and archive member names before upload.
-- Rotate any credential that has entered a chat transcript, shell history, or
-  prior archive.
-- Use an anonymous immutable review URL and verify extraction in a clean
-  directory before submission.
-
-## Result boundary
-
-Human-assisted repairs remain available for diagnosis but are stored outside the
-automatic result table. Source-derived fallbacks, diagnostics, and
-analyzer-internal facts retain separate origin counts. No fallback is promoted
-to the analyzer-internal treatment, and no missing outcome is zero-filled.
+No project-level license is added. Upstream licenses and notices remain in force.
+Credentials, identifying machine paths, source Git history, tool caches,
+databases, model caches and full Linux worktrees are excluded.

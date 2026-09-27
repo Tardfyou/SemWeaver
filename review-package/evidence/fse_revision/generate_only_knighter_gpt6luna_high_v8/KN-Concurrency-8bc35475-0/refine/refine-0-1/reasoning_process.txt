@@ -1,0 +1,8 @@
+Refinment Plan:
+- The false positive comes from treating every `ArraySubscriptExpr` and `MemberExpr` as a read. In `pt = &wq_pod_types[scope]`, the array access computes an address; it does not read the array element. The checker then sees `pt` in the following condition and reports it as a speculative read.
+- Exclude memory expressions that occur under unary address-of when looking for a potentially racy read. Keep recognizing actual dereferences and member/array accesses in value context, so the target `data = *work_data_bits(work)` remains detectable.
+- Preserve the existing branch-shape checks. They still detect the target when the value is used in the guarded condition or branch.
+
+Refined Code:
+```cpp
+```

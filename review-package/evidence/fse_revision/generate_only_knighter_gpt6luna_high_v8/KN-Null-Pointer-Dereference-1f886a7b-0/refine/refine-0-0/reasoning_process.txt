@@ -1,0 +1,11 @@
+**Refinement Plan:**
+1. The false positive comes from tracking allocation results by `MemRegion` and treating an `ArraySubscriptExpr` as a dereference. The null check reads `spi_bus->spi_int[iter]`; that is a load from the containing array, not a dereference of the newly allocated pointer. The checker also marks pointers checked before the branch is split, which can incorrectly treat both branches as checked.
+2. Track allocator return values by `SymbolRef`. This naturally follows aliases such as `spi_sub_ptr = spi_bus->spi_int[iter]`.
+3. At a dereference or known dereferencing call, report only when the current path still permits the pointer to be null. This uses the analyzer’s path constraints, so a successful null check suppresses the report on the non-null path while an unchecked allocation remains reportable.
+4. Keep allocator recognition and the known-dereference function handling. The target buggy code still reports when `spi_sub_ptr` is dereferenced without a null check.
+
+**Refined Code:**
+```cpp
+```
+
+The key behavioral difference is that `if (!spi_bus->spi_int[iter])` no longer triggers a report for loading the array element. In the buggy version, the subsequent alias retains the allocation’s symbol, and dereferencing that alias remains reportable if null is still feasible.

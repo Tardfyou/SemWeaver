@@ -1,0 +1,10 @@
+Refinment Plan:
+The false positive comes from treating `completion_done()` as a worker-wide flag. The worker’s failure branch frees `reset_data` in async mode, or only after `completion_done()` in sync mode. That conditional ownership logic is valid, but the checker evaluates paths independently and reports the async branch when it has not observed the guarded call.
+
+The refined checker correlates `completion_done()` with the same context object used by `kfree()` or `complete()`. A matching guard anywhere in the worker suppresses the warning; an unrelated completion check does not. This keeps the target buggy pattern detectable because its worker has no matching `completion_done()` call. The existing include directives are retained.
+
+Refined Code:
+```cpp
+```
+
+This is intentionally a targeted heuristic: a matching `completion_done()` anywhere in the worker suppresses the report for that context. For broader deployment, the next refinement would be path-sensitive tracking that verifies the check guards the relevant free or completion operation, rather than merely appearing in the same worker.

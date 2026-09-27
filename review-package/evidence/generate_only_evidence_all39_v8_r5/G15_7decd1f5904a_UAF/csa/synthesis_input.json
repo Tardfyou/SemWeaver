@@ -1,0 +1,1305 @@
+{
+  "analyzer_id": "csa",
+  "detector_artifact": "checker_plugin",
+  "primary_pattern": "use_after_free",
+  "objective": "Synthesize a path-sensitive use_after_free detector that encodes the same local state, guards, and lifecycle mechanism evidenced by the patch, while still generalizing to semantically equivalent sites.",
+  "mechanism_contract": {
+    "mechanism_family": "resource_lifetime_violation",
+    "semantic_dimensions": [
+      "resource identity or alias",
+      "release event",
+      "later use sink on the same resource",
+      "reinitialization/nulling/ownership transfer barrier"
+    ],
+    "trigger_invariants": [
+      "a resource is released",
+      "the same symbolic resource reaches a later use without reinitialization or ownership transfer"
+    ],
+    "silence_invariants": [
+      "the resource is nulled, rebound, or reinitialized before reuse",
+      "ownership transfer or guard logic blocks access after release"
+    ],
+    "transfer_axes": [
+      "equivalent release-then-use sequences on the same resource role",
+      "equivalent lifecycle transitions across wrappers or helper functions",
+      "equivalent guard or barrier predicates on sibling paths",
+      "equivalent local state transitions around the same sink or dereference",
+      "equivalent ownership or release/reinit lifecycle on the same symbolic resource"
+    ],
+    "forbidden_shortcuts": [
+      "bind the detector to fixed file paths, line numbers, or exact patch strings",
+      "broaden into unrelated bug families just to improve hit count",
+      "report every free/delete call as if it were a bug",
+      "ignore resource identity and alias continuity between release and use",
+      "identify resources only by variable or field names such as session/cache/context instead of lifecycle evidence",
+      "placeholder helper logic or empty ProgramState modeling"
+    ],
+    "evidence_backed_axes": [
+      "path guards and barrier conditions",
+      "state transitions",
+      "resource lifecycle",
+      "semantic trigger slice"
+    ]
+  },
+  "detector_name_hint": "",
+  "focus_files": [],
+  "focus_functions": [],
+  "hypotheses": [
+    "The patch likely changes a resource lifecycle or stale-state transition."
+  ],
+  "required_evidence_types": [
+    "patch_fact",
+    "allocation_lifecycle",
+    "state_transition"
+  ],
+  "missing_evidence_types": [],
+  "evidence_degraded": false,
+  "patch_mechanism_signals": [],
+  "silencing_conditions": [],
+  "retry_guidance": [],
+  "selected_evidence_ids": [
+    "csa_guard_0",
+    "csa_state_0",
+    "csa_validation_allocation_lifecycle_1",
+    "csa_validation_semantic_slice_0"
+  ],
+  "selected_evidence": [
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/mptcp/pm_netlink.c",
+        "function": "mptcp_pm_nl_rm_addr_or_subflow"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "if !((sizeof (msk->pm.accept_addr) == sizeof(char) || sizeof (msk->pm.accept_addr) == sizeof(short) || sizeof (msk->pm.accept_addr) == sizeof(int) || sizeof (msk->pm.accept_addr) == sizeof(long)) || sizeof (msk->pm.accept_addr) == sizeof(long long))",
+        "summary": "Analyzer CFG for mptcp_pm_nl_rm_addr_or_subflow in net/mptcp/pm_netlink.c: bindings: struct sock *sk = (struct sock *)msk;; sizeof (msk->pm.accept_addr) == sizeof(int) | branches: if !((sizeof (msk->pm.accept_addr) == sizeof(char) || sizeof (msk->pm.accept_addr) == sizeof(short) || sizeof (msk->pm.accept_addr) == sizeof(int) || sizeof (msk->pm.accept_addr) == sizeof(long)) || sizeof (msk->pm.accept_addr) == sizeof(long long)); (sizeof (msk->pm.accept_addr) == sizeof(char) || sizeof (msk->pm.accept_addr) == sizeof(short) || sizeof (msk->pm.accept_addr) == sizeof(int) || sizeof (msk->pm.accept_addr) == sizeof(long)) || ... | calls: mptcp_pm_nl_rm_addr_or_subflow -> __compiletime_assert_2005; mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch_jump",
+        "summary_line": 881,
+        "state_before": [
+          "buffer(msk->pm)",
+          "buffer(subflow->remote_id)",
+          "sinks(mptcp_subflow_tcp_sock, subflow_get_local_id)"
+        ],
+        "state_after": [
+          "cfg_binding(struct sock *sk = (struct sock *)msk;)",
+          "cfg_binding(sizeof (msk->pm.accept_addr) == sizeof(int))",
+          "cfg_branch(if !((sizeof (msk->pm.accept_addr) == sizeof(char) || sizeof (msk->pm.accept_addr) == sizeof(short) || sizeof (msk->pm.accept_addr) == sizeof(int) || sizeof (msk->pm.accept_addr) == sizeof(long)) || sizeof (msk->pm.accept_addr) == sizeof(long long)))",
+          "cfg_branch((sizeof (msk->pm.accept_addr) == sizeof(char) || sizeof (msk->pm.accept_addr) == sizeof(short) || sizeof (msk->pm.accept_addr) == sizeof(int) || sizeof (msk->pm.accept_addr) == sizeof(long)) || ...)"
+        ],
+        "tracked_symbols": [
+          "msk->pm",
+          "subflow->remote_id",
+          "rm_list->ids",
+          "msk->conn_list",
+          "rm_list->nr",
+          "msk->mpc_endpoint_id"
+        ],
+        "buffer_fields": [
+          "msk->pm",
+          "subflow->remote_id",
+          "rm_list->ids",
+          "msk->conn_list",
+          "rm_list->nr",
+          "msk->mpc_endpoint_id"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "mptcp_pm_nl_rm_addr_or_subflow"
+        ],
+        "call_targets": [
+          "mptcp_subflow_tcp_sock",
+          "subflow_get_local_id",
+          "inet_sk_state_load",
+          "pr_debug",
+          "spin_unlock_bh",
+          "mptcp_subflow_shutdown",
+          "mptcp_close_ssk",
+          "spin_lock_bh"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,net/mptcp/.pm_netlink.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/uapi -I./arch/x86/in...",
+        "cfg_branch_kinds": [
+          "if",
+          "for"
+        ],
+        "branch_conditions": [
+          "do ... while [B2.1]",
+          "do ... while [B3.1]",
+          "do ... while [B6.1]",
+          "if [B8.2]",
+          "([B13.3] || [B12.3] || [B11.3] || [B10.3]) || ...",
+          "[B13.3] || [B12.3] || [B11.3] || ..."
+        ],
+        "call_edges": [
+          "mptcp_pm_nl_rm_addr_or_subflow -> __compiletime_assert_2005",
+          "mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch_jump",
+          "mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch",
+          "mptcp_pm_nl_rm_addr_or_subflow -> ____wrong_branch_error",
+          "mptcp_pm_nl_rm_addr_or_subflow -> __builtin_expect",
+          "mptcp_pm_nl_rm_addr_or_subflow -> __dynamic_pr_debug"
+        ],
+        "state_statements": [
+          "[B1.1]++",
+          "([B4.1]) (ImplicitCastExpr, IntegralToBoolean, typeof (msk->pm.accept_addr))",
+          "[B4.4]->pm",
+          "(volatile typeof (msk->pm.accept_addr) *)[B4.7] (CStyleCastExpr, NoOp, volatile typeof (msk->pm.accept_addr) *)",
+          "[B4.9] = [B4.2]",
+          "sizeof (msk->pm.accept_addr)"
+        ],
+        "source_file": "net/mptcp/pm_netlink.c"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "net/mptcp/pm_netlink.c",
+          "hunk_index": 0,
+          "source_line": 881
+        },
+        "summary": "Analyzer CFG for mptcp_pm_nl_rm_addr_or_subflow in net/mptcp/pm_netlink.c: bindings: struct sock *sk = (struct sock *)msk;; sizeof (msk->pm.accept_addr) == sizeof(int) | branches: if !((sizeof (msk->pm.accept_addr) == sizeof(char) || sizeof (msk->pm.accept_addr) == sizeof(short) || sizeof (msk->pm.accept_addr) == sizeof(int) || sizeof (msk->pm.accept_addr) == sizeof(long)) || sizeof (msk->pm.accept_addr) == sizeof(long long)); (sizeof (msk->pm.accept_addr) == sizeof(char) || sizeof (msk->pm.accept_addr) == sizeof(short) || sizeof (msk->pm.accept_addr) == sizeof(int) || sizeof (msk->pm.accept_addr) == sizeof(long)) || ... | calls: mptcp_pm_nl_rm_addr_or_subflow -> __compiletime_assert_2005; mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch_jump",
+        "statements": [
+          "849:",
+          "850: \tif (list_empty(&msk->conn_list))",
+          "851: \t\treturn;",
+          "852:",
+          "853: \tfor (i = 0; i < rm_list->nr; i++) {",
+          "854: \t\tu8 rm_id = rm_list->ids[i];"
+        ],
+        "guards": [
+          "if !((sizeof (msk->pm.accept_addr) == sizeof(char) || sizeof (msk->pm.accept_addr) == sizeof(short) || sizeof (msk->pm.accept_addr) == sizeof(int) || sizeof (msk->pm.accept_addr) == sizeof(long)) || sizeof (msk->pm.accept_addr) == sizeof(long long))",
+          "(sizeof (msk->pm.accept_addr) == sizeof(char) || sizeof (msk->pm.accept_addr) == sizeof(short) || sizeof (msk->pm.accept_addr) == sizeof(int) || sizeof (msk->pm.accept_addr) == sizeof(long)) || ...",
+          "sizeof (msk->pm.accept_addr) == sizeof(char) || sizeof (msk->pm.accept_addr) == sizeof(short) || sizeof (msk->pm.accept_addr) == sizeof(int) || ...",
+          "sizeof (msk->pm.accept_addr) == sizeof(char) || sizeof (msk->pm.accept_addr) == sizeof(short) || ..."
+        ],
+        "call_boundary": [
+          "mptcp_subflow_tcp_sock",
+          "subflow_get_local_id",
+          "inet_sk_state_load",
+          "pr_debug",
+          "spin_unlock_bh",
+          "mptcp_subflow_shutdown"
+        ],
+        "call_edges": [
+          "mptcp_pm_nl_rm_addr_or_subflow -> __compiletime_assert_2005",
+          "mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch_jump",
+          "mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch",
+          "mptcp_pm_nl_rm_addr_or_subflow -> ____wrong_branch_error",
+          "mptcp_pm_nl_rm_addr_or_subflow -> __builtin_expect",
+          "mptcp_pm_nl_rm_addr_or_subflow -> __dynamic_pr_debug",
+          "mptcp_pm_nl_rm_addr_or_subflow -> msk_owned_by_me",
+          "mptcp_pm_nl_rm_addr_or_subflow -> list_empty"
+        ],
+        "state_transitions": [
+          "cfg_binding(struct sock *sk = (struct sock *)msk;)",
+          "cfg_binding(sizeof (msk->pm.accept_addr) == sizeof(int))",
+          "cfg_branch(if !((sizeof (msk->pm.accept_addr) == sizeof(char) || sizeof (msk->pm.accept_addr) == sizeof(short) || sizeof (msk->pm.accept_addr) == sizeof(int) || sizeof (msk->pm.accept_addr) == sizeof(long)) || sizeof (msk->pm.accept_addr) == sizeof(long long)))",
+          "cfg_branch((sizeof (msk->pm.accept_addr) == sizeof(char) || sizeof (msk->pm.accept_addr) == sizeof(short) || sizeof (msk->pm.accept_addr) == sizeof(int) || sizeof (msk->pm.accept_addr) == sizeof(long)) || ...)",
+          "[B1.1]++",
+          "([B4.1]) (ImplicitCastExpr, IntegralToBoolean, typeof (msk->pm.accept_addr))"
+        ],
+        "api_terms": [
+          "__compiletime_assert_2005",
+          "arch_static_branch_jump",
+          "arch_static_branch",
+          "____wrong_branch_error",
+          "__builtin_expect",
+          "__dynamic_pr_debug"
+        ],
+        "related_symbols": [
+          "msk->pm",
+          "subflow->remote_id",
+          "rm_list->ids",
+          "msk->conn_list",
+          "rm_list->nr",
+          "msk->mpc_endpoint_id"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/mptcp/pm_netlink.c",
+        "function": "mptcp_pm_nl_rm_addr_or_subflow"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "mptcp_pm_nl_rm_addr_or_subflow in net/mptcp/pm_netlink.c: locks=spin_unlock_bh, spin_lock_bh | state_ops=for (i = 0; i < rm_list->nr; i++) {; if (--msk->pm.add_addr_accepted < mptcp_pm_get_add_addr_accept_max(msk)) | cfg_calls=mptcp_pm_nl_rm_addr_or_subflow -> __compiletime_assert_2005; mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch_jump",
+        "state_before": [
+          "buffer(msk->pm)",
+          "buffer(subflow->remote_id)",
+          "sinks(mptcp_subflow_tcp_sock, subflow_get_local_id)"
+        ],
+        "state_after": [
+          "transition(for (i = 0; i < rm_list->nr; i++) {)",
+          "transition(if (--msk->pm.add_addr_accepted < mptcp_pm_get_add_addr_accept_max(msk)))",
+          "transition([B1.1]++)",
+          "locked(spin_unlock_bh, spin_lock_bh)"
+        ],
+        "tracked_symbols": [
+          "msk->pm",
+          "subflow->remote_id",
+          "rm_list->ids",
+          "msk->conn_list",
+          "rm_list->nr",
+          "msk->mpc_endpoint_id"
+        ],
+        "buffer_fields": [
+          "msk->pm",
+          "subflow->remote_id",
+          "rm_list->ids",
+          "msk->conn_list",
+          "rm_list->nr",
+          "msk->mpc_endpoint_id"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "mptcp_pm_nl_rm_addr_or_subflow"
+        ],
+        "call_targets": [
+          "mptcp_subflow_tcp_sock",
+          "subflow_get_local_id",
+          "inet_sk_state_load",
+          "pr_debug",
+          "spin_unlock_bh",
+          "mptcp_subflow_shutdown",
+          "mptcp_close_ssk",
+          "spin_lock_bh"
+        ],
+        "cfg_branch_kinds": [
+          "if",
+          "for"
+        ],
+        "branch_conditions": [
+          "do ... while [B2.1]",
+          "do ... while [B3.1]",
+          "do ... while [B6.1]",
+          "if [B8.2]"
+        ],
+        "call_edges": [
+          "mptcp_pm_nl_rm_addr_or_subflow -> __compiletime_assert_2005",
+          "mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch_jump",
+          "mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch",
+          "mptcp_pm_nl_rm_addr_or_subflow -> ____wrong_branch_error",
+          "mptcp_pm_nl_rm_addr_or_subflow -> __builtin_expect",
+          "mptcp_pm_nl_rm_addr_or_subflow -> __dynamic_pr_debug"
+        ],
+        "state_statements": [
+          "[B1.1]++",
+          "([B4.1]) (ImplicitCastExpr, IntegralToBoolean, typeof (msk->pm.accept_addr))",
+          "[B4.4]->pm",
+          "(volatile typeof (msk->pm.accept_addr) *)[B4.7] (CStyleCastExpr, NoOp, volatile typeof (msk->pm.accept_addr) *)",
+          "[B4.9] = [B4.2]",
+          "sizeof (msk->pm.accept_addr)",
+          "sizeof(long long)",
+          "[B9.1] == [B9.2]"
+        ],
+        "return_statements": [
+          "return;"
+        ],
+        "source_file": "net/mptcp/pm_netlink.c"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "net/mptcp/pm_netlink.c",
+          "hunk_index": 0,
+          "source_line": 881
+        },
+        "summary": "mptcp_pm_nl_rm_addr_or_subflow in net/mptcp/pm_netlink.c: locks=spin_unlock_bh, spin_lock_bh | state_ops=for (i = 0; i < rm_list->nr; i++) {; if (--msk->pm.add_addr_accepted < mptcp_pm_get_add_addr_accept_max(msk)) | cfg_calls=mptcp_pm_nl_rm_addr_or_subflow -> __compiletime_assert_2005; mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch_jump",
+        "statements": [
+          "849:",
+          "850: \tif (list_empty(&msk->conn_list))",
+          "851: \t\treturn;",
+          "852:",
+          "853: \tfor (i = 0; i < rm_list->nr; i++) {",
+          "854: \t\tu8 rm_id = rm_list->ids[i];"
+        ],
+        "guards": [
+          "do ... while [B2.1]",
+          "do ... while [B3.1]",
+          "do ... while [B6.1]"
+        ],
+        "call_boundary": [
+          "mptcp_subflow_tcp_sock",
+          "subflow_get_local_id",
+          "inet_sk_state_load",
+          "pr_debug",
+          "spin_unlock_bh",
+          "mptcp_subflow_shutdown"
+        ],
+        "call_edges": [
+          "mptcp_pm_nl_rm_addr_or_subflow -> __compiletime_assert_2005",
+          "mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch_jump",
+          "mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch",
+          "mptcp_pm_nl_rm_addr_or_subflow -> ____wrong_branch_error",
+          "mptcp_pm_nl_rm_addr_or_subflow -> __builtin_expect",
+          "mptcp_pm_nl_rm_addr_or_subflow -> __dynamic_pr_debug",
+          "mptcp_pm_nl_rm_addr_or_subflow -> msk_owned_by_me",
+          "mptcp_pm_nl_rm_addr_or_subflow -> list_empty"
+        ],
+        "state_transitions": [
+          "transition(for (i = 0; i < rm_list->nr; i++) {)",
+          "transition(if (--msk->pm.add_addr_accepted < mptcp_pm_get_add_addr_accept_max(msk)))",
+          "transition([B1.1]++)",
+          "locked(spin_unlock_bh, spin_lock_bh)",
+          "[B1.1]++",
+          "([B4.1]) (ImplicitCastExpr, IntegralToBoolean, typeof (msk->pm.accept_addr))"
+        ],
+        "api_terms": [
+          "spin_unlock_bh",
+          "spin_lock_bh",
+          "__compiletime_assert_2005",
+          "arch_static_branch_jump",
+          "arch_static_branch",
+          "____wrong_branch_error"
+        ],
+        "related_symbols": [
+          "msk->pm",
+          "subflow->remote_id",
+          "rm_list->ids",
+          "msk->conn_list",
+          "rm_list->nr",
+          "msk->mpc_endpoint_id"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.88
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_1",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/mptcp/pm_netlink.c",
+        "function": "mptcp_pm_nl_rm_addr_or_subflow"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "mptcp_pm_nl_rm_addr_or_subflow in net/mptcp/pm_netlink.c provides CSA-backed pointer/resource lifecycle context near line 881",
+        "state_before": [
+          "buffer(msk->pm)",
+          "buffer(subflow->remote_id)",
+          "sinks(mptcp_subflow_tcp_sock, subflow_get_local_id)"
+        ],
+        "state_after": [
+          "operation(for (i = 0; i < rm_list->nr; i++) {)",
+          "operation(if (--msk->pm.add_addr_accepted < mptcp_pm_get_add_addr_accept_max(msk)))",
+          "operation([B1.1]++)",
+          "operation(([B4.1]) (ImplicitCastExpr, IntegralToBoolean, typeof (msk->pm.accept_addr)))"
+        ],
+        "buffer_fields": [
+          "msk->pm",
+          "subflow->remote_id",
+          "rm_list->ids",
+          "msk->conn_list",
+          "rm_list->nr",
+          "msk->mpc_endpoint_id"
+        ],
+        "coverage_status": "partial",
+        "operations": [
+          "for (i = 0; i < rm_list->nr; i++) {",
+          "if (--msk->pm.add_addr_accepted < mptcp_pm_get_add_addr_accept_max(msk))",
+          "[B1.1]++",
+          "([B4.1]) (ImplicitCastExpr, IntegralToBoolean, typeof (msk->pm.accept_addr))",
+          "[B4.4]->pm",
+          "(volatile typeof (msk->pm.accept_addr) *)[B4.7] (CStyleCastExpr, NoOp, volatile typeof (msk->pm.accept_addr) *)"
+        ],
+        "functions": [
+          "mptcp_pm_nl_rm_addr_or_subflow"
+        ],
+        "call_targets": [
+          "mptcp_subflow_tcp_sock",
+          "subflow_get_local_id",
+          "inet_sk_state_load",
+          "pr_debug",
+          "spin_unlock_bh",
+          "mptcp_subflow_shutdown"
+        ],
+        "call_edges": [
+          "mptcp_pm_nl_rm_addr_or_subflow -> __compiletime_assert_2005",
+          "mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch_jump",
+          "mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch",
+          "mptcp_pm_nl_rm_addr_or_subflow -> ____wrong_branch_error",
+          "mptcp_pm_nl_rm_addr_or_subflow -> __builtin_expect",
+          "mptcp_pm_nl_rm_addr_or_subflow -> __dynamic_pr_debug"
+        ],
+        "state_statements": [
+          "for (i = 0; i < rm_list->nr; i++) {",
+          "if (--msk->pm.add_addr_accepted < mptcp_pm_get_add_addr_accept_max(msk))",
+          "[B1.1]++",
+          "([B4.1]) (ImplicitCastExpr, IntegralToBoolean, typeof (msk->pm.accept_addr))",
+          "[B4.4]->pm",
+          "(volatile typeof (msk->pm.accept_addr) *)[B4.7] (CStyleCastExpr, NoOp, volatile typeof (msk->pm.accept_addr) *)"
+        ],
+        "source_file": "net/mptcp/pm_netlink.c"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "net/mptcp/pm_netlink.c",
+          "hunk_index": 0,
+          "source_line": 881
+        },
+        "summary": "mptcp_pm_nl_rm_addr_or_subflow in net/mptcp/pm_netlink.c provides CSA-backed pointer/resource lifecycle context near line 881",
+        "statements": [
+          "849:",
+          "850: \tif (list_empty(&msk->conn_list))",
+          "851: \t\treturn;",
+          "852:",
+          "853: \tfor (i = 0; i < rm_list->nr; i++) {",
+          "854: \t\tu8 rm_id = rm_list->ids[i];"
+        ],
+        "guards": [
+          "list_empty(&msk->conn_list)",
+          "i = 0; i < rm_list->nr; i++",
+          "(1 << inet_sk_state_load(ssk)",
+          "rm_type == MPTCP_MIB_RMADDR && remote_id != rm_id"
+        ],
+        "call_boundary": [
+          "mptcp_subflow_tcp_sock",
+          "subflow_get_local_id",
+          "inet_sk_state_load",
+          "pr_debug",
+          "spin_unlock_bh",
+          "mptcp_subflow_shutdown"
+        ],
+        "call_edges": [
+          "mptcp_pm_nl_rm_addr_or_subflow -> __compiletime_assert_2005",
+          "mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch_jump",
+          "mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch",
+          "mptcp_pm_nl_rm_addr_or_subflow -> ____wrong_branch_error",
+          "mptcp_pm_nl_rm_addr_or_subflow -> __builtin_expect",
+          "mptcp_pm_nl_rm_addr_or_subflow -> __dynamic_pr_debug"
+        ],
+        "state_transitions": [
+          "operation(for (i = 0; i < rm_list->nr; i++) {)",
+          "operation(if (--msk->pm.add_addr_accepted < mptcp_pm_get_add_addr_accept_max(msk)))",
+          "operation([B1.1]++)",
+          "operation(([B4.1]) (ImplicitCastExpr, IntegralToBoolean, typeof (msk->pm.accept_addr)))"
+        ],
+        "api_terms": [
+          "for (i = 0; i < rm_list->nr; i++) {",
+          "if (--msk->pm.add_addr_accepted < mptcp_pm_get_add_addr_accept_max(msk))",
+          "[B1.1]++",
+          "([B4.1]) (ImplicitCastExpr, IntegralToBoolean, typeof (msk->pm.accept_addr))",
+          "[B4.4]->pm",
+          "(volatile typeof (msk->pm.accept_addr) *)[B4.7] (CStyleCastExpr, NoOp, volatile typeof (msk->pm.accept_addr) *)"
+        ],
+        "related_symbols": [],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      },
+      "confidence": 0.72
+    },
+    {
+      "evidence_id": "csa_validation_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/mptcp/pm_netlink.c",
+        "function": "mptcp_pm_nl_rm_addr_or_subflow"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at net/mptcp/pm_netlink.c:881",
+        "state_before": [
+          "buffer(msk->pm)",
+          "buffer(subflow->remote_id)",
+          "sinks(mptcp_subflow_tcp_sock, subflow_get_local_id)"
+        ],
+        "state_after": [
+          "diagnostic(csa)"
+        ],
+        "buffer_fields": [
+          "msk->pm",
+          "subflow->remote_id",
+          "rm_list->ids",
+          "msk->conn_list",
+          "rm_list->nr",
+          "msk->mpc_endpoint_id"
+        ],
+        "coverage_status": "partial",
+        "functions": [
+          "mptcp_pm_nl_rm_addr_or_subflow"
+        ],
+        "call_targets": [
+          "mptcp_subflow_tcp_sock",
+          "subflow_get_local_id",
+          "inet_sk_state_load",
+          "pr_debug",
+          "spin_unlock_bh",
+          "mptcp_subflow_shutdown"
+        ],
+        "call_edges": [
+          "mptcp_pm_nl_rm_addr_or_subflow -> __compiletime_assert_2005",
+          "mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch_jump",
+          "mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch",
+          "mptcp_pm_nl_rm_addr_or_subflow -> ____wrong_branch_error",
+          "mptcp_pm_nl_rm_addr_or_subflow -> __builtin_expect",
+          "mptcp_pm_nl_rm_addr_or_subflow -> __dynamic_pr_debug"
+        ],
+        "state_statements": [
+          "for (i = 0; i < rm_list->nr; i++) {",
+          "if (--msk->pm.add_addr_accepted < mptcp_pm_get_add_addr_accept_max(msk))",
+          "[B1.1]++",
+          "([B4.1]) (ImplicitCastExpr, IntegralToBoolean, typeof (msk->pm.accept_addr))",
+          "[B4.4]->pm",
+          "(volatile typeof (msk->pm.accept_addr) *)[B4.7] (CStyleCastExpr, NoOp, volatile typeof (msk->pm.accept_addr) *)"
+        ],
+        "source_file": "net/mptcp/pm_netlink.c"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "net/mptcp/pm_netlink.c",
+          "hunk_index": 0,
+          "source_line": 881
+        },
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at net/mptcp/pm_netlink.c:881",
+        "statements": [
+          "849:",
+          "850: \tif (list_empty(&msk->conn_list))",
+          "851: \t\treturn;",
+          "852:",
+          "853: \tfor (i = 0; i < rm_list->nr; i++) {",
+          "854: \t\tu8 rm_id = rm_list->ids[i];"
+        ],
+        "guards": [
+          "list_empty(&msk->conn_list)",
+          "i = 0; i < rm_list->nr; i++",
+          "(1 << inet_sk_state_load(ssk)",
+          "rm_type == MPTCP_MIB_RMADDR && remote_id != rm_id"
+        ],
+        "call_boundary": [
+          "mptcp_subflow_tcp_sock",
+          "subflow_get_local_id",
+          "inet_sk_state_load",
+          "pr_debug",
+          "spin_unlock_bh",
+          "mptcp_subflow_shutdown"
+        ],
+        "call_edges": [
+          "mptcp_pm_nl_rm_addr_or_subflow -> __compiletime_assert_2005",
+          "mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch_jump",
+          "mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch",
+          "mptcp_pm_nl_rm_addr_or_subflow -> ____wrong_branch_error",
+          "mptcp_pm_nl_rm_addr_or_subflow -> __builtin_expect",
+          "mptcp_pm_nl_rm_addr_or_subflow -> __dynamic_pr_debug"
+        ],
+        "state_transitions": [
+          "diagnostic(csa)"
+        ],
+        "api_terms": [
+          "for (i = 0; i < rm_list->nr; i++) {",
+          "if (--msk->pm.add_addr_accepted < mptcp_pm_get_add_addr_accept_max(msk))",
+          "[B1.1]++",
+          "([B4.1]) (ImplicitCastExpr, IntegralToBoolean, typeof (msk->pm.accept_addr))",
+          "[B4.4]->pm",
+          "(volatile typeof (msk->pm.accept_addr) *)[B4.7] (CStyleCastExpr, NoOp, volatile typeof (msk->pm.accept_addr) *)"
+        ],
+        "related_symbols": [],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      },
+      "confidence": 0.72
+    }
+  ],
+  "semantic_slice_count": 4,
+  "context_summary_count": 0,
+  "semantic_slice_coverage": "partial",
+  "selected_semantic_slice_ids": [
+    "csa_guard_0",
+    "csa_state_0",
+    "csa_validation_allocation_lifecycle_1",
+    "csa_validation_semantic_slice_0"
+  ],
+  "selected_context_summary_ids": [],
+  "selected_semantic_slices": [
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/mptcp/pm_netlink.c",
+        "function": "mptcp_pm_nl_rm_addr_or_subflow"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "if !((sizeof (msk->pm.accept_addr) == sizeof(char) || sizeof (msk->pm.accept_addr) == sizeof(short) || sizeof (msk->pm.accept_addr) == sizeof(int) || sizeof (msk->pm.accept_addr) == sizeof(long)) || sizeof (msk->pm.accept_addr) == sizeof(long long))",
+        "summary": "Analyzer CFG for mptcp_pm_nl_rm_addr_or_subflow in net/mptcp/pm_netlink.c: bindings: struct sock *sk = (struct sock *)msk;; sizeof (msk->pm.accept_addr) == sizeof(int) | branches: if !((sizeof (msk->pm.accept_addr) == sizeof(char) || sizeof (msk->pm.accept_addr) == sizeof(short) || sizeof (msk->pm.accept_addr) == sizeof(int) || sizeof (msk->pm.accept_addr) == sizeof(long)) || sizeof (msk->pm.accept_addr) == sizeof(long long)); (sizeof (msk->pm.accept_addr) == sizeof(char) || sizeof (msk->pm.accept_addr) == sizeof(short) || sizeof (msk->pm.accept_addr) == sizeof(int) || sizeof (msk->pm.accept_addr) == sizeof(long)) || ... | calls: mptcp_pm_nl_rm_addr_or_subflow -> __compiletime_assert_2005; mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch_jump",
+        "summary_line": 881,
+        "state_before": [
+          "buffer(msk->pm)",
+          "buffer(subflow->remote_id)",
+          "sinks(mptcp_subflow_tcp_sock, subflow_get_local_id)"
+        ],
+        "state_after": [
+          "cfg_binding(struct sock *sk = (struct sock *)msk;)",
+          "cfg_binding(sizeof (msk->pm.accept_addr) == sizeof(int))",
+          "cfg_branch(if !((sizeof (msk->pm.accept_addr) == sizeof(char) || sizeof (msk->pm.accept_addr) == sizeof(short) || sizeof (msk->pm.accept_addr) == sizeof(int) || sizeof (msk->pm.accept_addr) == sizeof(long)) || sizeof (msk->pm.accept_addr) == sizeof(long long)))",
+          "cfg_branch((sizeof (msk->pm.accept_addr) == sizeof(char) || sizeof (msk->pm.accept_addr) == sizeof(short) || sizeof (msk->pm.accept_addr) == sizeof(int) || sizeof (msk->pm.accept_addr) == sizeof(long)) || ...)"
+        ],
+        "tracked_symbols": [
+          "msk->pm",
+          "subflow->remote_id",
+          "rm_list->ids",
+          "msk->conn_list",
+          "rm_list->nr",
+          "msk->mpc_endpoint_id"
+        ],
+        "buffer_fields": [
+          "msk->pm",
+          "subflow->remote_id",
+          "rm_list->ids",
+          "msk->conn_list",
+          "rm_list->nr",
+          "msk->mpc_endpoint_id"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "mptcp_pm_nl_rm_addr_or_subflow"
+        ],
+        "call_targets": [
+          "mptcp_subflow_tcp_sock",
+          "subflow_get_local_id",
+          "inet_sk_state_load",
+          "pr_debug",
+          "spin_unlock_bh",
+          "mptcp_subflow_shutdown",
+          "mptcp_close_ssk",
+          "spin_lock_bh"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,net/mptcp/.pm_netlink.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/uapi -I./arch/x86/in...",
+        "cfg_branch_kinds": [
+          "if",
+          "for"
+        ],
+        "branch_conditions": [
+          "do ... while [B2.1]",
+          "do ... while [B3.1]",
+          "do ... while [B6.1]",
+          "if [B8.2]",
+          "([B13.3] || [B12.3] || [B11.3] || [B10.3]) || ...",
+          "[B13.3] || [B12.3] || [B11.3] || ..."
+        ],
+        "call_edges": [
+          "mptcp_pm_nl_rm_addr_or_subflow -> __compiletime_assert_2005",
+          "mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch_jump",
+          "mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch",
+          "mptcp_pm_nl_rm_addr_or_subflow -> ____wrong_branch_error",
+          "mptcp_pm_nl_rm_addr_or_subflow -> __builtin_expect",
+          "mptcp_pm_nl_rm_addr_or_subflow -> __dynamic_pr_debug"
+        ],
+        "state_statements": [
+          "[B1.1]++",
+          "([B4.1]) (ImplicitCastExpr, IntegralToBoolean, typeof (msk->pm.accept_addr))",
+          "[B4.4]->pm",
+          "(volatile typeof (msk->pm.accept_addr) *)[B4.7] (CStyleCastExpr, NoOp, volatile typeof (msk->pm.accept_addr) *)",
+          "[B4.9] = [B4.2]",
+          "sizeof (msk->pm.accept_addr)"
+        ],
+        "source_file": "net/mptcp/pm_netlink.c"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "net/mptcp/pm_netlink.c",
+          "hunk_index": 0,
+          "source_line": 881
+        },
+        "summary": "Analyzer CFG for mptcp_pm_nl_rm_addr_or_subflow in net/mptcp/pm_netlink.c: bindings: struct sock *sk = (struct sock *)msk;; sizeof (msk->pm.accept_addr) == sizeof(int) | branches: if !((sizeof (msk->pm.accept_addr) == sizeof(char) || sizeof (msk->pm.accept_addr) == sizeof(short) || sizeof (msk->pm.accept_addr) == sizeof(int) || sizeof (msk->pm.accept_addr) == sizeof(long)) || sizeof (msk->pm.accept_addr) == sizeof(long long)); (sizeof (msk->pm.accept_addr) == sizeof(char) || sizeof (msk->pm.accept_addr) == sizeof(short) || sizeof (msk->pm.accept_addr) == sizeof(int) || sizeof (msk->pm.accept_addr) == sizeof(long)) || ... | calls: mptcp_pm_nl_rm_addr_or_subflow -> __compiletime_assert_2005; mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch_jump",
+        "statements": [
+          "849:",
+          "850: \tif (list_empty(&msk->conn_list))",
+          "851: \t\treturn;",
+          "852:",
+          "853: \tfor (i = 0; i < rm_list->nr; i++) {",
+          "854: \t\tu8 rm_id = rm_list->ids[i];"
+        ],
+        "guards": [
+          "if !((sizeof (msk->pm.accept_addr) == sizeof(char) || sizeof (msk->pm.accept_addr) == sizeof(short) || sizeof (msk->pm.accept_addr) == sizeof(int) || sizeof (msk->pm.accept_addr) == sizeof(long)) || sizeof (msk->pm.accept_addr) == sizeof(long long))",
+          "(sizeof (msk->pm.accept_addr) == sizeof(char) || sizeof (msk->pm.accept_addr) == sizeof(short) || sizeof (msk->pm.accept_addr) == sizeof(int) || sizeof (msk->pm.accept_addr) == sizeof(long)) || ...",
+          "sizeof (msk->pm.accept_addr) == sizeof(char) || sizeof (msk->pm.accept_addr) == sizeof(short) || sizeof (msk->pm.accept_addr) == sizeof(int) || ...",
+          "sizeof (msk->pm.accept_addr) == sizeof(char) || sizeof (msk->pm.accept_addr) == sizeof(short) || ..."
+        ],
+        "call_boundary": [
+          "mptcp_subflow_tcp_sock",
+          "subflow_get_local_id",
+          "inet_sk_state_load",
+          "pr_debug",
+          "spin_unlock_bh",
+          "mptcp_subflow_shutdown"
+        ],
+        "call_edges": [
+          "mptcp_pm_nl_rm_addr_or_subflow -> __compiletime_assert_2005",
+          "mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch_jump",
+          "mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch",
+          "mptcp_pm_nl_rm_addr_or_subflow -> ____wrong_branch_error",
+          "mptcp_pm_nl_rm_addr_or_subflow -> __builtin_expect",
+          "mptcp_pm_nl_rm_addr_or_subflow -> __dynamic_pr_debug",
+          "mptcp_pm_nl_rm_addr_or_subflow -> msk_owned_by_me",
+          "mptcp_pm_nl_rm_addr_or_subflow -> list_empty"
+        ],
+        "state_transitions": [
+          "cfg_binding(struct sock *sk = (struct sock *)msk;)",
+          "cfg_binding(sizeof (msk->pm.accept_addr) == sizeof(int))",
+          "cfg_branch(if !((sizeof (msk->pm.accept_addr) == sizeof(char) || sizeof (msk->pm.accept_addr) == sizeof(short) || sizeof (msk->pm.accept_addr) == sizeof(int) || sizeof (msk->pm.accept_addr) == sizeof(long)) || sizeof (msk->pm.accept_addr) == sizeof(long long)))",
+          "cfg_branch((sizeof (msk->pm.accept_addr) == sizeof(char) || sizeof (msk->pm.accept_addr) == sizeof(short) || sizeof (msk->pm.accept_addr) == sizeof(int) || sizeof (msk->pm.accept_addr) == sizeof(long)) || ...)",
+          "[B1.1]++",
+          "([B4.1]) (ImplicitCastExpr, IntegralToBoolean, typeof (msk->pm.accept_addr))"
+        ],
+        "api_terms": [
+          "__compiletime_assert_2005",
+          "arch_static_branch_jump",
+          "arch_static_branch",
+          "____wrong_branch_error",
+          "__builtin_expect",
+          "__dynamic_pr_debug"
+        ],
+        "related_symbols": [
+          "msk->pm",
+          "subflow->remote_id",
+          "rm_list->ids",
+          "msk->conn_list",
+          "rm_list->nr",
+          "msk->mpc_endpoint_id"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/mptcp/pm_netlink.c",
+        "function": "mptcp_pm_nl_rm_addr_or_subflow"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "mptcp_pm_nl_rm_addr_or_subflow in net/mptcp/pm_netlink.c: locks=spin_unlock_bh, spin_lock_bh | state_ops=for (i = 0; i < rm_list->nr; i++) {; if (--msk->pm.add_addr_accepted < mptcp_pm_get_add_addr_accept_max(msk)) | cfg_calls=mptcp_pm_nl_rm_addr_or_subflow -> __compiletime_assert_2005; mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch_jump",
+        "state_before": [
+          "buffer(msk->pm)",
+          "buffer(subflow->remote_id)",
+          "sinks(mptcp_subflow_tcp_sock, subflow_get_local_id)"
+        ],
+        "state_after": [
+          "transition(for (i = 0; i < rm_list->nr; i++) {)",
+          "transition(if (--msk->pm.add_addr_accepted < mptcp_pm_get_add_addr_accept_max(msk)))",
+          "transition([B1.1]++)",
+          "locked(spin_unlock_bh, spin_lock_bh)"
+        ],
+        "tracked_symbols": [
+          "msk->pm",
+          "subflow->remote_id",
+          "rm_list->ids",
+          "msk->conn_list",
+          "rm_list->nr",
+          "msk->mpc_endpoint_id"
+        ],
+        "buffer_fields": [
+          "msk->pm",
+          "subflow->remote_id",
+          "rm_list->ids",
+          "msk->conn_list",
+          "rm_list->nr",
+          "msk->mpc_endpoint_id"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "mptcp_pm_nl_rm_addr_or_subflow"
+        ],
+        "call_targets": [
+          "mptcp_subflow_tcp_sock",
+          "subflow_get_local_id",
+          "inet_sk_state_load",
+          "pr_debug",
+          "spin_unlock_bh",
+          "mptcp_subflow_shutdown",
+          "mptcp_close_ssk",
+          "spin_lock_bh"
+        ],
+        "cfg_branch_kinds": [
+          "if",
+          "for"
+        ],
+        "branch_conditions": [
+          "do ... while [B2.1]",
+          "do ... while [B3.1]",
+          "do ... while [B6.1]",
+          "if [B8.2]"
+        ],
+        "call_edges": [
+          "mptcp_pm_nl_rm_addr_or_subflow -> __compiletime_assert_2005",
+          "mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch_jump",
+          "mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch",
+          "mptcp_pm_nl_rm_addr_or_subflow -> ____wrong_branch_error",
+          "mptcp_pm_nl_rm_addr_or_subflow -> __builtin_expect",
+          "mptcp_pm_nl_rm_addr_or_subflow -> __dynamic_pr_debug"
+        ],
+        "state_statements": [
+          "[B1.1]++",
+          "([B4.1]) (ImplicitCastExpr, IntegralToBoolean, typeof (msk->pm.accept_addr))",
+          "[B4.4]->pm",
+          "(volatile typeof (msk->pm.accept_addr) *)[B4.7] (CStyleCastExpr, NoOp, volatile typeof (msk->pm.accept_addr) *)",
+          "[B4.9] = [B4.2]",
+          "sizeof (msk->pm.accept_addr)",
+          "sizeof(long long)",
+          "[B9.1] == [B9.2]"
+        ],
+        "return_statements": [
+          "return;"
+        ],
+        "source_file": "net/mptcp/pm_netlink.c"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "net/mptcp/pm_netlink.c",
+          "hunk_index": 0,
+          "source_line": 881
+        },
+        "summary": "mptcp_pm_nl_rm_addr_or_subflow in net/mptcp/pm_netlink.c: locks=spin_unlock_bh, spin_lock_bh | state_ops=for (i = 0; i < rm_list->nr; i++) {; if (--msk->pm.add_addr_accepted < mptcp_pm_get_add_addr_accept_max(msk)) | cfg_calls=mptcp_pm_nl_rm_addr_or_subflow -> __compiletime_assert_2005; mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch_jump",
+        "statements": [
+          "849:",
+          "850: \tif (list_empty(&msk->conn_list))",
+          "851: \t\treturn;",
+          "852:",
+          "853: \tfor (i = 0; i < rm_list->nr; i++) {",
+          "854: \t\tu8 rm_id = rm_list->ids[i];"
+        ],
+        "guards": [
+          "do ... while [B2.1]",
+          "do ... while [B3.1]",
+          "do ... while [B6.1]"
+        ],
+        "call_boundary": [
+          "mptcp_subflow_tcp_sock",
+          "subflow_get_local_id",
+          "inet_sk_state_load",
+          "pr_debug",
+          "spin_unlock_bh",
+          "mptcp_subflow_shutdown"
+        ],
+        "call_edges": [
+          "mptcp_pm_nl_rm_addr_or_subflow -> __compiletime_assert_2005",
+          "mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch_jump",
+          "mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch",
+          "mptcp_pm_nl_rm_addr_or_subflow -> ____wrong_branch_error",
+          "mptcp_pm_nl_rm_addr_or_subflow -> __builtin_expect",
+          "mptcp_pm_nl_rm_addr_or_subflow -> __dynamic_pr_debug",
+          "mptcp_pm_nl_rm_addr_or_subflow -> msk_owned_by_me",
+          "mptcp_pm_nl_rm_addr_or_subflow -> list_empty"
+        ],
+        "state_transitions": [
+          "transition(for (i = 0; i < rm_list->nr; i++) {)",
+          "transition(if (--msk->pm.add_addr_accepted < mptcp_pm_get_add_addr_accept_max(msk)))",
+          "transition([B1.1]++)",
+          "locked(spin_unlock_bh, spin_lock_bh)",
+          "[B1.1]++",
+          "([B4.1]) (ImplicitCastExpr, IntegralToBoolean, typeof (msk->pm.accept_addr))"
+        ],
+        "api_terms": [
+          "spin_unlock_bh",
+          "spin_lock_bh",
+          "__compiletime_assert_2005",
+          "arch_static_branch_jump",
+          "arch_static_branch",
+          "____wrong_branch_error"
+        ],
+        "related_symbols": [
+          "msk->pm",
+          "subflow->remote_id",
+          "rm_list->ids",
+          "msk->conn_list",
+          "rm_list->nr",
+          "msk->mpc_endpoint_id"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.88
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_1",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/mptcp/pm_netlink.c",
+        "function": "mptcp_pm_nl_rm_addr_or_subflow"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "mptcp_pm_nl_rm_addr_or_subflow in net/mptcp/pm_netlink.c provides CSA-backed pointer/resource lifecycle context near line 881",
+        "state_before": [
+          "buffer(msk->pm)",
+          "buffer(subflow->remote_id)",
+          "sinks(mptcp_subflow_tcp_sock, subflow_get_local_id)"
+        ],
+        "state_after": [
+          "operation(for (i = 0; i < rm_list->nr; i++) {)",
+          "operation(if (--msk->pm.add_addr_accepted < mptcp_pm_get_add_addr_accept_max(msk)))",
+          "operation([B1.1]++)",
+          "operation(([B4.1]) (ImplicitCastExpr, IntegralToBoolean, typeof (msk->pm.accept_addr)))"
+        ],
+        "buffer_fields": [
+          "msk->pm",
+          "subflow->remote_id",
+          "rm_list->ids",
+          "msk->conn_list",
+          "rm_list->nr",
+          "msk->mpc_endpoint_id"
+        ],
+        "coverage_status": "partial",
+        "operations": [
+          "for (i = 0; i < rm_list->nr; i++) {",
+          "if (--msk->pm.add_addr_accepted < mptcp_pm_get_add_addr_accept_max(msk))",
+          "[B1.1]++",
+          "([B4.1]) (ImplicitCastExpr, IntegralToBoolean, typeof (msk->pm.accept_addr))",
+          "[B4.4]->pm",
+          "(volatile typeof (msk->pm.accept_addr) *)[B4.7] (CStyleCastExpr, NoOp, volatile typeof (msk->pm.accept_addr) *)"
+        ],
+        "functions": [
+          "mptcp_pm_nl_rm_addr_or_subflow"
+        ],
+        "call_targets": [
+          "mptcp_subflow_tcp_sock",
+          "subflow_get_local_id",
+          "inet_sk_state_load",
+          "pr_debug",
+          "spin_unlock_bh",
+          "mptcp_subflow_shutdown"
+        ],
+        "call_edges": [
+          "mptcp_pm_nl_rm_addr_or_subflow -> __compiletime_assert_2005",
+          "mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch_jump",
+          "mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch",
+          "mptcp_pm_nl_rm_addr_or_subflow -> ____wrong_branch_error",
+          "mptcp_pm_nl_rm_addr_or_subflow -> __builtin_expect",
+          "mptcp_pm_nl_rm_addr_or_subflow -> __dynamic_pr_debug"
+        ],
+        "state_statements": [
+          "for (i = 0; i < rm_list->nr; i++) {",
+          "if (--msk->pm.add_addr_accepted < mptcp_pm_get_add_addr_accept_max(msk))",
+          "[B1.1]++",
+          "([B4.1]) (ImplicitCastExpr, IntegralToBoolean, typeof (msk->pm.accept_addr))",
+          "[B4.4]->pm",
+          "(volatile typeof (msk->pm.accept_addr) *)[B4.7] (CStyleCastExpr, NoOp, volatile typeof (msk->pm.accept_addr) *)"
+        ],
+        "source_file": "net/mptcp/pm_netlink.c"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "net/mptcp/pm_netlink.c",
+          "hunk_index": 0,
+          "source_line": 881
+        },
+        "summary": "mptcp_pm_nl_rm_addr_or_subflow in net/mptcp/pm_netlink.c provides CSA-backed pointer/resource lifecycle context near line 881",
+        "statements": [
+          "849:",
+          "850: \tif (list_empty(&msk->conn_list))",
+          "851: \t\treturn;",
+          "852:",
+          "853: \tfor (i = 0; i < rm_list->nr; i++) {",
+          "854: \t\tu8 rm_id = rm_list->ids[i];"
+        ],
+        "guards": [
+          "list_empty(&msk->conn_list)",
+          "i = 0; i < rm_list->nr; i++",
+          "(1 << inet_sk_state_load(ssk)",
+          "rm_type == MPTCP_MIB_RMADDR && remote_id != rm_id"
+        ],
+        "call_boundary": [
+          "mptcp_subflow_tcp_sock",
+          "subflow_get_local_id",
+          "inet_sk_state_load",
+          "pr_debug",
+          "spin_unlock_bh",
+          "mptcp_subflow_shutdown"
+        ],
+        "call_edges": [
+          "mptcp_pm_nl_rm_addr_or_subflow -> __compiletime_assert_2005",
+          "mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch_jump",
+          "mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch",
+          "mptcp_pm_nl_rm_addr_or_subflow -> ____wrong_branch_error",
+          "mptcp_pm_nl_rm_addr_or_subflow -> __builtin_expect",
+          "mptcp_pm_nl_rm_addr_or_subflow -> __dynamic_pr_debug"
+        ],
+        "state_transitions": [
+          "operation(for (i = 0; i < rm_list->nr; i++) {)",
+          "operation(if (--msk->pm.add_addr_accepted < mptcp_pm_get_add_addr_accept_max(msk)))",
+          "operation([B1.1]++)",
+          "operation(([B4.1]) (ImplicitCastExpr, IntegralToBoolean, typeof (msk->pm.accept_addr)))"
+        ],
+        "api_terms": [
+          "for (i = 0; i < rm_list->nr; i++) {",
+          "if (--msk->pm.add_addr_accepted < mptcp_pm_get_add_addr_accept_max(msk))",
+          "[B1.1]++",
+          "([B4.1]) (ImplicitCastExpr, IntegralToBoolean, typeof (msk->pm.accept_addr))",
+          "[B4.4]->pm",
+          "(volatile typeof (msk->pm.accept_addr) *)[B4.7] (CStyleCastExpr, NoOp, volatile typeof (msk->pm.accept_addr) *)"
+        ],
+        "related_symbols": [],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      },
+      "confidence": 0.72
+    },
+    {
+      "evidence_id": "csa_validation_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/mptcp/pm_netlink.c",
+        "function": "mptcp_pm_nl_rm_addr_or_subflow"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at net/mptcp/pm_netlink.c:881",
+        "state_before": [
+          "buffer(msk->pm)",
+          "buffer(subflow->remote_id)",
+          "sinks(mptcp_subflow_tcp_sock, subflow_get_local_id)"
+        ],
+        "state_after": [
+          "diagnostic(csa)"
+        ],
+        "buffer_fields": [
+          "msk->pm",
+          "subflow->remote_id",
+          "rm_list->ids",
+          "msk->conn_list",
+          "rm_list->nr",
+          "msk->mpc_endpoint_id"
+        ],
+        "coverage_status": "partial",
+        "functions": [
+          "mptcp_pm_nl_rm_addr_or_subflow"
+        ],
+        "call_targets": [
+          "mptcp_subflow_tcp_sock",
+          "subflow_get_local_id",
+          "inet_sk_state_load",
+          "pr_debug",
+          "spin_unlock_bh",
+          "mptcp_subflow_shutdown"
+        ],
+        "call_edges": [
+          "mptcp_pm_nl_rm_addr_or_subflow -> __compiletime_assert_2005",
+          "mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch_jump",
+          "mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch",
+          "mptcp_pm_nl_rm_addr_or_subflow -> ____wrong_branch_error",
+          "mptcp_pm_nl_rm_addr_or_subflow -> __builtin_expect",
+          "mptcp_pm_nl_rm_addr_or_subflow -> __dynamic_pr_debug"
+        ],
+        "state_statements": [
+          "for (i = 0; i < rm_list->nr; i++) {",
+          "if (--msk->pm.add_addr_accepted < mptcp_pm_get_add_addr_accept_max(msk))",
+          "[B1.1]++",
+          "([B4.1]) (ImplicitCastExpr, IntegralToBoolean, typeof (msk->pm.accept_addr))",
+          "[B4.4]->pm",
+          "(volatile typeof (msk->pm.accept_addr) *)[B4.7] (CStyleCastExpr, NoOp, volatile typeof (msk->pm.accept_addr) *)"
+        ],
+        "source_file": "net/mptcp/pm_netlink.c"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "net/mptcp/pm_netlink.c",
+          "hunk_index": 0,
+          "source_line": 881
+        },
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at net/mptcp/pm_netlink.c:881",
+        "statements": [
+          "849:",
+          "850: \tif (list_empty(&msk->conn_list))",
+          "851: \t\treturn;",
+          "852:",
+          "853: \tfor (i = 0; i < rm_list->nr; i++) {",
+          "854: \t\tu8 rm_id = rm_list->ids[i];"
+        ],
+        "guards": [
+          "list_empty(&msk->conn_list)",
+          "i = 0; i < rm_list->nr; i++",
+          "(1 << inet_sk_state_load(ssk)",
+          "rm_type == MPTCP_MIB_RMADDR && remote_id != rm_id"
+        ],
+        "call_boundary": [
+          "mptcp_subflow_tcp_sock",
+          "subflow_get_local_id",
+          "inet_sk_state_load",
+          "pr_debug",
+          "spin_unlock_bh",
+          "mptcp_subflow_shutdown"
+        ],
+        "call_edges": [
+          "mptcp_pm_nl_rm_addr_or_subflow -> __compiletime_assert_2005",
+          "mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch_jump",
+          "mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch",
+          "mptcp_pm_nl_rm_addr_or_subflow -> ____wrong_branch_error",
+          "mptcp_pm_nl_rm_addr_or_subflow -> __builtin_expect",
+          "mptcp_pm_nl_rm_addr_or_subflow -> __dynamic_pr_debug"
+        ],
+        "state_transitions": [
+          "diagnostic(csa)"
+        ],
+        "api_terms": [
+          "for (i = 0; i < rm_list->nr; i++) {",
+          "if (--msk->pm.add_addr_accepted < mptcp_pm_get_add_addr_accept_max(msk))",
+          "[B1.1]++",
+          "([B4.1]) (ImplicitCastExpr, IntegralToBoolean, typeof (msk->pm.accept_addr))",
+          "[B4.4]->pm",
+          "(volatile typeof (msk->pm.accept_addr) *)[B4.7] (CStyleCastExpr, NoOp, volatile typeof (msk->pm.accept_addr) *)"
+        ],
+        "related_symbols": [],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      },
+      "confidence": 0.72
+    }
+  ],
+  "selected_context_summaries": [],
+  "semantic_clause_plan": [
+    {
+      "clause_id": "vulnerable_trigger_clause",
+      "intent": "Trigger on the vulnerable use_after_free mechanism using evidence-backed path/flow semantics.",
+      "supporting_evidence_ids": [
+        "csa_guard_0",
+        "csa_state_0",
+        "csa_validation_allocation_lifecycle_1",
+        "csa_validation_semantic_slice_0"
+      ],
+      "repair_when": [
+        "semantic_no_hits"
+      ],
+      "focus_functions": []
+    },
+    {
+      "clause_id": "patched_silence_clause",
+      "intent": "Stay silent on patched code when patch-added guards, barriers, or safe APIs prove the mechanism is blocked.",
+      "supporting_evidence_ids": [
+        "csa_guard_0",
+        "csa_state_0",
+        "csa_validation_semantic_slice_0"
+      ],
+      "repair_when": [],
+      "silencing_conditions": []
+    },
+    {
+      "clause_id": "semantic_transfer_clause",
+      "intent": "Generalize along semantic slices and call-chain evidence rather than patch-local syntax.",
+      "supporting_evidence_ids": [
+        "csa_validation_semantic_slice_0"
+      ],
+      "repair_when": [],
+      "analyzer_id": "csa"
+    },
+    {
+      "clause_id": "analyzer_interface_clause",
+      "intent": "Preserve valid analyzer-facing syntax and interfaces while keeping semantics unchanged.",
+      "supporting_evidence_ids": [],
+      "repair_when": [
+        "semantic_execution_error"
+      ],
+      "analyzer_id": "csa"
+    }
+  ],
+  "repair_directives": [],
+  "constraints": [
+    {
+      "title": "Generalize beyond patch site",
+      "description": "Do not bind the detector to fixed file paths, line numbers, or exact patch strings.",
+      "priority": "high"
+    },
+    {
+      "title": "Preserve vulnerability semantics",
+      "description": "Keep the detector focused on the vulnerability family implied by the patch and evidence.",
+      "priority": "high"
+    },
+    {
+      "title": "Respect analyzer-native form",
+      "description": "Output must be a valid checker_plugin for csa.",
+      "priority": "high"
+    },
+    {
+      "title": "Stay within proven mechanism scope",
+      "description": "Generalize only along evidence-supported semantic dimensions. Do not broaden the detector into unrelated globals, APIs, or bug families.",
+      "priority": "high"
+    },
+    {
+      "title": "Honor mechanism contract",
+      "description": "Preserve the mechanism family `resource_lifetime_violation` by keeping trigger invariants a resource is released; the same symbolic resource reaches a later use without reinitialization or ownership transfer.",
+      "priority": "high"
+    },
+    {
+      "title": "Generalize only on contract axes",
+      "description": "Reuse semantics only along these transfer axes: equivalent release-then-use sequences on the same resource role; equivalent lifecycle transitions across wrappers or helper functions; equivalent guard or barrier predicates on sibling paths.",
+      "priority": "high"
+    },
+    {
+      "title": "Track resource identity across lifetime edges",
+      "description": "Model release, reuse, reinitialization, and ownership transfer on the same symbolic resource; do not count frees or uses in isolation.",
+      "priority": "high"
+    },
+    {
+      "title": "Do not key on local identifier names",
+      "description": "Do not define the vulnerable resource role solely by field/variable names such as session/cache/context; infer it from release-use-nulling-relookup semantics and alias continuity.",
+      "priority": "high"
+    },
+    {
+      "title": "Use path-sensitive evidence",
+      "description": "Prefer guards, state transitions, and lifecycle facts over broad textual matching.",
+      "priority": "high"
+    },
+    {
+      "title": "No placeholder helper logic",
+      "description": "Helper predicates must inspect AST/program state and must not be unconditional return-true/return-false stubs.",
+      "priority": "high"
+    }
+  ],
+  "implementation_hints": [
+    "Mechanism family: resource_lifetime_violation",
+    "Mechanism dimensions: resource identity or alias, release event, later use sink on the same resource, reinitialization/nulling/ownership transfer barrier",
+    "Trigger invariants: a resource is released, the same symbolic resource reaches a later use without reinitialization or ownership transfer",
+    "Silence invariants: the resource is nulled, rebound, or reinitialized before reuse, ownership transfer or guard logic blocks access after release",
+    "Transfer axes: equivalent release-then-use sequences on the same resource role, equivalent lifecycle transitions across wrappers or helper functions, equivalent guard or barrier predicates on sibling paths",
+    "Track the same symbolic resource across release, nulling/reinit, and later use/free; do not reduce lifecycle reasoning to raw API names.",
+    "Do not classify the resource only by field or variable names; use release/use/nulling/relookup relations plus alias continuity.",
+    "Semantic slice (path_witness): Analyzer CFG for mptcp_pm_nl_rm_addr_or_subflow in net/mptcp/pm_netlink.c: bindings: struct sock *sk = (struct sock *)msk;; sizeof (msk->pm.accept_addr) == sizeof(int) | branches: if !((sizeof (msk->pm.accept_addr) == sizeof(char) || sizeof (msk->pm.accept_addr) == sizeof(short) || sizeof (msk->pm.accept_addr) == sizeof(int) || sizeof (msk->pm.accept_addr) == sizeof(long)) || sizeof (msk->pm.accept_addr) == sizeof(long long)); (sizeof (msk->pm.accept_addr) == sizeof(char) || sizeof (msk->pm.accept_addr) == sizeof(short) || sizeof (msk->pm.accept_addr) == sizeof(int) || sizeof (msk->pm.accept_addr) == sizeof(long)) || ... | calls: mptcp_pm_nl_rm_addr_or_subflow -> __compiletime_assert_2005; mptcp_pm_nl_rm_addr_or_subflow -> arch_static_branch_jump"
+  ],
+  "validation_expectations": [
+    "Vulnerable version should trigger a use_after_free finding.",
+    "Patched version should stay silent for the same mechanism.",
+    "Semantic validation that executes but returns zero hits is not acceptable; recover coverage with evidence-backed semantics.",
+    "Repair phase may fix syntax/interfaces only; it must not simplify away the core detection logic.",
+    "Generalization must stay inside the mechanism contract transfer axes instead of widening to adjacent bug families.",
+    "Sibling variants that preserve the same release-then-use lifecycle should also trigger; patch-local identifier matching is not sufficient.",
+    "Trigger invariant: a resource is released.",
+    "Trigger invariant: the same symbolic resource reaches a later use without reinitialization or ownership transfer."
+  ]
+}

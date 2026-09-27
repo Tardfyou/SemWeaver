@@ -1,0 +1,165 @@
+{
+  "vulnerability_patterns": [
+    {
+      "type": "null_dereference",
+      "description": "## Bug Pattern\n\nChecking the wrong pointer for NULL after allocation. Specifically, after allocating dst->thread.sve_state with kzalloc(), the code mistakenly tests dst->thread.za_state instead of dst->thread.sve_state. Because the entire task_struct was previously copied from src, dst->thread.za_state may still be non-NULL, causing the allocation failure of sve_state to go undetected and leaving the structure in an inconsistent state.\n",
+      "source": "upstream_generator_pattern_text"
+    }
+  ],
+  "detection_strategy": {
+    "primary_pattern": "null_dereference"
+  },
+  "analysis_backend": "deterministic_projection_of_upstream_generation_metadata",
+  "analysis_confidence": 0,
+  "patchweaver": {
+    "summary": "Patch suggests null_dereference semantics across 0 file(s); added guards=1, removed risky operations=0, fix patterns=0, metadata refs=0.",
+    "patch_facts": [
+      {
+        "fact_type": "patch_overview",
+        "label": "Patch overview",
+        "attributes": {
+          "patch_path": "/artifact/work/artifacts/fse_revision/generate_only_materialized_v1/cases/G04_2e29b9971ac5_Null_Pointer_Dereference/patches/commit.patch",
+          "changed_files": [],
+          "changed_file_count": 0,
+          "added_line_count": 1,
+          "deleted_line_count": 1
+        }
+      },
+      {
+        "fact_type": "vulnerability_patterns",
+        "label": "Vulnerability patterns inferred from patch",
+        "attributes": {
+          "patterns": [
+            "null_dereference"
+          ],
+          "descriptions": [
+            "## Bug Pattern\n\nChecking the wrong pointer for NULL after allocation. Specifically, after allocating dst->thread.sve_state with kzalloc(), the code mistakenly tests dst->thread.za_state instead of dst->thread.sve_state. Because the entire task_struct was previously copied from src, dst->thread.za_state may still be non-NULL, causing the allocation failure of sve_state to go undetected and leaving the structure in an inconsistent state.\n"
+          ]
+        }
+      },
+      {
+        "fact_type": "affected_functions",
+        "label": "Functions implicated by removed or fixed code",
+        "attributes": {
+          "functions": []
+        }
+      },
+      {
+        "fact_type": "detection_strategy",
+        "label": "Existing patch analysis detection strategy",
+        "attributes": {
+          "primary_pattern": "null_dereference"
+        }
+      },
+      {
+        "fact_type": "added_guards",
+        "label": "Patch introduces or strengthens guards",
+        "attributes": {
+          "guards": [
+            "if (!dst->thread.sve_state)"
+          ]
+        }
+      }
+    ],
+    "mechanism_graph": {
+      "summary": "Patch suggests null_dereference semantics across 0 file(s); added guards=1, removed risky operations=0, fix patterns=0, metadata refs=0.",
+      "primary_patterns": [
+        "null_dereference"
+      ],
+      "nodes": [
+        {
+          "node_id": "patch",
+          "kind": "patch",
+          "label": "Security patch",
+          "attributes": {
+            "changed_files": []
+          }
+        },
+        {
+          "node_id": "pattern_0",
+          "kind": "pattern",
+          "label": "null_dereference",
+          "attributes": {
+            "type": "null_dereference",
+            "description": "## Bug Pattern\n\nChecking the wrong pointer for NULL after allocation. Specifically, after allocating dst->thread.sve_state with kzalloc(), the code mistakenly tests dst->thread.za_state instead of dst->thread.sve_state. Because the entire task_struct was previously copied from src, dst->thread.za_state may still be non-NULL, causing the allocation failure of sve_state to go undetected and leaving the structure in an inconsistent state.\n",
+            "source": "upstream_generator_pattern_text"
+          }
+        },
+        {
+          "node_id": "strategy",
+          "kind": "strategy",
+          "label": "null_dereference",
+          "attributes": {
+            "primary_pattern": "null_dereference"
+          }
+        },
+        {
+          "node_id": "guard_1",
+          "kind": "guard",
+          "label": "if (!dst->thread.sve_state)",
+          "attributes": {
+            "condition": "if (!dst->thread.sve_state)",
+            "source": "patch_fact"
+          }
+        }
+      ],
+      "edges": [
+        {
+          "source": "patch",
+          "target": "pattern_0",
+          "relation": "indicates",
+          "confidence": 0.9
+        },
+        {
+          "source": "patch",
+          "target": "strategy",
+          "relation": "guides",
+          "confidence": 0.85
+        },
+        {
+          "source": "patch",
+          "target": "guard_1",
+          "relation": "adds_guard",
+          "confidence": 0.84
+        }
+      ]
+    },
+    "evidence_plan": {
+      "primary_pattern": "null_dereference",
+      "hypotheses": [
+        "The fix strengthens a guard or bound that should be captured as a reusable precondition."
+      ],
+      "requirements": [
+        {
+          "evidence_type": "patch_fact",
+          "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+          "priority": 100,
+          "preferred_analyzers": [],
+          "confidence": 1.0,
+          "mechanism_refs": [
+            "patch"
+          ]
+        },
+        {
+          "evidence_type": "path_guard",
+          "reason": "Patch likely adds a guard or bound check before a dangerous operation.",
+          "priority": 90,
+          "preferred_analyzers": [],
+          "confidence": 0.87,
+          "mechanism_refs": [
+            "pattern_0"
+          ]
+        }
+      ],
+      "recommended_analyzers": [],
+      "planner_notes": [
+        "Added guards detected in patch diff; path-sensitive evidence should stay near top priority."
+      ],
+      "coverage_gaps": [],
+      "uncertainty_budget": "medium",
+      "escalation_triggers": [
+        "no_anchor_function"
+      ]
+    }
+  }
+}

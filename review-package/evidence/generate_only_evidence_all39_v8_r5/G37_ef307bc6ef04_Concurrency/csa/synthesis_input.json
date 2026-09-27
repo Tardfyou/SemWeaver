@@ -1,0 +1,1306 @@
+{
+  "analyzer_id": "csa",
+  "detector_artifact": "checker_plugin",
+  "primary_pattern": "concurrency",
+  "objective": "Synthesize a path-sensitive concurrency detector that encodes the same local state, guards, and lifecycle mechanism evidenced by the patch, while still generalizing to semantically equivalent sites.",
+  "mechanism_contract": {
+    "mechanism_family": "generic_vulnerability_mechanism",
+    "semantic_dimensions": [
+      "vulnerability trigger",
+      "patch-introduced barrier",
+      "local state or flow relation"
+    ],
+    "trigger_invariants": [
+      "the vulnerable mechanism is reachable on a feasible path",
+      "the path lacks the barrier introduced by the patch",
+      "Patch-backed trigger clue: added or highlighted APIs: spin_unlock_irqrestore"
+    ],
+    "silence_invariants": [
+      "patch-introduced guards, barriers, or safe APIs must suppress findings"
+    ],
+    "transfer_axes": [
+      "only generalize along evidence-backed state, guard, flow, or API-role equivalence",
+      "equivalent guard or barrier predicates on sibling paths",
+      "equivalent local state transitions around the same sink or dereference",
+      "equivalent ownership or release/reinit lifecycle on the same symbolic resource"
+    ],
+    "forbidden_shortcuts": [
+      "bind the detector to fixed file paths, line numbers, or exact patch strings",
+      "broaden into unrelated bug families just to improve hit count",
+      "use the patch text itself as the matching rule",
+      "widen to unrelated bug families without evidence",
+      "placeholder helper logic or empty ProgramState modeling"
+    ],
+    "evidence_backed_axes": [
+      "path guards and barrier conditions",
+      "state transitions",
+      "resource lifecycle",
+      "semantic trigger slice"
+    ]
+  },
+  "detector_name_hint": "",
+  "focus_files": [],
+  "focus_functions": [],
+  "hypotheses": [
+    "Patch likely encodes a reusable vulnerability mechanism but available metadata is weak; keep evidence collection broad."
+  ],
+  "required_evidence_types": [
+    "patch_fact"
+  ],
+  "missing_evidence_types": [],
+  "evidence_degraded": false,
+  "patch_mechanism_signals": [
+    "added or highlighted APIs: spin_unlock_irqrestore"
+  ],
+  "silencing_conditions": [],
+  "retry_guidance": [],
+  "selected_evidence_ids": [
+    "csa_guard_0",
+    "csa_state_0",
+    "csa_validation_allocation_lifecycle_1",
+    "csa_validation_semantic_slice_0"
+  ],
+  "selected_evidence": [
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/usb/dwc2/hcd.c",
+        "function": "_dwc2_hcd_urb_enqueue"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "if !qtd (ImplicitCastExpr, LValueToRValue, struct dwc2_qtd *)",
+        "summary": "Analyzer CFG for _dwc2_hcd_urb_enqueue in drivers/usb/dwc2/hcd.c: bindings: qtd = kzalloc (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(size_t, gfp_t))(sizeof (*qtd), mem_flags (ImplicitCastExpr, LValueToRValue, gfp_t)) (ImplicitCastExpr, BitCast, struct dwc2_qtd *); retval = dwc2_hcd_urb_enqueue (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct dwc2_hsotg *, struct dwc2_hcd_urb *, struct dwc2_qh *, struct dwc2_qtd *))(hsotg (ImplicitCastExpr, LValueToRValue, struct dwc2_hsotg *), dwc2_urb (ImplicitCastExpr, LValueToRValue, struct dwc2_hcd_urb *), qh (ImplicitCastExpr, LValueToRValue, struct dwc2_qh *), qtd (ImplicitCastExpr, LValueToRValue, struct dwc2_qtd *)) | branches: if !qtd (ImplicitCastExpr, LValueToRValue, struct dwc2_qtd *); for (...; !(&qtd2 (ImplicitCastExpr, LValueToRValue, struct dwc2_qtd *)->qtd_list_entry == (&qh (ImplicitCastExpr, LValueToRValue, struct dwc2_qh *)->qtd_list)); ...) | calls: _dwc2_hcd_urb_enqueue -> dwc2_hcd_to_hsotg; _dwc2_hcd_urb_enqueue -> dbg_urb",
+        "summary_line": 4769,
+        "state_before": [
+          "buffer(qh->qtd_list)",
+          "buffer(urb->ep)",
+          "sinks(kzalloc, spin_lock_irqsave)"
+        ],
+        "state_after": [
+          "cfg_binding(qtd = kzalloc (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(size_t, gfp_t))(sizeof (*qtd), mem_flags (ImplicitCastExpr, LValueToRValue, gfp_t)) (ImplicitCastExpr, BitCast, struct dwc2_qtd *))",
+          "cfg_binding(retval = dwc2_hcd_urb_enqueue (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct dwc2_hsotg *, struct dwc2_hcd_urb *, struct dwc2_qh *, struct dwc2_qtd *))(hsotg (ImplicitCastExpr, LValueToRValue, struct dwc2_hsotg *), dwc2_urb (ImplicitCastExpr, LValueToRValue, struct dwc2_hcd_urb *), qh (ImplicitCastExpr, LValueToRValue, struct dwc2_qh *), qtd (ImplicitCastExpr, LValueToRValue, struct dwc2_qtd *)))",
+          "cfg_branch(if !qtd (ImplicitCastExpr, LValueToRValue, struct dwc2_qtd *))",
+          "cfg_branch(for (...; !(&qtd2 (ImplicitCastExpr, LValueToRValue, struct dwc2_qtd *)->qtd_list_entry == (&qh (ImplicitCastExpr, LValueToRValue, struct dwc2_qh *)->qtd_list)); ...))"
+        ],
+        "tracked_symbols": [
+          "qh->qtd_list",
+          "urb->ep",
+          "ep->hcpriv",
+          "hsotg->lock",
+          "dwc2_urb->priv",
+          "qh->channel"
+        ],
+        "buffer_fields": [
+          "qh->qtd_list",
+          "urb->ep",
+          "ep->hcpriv",
+          "hsotg->lock",
+          "dwc2_urb->priv",
+          "qh->channel"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "_dwc2_hcd_urb_enqueue"
+        ],
+        "call_targets": [
+          "kzalloc",
+          "spin_lock_irqsave",
+          "usb_hcd_link_urb_to_ep",
+          "dwc2_hcd_urb_enqueue",
+          "dwc2_allocate_bus_bandwidth",
+          "dwc2_hcd_get_ep_bandwidth",
+          "spin_unlock_irqrestore",
+          "usb_hcd_unlink_urb_from_ep"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,drivers/usb/dwc2/.hcd.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/uapi -I./arch/x86/in...",
+        "cfg_branch_kinds": [
+          "for",
+          "if",
+          "switch"
+        ],
+        "branch_conditions": [
+          "for (...; [B5.10]; ...)",
+          "if [B7.2]",
+          "if [B12.16] && [B11.4] && [B10.9]",
+          "[B12.16] && [B11.4] && ...",
+          "[B12.16] && ...",
+          "if [B15.2]"
+        ],
+        "call_edges": [
+          "_dwc2_hcd_urb_enqueue -> dwc2_hcd_to_hsotg",
+          "_dwc2_hcd_urb_enqueue -> dbg_urb",
+          "_dwc2_hcd_urb_enqueue -> __compiletime_assert_1479",
+          "_dwc2_hcd_urb_enqueue -> arch_static_branch",
+          "_dwc2_hcd_urb_enqueue -> arch_static_branch_jump",
+          "_dwc2_hcd_urb_enqueue -> ____wrong_branch_error"
+        ],
+        "state_statements": [
+          "kfree",
+          "return [B1.8];",
+          "dwc2_hcd_qh_free",
+          "[B3.3] = [B3.2]",
+          "[B3.6]->qtd_list_entry",
+          "void *__mptr = (void *)((qtd2_tmp)->qtd_list_entry.next);"
+        ],
+        "source_file": "drivers/usb/dwc2/hcd.c"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/usb/dwc2/hcd.c",
+          "hunk_index": 0,
+          "source_line": 4769
+        },
+        "summary": "Analyzer CFG for _dwc2_hcd_urb_enqueue in drivers/usb/dwc2/hcd.c: bindings: qtd = kzalloc (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(size_t, gfp_t))(sizeof (*qtd), mem_flags (ImplicitCastExpr, LValueToRValue, gfp_t)) (ImplicitCastExpr, BitCast, struct dwc2_qtd *); retval = dwc2_hcd_urb_enqueue (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct dwc2_hsotg *, struct dwc2_hcd_urb *, struct dwc2_qh *, struct dwc2_qtd *))(hsotg (ImplicitCastExpr, LValueToRValue, struct dwc2_hsotg *), dwc2_urb (ImplicitCastExpr, LValueToRValue, struct dwc2_hcd_urb *), qh (ImplicitCastExpr, LValueToRValue, struct dwc2_qh *), qtd (ImplicitCastExpr, LValueToRValue, struct dwc2_qtd *)) | branches: if !qtd (ImplicitCastExpr, LValueToRValue, struct dwc2_qtd *); for (...; !(&qtd2 (ImplicitCastExpr, LValueToRValue, struct dwc2_qtd *)->qtd_list_entry == (&qh (ImplicitCastExpr, LValueToRValue, struct dwc2_qh *)->qtd_list)); ...) | calls: _dwc2_hcd_urb_enqueue -> dwc2_hcd_to_hsotg; _dwc2_hcd_urb_enqueue -> dbg_urb",
+        "statements": [
+          "4737: \t\tep->hcpriv = qh;",
+          "4738: \t\tqh_allocated = true;",
+          "4739: \t}",
+          "4740:",
+          "4741: \tqtd = kzalloc(sizeof(*qtd), mem_flags);",
+          "4742: \tif (!qtd) {"
+        ],
+        "guards": [
+          "if !qtd (ImplicitCastExpr, LValueToRValue, struct dwc2_qtd *)",
+          "for (...; !(&qtd2 (ImplicitCastExpr, LValueToRValue, struct dwc2_qtd *)->qtd_list_entry == (&qh (ImplicitCastExpr, LValueToRValue, struct dwc2_qh *)->qtd_list)); ...)",
+          "if qh_allocated (ImplicitCastExpr, LValueToRValue, bool)",
+          "if qh_allocated (ImplicitCastExpr, LValueToRValue, bool) (ImplicitCastExpr, IntegralCast, int) && qh (ImplicitCastExpr, LValueToRValue, struct dwc2_qh *)->channel (ImplicitCastExpr, LValueToRValue, struct dwc2_host_chan *) && qh (ImplicitCastExpr, LValueToRValue, struct dwc2_qh *)->channel (ImplicitCastExpr, LValueToRValue, struct dwc2_host_chan *)->qh (ImplicitCastExpr, LValueToRValue, struct dwc2_qh *) == qh (ImplicitCastExpr, LValueToRValue, struct dwc2_qh *)"
+        ],
+        "call_boundary": [
+          "kzalloc",
+          "spin_lock_irqsave",
+          "usb_hcd_link_urb_to_ep",
+          "dwc2_hcd_urb_enqueue",
+          "dwc2_allocate_bus_bandwidth",
+          "dwc2_hcd_get_ep_bandwidth"
+        ],
+        "call_edges": [
+          "_dwc2_hcd_urb_enqueue -> dwc2_hcd_to_hsotg",
+          "_dwc2_hcd_urb_enqueue -> dbg_urb",
+          "_dwc2_hcd_urb_enqueue -> __compiletime_assert_1479",
+          "_dwc2_hcd_urb_enqueue -> arch_static_branch",
+          "_dwc2_hcd_urb_enqueue -> arch_static_branch_jump",
+          "_dwc2_hcd_urb_enqueue -> ____wrong_branch_error",
+          "_dwc2_hcd_urb_enqueue -> __builtin_expect",
+          "_dwc2_hcd_urb_enqueue -> __dynamic_dev_dbg"
+        ],
+        "state_transitions": [
+          "cfg_binding(qtd = kzalloc (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(size_t, gfp_t))(sizeof (*qtd), mem_flags (ImplicitCastExpr, LValueToRValue, gfp_t)) (ImplicitCastExpr, BitCast, struct dwc2_qtd *))",
+          "cfg_binding(retval = dwc2_hcd_urb_enqueue (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct dwc2_hsotg *, struct dwc2_hcd_urb *, struct dwc2_qh *, struct dwc2_qtd *))(hsotg (ImplicitCastExpr, LValueToRValue, struct dwc2_hsotg *), dwc2_urb (ImplicitCastExpr, LValueToRValue, struct dwc2_hcd_urb *), qh (ImplicitCastExpr, LValueToRValue, struct dwc2_qh *), qtd (ImplicitCastExpr, LValueToRValue, struct dwc2_qtd *)))",
+          "cfg_branch(if !qtd (ImplicitCastExpr, LValueToRValue, struct dwc2_qtd *))",
+          "cfg_branch(for (...; !(&qtd2 (ImplicitCastExpr, LValueToRValue, struct dwc2_qtd *)->qtd_list_entry == (&qh (ImplicitCastExpr, LValueToRValue, struct dwc2_qh *)->qtd_list)); ...))",
+          "kfree",
+          "return [B1.8];"
+        ],
+        "api_terms": [
+          "dwc2_hcd_to_hsotg",
+          "dbg_urb",
+          "__compiletime_assert_1479",
+          "arch_static_branch",
+          "arch_static_branch_jump",
+          "____wrong_branch_error"
+        ],
+        "related_symbols": [
+          "qh->qtd_list",
+          "urb->ep",
+          "ep->hcpriv",
+          "hsotg->lock",
+          "dwc2_urb->priv",
+          "qh->channel"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/usb/dwc2/hcd.c",
+        "function": "_dwc2_hcd_urb_enqueue"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "_dwc2_hcd_urb_enqueue in drivers/usb/dwc2/hcd.c: locks=spin_lock_irqsave, spin_unlock_irqrestore | cfg_calls=_dwc2_hcd_urb_enqueue -> dwc2_hcd_to_hsotg; _dwc2_hcd_urb_enqueue -> dbg_urb",
+        "state_before": [
+          "buffer(qh->qtd_list)",
+          "buffer(urb->ep)",
+          "sinks(kzalloc, spin_lock_irqsave)"
+        ],
+        "state_after": [
+          "transition(kfree)",
+          "transition(return [B1.8];)",
+          "transition(dwc2_hcd_qh_free)",
+          "locked(spin_lock_irqsave, spin_unlock_irqrestore)"
+        ],
+        "tracked_symbols": [
+          "qh->qtd_list",
+          "urb->ep",
+          "ep->hcpriv",
+          "hsotg->lock",
+          "dwc2_urb->priv",
+          "qh->channel"
+        ],
+        "buffer_fields": [
+          "qh->qtd_list",
+          "urb->ep",
+          "ep->hcpriv",
+          "hsotg->lock",
+          "dwc2_urb->priv",
+          "qh->channel"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "_dwc2_hcd_urb_enqueue"
+        ],
+        "call_targets": [
+          "kzalloc",
+          "spin_lock_irqsave",
+          "usb_hcd_link_urb_to_ep",
+          "dwc2_hcd_urb_enqueue",
+          "dwc2_allocate_bus_bandwidth",
+          "dwc2_hcd_get_ep_bandwidth",
+          "spin_unlock_irqrestore",
+          "usb_hcd_unlink_urb_from_ep"
+        ],
+        "cfg_branch_kinds": [
+          "for",
+          "if",
+          "switch"
+        ],
+        "branch_conditions": [
+          "for (...; [B5.10]; ...)",
+          "if [B7.2]",
+          "if [B12.16] && [B11.4] && [B10.9]",
+          "[B12.16] && [B11.4] && ..."
+        ],
+        "call_edges": [
+          "_dwc2_hcd_urb_enqueue -> dwc2_hcd_to_hsotg",
+          "_dwc2_hcd_urb_enqueue -> dbg_urb",
+          "_dwc2_hcd_urb_enqueue -> __compiletime_assert_1479",
+          "_dwc2_hcd_urb_enqueue -> arch_static_branch",
+          "_dwc2_hcd_urb_enqueue -> arch_static_branch_jump",
+          "_dwc2_hcd_urb_enqueue -> ____wrong_branch_error"
+        ],
+        "state_statements": [
+          "kfree",
+          "return [B1.8];",
+          "dwc2_hcd_qh_free",
+          "[B3.3] = [B3.2]",
+          "[B3.6]->qtd_list_entry",
+          "void *__mptr = (void *)((qtd2_tmp)->qtd_list_entry.next);",
+          "[B3.18] = [B3.17]",
+          "dwc2_hcd_qtd_unlink_and_free"
+        ],
+        "return_statements": [
+          "return [B1.8];",
+          "return [B13.10];",
+          "return [B57.2];",
+          "return [B74.2];"
+        ],
+        "source_file": "drivers/usb/dwc2/hcd.c"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "drivers/usb/dwc2/hcd.c",
+          "hunk_index": 0,
+          "source_line": 4769
+        },
+        "summary": "_dwc2_hcd_urb_enqueue in drivers/usb/dwc2/hcd.c: locks=spin_lock_irqsave, spin_unlock_irqrestore | cfg_calls=_dwc2_hcd_urb_enqueue -> dwc2_hcd_to_hsotg; _dwc2_hcd_urb_enqueue -> dbg_urb",
+        "statements": [
+          "4737: \t\tep->hcpriv = qh;",
+          "4738: \t\tqh_allocated = true;",
+          "4739: \t}",
+          "4740:",
+          "4741: \tqtd = kzalloc(sizeof(*qtd), mem_flags);",
+          "4742: \tif (!qtd) {"
+        ],
+        "guards": [
+          "for (...; [B5.10]; ...)",
+          "if [B7.2]",
+          "if [B12.16] && [B11.4] && [B10.9]"
+        ],
+        "call_boundary": [
+          "kzalloc",
+          "spin_lock_irqsave",
+          "usb_hcd_link_urb_to_ep",
+          "dwc2_hcd_urb_enqueue",
+          "dwc2_allocate_bus_bandwidth",
+          "dwc2_hcd_get_ep_bandwidth"
+        ],
+        "call_edges": [
+          "_dwc2_hcd_urb_enqueue -> dwc2_hcd_to_hsotg",
+          "_dwc2_hcd_urb_enqueue -> dbg_urb",
+          "_dwc2_hcd_urb_enqueue -> __compiletime_assert_1479",
+          "_dwc2_hcd_urb_enqueue -> arch_static_branch",
+          "_dwc2_hcd_urb_enqueue -> arch_static_branch_jump",
+          "_dwc2_hcd_urb_enqueue -> ____wrong_branch_error",
+          "_dwc2_hcd_urb_enqueue -> __builtin_expect",
+          "_dwc2_hcd_urb_enqueue -> __dynamic_dev_dbg"
+        ],
+        "state_transitions": [
+          "transition(kfree)",
+          "transition(return [B1.8];)",
+          "transition(dwc2_hcd_qh_free)",
+          "locked(spin_lock_irqsave, spin_unlock_irqrestore)",
+          "kfree",
+          "return [B1.8];"
+        ],
+        "api_terms": [
+          "spin_lock_irqsave",
+          "spin_unlock_irqrestore",
+          "dwc2_hcd_to_hsotg",
+          "dbg_urb",
+          "__compiletime_assert_1479",
+          "arch_static_branch"
+        ],
+        "related_symbols": [
+          "qh->qtd_list",
+          "urb->ep",
+          "ep->hcpriv",
+          "hsotg->lock",
+          "dwc2_urb->priv",
+          "qh->channel"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.88
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_1",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/usb/dwc2/hcd.c",
+        "function": "_dwc2_hcd_urb_enqueue"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "_dwc2_hcd_urb_enqueue in drivers/usb/dwc2/hcd.c provides CSA-backed pointer/resource lifecycle context near line 4769",
+        "state_before": [
+          "buffer(qh->qtd_list)",
+          "buffer(urb->ep)",
+          "sinks(kzalloc, spin_lock_irqsave)"
+        ],
+        "state_after": [
+          "operation(kfree)",
+          "operation(return [B1.8];)",
+          "operation(dwc2_hcd_qh_free)",
+          "operation([B3.3] = [B3.2])"
+        ],
+        "buffer_fields": [
+          "qh->qtd_list",
+          "urb->ep",
+          "ep->hcpriv",
+          "hsotg->lock",
+          "dwc2_urb->priv",
+          "qh->channel"
+        ],
+        "coverage_status": "partial",
+        "operations": [
+          "kfree",
+          "return [B1.8];",
+          "dwc2_hcd_qh_free",
+          "[B3.3] = [B3.2]",
+          "[B3.6]->qtd_list_entry",
+          "void *__mptr = (void *)((qtd2_tmp)->qtd_list_entry.next);"
+        ],
+        "functions": [
+          "_dwc2_hcd_urb_enqueue"
+        ],
+        "call_targets": [
+          "kzalloc",
+          "spin_lock_irqsave",
+          "usb_hcd_link_urb_to_ep",
+          "dwc2_hcd_urb_enqueue",
+          "dwc2_allocate_bus_bandwidth",
+          "dwc2_hcd_get_ep_bandwidth"
+        ],
+        "call_edges": [
+          "_dwc2_hcd_urb_enqueue -> dwc2_hcd_to_hsotg",
+          "_dwc2_hcd_urb_enqueue -> dbg_urb",
+          "_dwc2_hcd_urb_enqueue -> __compiletime_assert_1479",
+          "_dwc2_hcd_urb_enqueue -> arch_static_branch",
+          "_dwc2_hcd_urb_enqueue -> arch_static_branch_jump",
+          "_dwc2_hcd_urb_enqueue -> ____wrong_branch_error"
+        ],
+        "state_statements": [
+          "kfree",
+          "return [B1.8];",
+          "dwc2_hcd_qh_free",
+          "[B3.3] = [B3.2]",
+          "[B3.6]->qtd_list_entry",
+          "void *__mptr = (void *)((qtd2_tmp)->qtd_list_entry.next);"
+        ],
+        "source_file": "drivers/usb/dwc2/hcd.c"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "drivers/usb/dwc2/hcd.c",
+          "hunk_index": 0,
+          "source_line": 4769
+        },
+        "summary": "_dwc2_hcd_urb_enqueue in drivers/usb/dwc2/hcd.c provides CSA-backed pointer/resource lifecycle context near line 4769",
+        "statements": [
+          "4737: \t\tep->hcpriv = qh;",
+          "4738: \t\tqh_allocated = true;",
+          "4739: \t}",
+          "4740:",
+          "4741: \tqtd = kzalloc(sizeof(*qtd), mem_flags);",
+          "4742: \tif (!qtd) {"
+        ],
+        "guards": [
+          "!qtd",
+          "retval",
+          "alloc_bandwidth",
+          "qh_allocated && qh->channel && qh->channel->qh == qh"
+        ],
+        "call_boundary": [
+          "kzalloc",
+          "spin_lock_irqsave",
+          "usb_hcd_link_urb_to_ep",
+          "dwc2_hcd_urb_enqueue",
+          "dwc2_allocate_bus_bandwidth",
+          "dwc2_hcd_get_ep_bandwidth"
+        ],
+        "call_edges": [
+          "_dwc2_hcd_urb_enqueue -> dwc2_hcd_to_hsotg",
+          "_dwc2_hcd_urb_enqueue -> dbg_urb",
+          "_dwc2_hcd_urb_enqueue -> __compiletime_assert_1479",
+          "_dwc2_hcd_urb_enqueue -> arch_static_branch",
+          "_dwc2_hcd_urb_enqueue -> arch_static_branch_jump",
+          "_dwc2_hcd_urb_enqueue -> ____wrong_branch_error"
+        ],
+        "state_transitions": [
+          "operation(kfree)",
+          "operation(return [B1.8];)",
+          "operation(dwc2_hcd_qh_free)",
+          "operation([B3.3] = [B3.2])"
+        ],
+        "api_terms": [
+          "kfree",
+          "return [B1.8];",
+          "dwc2_hcd_qh_free",
+          "[B3.3] = [B3.2]",
+          "[B3.6]->qtd_list_entry",
+          "void *__mptr = (void *)((qtd2_tmp)->qtd_list_entry.next);"
+        ],
+        "related_symbols": [],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      },
+      "confidence": 0.72
+    },
+    {
+      "evidence_id": "csa_validation_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/usb/dwc2/hcd.c",
+        "function": "_dwc2_hcd_urb_enqueue"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at drivers/usb/dwc2/hcd.c:4769",
+        "state_before": [
+          "buffer(qh->qtd_list)",
+          "buffer(urb->ep)",
+          "sinks(kzalloc, spin_lock_irqsave)"
+        ],
+        "state_after": [
+          "diagnostic(csa)"
+        ],
+        "buffer_fields": [
+          "qh->qtd_list",
+          "urb->ep",
+          "ep->hcpriv",
+          "hsotg->lock",
+          "dwc2_urb->priv",
+          "qh->channel"
+        ],
+        "coverage_status": "partial",
+        "functions": [
+          "_dwc2_hcd_urb_enqueue"
+        ],
+        "call_targets": [
+          "kzalloc",
+          "spin_lock_irqsave",
+          "usb_hcd_link_urb_to_ep",
+          "dwc2_hcd_urb_enqueue",
+          "dwc2_allocate_bus_bandwidth",
+          "dwc2_hcd_get_ep_bandwidth"
+        ],
+        "call_edges": [
+          "_dwc2_hcd_urb_enqueue -> dwc2_hcd_to_hsotg",
+          "_dwc2_hcd_urb_enqueue -> dbg_urb",
+          "_dwc2_hcd_urb_enqueue -> __compiletime_assert_1479",
+          "_dwc2_hcd_urb_enqueue -> arch_static_branch",
+          "_dwc2_hcd_urb_enqueue -> arch_static_branch_jump",
+          "_dwc2_hcd_urb_enqueue -> ____wrong_branch_error"
+        ],
+        "state_statements": [
+          "kfree",
+          "return [B1.8];",
+          "dwc2_hcd_qh_free",
+          "[B3.3] = [B3.2]",
+          "[B3.6]->qtd_list_entry",
+          "void *__mptr = (void *)((qtd2_tmp)->qtd_list_entry.next);"
+        ],
+        "source_file": "drivers/usb/dwc2/hcd.c"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "drivers/usb/dwc2/hcd.c",
+          "hunk_index": 0,
+          "source_line": 4769
+        },
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at drivers/usb/dwc2/hcd.c:4769",
+        "statements": [
+          "4737: \t\tep->hcpriv = qh;",
+          "4738: \t\tqh_allocated = true;",
+          "4739: \t}",
+          "4740:",
+          "4741: \tqtd = kzalloc(sizeof(*qtd), mem_flags);",
+          "4742: \tif (!qtd) {"
+        ],
+        "guards": [
+          "!qtd",
+          "retval",
+          "alloc_bandwidth",
+          "qh_allocated && qh->channel && qh->channel->qh == qh"
+        ],
+        "call_boundary": [
+          "kzalloc",
+          "spin_lock_irqsave",
+          "usb_hcd_link_urb_to_ep",
+          "dwc2_hcd_urb_enqueue",
+          "dwc2_allocate_bus_bandwidth",
+          "dwc2_hcd_get_ep_bandwidth"
+        ],
+        "call_edges": [
+          "_dwc2_hcd_urb_enqueue -> dwc2_hcd_to_hsotg",
+          "_dwc2_hcd_urb_enqueue -> dbg_urb",
+          "_dwc2_hcd_urb_enqueue -> __compiletime_assert_1479",
+          "_dwc2_hcd_urb_enqueue -> arch_static_branch",
+          "_dwc2_hcd_urb_enqueue -> arch_static_branch_jump",
+          "_dwc2_hcd_urb_enqueue -> ____wrong_branch_error"
+        ],
+        "state_transitions": [
+          "diagnostic(csa)"
+        ],
+        "api_terms": [
+          "kfree",
+          "return [B1.8];",
+          "dwc2_hcd_qh_free",
+          "[B3.3] = [B3.2]",
+          "[B3.6]->qtd_list_entry",
+          "void *__mptr = (void *)((qtd2_tmp)->qtd_list_entry.next);"
+        ],
+        "related_symbols": [],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      },
+      "confidence": 0.72
+    }
+  ],
+  "semantic_slice_count": 4,
+  "context_summary_count": 0,
+  "semantic_slice_coverage": "partial",
+  "selected_semantic_slice_ids": [
+    "csa_guard_0",
+    "csa_state_0",
+    "csa_validation_allocation_lifecycle_1",
+    "csa_validation_semantic_slice_0"
+  ],
+  "selected_context_summary_ids": [],
+  "selected_semantic_slices": [
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/usb/dwc2/hcd.c",
+        "function": "_dwc2_hcd_urb_enqueue"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "if !qtd (ImplicitCastExpr, LValueToRValue, struct dwc2_qtd *)",
+        "summary": "Analyzer CFG for _dwc2_hcd_urb_enqueue in drivers/usb/dwc2/hcd.c: bindings: qtd = kzalloc (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(size_t, gfp_t))(sizeof (*qtd), mem_flags (ImplicitCastExpr, LValueToRValue, gfp_t)) (ImplicitCastExpr, BitCast, struct dwc2_qtd *); retval = dwc2_hcd_urb_enqueue (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct dwc2_hsotg *, struct dwc2_hcd_urb *, struct dwc2_qh *, struct dwc2_qtd *))(hsotg (ImplicitCastExpr, LValueToRValue, struct dwc2_hsotg *), dwc2_urb (ImplicitCastExpr, LValueToRValue, struct dwc2_hcd_urb *), qh (ImplicitCastExpr, LValueToRValue, struct dwc2_qh *), qtd (ImplicitCastExpr, LValueToRValue, struct dwc2_qtd *)) | branches: if !qtd (ImplicitCastExpr, LValueToRValue, struct dwc2_qtd *); for (...; !(&qtd2 (ImplicitCastExpr, LValueToRValue, struct dwc2_qtd *)->qtd_list_entry == (&qh (ImplicitCastExpr, LValueToRValue, struct dwc2_qh *)->qtd_list)); ...) | calls: _dwc2_hcd_urb_enqueue -> dwc2_hcd_to_hsotg; _dwc2_hcd_urb_enqueue -> dbg_urb",
+        "summary_line": 4769,
+        "state_before": [
+          "buffer(qh->qtd_list)",
+          "buffer(urb->ep)",
+          "sinks(kzalloc, spin_lock_irqsave)"
+        ],
+        "state_after": [
+          "cfg_binding(qtd = kzalloc (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(size_t, gfp_t))(sizeof (*qtd), mem_flags (ImplicitCastExpr, LValueToRValue, gfp_t)) (ImplicitCastExpr, BitCast, struct dwc2_qtd *))",
+          "cfg_binding(retval = dwc2_hcd_urb_enqueue (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct dwc2_hsotg *, struct dwc2_hcd_urb *, struct dwc2_qh *, struct dwc2_qtd *))(hsotg (ImplicitCastExpr, LValueToRValue, struct dwc2_hsotg *), dwc2_urb (ImplicitCastExpr, LValueToRValue, struct dwc2_hcd_urb *), qh (ImplicitCastExpr, LValueToRValue, struct dwc2_qh *), qtd (ImplicitCastExpr, LValueToRValue, struct dwc2_qtd *)))",
+          "cfg_branch(if !qtd (ImplicitCastExpr, LValueToRValue, struct dwc2_qtd *))",
+          "cfg_branch(for (...; !(&qtd2 (ImplicitCastExpr, LValueToRValue, struct dwc2_qtd *)->qtd_list_entry == (&qh (ImplicitCastExpr, LValueToRValue, struct dwc2_qh *)->qtd_list)); ...))"
+        ],
+        "tracked_symbols": [
+          "qh->qtd_list",
+          "urb->ep",
+          "ep->hcpriv",
+          "hsotg->lock",
+          "dwc2_urb->priv",
+          "qh->channel"
+        ],
+        "buffer_fields": [
+          "qh->qtd_list",
+          "urb->ep",
+          "ep->hcpriv",
+          "hsotg->lock",
+          "dwc2_urb->priv",
+          "qh->channel"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "_dwc2_hcd_urb_enqueue"
+        ],
+        "call_targets": [
+          "kzalloc",
+          "spin_lock_irqsave",
+          "usb_hcd_link_urb_to_ep",
+          "dwc2_hcd_urb_enqueue",
+          "dwc2_allocate_bus_bandwidth",
+          "dwc2_hcd_get_ep_bandwidth",
+          "spin_unlock_irqrestore",
+          "usb_hcd_unlink_urb_from_ep"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,drivers/usb/dwc2/.hcd.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/uapi -I./arch/x86/in...",
+        "cfg_branch_kinds": [
+          "for",
+          "if",
+          "switch"
+        ],
+        "branch_conditions": [
+          "for (...; [B5.10]; ...)",
+          "if [B7.2]",
+          "if [B12.16] && [B11.4] && [B10.9]",
+          "[B12.16] && [B11.4] && ...",
+          "[B12.16] && ...",
+          "if [B15.2]"
+        ],
+        "call_edges": [
+          "_dwc2_hcd_urb_enqueue -> dwc2_hcd_to_hsotg",
+          "_dwc2_hcd_urb_enqueue -> dbg_urb",
+          "_dwc2_hcd_urb_enqueue -> __compiletime_assert_1479",
+          "_dwc2_hcd_urb_enqueue -> arch_static_branch",
+          "_dwc2_hcd_urb_enqueue -> arch_static_branch_jump",
+          "_dwc2_hcd_urb_enqueue -> ____wrong_branch_error"
+        ],
+        "state_statements": [
+          "kfree",
+          "return [B1.8];",
+          "dwc2_hcd_qh_free",
+          "[B3.3] = [B3.2]",
+          "[B3.6]->qtd_list_entry",
+          "void *__mptr = (void *)((qtd2_tmp)->qtd_list_entry.next);"
+        ],
+        "source_file": "drivers/usb/dwc2/hcd.c"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/usb/dwc2/hcd.c",
+          "hunk_index": 0,
+          "source_line": 4769
+        },
+        "summary": "Analyzer CFG for _dwc2_hcd_urb_enqueue in drivers/usb/dwc2/hcd.c: bindings: qtd = kzalloc (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(size_t, gfp_t))(sizeof (*qtd), mem_flags (ImplicitCastExpr, LValueToRValue, gfp_t)) (ImplicitCastExpr, BitCast, struct dwc2_qtd *); retval = dwc2_hcd_urb_enqueue (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct dwc2_hsotg *, struct dwc2_hcd_urb *, struct dwc2_qh *, struct dwc2_qtd *))(hsotg (ImplicitCastExpr, LValueToRValue, struct dwc2_hsotg *), dwc2_urb (ImplicitCastExpr, LValueToRValue, struct dwc2_hcd_urb *), qh (ImplicitCastExpr, LValueToRValue, struct dwc2_qh *), qtd (ImplicitCastExpr, LValueToRValue, struct dwc2_qtd *)) | branches: if !qtd (ImplicitCastExpr, LValueToRValue, struct dwc2_qtd *); for (...; !(&qtd2 (ImplicitCastExpr, LValueToRValue, struct dwc2_qtd *)->qtd_list_entry == (&qh (ImplicitCastExpr, LValueToRValue, struct dwc2_qh *)->qtd_list)); ...) | calls: _dwc2_hcd_urb_enqueue -> dwc2_hcd_to_hsotg; _dwc2_hcd_urb_enqueue -> dbg_urb",
+        "statements": [
+          "4737: \t\tep->hcpriv = qh;",
+          "4738: \t\tqh_allocated = true;",
+          "4739: \t}",
+          "4740:",
+          "4741: \tqtd = kzalloc(sizeof(*qtd), mem_flags);",
+          "4742: \tif (!qtd) {"
+        ],
+        "guards": [
+          "if !qtd (ImplicitCastExpr, LValueToRValue, struct dwc2_qtd *)",
+          "for (...; !(&qtd2 (ImplicitCastExpr, LValueToRValue, struct dwc2_qtd *)->qtd_list_entry == (&qh (ImplicitCastExpr, LValueToRValue, struct dwc2_qh *)->qtd_list)); ...)",
+          "if qh_allocated (ImplicitCastExpr, LValueToRValue, bool)",
+          "if qh_allocated (ImplicitCastExpr, LValueToRValue, bool) (ImplicitCastExpr, IntegralCast, int) && qh (ImplicitCastExpr, LValueToRValue, struct dwc2_qh *)->channel (ImplicitCastExpr, LValueToRValue, struct dwc2_host_chan *) && qh (ImplicitCastExpr, LValueToRValue, struct dwc2_qh *)->channel (ImplicitCastExpr, LValueToRValue, struct dwc2_host_chan *)->qh (ImplicitCastExpr, LValueToRValue, struct dwc2_qh *) == qh (ImplicitCastExpr, LValueToRValue, struct dwc2_qh *)"
+        ],
+        "call_boundary": [
+          "kzalloc",
+          "spin_lock_irqsave",
+          "usb_hcd_link_urb_to_ep",
+          "dwc2_hcd_urb_enqueue",
+          "dwc2_allocate_bus_bandwidth",
+          "dwc2_hcd_get_ep_bandwidth"
+        ],
+        "call_edges": [
+          "_dwc2_hcd_urb_enqueue -> dwc2_hcd_to_hsotg",
+          "_dwc2_hcd_urb_enqueue -> dbg_urb",
+          "_dwc2_hcd_urb_enqueue -> __compiletime_assert_1479",
+          "_dwc2_hcd_urb_enqueue -> arch_static_branch",
+          "_dwc2_hcd_urb_enqueue -> arch_static_branch_jump",
+          "_dwc2_hcd_urb_enqueue -> ____wrong_branch_error",
+          "_dwc2_hcd_urb_enqueue -> __builtin_expect",
+          "_dwc2_hcd_urb_enqueue -> __dynamic_dev_dbg"
+        ],
+        "state_transitions": [
+          "cfg_binding(qtd = kzalloc (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(size_t, gfp_t))(sizeof (*qtd), mem_flags (ImplicitCastExpr, LValueToRValue, gfp_t)) (ImplicitCastExpr, BitCast, struct dwc2_qtd *))",
+          "cfg_binding(retval = dwc2_hcd_urb_enqueue (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct dwc2_hsotg *, struct dwc2_hcd_urb *, struct dwc2_qh *, struct dwc2_qtd *))(hsotg (ImplicitCastExpr, LValueToRValue, struct dwc2_hsotg *), dwc2_urb (ImplicitCastExpr, LValueToRValue, struct dwc2_hcd_urb *), qh (ImplicitCastExpr, LValueToRValue, struct dwc2_qh *), qtd (ImplicitCastExpr, LValueToRValue, struct dwc2_qtd *)))",
+          "cfg_branch(if !qtd (ImplicitCastExpr, LValueToRValue, struct dwc2_qtd *))",
+          "cfg_branch(for (...; !(&qtd2 (ImplicitCastExpr, LValueToRValue, struct dwc2_qtd *)->qtd_list_entry == (&qh (ImplicitCastExpr, LValueToRValue, struct dwc2_qh *)->qtd_list)); ...))",
+          "kfree",
+          "return [B1.8];"
+        ],
+        "api_terms": [
+          "dwc2_hcd_to_hsotg",
+          "dbg_urb",
+          "__compiletime_assert_1479",
+          "arch_static_branch",
+          "arch_static_branch_jump",
+          "____wrong_branch_error"
+        ],
+        "related_symbols": [
+          "qh->qtd_list",
+          "urb->ep",
+          "ep->hcpriv",
+          "hsotg->lock",
+          "dwc2_urb->priv",
+          "qh->channel"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/usb/dwc2/hcd.c",
+        "function": "_dwc2_hcd_urb_enqueue"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "_dwc2_hcd_urb_enqueue in drivers/usb/dwc2/hcd.c: locks=spin_lock_irqsave, spin_unlock_irqrestore | cfg_calls=_dwc2_hcd_urb_enqueue -> dwc2_hcd_to_hsotg; _dwc2_hcd_urb_enqueue -> dbg_urb",
+        "state_before": [
+          "buffer(qh->qtd_list)",
+          "buffer(urb->ep)",
+          "sinks(kzalloc, spin_lock_irqsave)"
+        ],
+        "state_after": [
+          "transition(kfree)",
+          "transition(return [B1.8];)",
+          "transition(dwc2_hcd_qh_free)",
+          "locked(spin_lock_irqsave, spin_unlock_irqrestore)"
+        ],
+        "tracked_symbols": [
+          "qh->qtd_list",
+          "urb->ep",
+          "ep->hcpriv",
+          "hsotg->lock",
+          "dwc2_urb->priv",
+          "qh->channel"
+        ],
+        "buffer_fields": [
+          "qh->qtd_list",
+          "urb->ep",
+          "ep->hcpriv",
+          "hsotg->lock",
+          "dwc2_urb->priv",
+          "qh->channel"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "_dwc2_hcd_urb_enqueue"
+        ],
+        "call_targets": [
+          "kzalloc",
+          "spin_lock_irqsave",
+          "usb_hcd_link_urb_to_ep",
+          "dwc2_hcd_urb_enqueue",
+          "dwc2_allocate_bus_bandwidth",
+          "dwc2_hcd_get_ep_bandwidth",
+          "spin_unlock_irqrestore",
+          "usb_hcd_unlink_urb_from_ep"
+        ],
+        "cfg_branch_kinds": [
+          "for",
+          "if",
+          "switch"
+        ],
+        "branch_conditions": [
+          "for (...; [B5.10]; ...)",
+          "if [B7.2]",
+          "if [B12.16] && [B11.4] && [B10.9]",
+          "[B12.16] && [B11.4] && ..."
+        ],
+        "call_edges": [
+          "_dwc2_hcd_urb_enqueue -> dwc2_hcd_to_hsotg",
+          "_dwc2_hcd_urb_enqueue -> dbg_urb",
+          "_dwc2_hcd_urb_enqueue -> __compiletime_assert_1479",
+          "_dwc2_hcd_urb_enqueue -> arch_static_branch",
+          "_dwc2_hcd_urb_enqueue -> arch_static_branch_jump",
+          "_dwc2_hcd_urb_enqueue -> ____wrong_branch_error"
+        ],
+        "state_statements": [
+          "kfree",
+          "return [B1.8];",
+          "dwc2_hcd_qh_free",
+          "[B3.3] = [B3.2]",
+          "[B3.6]->qtd_list_entry",
+          "void *__mptr = (void *)((qtd2_tmp)->qtd_list_entry.next);",
+          "[B3.18] = [B3.17]",
+          "dwc2_hcd_qtd_unlink_and_free"
+        ],
+        "return_statements": [
+          "return [B1.8];",
+          "return [B13.10];",
+          "return [B57.2];",
+          "return [B74.2];"
+        ],
+        "source_file": "drivers/usb/dwc2/hcd.c"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "drivers/usb/dwc2/hcd.c",
+          "hunk_index": 0,
+          "source_line": 4769
+        },
+        "summary": "_dwc2_hcd_urb_enqueue in drivers/usb/dwc2/hcd.c: locks=spin_lock_irqsave, spin_unlock_irqrestore | cfg_calls=_dwc2_hcd_urb_enqueue -> dwc2_hcd_to_hsotg; _dwc2_hcd_urb_enqueue -> dbg_urb",
+        "statements": [
+          "4737: \t\tep->hcpriv = qh;",
+          "4738: \t\tqh_allocated = true;",
+          "4739: \t}",
+          "4740:",
+          "4741: \tqtd = kzalloc(sizeof(*qtd), mem_flags);",
+          "4742: \tif (!qtd) {"
+        ],
+        "guards": [
+          "for (...; [B5.10]; ...)",
+          "if [B7.2]",
+          "if [B12.16] && [B11.4] && [B10.9]"
+        ],
+        "call_boundary": [
+          "kzalloc",
+          "spin_lock_irqsave",
+          "usb_hcd_link_urb_to_ep",
+          "dwc2_hcd_urb_enqueue",
+          "dwc2_allocate_bus_bandwidth",
+          "dwc2_hcd_get_ep_bandwidth"
+        ],
+        "call_edges": [
+          "_dwc2_hcd_urb_enqueue -> dwc2_hcd_to_hsotg",
+          "_dwc2_hcd_urb_enqueue -> dbg_urb",
+          "_dwc2_hcd_urb_enqueue -> __compiletime_assert_1479",
+          "_dwc2_hcd_urb_enqueue -> arch_static_branch",
+          "_dwc2_hcd_urb_enqueue -> arch_static_branch_jump",
+          "_dwc2_hcd_urb_enqueue -> ____wrong_branch_error",
+          "_dwc2_hcd_urb_enqueue -> __builtin_expect",
+          "_dwc2_hcd_urb_enqueue -> __dynamic_dev_dbg"
+        ],
+        "state_transitions": [
+          "transition(kfree)",
+          "transition(return [B1.8];)",
+          "transition(dwc2_hcd_qh_free)",
+          "locked(spin_lock_irqsave, spin_unlock_irqrestore)",
+          "kfree",
+          "return [B1.8];"
+        ],
+        "api_terms": [
+          "spin_lock_irqsave",
+          "spin_unlock_irqrestore",
+          "dwc2_hcd_to_hsotg",
+          "dbg_urb",
+          "__compiletime_assert_1479",
+          "arch_static_branch"
+        ],
+        "related_symbols": [
+          "qh->qtd_list",
+          "urb->ep",
+          "ep->hcpriv",
+          "hsotg->lock",
+          "dwc2_urb->priv",
+          "qh->channel"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.88
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_1",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/usb/dwc2/hcd.c",
+        "function": "_dwc2_hcd_urb_enqueue"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "_dwc2_hcd_urb_enqueue in drivers/usb/dwc2/hcd.c provides CSA-backed pointer/resource lifecycle context near line 4769",
+        "state_before": [
+          "buffer(qh->qtd_list)",
+          "buffer(urb->ep)",
+          "sinks(kzalloc, spin_lock_irqsave)"
+        ],
+        "state_after": [
+          "operation(kfree)",
+          "operation(return [B1.8];)",
+          "operation(dwc2_hcd_qh_free)",
+          "operation([B3.3] = [B3.2])"
+        ],
+        "buffer_fields": [
+          "qh->qtd_list",
+          "urb->ep",
+          "ep->hcpriv",
+          "hsotg->lock",
+          "dwc2_urb->priv",
+          "qh->channel"
+        ],
+        "coverage_status": "partial",
+        "operations": [
+          "kfree",
+          "return [B1.8];",
+          "dwc2_hcd_qh_free",
+          "[B3.3] = [B3.2]",
+          "[B3.6]->qtd_list_entry",
+          "void *__mptr = (void *)((qtd2_tmp)->qtd_list_entry.next);"
+        ],
+        "functions": [
+          "_dwc2_hcd_urb_enqueue"
+        ],
+        "call_targets": [
+          "kzalloc",
+          "spin_lock_irqsave",
+          "usb_hcd_link_urb_to_ep",
+          "dwc2_hcd_urb_enqueue",
+          "dwc2_allocate_bus_bandwidth",
+          "dwc2_hcd_get_ep_bandwidth"
+        ],
+        "call_edges": [
+          "_dwc2_hcd_urb_enqueue -> dwc2_hcd_to_hsotg",
+          "_dwc2_hcd_urb_enqueue -> dbg_urb",
+          "_dwc2_hcd_urb_enqueue -> __compiletime_assert_1479",
+          "_dwc2_hcd_urb_enqueue -> arch_static_branch",
+          "_dwc2_hcd_urb_enqueue -> arch_static_branch_jump",
+          "_dwc2_hcd_urb_enqueue -> ____wrong_branch_error"
+        ],
+        "state_statements": [
+          "kfree",
+          "return [B1.8];",
+          "dwc2_hcd_qh_free",
+          "[B3.3] = [B3.2]",
+          "[B3.6]->qtd_list_entry",
+          "void *__mptr = (void *)((qtd2_tmp)->qtd_list_entry.next);"
+        ],
+        "source_file": "drivers/usb/dwc2/hcd.c"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "drivers/usb/dwc2/hcd.c",
+          "hunk_index": 0,
+          "source_line": 4769
+        },
+        "summary": "_dwc2_hcd_urb_enqueue in drivers/usb/dwc2/hcd.c provides CSA-backed pointer/resource lifecycle context near line 4769",
+        "statements": [
+          "4737: \t\tep->hcpriv = qh;",
+          "4738: \t\tqh_allocated = true;",
+          "4739: \t}",
+          "4740:",
+          "4741: \tqtd = kzalloc(sizeof(*qtd), mem_flags);",
+          "4742: \tif (!qtd) {"
+        ],
+        "guards": [
+          "!qtd",
+          "retval",
+          "alloc_bandwidth",
+          "qh_allocated && qh->channel && qh->channel->qh == qh"
+        ],
+        "call_boundary": [
+          "kzalloc",
+          "spin_lock_irqsave",
+          "usb_hcd_link_urb_to_ep",
+          "dwc2_hcd_urb_enqueue",
+          "dwc2_allocate_bus_bandwidth",
+          "dwc2_hcd_get_ep_bandwidth"
+        ],
+        "call_edges": [
+          "_dwc2_hcd_urb_enqueue -> dwc2_hcd_to_hsotg",
+          "_dwc2_hcd_urb_enqueue -> dbg_urb",
+          "_dwc2_hcd_urb_enqueue -> __compiletime_assert_1479",
+          "_dwc2_hcd_urb_enqueue -> arch_static_branch",
+          "_dwc2_hcd_urb_enqueue -> arch_static_branch_jump",
+          "_dwc2_hcd_urb_enqueue -> ____wrong_branch_error"
+        ],
+        "state_transitions": [
+          "operation(kfree)",
+          "operation(return [B1.8];)",
+          "operation(dwc2_hcd_qh_free)",
+          "operation([B3.3] = [B3.2])"
+        ],
+        "api_terms": [
+          "kfree",
+          "return [B1.8];",
+          "dwc2_hcd_qh_free",
+          "[B3.3] = [B3.2]",
+          "[B3.6]->qtd_list_entry",
+          "void *__mptr = (void *)((qtd2_tmp)->qtd_list_entry.next);"
+        ],
+        "related_symbols": [],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      },
+      "confidence": 0.72
+    },
+    {
+      "evidence_id": "csa_validation_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/usb/dwc2/hcd.c",
+        "function": "_dwc2_hcd_urb_enqueue"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at drivers/usb/dwc2/hcd.c:4769",
+        "state_before": [
+          "buffer(qh->qtd_list)",
+          "buffer(urb->ep)",
+          "sinks(kzalloc, spin_lock_irqsave)"
+        ],
+        "state_after": [
+          "diagnostic(csa)"
+        ],
+        "buffer_fields": [
+          "qh->qtd_list",
+          "urb->ep",
+          "ep->hcpriv",
+          "hsotg->lock",
+          "dwc2_urb->priv",
+          "qh->channel"
+        ],
+        "coverage_status": "partial",
+        "functions": [
+          "_dwc2_hcd_urb_enqueue"
+        ],
+        "call_targets": [
+          "kzalloc",
+          "spin_lock_irqsave",
+          "usb_hcd_link_urb_to_ep",
+          "dwc2_hcd_urb_enqueue",
+          "dwc2_allocate_bus_bandwidth",
+          "dwc2_hcd_get_ep_bandwidth"
+        ],
+        "call_edges": [
+          "_dwc2_hcd_urb_enqueue -> dwc2_hcd_to_hsotg",
+          "_dwc2_hcd_urb_enqueue -> dbg_urb",
+          "_dwc2_hcd_urb_enqueue -> __compiletime_assert_1479",
+          "_dwc2_hcd_urb_enqueue -> arch_static_branch",
+          "_dwc2_hcd_urb_enqueue -> arch_static_branch_jump",
+          "_dwc2_hcd_urb_enqueue -> ____wrong_branch_error"
+        ],
+        "state_statements": [
+          "kfree",
+          "return [B1.8];",
+          "dwc2_hcd_qh_free",
+          "[B3.3] = [B3.2]",
+          "[B3.6]->qtd_list_entry",
+          "void *__mptr = (void *)((qtd2_tmp)->qtd_list_entry.next);"
+        ],
+        "source_file": "drivers/usb/dwc2/hcd.c"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "drivers/usb/dwc2/hcd.c",
+          "hunk_index": 0,
+          "source_line": 4769
+        },
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at drivers/usb/dwc2/hcd.c:4769",
+        "statements": [
+          "4737: \t\tep->hcpriv = qh;",
+          "4738: \t\tqh_allocated = true;",
+          "4739: \t}",
+          "4740:",
+          "4741: \tqtd = kzalloc(sizeof(*qtd), mem_flags);",
+          "4742: \tif (!qtd) {"
+        ],
+        "guards": [
+          "!qtd",
+          "retval",
+          "alloc_bandwidth",
+          "qh_allocated && qh->channel && qh->channel->qh == qh"
+        ],
+        "call_boundary": [
+          "kzalloc",
+          "spin_lock_irqsave",
+          "usb_hcd_link_urb_to_ep",
+          "dwc2_hcd_urb_enqueue",
+          "dwc2_allocate_bus_bandwidth",
+          "dwc2_hcd_get_ep_bandwidth"
+        ],
+        "call_edges": [
+          "_dwc2_hcd_urb_enqueue -> dwc2_hcd_to_hsotg",
+          "_dwc2_hcd_urb_enqueue -> dbg_urb",
+          "_dwc2_hcd_urb_enqueue -> __compiletime_assert_1479",
+          "_dwc2_hcd_urb_enqueue -> arch_static_branch",
+          "_dwc2_hcd_urb_enqueue -> arch_static_branch_jump",
+          "_dwc2_hcd_urb_enqueue -> ____wrong_branch_error"
+        ],
+        "state_transitions": [
+          "diagnostic(csa)"
+        ],
+        "api_terms": [
+          "kfree",
+          "return [B1.8];",
+          "dwc2_hcd_qh_free",
+          "[B3.3] = [B3.2]",
+          "[B3.6]->qtd_list_entry",
+          "void *__mptr = (void *)((qtd2_tmp)->qtd_list_entry.next);"
+        ],
+        "related_symbols": [],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      },
+      "confidence": 0.72
+    }
+  ],
+  "selected_context_summaries": [],
+  "semantic_clause_plan": [
+    {
+      "clause_id": "vulnerable_trigger_clause",
+      "intent": "Trigger on the vulnerable concurrency mechanism using evidence-backed path/flow semantics.",
+      "supporting_evidence_ids": [
+        "csa_guard_0",
+        "csa_state_0",
+        "csa_validation_allocation_lifecycle_1",
+        "csa_validation_semantic_slice_0"
+      ],
+      "repair_when": [
+        "semantic_no_hits"
+      ],
+      "focus_functions": []
+    },
+    {
+      "clause_id": "patched_silence_clause",
+      "intent": "Stay silent on patched code when patch-added guards, barriers, or safe APIs prove the mechanism is blocked.",
+      "supporting_evidence_ids": [
+        "csa_guard_0",
+        "csa_state_0",
+        "csa_validation_semantic_slice_0"
+      ],
+      "repair_when": [],
+      "silencing_conditions": []
+    },
+    {
+      "clause_id": "semantic_transfer_clause",
+      "intent": "Generalize along semantic slices and call-chain evidence rather than patch-local syntax.",
+      "supporting_evidence_ids": [
+        "csa_validation_semantic_slice_0"
+      ],
+      "repair_when": [],
+      "analyzer_id": "csa"
+    },
+    {
+      "clause_id": "analyzer_interface_clause",
+      "intent": "Preserve valid analyzer-facing syntax and interfaces while keeping semantics unchanged.",
+      "supporting_evidence_ids": [],
+      "repair_when": [
+        "semantic_execution_error"
+      ],
+      "analyzer_id": "csa"
+    }
+  ],
+  "repair_directives": [],
+  "constraints": [
+    {
+      "title": "Generalize beyond patch site",
+      "description": "Do not bind the detector to fixed file paths, line numbers, or exact patch strings.",
+      "priority": "high"
+    },
+    {
+      "title": "Preserve vulnerability semantics",
+      "description": "Keep the detector focused on the vulnerability family implied by the patch and evidence.",
+      "priority": "high"
+    },
+    {
+      "title": "Respect analyzer-native form",
+      "description": "Output must be a valid checker_plugin for csa.",
+      "priority": "high"
+    },
+    {
+      "title": "Stay within proven mechanism scope",
+      "description": "Generalize only along evidence-supported semantic dimensions. Do not broaden the detector into unrelated globals, APIs, or bug families.",
+      "priority": "high"
+    },
+    {
+      "title": "Honor mechanism contract",
+      "description": "Preserve the mechanism family `generic_vulnerability_mechanism` by keeping trigger invariants the vulnerable mechanism is reachable on a feasible path; the path lacks the barrier introduced by the patch; Patch-backed trigger clue: added or highlighted APIs: spin_unlock_irqrestore.",
+      "priority": "high"
+    },
+    {
+      "title": "Generalize only on contract axes",
+      "description": "Reuse semantics only along these transfer axes: only generalize along evidence-backed state, guard, flow, or API-role equivalence; equivalent guard or barrier predicates on sibling paths; equivalent local state transitions around the same sink or dereference.",
+      "priority": "high"
+    },
+    {
+      "title": "Encode the patch-added barrier",
+      "description": "use APIs such as spin_unlock_irqrestore as semantic clues, not string matches.",
+      "priority": "high"
+    },
+    {
+      "title": "Use path-sensitive evidence",
+      "description": "Prefer guards, state transitions, and lifecycle facts over broad textual matching.",
+      "priority": "high"
+    },
+    {
+      "title": "No placeholder helper logic",
+      "description": "Helper predicates must inspect AST/program state and must not be unconditional return-true/return-false stubs.",
+      "priority": "high"
+    }
+  ],
+  "implementation_hints": [
+    "Mechanism family: generic_vulnerability_mechanism",
+    "Mechanism dimensions: vulnerability trigger, patch-introduced barrier, local state or flow relation",
+    "Trigger invariants: the vulnerable mechanism is reachable on a feasible path, the path lacks the barrier introduced by the patch, Patch-backed trigger clue: added or highlighted APIs: spin_unlock_irqrestore",
+    "Silence invariants: patch-introduced guards, barriers, or safe APIs must suppress findings",
+    "Transfer axes: only generalize along evidence-backed state, guard, flow, or API-role equivalence, equivalent guard or barrier predicates on sibling paths, equivalent local state transitions around the same sink or dereference",
+    "Relevant APIs: spin_unlock_irqrestore",
+    "Patch mechanism: added or highlighted APIs: spin_unlock_irqrestore",
+    "Semantic slice (path_witness): Analyzer CFG for _dwc2_hcd_urb_enqueue in drivers/usb/dwc2/hcd.c: bindings: qtd = kzalloc (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(size_t, gfp_t))(sizeof (*qtd), mem_flags (ImplicitCastExpr, LValueToRValue, gfp_t)) (ImplicitCastExpr, BitCast, struct dwc2_qtd *); retval = dwc2_hcd_urb_enqueue (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct dwc2_hsotg *, struct dwc2_hcd_urb *, struct dwc2_qh *, struct dwc2_qtd *))(hsotg (ImplicitCastExpr, LValueToRValue, struct dwc2_hsotg *), dwc2_urb (ImplicitCastExpr, LValueToRValue, struct dwc2_hcd_urb *), qh (ImplicitCastExpr, LValueToRValue, struct dwc2_qh *), qtd (ImplicitCastExpr, LValueToRValue, struct dwc2_qtd *)) | branches: if !qtd (ImplicitCastExpr, LValueToRValue, struct dwc2_qtd *); for (...; !(&qtd2 (ImplicitCastExpr, LValueToRValue, struct dwc2_qtd *)->qtd_list_entry == (&qh (ImplicitCastExpr, LValueToRValue, struct dwc2_qh *)->qtd_list)); ...) | calls: _dwc2_hcd_urb_enqueue -> dwc2_hcd_to_hsotg; _dwc2_hcd_urb_enqueue -> dbg_urb"
+  ],
+  "validation_expectations": [
+    "Vulnerable version should trigger a concurrency finding.",
+    "Patched version should stay silent for the same mechanism.",
+    "Semantic validation that executes but returns zero hits is not acceptable; recover coverage with evidence-backed semantics.",
+    "Repair phase may fix syntax/interfaces only; it must not simplify away the core detection logic.",
+    "Generalization must stay inside the mechanism contract transfer axes instead of widening to adjacent bug families.",
+    "Trigger invariant: the vulnerable mechanism is reachable on a feasible path.",
+    "Trigger invariant: the path lacks the barrier introduced by the patch."
+  ]
+}

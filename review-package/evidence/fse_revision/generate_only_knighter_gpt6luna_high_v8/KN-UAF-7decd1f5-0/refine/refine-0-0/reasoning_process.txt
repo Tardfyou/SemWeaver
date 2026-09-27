@@ -1,0 +1,10 @@
+Refinment Plan:
+The false positive is caused by the checker’s one-hop, symmetric alias map. `checkBind` records aliases without removing stale relationships when a pointer variable is rebound. In a loop, a reused variable such as `cur` can therefore remain associated with a previously freed object, making a later access to a different list entry appear to be a use-after-free.
+
+Remove that alias map and its bind-time propagation. Track releases by the base region of the released object, and rely on the analyzer’s current symbolic value for each pointer expression to identify accesses to that object. This still detects the target bug: `mptcp_close_ssk` marks its third argument released, and a subsequent load through `subflow` finds the same object region. It avoids carrying a freed status across unrelated pointer reassignments.
+
+Refined Code:
+```cpp
+```
+
+The checker’s existing `checkPreCall` refers to `functionKnownToDeref`, whose definition was absent from the supplied checker code. The code above preserves that call, but it must be provided by the project’s utility header or added to the checker for it to compile. The changes are otherwise compatible with the Clang 18 checker APIs shown here.

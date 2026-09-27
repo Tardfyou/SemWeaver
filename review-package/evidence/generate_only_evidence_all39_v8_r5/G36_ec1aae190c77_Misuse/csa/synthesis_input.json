@@ -1,0 +1,1282 @@
+{
+  "analyzer_id": "csa",
+  "detector_artifact": "checker_plugin",
+  "primary_pattern": "misuse",
+  "objective": "Synthesize a path-sensitive misuse detector that encodes the same local state, guards, and lifecycle mechanism evidenced by the patch, while still generalizing to semantically equivalent sites.",
+  "mechanism_contract": {
+    "mechanism_family": "generic_vulnerability_mechanism",
+    "semantic_dimensions": [
+      "vulnerability trigger",
+      "patch-introduced barrier",
+      "local state or flow relation"
+    ],
+    "trigger_invariants": [
+      "the vulnerable mechanism is reachable on a feasible path",
+      "the path lacks the barrier introduced by the patch"
+    ],
+    "silence_invariants": [
+      "patch-introduced guards, barriers, or safe APIs must suppress findings"
+    ],
+    "transfer_axes": [
+      "only generalize along evidence-backed state, guard, flow, or API-role equivalence",
+      "equivalent guard or barrier predicates on sibling paths",
+      "equivalent local state transitions around the same sink or dereference",
+      "equivalent ownership or release/reinit lifecycle on the same symbolic resource"
+    ],
+    "forbidden_shortcuts": [
+      "bind the detector to fixed file paths, line numbers, or exact patch strings",
+      "broaden into unrelated bug families just to improve hit count",
+      "use the patch text itself as the matching rule",
+      "widen to unrelated bug families without evidence",
+      "placeholder helper logic or empty ProgramState modeling"
+    ],
+    "evidence_backed_axes": [
+      "path guards and barrier conditions",
+      "state transitions",
+      "resource lifecycle",
+      "semantic trigger slice"
+    ]
+  },
+  "detector_name_hint": "",
+  "focus_files": [],
+  "focus_functions": [],
+  "hypotheses": [
+    "Patch likely encodes a reusable vulnerability mechanism but available metadata is weak; keep evidence collection broad."
+  ],
+  "required_evidence_types": [
+    "patch_fact"
+  ],
+  "missing_evidence_types": [],
+  "evidence_degraded": false,
+  "patch_mechanism_signals": [],
+  "silencing_conditions": [],
+  "retry_guidance": [],
+  "selected_evidence_ids": [
+    "csa_guard_0",
+    "csa_state_0",
+    "csa_validation_allocation_lifecycle_1",
+    "csa_validation_semantic_slice_0"
+  ],
+  "selected_evidence": [
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c",
+        "function": "brcmf_fweh_process_event"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "if fwevt_idx (ImplicitCastExpr, LValueToRValue, u32) != BRCMF_E_IF (ImplicitCastExpr, IntegralCast, u32) && !fweh (ImplicitCastExpr, LValueToRValue, struct brcmf_fweh_info *)->evt_handler (ImplicitCastExpr, ArrayToPointerDecay, brcmf_fweh_handler_t *)[fwevt_idx (ImplicitCastExpr, LValueToRValue, u32)] (ImplicitCastExpr, LValueToRValue, brcmf_fweh_handler_t)",
+        "summary": "Analyzer CFG for brcmf_fweh_process_event in drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c: bindings: fwevt_idx = get_unaligned_be32 (ImplicitCastExpr, FunctionToPointerDecay, u32 (*)(const void *))(&event_packet (ImplicitCastExpr, LValueToRValue, struct brcmf_event *)->msg.event_type (ImplicitCastExpr, BitCast, const void *)); kzalloc (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(size_t, gfp_t))(__builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(datalen) * 0L)) : (int *)8))), sizeof (*(event)) + __builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(datalen) * 0L)) : (int *)8))), (datalen) * sizeof (*(event)->data) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c:495:18)))), size_mul(datalen, sizeof (*(event)->data) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c:495:18)))))), size_add (ImplicitCastExpr, FunctionToPointerDecay, size_t (*)(size_t, size_t))(sizeof (*(event)), __builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(datalen) * 0L)) : (int *)8))), (datalen) * sizeof (*(event)->data) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c:495:18)))), size_mul (ImplicitCastExpr, FunctionToPointerDecay, size_t (*)(size_t, size_t))(datalen (ImplicitCastExpr, LValueToRValue, u32) (ImplicitCastExpr, IntegralCast, size_t), sizeof (*(event)->data) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c:495:18))) (CStyleCastExpr, IntegralCast, int)) (ImplicitCastExpr, IntegralCast, unsigned long))))), gfp (ImplicitCastExpr, LValueToRValue, gfp_t)) | branches: if fwevt_idx (ImplicitCastExpr, LValueToRValue, u32) != BRCMF_E_IF (ImplicitCastExpr, IntegralCast, u32) && !fweh (ImplicitCastExpr, LValueToRValue, struct brcmf_fweh_info *)->evt_handler (ImplicitCastExpr, ArrayToPointerDecay, brcmf_fweh_handler_t *)[fwevt_idx (ImplicitCastExpr, LValueToRValue, u32)] (ImplicitCastExpr, LValueToRValue, brcmf_fweh_handler_t); fwevt_idx (ImplicitCastExpr, LValueToRValue, u32) != BRCMF_E_IF (ImplicitCastExpr, IntegralCast, u32) && ... | calls: brcmf_fweh_process_event -> get_unaligned_be32; brcmf_fweh_process_event -> kzalloc",
+        "summary_line": 505,
+        "state_before": [
+          "buffer(event->ifaddr)",
+          "buffer(event_packet->eth)",
+          "sinks(get_unaligned_be32, kzalloc)"
+        ],
+        "state_after": [
+          "cfg_binding(fwevt_idx = get_unaligned_be32 (ImplicitCastExpr, FunctionToPointerDecay, u32 (*)(const void *))(&event_packet (ImplicitCastExpr, LValueToRValue, struct brcmf_event *)->msg.event_type (ImplicitCastExpr, BitCast, const void *)))",
+          "cfg_binding(kzalloc (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(size_t, gfp_t))(__builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(datalen) * 0L)) : (int *)8))), sizeof (*(event)) + __builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(datalen) * 0L)) : (int *)8))), (datalen) * sizeof (*(event)->data) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c:495:18)))), size_mul(datalen, sizeof (*(event)->data) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c:495:18)))))), size_add (ImplicitCastExpr, FunctionToPointerDecay, size_t (*)(size_t, size_t))(sizeof (*(event)), __builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(datalen) * 0L)) : (int *)8))), (datalen) * sizeof (*(event)->data) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c:495:18)))), size_mul (ImplicitCastExpr, FunctionToPointerDecay, size_t (*)(size_t, size_t))(datalen (ImplicitCastExpr, LValueToRValue, u32) (ImplicitCastExpr, IntegralCast, size_t), sizeof (*(event)->data) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c:495:18))) (CStyleCastExpr, IntegralCast, int)) (ImplicitCastExpr, IntegralCast, unsigned long))))), gfp (ImplicitCastExpr, LValueToRValue, gfp_t)))",
+          "cfg_branch(if fwevt_idx (ImplicitCastExpr, LValueToRValue, u32) != BRCMF_E_IF (ImplicitCastExpr, IntegralCast, u32) && !fweh (ImplicitCastExpr, LValueToRValue, struct brcmf_fweh_info *)->evt_handler (ImplicitCastExpr, ArrayToPointerDecay, brcmf_fweh_handler_t *)[fwevt_idx (ImplicitCastExpr, LValueToRValue, u32)] (ImplicitCastExpr, LValueToRValue, brcmf_fweh_handler_t))",
+          "cfg_branch(fwevt_idx (ImplicitCastExpr, LValueToRValue, u32) != BRCMF_E_IF (ImplicitCastExpr, IntegralCast, u32) && ...)"
+        ],
+        "tracked_symbols": [
+          "event->ifaddr",
+          "event_packet->eth",
+          "event->data",
+          "event->emsg",
+          "event_packet->msg",
+          "drvr->fweh"
+        ],
+        "buffer_fields": [
+          "event->ifaddr",
+          "event_packet->eth",
+          "event->data",
+          "event->emsg",
+          "event_packet->msg",
+          "drvr->fweh"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "brcmf_fweh_process_event"
+        ],
+        "call_targets": [
+          "get_unaligned_be32",
+          "kzalloc",
+          "struct_size",
+          "memcpy",
+          "brcmf_fweh_queue_event",
+          "size_mul",
+          "size_add",
+          "__builtin_dynamic_object_size"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,drivers/net/wireless/broadcom/brcm80211/brcmfmac/.fweh.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch...",
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "do ... while [B3.1]",
+          "do ... while [B5.1]",
+          "do ... while [B7.1]",
+          "if [B14.14]",
+          "if [B15.11]",
+          "if [B17.7]"
+        ],
+        "call_edges": [
+          "brcmf_fweh_process_event -> get_unaligned_be32",
+          "brcmf_fweh_process_event -> kzalloc",
+          "brcmf_fweh_process_event -> size_mul",
+          "brcmf_fweh_process_event -> size_add",
+          "brcmf_fweh_process_event -> __builtin_dynamic_object_size",
+          "brcmf_fweh_process_event -> fortify_memcpy_chk"
+        ],
+        "state_statements": [
+          "__builtin_memcpy",
+          "[B1.15]->ifaddr",
+          "[B1.20]->eth",
+          "sizeof(struct bug_entry)",
+          "__auto_type __flags = (1 << 0) | ((1 << 3) | ((9) << 8));",
+          "\"memcpy: detected field-spanning write (size %zu) of single %s (size %zu)\\n\""
+        ],
+        "source_file": "drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c",
+          "hunk_index": 0,
+          "source_line": 505
+        },
+        "summary": "Analyzer CFG for brcmf_fweh_process_event in drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c: bindings: fwevt_idx = get_unaligned_be32 (ImplicitCastExpr, FunctionToPointerDecay, u32 (*)(const void *))(&event_packet (ImplicitCastExpr, LValueToRValue, struct brcmf_event *)->msg.event_type (ImplicitCastExpr, BitCast, const void *)); kzalloc (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(size_t, gfp_t))(__builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(datalen) * 0L)) : (int *)8))), sizeof (*(event)) + __builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(datalen) * 0L)) : (int *)8))), (datalen) * sizeof (*(event)->data) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c:495:18)))), size_mul(datalen, sizeof (*(event)->data) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c:495:18)))))), size_add (ImplicitCastExpr, FunctionToPointerDecay, size_t (*)(size_t, size_t))(sizeof (*(event)), __builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(datalen) * 0L)) : (int *)8))), (datalen) * sizeof (*(event)->data) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c:495:18)))), size_mul (ImplicitCastExpr, FunctionToPointerDecay, size_t (*)(size_t, size_t))(datalen (ImplicitCastExpr, LValueToRValue, u32) (ImplicitCastExpr, IntegralCast, size_t), sizeof (*(event)->data) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c:495:18))) (CStyleCastExpr, IntegralCast, int)) (ImplicitCastExpr, IntegralCast, unsigned long))))), gfp (ImplicitCastExpr, LValueToRValue, gfp_t)) | branches: if fwevt_idx (ImplicitCastExpr, LValueToRValue, u32) != BRCMF_E_IF (ImplicitCastExpr, IntegralCast, u32) && !fweh (ImplicitCastExpr, LValueToRValue, struct brcmf_fweh_info *)->evt_handler (ImplicitCastExpr, ArrayToPointerDecay, brcmf_fweh_handler_t *)[fwevt_idx (ImplicitCastExpr, LValueToRValue, u32)] (ImplicitCastExpr, LValueToRValue, brcmf_fweh_handler_t); fwevt_idx (ImplicitCastExpr, LValueToRValue, u32) != BRCMF_E_IF (ImplicitCastExpr, IntegralCast, u32) && ... | calls: brcmf_fweh_process_event -> get_unaligned_be32; brcmf_fweh_process_event -> kzalloc",
+        "statements": [
+          "473: {",
+          "474: \tu32 fwevt_idx;",
+          "475: \tstruct brcmf_fweh_info *fweh = drvr->fweh;",
+          "476: \tstruct brcmf_fweh_queue_item *event;",
+          "477: \tvoid *data;",
+          "478: \tu32 datalen;"
+        ],
+        "guards": [
+          "if fwevt_idx (ImplicitCastExpr, LValueToRValue, u32) != BRCMF_E_IF (ImplicitCastExpr, IntegralCast, u32) && !fweh (ImplicitCastExpr, LValueToRValue, struct brcmf_fweh_info *)->evt_handler (ImplicitCastExpr, ArrayToPointerDecay, brcmf_fweh_handler_t *)[fwevt_idx (ImplicitCastExpr, LValueToRValue, u32)] (ImplicitCastExpr, LValueToRValue, brcmf_fweh_handler_t)",
+          "fwevt_idx (ImplicitCastExpr, LValueToRValue, u32) != BRCMF_E_IF (ImplicitCastExpr, IntegralCast, u32) && ...",
+          "if fwevt_idx (ImplicitCastExpr, LValueToRValue, u32) >= fweh (ImplicitCastExpr, LValueToRValue, struct brcmf_fweh_info *)->num_event_codes (ImplicitCastExpr, LValueToRValue, uint)",
+          "do ... while 0"
+        ],
+        "call_boundary": [
+          "get_unaligned_be32",
+          "kzalloc",
+          "struct_size",
+          "memcpy",
+          "brcmf_fweh_queue_event",
+          "size_mul"
+        ],
+        "call_edges": [
+          "brcmf_fweh_process_event -> get_unaligned_be32",
+          "brcmf_fweh_process_event -> kzalloc",
+          "brcmf_fweh_process_event -> size_mul",
+          "brcmf_fweh_process_event -> size_add",
+          "brcmf_fweh_process_event -> __builtin_dynamic_object_size",
+          "brcmf_fweh_process_event -> fortify_memcpy_chk",
+          "brcmf_fweh_process_event -> __builtin_expect",
+          "brcmf_fweh_process_event -> __warn_printk"
+        ],
+        "state_transitions": [
+          "cfg_binding(fwevt_idx = get_unaligned_be32 (ImplicitCastExpr, FunctionToPointerDecay, u32 (*)(const void *))(&event_packet (ImplicitCastExpr, LValueToRValue, struct brcmf_event *)->msg.event_type (ImplicitCastExpr, BitCast, const void *)))",
+          "cfg_binding(kzalloc (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(size_t, gfp_t))(__builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(datalen) * 0L)) : (int *)8))), sizeof (*(event)) + __builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(datalen) * 0L)) : (int *)8))), (datalen) * sizeof (*(event)->data) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c:495:18)))), size_mul(datalen, sizeof (*(event)->data) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c:495:18)))))), size_add (ImplicitCastExpr, FunctionToPointerDecay, size_t (*)(size_t, size_t))(sizeof (*(event)), __builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(datalen) * 0L)) : (int *)8))), (datalen) * sizeof (*(event)->data) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c:495:18)))), size_mul (ImplicitCastExpr, FunctionToPointerDecay, size_t (*)(size_t, size_t))(datalen (ImplicitCastExpr, LValueToRValue, u32) (ImplicitCastExpr, IntegralCast, size_t), sizeof (*(event)->data) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c:495:18))) (CStyleCastExpr, IntegralCast, int)) (ImplicitCastExpr, IntegralCast, unsigned long))))), gfp (ImplicitCastExpr, LValueToRValue, gfp_t)))",
+          "cfg_branch(if fwevt_idx (ImplicitCastExpr, LValueToRValue, u32) != BRCMF_E_IF (ImplicitCastExpr, IntegralCast, u32) && !fweh (ImplicitCastExpr, LValueToRValue, struct brcmf_fweh_info *)->evt_handler (ImplicitCastExpr, ArrayToPointerDecay, brcmf_fweh_handler_t *)[fwevt_idx (ImplicitCastExpr, LValueToRValue, u32)] (ImplicitCastExpr, LValueToRValue, brcmf_fweh_handler_t))",
+          "cfg_branch(fwevt_idx (ImplicitCastExpr, LValueToRValue, u32) != BRCMF_E_IF (ImplicitCastExpr, IntegralCast, u32) && ...)",
+          "__builtin_memcpy",
+          "[B1.15]->ifaddr"
+        ],
+        "api_terms": [
+          "get_unaligned_be32",
+          "kzalloc",
+          "size_mul",
+          "size_add",
+          "__builtin_dynamic_object_size",
+          "fortify_memcpy_chk"
+        ],
+        "related_symbols": [
+          "event->ifaddr",
+          "event_packet->eth",
+          "event->data",
+          "event->emsg",
+          "event_packet->msg",
+          "drvr->fweh"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c",
+        "function": "brcmf_fweh_process_event"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "brcmf_fweh_process_event in drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c: cfg_calls=brcmf_fweh_process_event -> get_unaligned_be32; brcmf_fweh_process_event -> kzalloc | memory_ops=memcpy",
+        "state_before": [
+          "buffer(event->ifaddr)",
+          "buffer(event_packet->eth)",
+          "sinks(get_unaligned_be32, kzalloc)"
+        ],
+        "state_after": [
+          "transition(__builtin_memcpy)",
+          "transition([B1.15]->ifaddr)",
+          "transition([B1.20]->eth)"
+        ],
+        "tracked_symbols": [
+          "event->ifaddr",
+          "event_packet->eth",
+          "event->data",
+          "event->emsg",
+          "event_packet->msg",
+          "drvr->fweh"
+        ],
+        "buffer_fields": [
+          "event->ifaddr",
+          "event_packet->eth",
+          "event->data",
+          "event->emsg",
+          "event_packet->msg",
+          "drvr->fweh"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "brcmf_fweh_process_event"
+        ],
+        "call_targets": [
+          "get_unaligned_be32",
+          "kzalloc",
+          "struct_size",
+          "memcpy",
+          "brcmf_fweh_queue_event",
+          "size_mul",
+          "size_add",
+          "__builtin_dynamic_object_size"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "do ... while [B3.1]",
+          "do ... while [B5.1]",
+          "do ... while [B7.1]",
+          "if [B14.14]"
+        ],
+        "call_edges": [
+          "brcmf_fweh_process_event -> get_unaligned_be32",
+          "brcmf_fweh_process_event -> kzalloc",
+          "brcmf_fweh_process_event -> size_mul",
+          "brcmf_fweh_process_event -> size_add",
+          "brcmf_fweh_process_event -> __builtin_dynamic_object_size",
+          "brcmf_fweh_process_event -> fortify_memcpy_chk"
+        ],
+        "state_statements": [
+          "__builtin_memcpy",
+          "[B1.15]->ifaddr",
+          "[B1.20]->eth",
+          "sizeof(struct bug_entry)",
+          "__auto_type __flags = (1 << 0) | ((1 << 3) | ((9) << 8));",
+          "\"memcpy: detected field-spanning write (size %zu) of single %s (size %zu)\\n\"",
+          "\"field \\\"event->ifaddr\\\" at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c:506\"",
+          "int __ret_warn_on = !!(1);"
+        ],
+        "return_statements": [
+          "return;"
+        ],
+        "source_file": "drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c",
+          "hunk_index": 0,
+          "source_line": 505
+        },
+        "summary": "brcmf_fweh_process_event in drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c: cfg_calls=brcmf_fweh_process_event -> get_unaligned_be32; brcmf_fweh_process_event -> kzalloc | memory_ops=memcpy",
+        "statements": [
+          "473: {",
+          "474: \tu32 fwevt_idx;",
+          "475: \tstruct brcmf_fweh_info *fweh = drvr->fweh;",
+          "476: \tstruct brcmf_fweh_queue_item *event;",
+          "477: \tvoid *data;",
+          "478: \tu32 datalen;"
+        ],
+        "guards": [
+          "do ... while [B3.1]",
+          "do ... while [B5.1]",
+          "do ... while [B7.1]"
+        ],
+        "call_boundary": [
+          "get_unaligned_be32",
+          "kzalloc",
+          "struct_size",
+          "memcpy",
+          "brcmf_fweh_queue_event",
+          "size_mul"
+        ],
+        "call_edges": [
+          "brcmf_fweh_process_event -> get_unaligned_be32",
+          "brcmf_fweh_process_event -> kzalloc",
+          "brcmf_fweh_process_event -> size_mul",
+          "brcmf_fweh_process_event -> size_add",
+          "brcmf_fweh_process_event -> __builtin_dynamic_object_size",
+          "brcmf_fweh_process_event -> fortify_memcpy_chk",
+          "brcmf_fweh_process_event -> __builtin_expect",
+          "brcmf_fweh_process_event -> __warn_printk"
+        ],
+        "state_transitions": [
+          "transition(__builtin_memcpy)",
+          "transition([B1.15]->ifaddr)",
+          "transition([B1.20]->eth)",
+          "__builtin_memcpy",
+          "[B1.15]->ifaddr",
+          "[B1.20]->eth"
+        ],
+        "api_terms": [
+          "memcpy",
+          "get_unaligned_be32",
+          "kzalloc",
+          "size_mul",
+          "size_add",
+          "__builtin_dynamic_object_size"
+        ],
+        "related_symbols": [
+          "event->ifaddr",
+          "event_packet->eth",
+          "event->data",
+          "event->emsg",
+          "event_packet->msg",
+          "drvr->fweh"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.88
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_1",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c",
+        "function": "brcmf_fweh_process_event"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "brcmf_fweh_process_event in drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c provides CSA-backed pointer/resource lifecycle context near line 505",
+        "state_before": [
+          "buffer(event->ifaddr)",
+          "buffer(event_packet->eth)",
+          "sinks(get_unaligned_be32, kzalloc)"
+        ],
+        "state_after": [
+          "operation(memcpy)",
+          "operation(__builtin_memcpy)",
+          "operation([B1.15]->ifaddr)",
+          "operation([B1.20]->eth)"
+        ],
+        "buffer_fields": [
+          "event->ifaddr",
+          "event_packet->eth",
+          "event->data",
+          "event->emsg",
+          "event_packet->msg",
+          "drvr->fweh"
+        ],
+        "coverage_status": "partial",
+        "operations": [
+          "memcpy",
+          "__builtin_memcpy",
+          "[B1.15]->ifaddr",
+          "[B1.20]->eth",
+          "sizeof(struct bug_entry)",
+          "__auto_type __flags = (1 << 0) | ((1 << 3) | ((9) << 8));"
+        ],
+        "functions": [
+          "brcmf_fweh_process_event"
+        ],
+        "call_targets": [
+          "get_unaligned_be32",
+          "kzalloc",
+          "struct_size",
+          "memcpy",
+          "brcmf_fweh_queue_event",
+          "size_mul"
+        ],
+        "call_edges": [
+          "brcmf_fweh_process_event -> get_unaligned_be32",
+          "brcmf_fweh_process_event -> kzalloc",
+          "brcmf_fweh_process_event -> size_mul",
+          "brcmf_fweh_process_event -> size_add",
+          "brcmf_fweh_process_event -> __builtin_dynamic_object_size",
+          "brcmf_fweh_process_event -> fortify_memcpy_chk"
+        ],
+        "state_statements": [
+          "__builtin_memcpy",
+          "[B1.15]->ifaddr",
+          "[B1.20]->eth",
+          "sizeof(struct bug_entry)",
+          "__auto_type __flags = (1 << 0) | ((1 << 3) | ((9) << 8));",
+          "\"memcpy: detected field-spanning write (size %zu) of single %s (size %zu)\\n\""
+        ],
+        "source_file": "drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c",
+          "hunk_index": 0,
+          "source_line": 505
+        },
+        "summary": "brcmf_fweh_process_event in drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c provides CSA-backed pointer/resource lifecycle context near line 505",
+        "statements": [
+          "473: {",
+          "474: \tu32 fwevt_idx;",
+          "475: \tstruct brcmf_fweh_info *fweh = drvr->fweh;",
+          "476: \tstruct brcmf_fweh_queue_item *event;",
+          "477: \tvoid *data;",
+          "478: \tu32 datalen;"
+        ],
+        "guards": [
+          "fwevt_idx >= fweh->num_event_codes",
+          "fwevt_idx != BRCMF_E_IF && !fweh->evt_handler[fwevt_idx]",
+          "!event",
+          "do ... while [B3.1]"
+        ],
+        "call_boundary": [
+          "get_unaligned_be32",
+          "kzalloc",
+          "struct_size",
+          "memcpy",
+          "brcmf_fweh_queue_event",
+          "size_mul"
+        ],
+        "call_edges": [
+          "brcmf_fweh_process_event -> get_unaligned_be32",
+          "brcmf_fweh_process_event -> kzalloc",
+          "brcmf_fweh_process_event -> size_mul",
+          "brcmf_fweh_process_event -> size_add",
+          "brcmf_fweh_process_event -> __builtin_dynamic_object_size",
+          "brcmf_fweh_process_event -> fortify_memcpy_chk"
+        ],
+        "state_transitions": [
+          "operation(memcpy)",
+          "operation(__builtin_memcpy)",
+          "operation([B1.15]->ifaddr)",
+          "operation([B1.20]->eth)"
+        ],
+        "api_terms": [
+          "memcpy",
+          "__builtin_memcpy",
+          "[B1.15]->ifaddr",
+          "[B1.20]->eth",
+          "sizeof(struct bug_entry)",
+          "__auto_type __flags = (1 << 0) | ((1 << 3) | ((9) << 8));"
+        ],
+        "related_symbols": [],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      },
+      "confidence": 0.72
+    },
+    {
+      "evidence_id": "csa_validation_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c",
+        "function": "brcmf_fweh_process_event"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c:505",
+        "state_before": [
+          "buffer(event->ifaddr)",
+          "buffer(event_packet->eth)",
+          "sinks(get_unaligned_be32, kzalloc)"
+        ],
+        "state_after": [
+          "diagnostic(csa)"
+        ],
+        "buffer_fields": [
+          "event->ifaddr",
+          "event_packet->eth",
+          "event->data",
+          "event->emsg",
+          "event_packet->msg",
+          "drvr->fweh"
+        ],
+        "coverage_status": "partial",
+        "functions": [
+          "brcmf_fweh_process_event"
+        ],
+        "call_targets": [
+          "get_unaligned_be32",
+          "kzalloc",
+          "struct_size",
+          "memcpy",
+          "brcmf_fweh_queue_event",
+          "size_mul"
+        ],
+        "call_edges": [
+          "brcmf_fweh_process_event -> get_unaligned_be32",
+          "brcmf_fweh_process_event -> kzalloc",
+          "brcmf_fweh_process_event -> size_mul",
+          "brcmf_fweh_process_event -> size_add",
+          "brcmf_fweh_process_event -> __builtin_dynamic_object_size",
+          "brcmf_fweh_process_event -> fortify_memcpy_chk"
+        ],
+        "state_statements": [
+          "__builtin_memcpy",
+          "[B1.15]->ifaddr",
+          "[B1.20]->eth",
+          "sizeof(struct bug_entry)",
+          "__auto_type __flags = (1 << 0) | ((1 << 3) | ((9) << 8));",
+          "\"memcpy: detected field-spanning write (size %zu) of single %s (size %zu)\\n\""
+        ],
+        "source_file": "drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c",
+          "hunk_index": 0,
+          "source_line": 505
+        },
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c:505",
+        "statements": [
+          "473: {",
+          "474: \tu32 fwevt_idx;",
+          "475: \tstruct brcmf_fweh_info *fweh = drvr->fweh;",
+          "476: \tstruct brcmf_fweh_queue_item *event;",
+          "477: \tvoid *data;",
+          "478: \tu32 datalen;"
+        ],
+        "guards": [
+          "fwevt_idx >= fweh->num_event_codes",
+          "fwevt_idx != BRCMF_E_IF && !fweh->evt_handler[fwevt_idx]",
+          "!event",
+          "do ... while [B3.1]"
+        ],
+        "call_boundary": [
+          "get_unaligned_be32",
+          "kzalloc",
+          "struct_size",
+          "memcpy",
+          "brcmf_fweh_queue_event",
+          "size_mul"
+        ],
+        "call_edges": [
+          "brcmf_fweh_process_event -> get_unaligned_be32",
+          "brcmf_fweh_process_event -> kzalloc",
+          "brcmf_fweh_process_event -> size_mul",
+          "brcmf_fweh_process_event -> size_add",
+          "brcmf_fweh_process_event -> __builtin_dynamic_object_size",
+          "brcmf_fweh_process_event -> fortify_memcpy_chk"
+        ],
+        "state_transitions": [
+          "diagnostic(csa)"
+        ],
+        "api_terms": [
+          "memcpy",
+          "__builtin_memcpy",
+          "[B1.15]->ifaddr",
+          "[B1.20]->eth",
+          "sizeof(struct bug_entry)",
+          "__auto_type __flags = (1 << 0) | ((1 << 3) | ((9) << 8));"
+        ],
+        "related_symbols": [],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      },
+      "confidence": 0.72
+    }
+  ],
+  "semantic_slice_count": 4,
+  "context_summary_count": 0,
+  "semantic_slice_coverage": "partial",
+  "selected_semantic_slice_ids": [
+    "csa_guard_0",
+    "csa_state_0",
+    "csa_validation_allocation_lifecycle_1",
+    "csa_validation_semantic_slice_0"
+  ],
+  "selected_context_summary_ids": [],
+  "selected_semantic_slices": [
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c",
+        "function": "brcmf_fweh_process_event"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "if fwevt_idx (ImplicitCastExpr, LValueToRValue, u32) != BRCMF_E_IF (ImplicitCastExpr, IntegralCast, u32) && !fweh (ImplicitCastExpr, LValueToRValue, struct brcmf_fweh_info *)->evt_handler (ImplicitCastExpr, ArrayToPointerDecay, brcmf_fweh_handler_t *)[fwevt_idx (ImplicitCastExpr, LValueToRValue, u32)] (ImplicitCastExpr, LValueToRValue, brcmf_fweh_handler_t)",
+        "summary": "Analyzer CFG for brcmf_fweh_process_event in drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c: bindings: fwevt_idx = get_unaligned_be32 (ImplicitCastExpr, FunctionToPointerDecay, u32 (*)(const void *))(&event_packet (ImplicitCastExpr, LValueToRValue, struct brcmf_event *)->msg.event_type (ImplicitCastExpr, BitCast, const void *)); kzalloc (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(size_t, gfp_t))(__builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(datalen) * 0L)) : (int *)8))), sizeof (*(event)) + __builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(datalen) * 0L)) : (int *)8))), (datalen) * sizeof (*(event)->data) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c:495:18)))), size_mul(datalen, sizeof (*(event)->data) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c:495:18)))))), size_add (ImplicitCastExpr, FunctionToPointerDecay, size_t (*)(size_t, size_t))(sizeof (*(event)), __builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(datalen) * 0L)) : (int *)8))), (datalen) * sizeof (*(event)->data) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c:495:18)))), size_mul (ImplicitCastExpr, FunctionToPointerDecay, size_t (*)(size_t, size_t))(datalen (ImplicitCastExpr, LValueToRValue, u32) (ImplicitCastExpr, IntegralCast, size_t), sizeof (*(event)->data) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c:495:18))) (CStyleCastExpr, IntegralCast, int)) (ImplicitCastExpr, IntegralCast, unsigned long))))), gfp (ImplicitCastExpr, LValueToRValue, gfp_t)) | branches: if fwevt_idx (ImplicitCastExpr, LValueToRValue, u32) != BRCMF_E_IF (ImplicitCastExpr, IntegralCast, u32) && !fweh (ImplicitCastExpr, LValueToRValue, struct brcmf_fweh_info *)->evt_handler (ImplicitCastExpr, ArrayToPointerDecay, brcmf_fweh_handler_t *)[fwevt_idx (ImplicitCastExpr, LValueToRValue, u32)] (ImplicitCastExpr, LValueToRValue, brcmf_fweh_handler_t); fwevt_idx (ImplicitCastExpr, LValueToRValue, u32) != BRCMF_E_IF (ImplicitCastExpr, IntegralCast, u32) && ... | calls: brcmf_fweh_process_event -> get_unaligned_be32; brcmf_fweh_process_event -> kzalloc",
+        "summary_line": 505,
+        "state_before": [
+          "buffer(event->ifaddr)",
+          "buffer(event_packet->eth)",
+          "sinks(get_unaligned_be32, kzalloc)"
+        ],
+        "state_after": [
+          "cfg_binding(fwevt_idx = get_unaligned_be32 (ImplicitCastExpr, FunctionToPointerDecay, u32 (*)(const void *))(&event_packet (ImplicitCastExpr, LValueToRValue, struct brcmf_event *)->msg.event_type (ImplicitCastExpr, BitCast, const void *)))",
+          "cfg_binding(kzalloc (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(size_t, gfp_t))(__builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(datalen) * 0L)) : (int *)8))), sizeof (*(event)) + __builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(datalen) * 0L)) : (int *)8))), (datalen) * sizeof (*(event)->data) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c:495:18)))), size_mul(datalen, sizeof (*(event)->data) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c:495:18)))))), size_add (ImplicitCastExpr, FunctionToPointerDecay, size_t (*)(size_t, size_t))(sizeof (*(event)), __builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(datalen) * 0L)) : (int *)8))), (datalen) * sizeof (*(event)->data) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c:495:18)))), size_mul (ImplicitCastExpr, FunctionToPointerDecay, size_t (*)(size_t, size_t))(datalen (ImplicitCastExpr, LValueToRValue, u32) (ImplicitCastExpr, IntegralCast, size_t), sizeof (*(event)->data) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c:495:18))) (CStyleCastExpr, IntegralCast, int)) (ImplicitCastExpr, IntegralCast, unsigned long))))), gfp (ImplicitCastExpr, LValueToRValue, gfp_t)))",
+          "cfg_branch(if fwevt_idx (ImplicitCastExpr, LValueToRValue, u32) != BRCMF_E_IF (ImplicitCastExpr, IntegralCast, u32) && !fweh (ImplicitCastExpr, LValueToRValue, struct brcmf_fweh_info *)->evt_handler (ImplicitCastExpr, ArrayToPointerDecay, brcmf_fweh_handler_t *)[fwevt_idx (ImplicitCastExpr, LValueToRValue, u32)] (ImplicitCastExpr, LValueToRValue, brcmf_fweh_handler_t))",
+          "cfg_branch(fwevt_idx (ImplicitCastExpr, LValueToRValue, u32) != BRCMF_E_IF (ImplicitCastExpr, IntegralCast, u32) && ...)"
+        ],
+        "tracked_symbols": [
+          "event->ifaddr",
+          "event_packet->eth",
+          "event->data",
+          "event->emsg",
+          "event_packet->msg",
+          "drvr->fweh"
+        ],
+        "buffer_fields": [
+          "event->ifaddr",
+          "event_packet->eth",
+          "event->data",
+          "event->emsg",
+          "event_packet->msg",
+          "drvr->fweh"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "brcmf_fweh_process_event"
+        ],
+        "call_targets": [
+          "get_unaligned_be32",
+          "kzalloc",
+          "struct_size",
+          "memcpy",
+          "brcmf_fweh_queue_event",
+          "size_mul",
+          "size_add",
+          "__builtin_dynamic_object_size"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,drivers/net/wireless/broadcom/brcm80211/brcmfmac/.fweh.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch...",
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "do ... while [B3.1]",
+          "do ... while [B5.1]",
+          "do ... while [B7.1]",
+          "if [B14.14]",
+          "if [B15.11]",
+          "if [B17.7]"
+        ],
+        "call_edges": [
+          "brcmf_fweh_process_event -> get_unaligned_be32",
+          "brcmf_fweh_process_event -> kzalloc",
+          "brcmf_fweh_process_event -> size_mul",
+          "brcmf_fweh_process_event -> size_add",
+          "brcmf_fweh_process_event -> __builtin_dynamic_object_size",
+          "brcmf_fweh_process_event -> fortify_memcpy_chk"
+        ],
+        "state_statements": [
+          "__builtin_memcpy",
+          "[B1.15]->ifaddr",
+          "[B1.20]->eth",
+          "sizeof(struct bug_entry)",
+          "__auto_type __flags = (1 << 0) | ((1 << 3) | ((9) << 8));",
+          "\"memcpy: detected field-spanning write (size %zu) of single %s (size %zu)\\n\""
+        ],
+        "source_file": "drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c",
+          "hunk_index": 0,
+          "source_line": 505
+        },
+        "summary": "Analyzer CFG for brcmf_fweh_process_event in drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c: bindings: fwevt_idx = get_unaligned_be32 (ImplicitCastExpr, FunctionToPointerDecay, u32 (*)(const void *))(&event_packet (ImplicitCastExpr, LValueToRValue, struct brcmf_event *)->msg.event_type (ImplicitCastExpr, BitCast, const void *)); kzalloc (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(size_t, gfp_t))(__builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(datalen) * 0L)) : (int *)8))), sizeof (*(event)) + __builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(datalen) * 0L)) : (int *)8))), (datalen) * sizeof (*(event)->data) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c:495:18)))), size_mul(datalen, sizeof (*(event)->data) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c:495:18)))))), size_add (ImplicitCastExpr, FunctionToPointerDecay, size_t (*)(size_t, size_t))(sizeof (*(event)), __builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(datalen) * 0L)) : (int *)8))), (datalen) * sizeof (*(event)->data) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c:495:18)))), size_mul (ImplicitCastExpr, FunctionToPointerDecay, size_t (*)(size_t, size_t))(datalen (ImplicitCastExpr, LValueToRValue, u32) (ImplicitCastExpr, IntegralCast, size_t), sizeof (*(event)->data) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c:495:18))) (CStyleCastExpr, IntegralCast, int)) (ImplicitCastExpr, IntegralCast, unsigned long))))), gfp (ImplicitCastExpr, LValueToRValue, gfp_t)) | branches: if fwevt_idx (ImplicitCastExpr, LValueToRValue, u32) != BRCMF_E_IF (ImplicitCastExpr, IntegralCast, u32) && !fweh (ImplicitCastExpr, LValueToRValue, struct brcmf_fweh_info *)->evt_handler (ImplicitCastExpr, ArrayToPointerDecay, brcmf_fweh_handler_t *)[fwevt_idx (ImplicitCastExpr, LValueToRValue, u32)] (ImplicitCastExpr, LValueToRValue, brcmf_fweh_handler_t); fwevt_idx (ImplicitCastExpr, LValueToRValue, u32) != BRCMF_E_IF (ImplicitCastExpr, IntegralCast, u32) && ... | calls: brcmf_fweh_process_event -> get_unaligned_be32; brcmf_fweh_process_event -> kzalloc",
+        "statements": [
+          "473: {",
+          "474: \tu32 fwevt_idx;",
+          "475: \tstruct brcmf_fweh_info *fweh = drvr->fweh;",
+          "476: \tstruct brcmf_fweh_queue_item *event;",
+          "477: \tvoid *data;",
+          "478: \tu32 datalen;"
+        ],
+        "guards": [
+          "if fwevt_idx (ImplicitCastExpr, LValueToRValue, u32) != BRCMF_E_IF (ImplicitCastExpr, IntegralCast, u32) && !fweh (ImplicitCastExpr, LValueToRValue, struct brcmf_fweh_info *)->evt_handler (ImplicitCastExpr, ArrayToPointerDecay, brcmf_fweh_handler_t *)[fwevt_idx (ImplicitCastExpr, LValueToRValue, u32)] (ImplicitCastExpr, LValueToRValue, brcmf_fweh_handler_t)",
+          "fwevt_idx (ImplicitCastExpr, LValueToRValue, u32) != BRCMF_E_IF (ImplicitCastExpr, IntegralCast, u32) && ...",
+          "if fwevt_idx (ImplicitCastExpr, LValueToRValue, u32) >= fweh (ImplicitCastExpr, LValueToRValue, struct brcmf_fweh_info *)->num_event_codes (ImplicitCastExpr, LValueToRValue, uint)",
+          "do ... while 0"
+        ],
+        "call_boundary": [
+          "get_unaligned_be32",
+          "kzalloc",
+          "struct_size",
+          "memcpy",
+          "brcmf_fweh_queue_event",
+          "size_mul"
+        ],
+        "call_edges": [
+          "brcmf_fweh_process_event -> get_unaligned_be32",
+          "brcmf_fweh_process_event -> kzalloc",
+          "brcmf_fweh_process_event -> size_mul",
+          "brcmf_fweh_process_event -> size_add",
+          "brcmf_fweh_process_event -> __builtin_dynamic_object_size",
+          "brcmf_fweh_process_event -> fortify_memcpy_chk",
+          "brcmf_fweh_process_event -> __builtin_expect",
+          "brcmf_fweh_process_event -> __warn_printk"
+        ],
+        "state_transitions": [
+          "cfg_binding(fwevt_idx = get_unaligned_be32 (ImplicitCastExpr, FunctionToPointerDecay, u32 (*)(const void *))(&event_packet (ImplicitCastExpr, LValueToRValue, struct brcmf_event *)->msg.event_type (ImplicitCastExpr, BitCast, const void *)))",
+          "cfg_binding(kzalloc (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(size_t, gfp_t))(__builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(datalen) * 0L)) : (int *)8))), sizeof (*(event)) + __builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(datalen) * 0L)) : (int *)8))), (datalen) * sizeof (*(event)->data) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c:495:18)))), size_mul(datalen, sizeof (*(event)->data) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c:495:18)))))), size_add (ImplicitCastExpr, FunctionToPointerDecay, size_t (*)(size_t, size_t))(sizeof (*(event)), __builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(datalen) * 0L)) : (int *)8))), (datalen) * sizeof (*(event)->data) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c:495:18)))), size_mul (ImplicitCastExpr, FunctionToPointerDecay, size_t (*)(size_t, size_t))(datalen (ImplicitCastExpr, LValueToRValue, u32) (ImplicitCastExpr, IntegralCast, size_t), sizeof (*(event)->data) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c:495:18))) (CStyleCastExpr, IntegralCast, int)) (ImplicitCastExpr, IntegralCast, unsigned long))))), gfp (ImplicitCastExpr, LValueToRValue, gfp_t)))",
+          "cfg_branch(if fwevt_idx (ImplicitCastExpr, LValueToRValue, u32) != BRCMF_E_IF (ImplicitCastExpr, IntegralCast, u32) && !fweh (ImplicitCastExpr, LValueToRValue, struct brcmf_fweh_info *)->evt_handler (ImplicitCastExpr, ArrayToPointerDecay, brcmf_fweh_handler_t *)[fwevt_idx (ImplicitCastExpr, LValueToRValue, u32)] (ImplicitCastExpr, LValueToRValue, brcmf_fweh_handler_t))",
+          "cfg_branch(fwevt_idx (ImplicitCastExpr, LValueToRValue, u32) != BRCMF_E_IF (ImplicitCastExpr, IntegralCast, u32) && ...)",
+          "__builtin_memcpy",
+          "[B1.15]->ifaddr"
+        ],
+        "api_terms": [
+          "get_unaligned_be32",
+          "kzalloc",
+          "size_mul",
+          "size_add",
+          "__builtin_dynamic_object_size",
+          "fortify_memcpy_chk"
+        ],
+        "related_symbols": [
+          "event->ifaddr",
+          "event_packet->eth",
+          "event->data",
+          "event->emsg",
+          "event_packet->msg",
+          "drvr->fweh"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c",
+        "function": "brcmf_fweh_process_event"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "brcmf_fweh_process_event in drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c: cfg_calls=brcmf_fweh_process_event -> get_unaligned_be32; brcmf_fweh_process_event -> kzalloc | memory_ops=memcpy",
+        "state_before": [
+          "buffer(event->ifaddr)",
+          "buffer(event_packet->eth)",
+          "sinks(get_unaligned_be32, kzalloc)"
+        ],
+        "state_after": [
+          "transition(__builtin_memcpy)",
+          "transition([B1.15]->ifaddr)",
+          "transition([B1.20]->eth)"
+        ],
+        "tracked_symbols": [
+          "event->ifaddr",
+          "event_packet->eth",
+          "event->data",
+          "event->emsg",
+          "event_packet->msg",
+          "drvr->fweh"
+        ],
+        "buffer_fields": [
+          "event->ifaddr",
+          "event_packet->eth",
+          "event->data",
+          "event->emsg",
+          "event_packet->msg",
+          "drvr->fweh"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "brcmf_fweh_process_event"
+        ],
+        "call_targets": [
+          "get_unaligned_be32",
+          "kzalloc",
+          "struct_size",
+          "memcpy",
+          "brcmf_fweh_queue_event",
+          "size_mul",
+          "size_add",
+          "__builtin_dynamic_object_size"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "do ... while [B3.1]",
+          "do ... while [B5.1]",
+          "do ... while [B7.1]",
+          "if [B14.14]"
+        ],
+        "call_edges": [
+          "brcmf_fweh_process_event -> get_unaligned_be32",
+          "brcmf_fweh_process_event -> kzalloc",
+          "brcmf_fweh_process_event -> size_mul",
+          "brcmf_fweh_process_event -> size_add",
+          "brcmf_fweh_process_event -> __builtin_dynamic_object_size",
+          "brcmf_fweh_process_event -> fortify_memcpy_chk"
+        ],
+        "state_statements": [
+          "__builtin_memcpy",
+          "[B1.15]->ifaddr",
+          "[B1.20]->eth",
+          "sizeof(struct bug_entry)",
+          "__auto_type __flags = (1 << 0) | ((1 << 3) | ((9) << 8));",
+          "\"memcpy: detected field-spanning write (size %zu) of single %s (size %zu)\\n\"",
+          "\"field \\\"event->ifaddr\\\" at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c:506\"",
+          "int __ret_warn_on = !!(1);"
+        ],
+        "return_statements": [
+          "return;"
+        ],
+        "source_file": "drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c",
+          "hunk_index": 0,
+          "source_line": 505
+        },
+        "summary": "brcmf_fweh_process_event in drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c: cfg_calls=brcmf_fweh_process_event -> get_unaligned_be32; brcmf_fweh_process_event -> kzalloc | memory_ops=memcpy",
+        "statements": [
+          "473: {",
+          "474: \tu32 fwevt_idx;",
+          "475: \tstruct brcmf_fweh_info *fweh = drvr->fweh;",
+          "476: \tstruct brcmf_fweh_queue_item *event;",
+          "477: \tvoid *data;",
+          "478: \tu32 datalen;"
+        ],
+        "guards": [
+          "do ... while [B3.1]",
+          "do ... while [B5.1]",
+          "do ... while [B7.1]"
+        ],
+        "call_boundary": [
+          "get_unaligned_be32",
+          "kzalloc",
+          "struct_size",
+          "memcpy",
+          "brcmf_fweh_queue_event",
+          "size_mul"
+        ],
+        "call_edges": [
+          "brcmf_fweh_process_event -> get_unaligned_be32",
+          "brcmf_fweh_process_event -> kzalloc",
+          "brcmf_fweh_process_event -> size_mul",
+          "brcmf_fweh_process_event -> size_add",
+          "brcmf_fweh_process_event -> __builtin_dynamic_object_size",
+          "brcmf_fweh_process_event -> fortify_memcpy_chk",
+          "brcmf_fweh_process_event -> __builtin_expect",
+          "brcmf_fweh_process_event -> __warn_printk"
+        ],
+        "state_transitions": [
+          "transition(__builtin_memcpy)",
+          "transition([B1.15]->ifaddr)",
+          "transition([B1.20]->eth)",
+          "__builtin_memcpy",
+          "[B1.15]->ifaddr",
+          "[B1.20]->eth"
+        ],
+        "api_terms": [
+          "memcpy",
+          "get_unaligned_be32",
+          "kzalloc",
+          "size_mul",
+          "size_add",
+          "__builtin_dynamic_object_size"
+        ],
+        "related_symbols": [
+          "event->ifaddr",
+          "event_packet->eth",
+          "event->data",
+          "event->emsg",
+          "event_packet->msg",
+          "drvr->fweh"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.88
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_1",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c",
+        "function": "brcmf_fweh_process_event"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "brcmf_fweh_process_event in drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c provides CSA-backed pointer/resource lifecycle context near line 505",
+        "state_before": [
+          "buffer(event->ifaddr)",
+          "buffer(event_packet->eth)",
+          "sinks(get_unaligned_be32, kzalloc)"
+        ],
+        "state_after": [
+          "operation(memcpy)",
+          "operation(__builtin_memcpy)",
+          "operation([B1.15]->ifaddr)",
+          "operation([B1.20]->eth)"
+        ],
+        "buffer_fields": [
+          "event->ifaddr",
+          "event_packet->eth",
+          "event->data",
+          "event->emsg",
+          "event_packet->msg",
+          "drvr->fweh"
+        ],
+        "coverage_status": "partial",
+        "operations": [
+          "memcpy",
+          "__builtin_memcpy",
+          "[B1.15]->ifaddr",
+          "[B1.20]->eth",
+          "sizeof(struct bug_entry)",
+          "__auto_type __flags = (1 << 0) | ((1 << 3) | ((9) << 8));"
+        ],
+        "functions": [
+          "brcmf_fweh_process_event"
+        ],
+        "call_targets": [
+          "get_unaligned_be32",
+          "kzalloc",
+          "struct_size",
+          "memcpy",
+          "brcmf_fweh_queue_event",
+          "size_mul"
+        ],
+        "call_edges": [
+          "brcmf_fweh_process_event -> get_unaligned_be32",
+          "brcmf_fweh_process_event -> kzalloc",
+          "brcmf_fweh_process_event -> size_mul",
+          "brcmf_fweh_process_event -> size_add",
+          "brcmf_fweh_process_event -> __builtin_dynamic_object_size",
+          "brcmf_fweh_process_event -> fortify_memcpy_chk"
+        ],
+        "state_statements": [
+          "__builtin_memcpy",
+          "[B1.15]->ifaddr",
+          "[B1.20]->eth",
+          "sizeof(struct bug_entry)",
+          "__auto_type __flags = (1 << 0) | ((1 << 3) | ((9) << 8));",
+          "\"memcpy: detected field-spanning write (size %zu) of single %s (size %zu)\\n\""
+        ],
+        "source_file": "drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c",
+          "hunk_index": 0,
+          "source_line": 505
+        },
+        "summary": "brcmf_fweh_process_event in drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c provides CSA-backed pointer/resource lifecycle context near line 505",
+        "statements": [
+          "473: {",
+          "474: \tu32 fwevt_idx;",
+          "475: \tstruct brcmf_fweh_info *fweh = drvr->fweh;",
+          "476: \tstruct brcmf_fweh_queue_item *event;",
+          "477: \tvoid *data;",
+          "478: \tu32 datalen;"
+        ],
+        "guards": [
+          "fwevt_idx >= fweh->num_event_codes",
+          "fwevt_idx != BRCMF_E_IF && !fweh->evt_handler[fwevt_idx]",
+          "!event",
+          "do ... while [B3.1]"
+        ],
+        "call_boundary": [
+          "get_unaligned_be32",
+          "kzalloc",
+          "struct_size",
+          "memcpy",
+          "brcmf_fweh_queue_event",
+          "size_mul"
+        ],
+        "call_edges": [
+          "brcmf_fweh_process_event -> get_unaligned_be32",
+          "brcmf_fweh_process_event -> kzalloc",
+          "brcmf_fweh_process_event -> size_mul",
+          "brcmf_fweh_process_event -> size_add",
+          "brcmf_fweh_process_event -> __builtin_dynamic_object_size",
+          "brcmf_fweh_process_event -> fortify_memcpy_chk"
+        ],
+        "state_transitions": [
+          "operation(memcpy)",
+          "operation(__builtin_memcpy)",
+          "operation([B1.15]->ifaddr)",
+          "operation([B1.20]->eth)"
+        ],
+        "api_terms": [
+          "memcpy",
+          "__builtin_memcpy",
+          "[B1.15]->ifaddr",
+          "[B1.20]->eth",
+          "sizeof(struct bug_entry)",
+          "__auto_type __flags = (1 << 0) | ((1 << 3) | ((9) << 8));"
+        ],
+        "related_symbols": [],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      },
+      "confidence": 0.72
+    },
+    {
+      "evidence_id": "csa_validation_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c",
+        "function": "brcmf_fweh_process_event"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c:505",
+        "state_before": [
+          "buffer(event->ifaddr)",
+          "buffer(event_packet->eth)",
+          "sinks(get_unaligned_be32, kzalloc)"
+        ],
+        "state_after": [
+          "diagnostic(csa)"
+        ],
+        "buffer_fields": [
+          "event->ifaddr",
+          "event_packet->eth",
+          "event->data",
+          "event->emsg",
+          "event_packet->msg",
+          "drvr->fweh"
+        ],
+        "coverage_status": "partial",
+        "functions": [
+          "brcmf_fweh_process_event"
+        ],
+        "call_targets": [
+          "get_unaligned_be32",
+          "kzalloc",
+          "struct_size",
+          "memcpy",
+          "brcmf_fweh_queue_event",
+          "size_mul"
+        ],
+        "call_edges": [
+          "brcmf_fweh_process_event -> get_unaligned_be32",
+          "brcmf_fweh_process_event -> kzalloc",
+          "brcmf_fweh_process_event -> size_mul",
+          "brcmf_fweh_process_event -> size_add",
+          "brcmf_fweh_process_event -> __builtin_dynamic_object_size",
+          "brcmf_fweh_process_event -> fortify_memcpy_chk"
+        ],
+        "state_statements": [
+          "__builtin_memcpy",
+          "[B1.15]->ifaddr",
+          "[B1.20]->eth",
+          "sizeof(struct bug_entry)",
+          "__auto_type __flags = (1 << 0) | ((1 << 3) | ((9) << 8));",
+          "\"memcpy: detected field-spanning write (size %zu) of single %s (size %zu)\\n\""
+        ],
+        "source_file": "drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c",
+          "hunk_index": 0,
+          "source_line": 505
+        },
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c:505",
+        "statements": [
+          "473: {",
+          "474: \tu32 fwevt_idx;",
+          "475: \tstruct brcmf_fweh_info *fweh = drvr->fweh;",
+          "476: \tstruct brcmf_fweh_queue_item *event;",
+          "477: \tvoid *data;",
+          "478: \tu32 datalen;"
+        ],
+        "guards": [
+          "fwevt_idx >= fweh->num_event_codes",
+          "fwevt_idx != BRCMF_E_IF && !fweh->evt_handler[fwevt_idx]",
+          "!event",
+          "do ... while [B3.1]"
+        ],
+        "call_boundary": [
+          "get_unaligned_be32",
+          "kzalloc",
+          "struct_size",
+          "memcpy",
+          "brcmf_fweh_queue_event",
+          "size_mul"
+        ],
+        "call_edges": [
+          "brcmf_fweh_process_event -> get_unaligned_be32",
+          "brcmf_fweh_process_event -> kzalloc",
+          "brcmf_fweh_process_event -> size_mul",
+          "brcmf_fweh_process_event -> size_add",
+          "brcmf_fweh_process_event -> __builtin_dynamic_object_size",
+          "brcmf_fweh_process_event -> fortify_memcpy_chk"
+        ],
+        "state_transitions": [
+          "diagnostic(csa)"
+        ],
+        "api_terms": [
+          "memcpy",
+          "__builtin_memcpy",
+          "[B1.15]->ifaddr",
+          "[B1.20]->eth",
+          "sizeof(struct bug_entry)",
+          "__auto_type __flags = (1 << 0) | ((1 << 3) | ((9) << 8));"
+        ],
+        "related_symbols": [],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      },
+      "confidence": 0.72
+    }
+  ],
+  "selected_context_summaries": [],
+  "semantic_clause_plan": [
+    {
+      "clause_id": "vulnerable_trigger_clause",
+      "intent": "Trigger on the vulnerable misuse mechanism using evidence-backed path/flow semantics.",
+      "supporting_evidence_ids": [
+        "csa_guard_0",
+        "csa_state_0",
+        "csa_validation_allocation_lifecycle_1",
+        "csa_validation_semantic_slice_0"
+      ],
+      "repair_when": [
+        "semantic_no_hits"
+      ],
+      "focus_functions": []
+    },
+    {
+      "clause_id": "patched_silence_clause",
+      "intent": "Stay silent on patched code when patch-added guards, barriers, or safe APIs prove the mechanism is blocked.",
+      "supporting_evidence_ids": [
+        "csa_guard_0",
+        "csa_state_0",
+        "csa_validation_semantic_slice_0"
+      ],
+      "repair_when": [],
+      "silencing_conditions": []
+    },
+    {
+      "clause_id": "semantic_transfer_clause",
+      "intent": "Generalize along semantic slices and call-chain evidence rather than patch-local syntax.",
+      "supporting_evidence_ids": [
+        "csa_validation_semantic_slice_0"
+      ],
+      "repair_when": [],
+      "analyzer_id": "csa"
+    },
+    {
+      "clause_id": "analyzer_interface_clause",
+      "intent": "Preserve valid analyzer-facing syntax and interfaces while keeping semantics unchanged.",
+      "supporting_evidence_ids": [],
+      "repair_when": [
+        "semantic_execution_error"
+      ],
+      "analyzer_id": "csa"
+    }
+  ],
+  "repair_directives": [],
+  "constraints": [
+    {
+      "title": "Generalize beyond patch site",
+      "description": "Do not bind the detector to fixed file paths, line numbers, or exact patch strings.",
+      "priority": "high"
+    },
+    {
+      "title": "Preserve vulnerability semantics",
+      "description": "Keep the detector focused on the vulnerability family implied by the patch and evidence.",
+      "priority": "high"
+    },
+    {
+      "title": "Respect analyzer-native form",
+      "description": "Output must be a valid checker_plugin for csa.",
+      "priority": "high"
+    },
+    {
+      "title": "Stay within proven mechanism scope",
+      "description": "Generalize only along evidence-supported semantic dimensions. Do not broaden the detector into unrelated globals, APIs, or bug families.",
+      "priority": "high"
+    },
+    {
+      "title": "Honor mechanism contract",
+      "description": "Preserve the mechanism family `generic_vulnerability_mechanism` by keeping trigger invariants the vulnerable mechanism is reachable on a feasible path; the path lacks the barrier introduced by the patch.",
+      "priority": "high"
+    },
+    {
+      "title": "Generalize only on contract axes",
+      "description": "Reuse semantics only along these transfer axes: only generalize along evidence-backed state, guard, flow, or API-role equivalence; equivalent guard or barrier predicates on sibling paths; equivalent local state transitions around the same sink or dereference.",
+      "priority": "high"
+    },
+    {
+      "title": "Use path-sensitive evidence",
+      "description": "Prefer guards, state transitions, and lifecycle facts over broad textual matching.",
+      "priority": "high"
+    },
+    {
+      "title": "No placeholder helper logic",
+      "description": "Helper predicates must inspect AST/program state and must not be unconditional return-true/return-false stubs.",
+      "priority": "high"
+    }
+  ],
+  "implementation_hints": [
+    "Mechanism family: generic_vulnerability_mechanism",
+    "Mechanism dimensions: vulnerability trigger, patch-introduced barrier, local state or flow relation",
+    "Trigger invariants: the vulnerable mechanism is reachable on a feasible path, the path lacks the barrier introduced by the patch",
+    "Silence invariants: patch-introduced guards, barriers, or safe APIs must suppress findings",
+    "Transfer axes: only generalize along evidence-backed state, guard, flow, or API-role equivalence, equivalent guard or barrier predicates on sibling paths, equivalent local state transitions around the same sink or dereference",
+    "Semantic slice (path_witness): Analyzer CFG for brcmf_fweh_process_event in drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c: bindings: fwevt_idx = get_unaligned_be32 (ImplicitCastExpr, FunctionToPointerDecay, u32 (*)(const void *))(&event_packet (ImplicitCastExpr, LValueToRValue, struct brcmf_event *)->msg.event_type (ImplicitCastExpr, BitCast, const void *)); kzalloc (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(size_t, gfp_t))(__builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(datalen) * 0L)) : (int *)8))), sizeof (*(event)) + __builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(datalen) * 0L)) : (int *)8))), (datalen) * sizeof (*(event)->data) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c:495:18)))), size_mul(datalen, sizeof (*(event)->data) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c:495:18)))))), size_add (ImplicitCastExpr, FunctionToPointerDecay, size_t (*)(size_t, size_t))(sizeof (*(event)), __builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(datalen) * 0L)) : (int *)8))), (datalen) * sizeof (*(event)->data) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c:495:18)))), size_mul (ImplicitCastExpr, FunctionToPointerDecay, size_t (*)(size_t, size_t))(datalen (ImplicitCastExpr, LValueToRValue, u32) (ImplicitCastExpr, IntegralCast, size_t), sizeof (*(event)->data) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c:495:18))) (CStyleCastExpr, IntegralCast, int)) (ImplicitCastExpr, IntegralCast, unsigned long))))), gfp (ImplicitCastExpr, LValueToRValue, gfp_t)) | branches: if fwevt_idx (ImplicitCastExpr, LValueToRValue, u32) != BRCMF_E_IF (ImplicitCastExpr, IntegralCast, u32) && !fweh (ImplicitCastExpr, LValueToRValue, struct brcmf_fweh_info *)->evt_handler (ImplicitCastExpr, ArrayToPointerDecay, brcmf_fweh_handler_t *)[fwevt_idx (ImplicitCastExpr, LValueToRValue, u32)] (ImplicitCastExpr, LValueToRValue, brcmf_fweh_handler_t); fwevt_idx (ImplicitCastExpr, LValueToRValue, u32) != BRCMF_E_IF (ImplicitCastExpr, IntegralCast, u32) && ... | calls: brcmf_fweh_process_event -> get_unaligned_be32; brcmf_fweh_process_event -> kzalloc",
+    "Slice guards: if fwevt_idx (ImplicitCastExpr, LValueToRValue, u32) != BRCMF_E_IF (ImplicitCastExpr, IntegralCast, u32) && !fweh (ImplicitCastExpr, LValueToRValue, struct brcmf_fweh_info *)->evt_handler (ImplicitCastExpr, ArrayToPointerDecay, brcmf_fweh_handler_t *)[fwevt_idx (ImplicitCastExpr, LValueToRValue, u32)] (ImplicitCastExpr, LValueToRValue, brcmf_fweh_handler_t), fwevt_idx (ImplicitCastExpr, LValueToRValue, u32) != BRCMF_E_IF (ImplicitCastExpr, IntegralCast, u32) && ..., if fwevt_idx (ImplicitCastExpr, LValueToRValue, u32) >= fweh (ImplicitCastExpr, LValueToRValue, struct brcmf_fweh_info *)->num_event_codes (ImplicitCastExpr, LValueToRValue, uint)",
+    "Slice transitions: cfg_binding(fwevt_idx = get_unaligned_be32 (ImplicitCastExpr, FunctionToPointerDecay, u32 (*)(const void *))(&event_packet (ImplicitCastExpr, LValueToRValue, struct brcmf_event *)->msg.event_type (ImplicitCastExpr, BitCast, const void *))), cfg_binding(kzalloc (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(size_t, gfp_t))(__builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(datalen) * 0L)) : (int *)8))), sizeof (*(event)) + __builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(datalen) * 0L)) : (int *)8))), (datalen) * sizeof (*(event)->data) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c:495:18)))), size_mul(datalen, sizeof (*(event)->data) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c:495:18)))))), size_add (ImplicitCastExpr, FunctionToPointerDecay, size_t (*)(size_t, size_t))(sizeof (*(event)), __builtin_choose_expr((sizeof(int) == sizeof (*(8 ? ((void *)((long)(datalen) * 0L)) : (int *)8))), (datalen) * sizeof (*(event)->data) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c:495:18)))), size_mul (ImplicitCastExpr, FunctionToPointerDecay, size_t (*)(size_t, size_t))(datalen (ImplicitCastExpr, LValueToRValue, u32) (ImplicitCastExpr, IntegralCast, size_t), sizeof (*(event)->data) + ((int)(sizeof(struct (unnamed struct at /work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c:495:18))) (CStyleCastExpr, IntegralCast, int)) (ImplicitCastExpr, IntegralCast, unsigned long))))), gfp (ImplicitCastExpr, LValueToRValue, gfp_t))), cfg_branch(if fwevt_idx (ImplicitCastExpr, LValueToRValue, u32) != BRCMF_E_IF (ImplicitCastExpr, IntegralCast, u32) && !fweh (ImplicitCastExpr, LValueToRValue, struct brcmf_fweh_info *)->evt_handler (ImplicitCastExpr, ArrayToPointerDecay, brcmf_fweh_handler_t *)[fwevt_idx (ImplicitCastExpr, LValueToRValue, u32)] (ImplicitCastExpr, LValueToRValue, brcmf_fweh_handler_t))"
+  ],
+  "validation_expectations": [
+    "Vulnerable version should trigger a misuse finding.",
+    "Patched version should stay silent for the same mechanism.",
+    "Semantic validation that executes but returns zero hits is not acceptable; recover coverage with evidence-backed semantics.",
+    "Repair phase may fix syntax/interfaces only; it must not simplify away the core detection logic.",
+    "Generalization must stay inside the mechanism contract transfer axes instead of widening to adjacent bug families.",
+    "Trigger invariant: the vulnerable mechanism is reachable on a feasible path.",
+    "Trigger invariant: the path lacks the barrier introduced by the patch."
+  ]
+}

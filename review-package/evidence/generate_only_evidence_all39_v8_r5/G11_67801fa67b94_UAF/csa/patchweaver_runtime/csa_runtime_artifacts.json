@@ -1,0 +1,137 @@
+{
+  "cache_key": {
+    "cache_version": 16,
+    "patch_path": "/work/artifacts/fse_revision/generate_only_materialized_v1/cases/G11_67801fa67b94_UAF/patches/commit.patch",
+    "evidence_dir": "/work/SemWeaver/artifacts/external/linux-evidence-clone-v8b",
+    "validate_path": "",
+    "source_files": [
+      "drivers/gpu/drm/xe/xe_exec_queue.c"
+    ],
+    "compile_commands_sha256": "97c89aaaf8b8c71fa9ce47cd5aaba26ab2464683e40ebae3d2616a3794d4f43e"
+  },
+  "data": {
+    "available": true,
+    "clang_path": "/usr/lib/llvm-18/bin/clang",
+    "cfg_snapshots": [
+      {
+        "source_file": "drivers/gpu/drm/xe/xe_exec_queue.c",
+        "function_name": "xe_exec_queue_create_ioctl",
+        "anchor_line": 643,
+        "branch_kinds": [
+          "if",
+          "for"
+        ],
+        "branch_conditions": [
+          "goto kill_exec_queue;",
+          "if [B5.42]",
+          "goto put_exec_queue;",
+          "if [B7.15]",
+          "if [B9.4] && [B8.6]",
+          "[B9.4] && ...",
+          "if ([B15.21] && ([B11.15]))",
+          "([B14.9]) ? ... : ..."
+        ],
+        "resolved_branch_conditions": [
+          "if q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->vm (ImplicitCastExpr, LValueToRValue, struct xe_vm *) && q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->hwe (ImplicitCastExpr, LValueToRValue, struct xe_hw_engine *)->hw_engine_group (ImplicitCastExpr, LValueToRValue, struct xe_hw_engine_group *)",
+          "q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->vm (ImplicitCastExpr, LValueToRValue, struct xe_vm *) && ...",
+          "if IS_ERR (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const void *))(q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *) (ImplicitCastExpr, BitCast, const void *))",
+          "if q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)",
+          "if IS_ERR (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const void *))(new (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *) (ImplicitCastExpr, BitCast, const void *))",
+          "goto kill_exec_queue;",
+          "if err (ImplicitCastExpr, LValueToRValue, int)",
+          "goto put_exec_queue;"
+        ],
+        "cfg_value_bindings": [
+          "q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->lr.context = dma_fence_context_alloc (ImplicitCastExpr, FunctionToPointerDecay, u64 (*)(unsigned int))(1 (ImplicitCastExpr, IntegralCast, unsigned int))",
+          "q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->xef = xe_file_get (ImplicitCastExpr, FunctionToPointerDecay, struct xe_file *(*)(struct xe_file *))(xef (ImplicitCastExpr, LValueToRValue, struct xe_file *))",
+          "err = xe_vm_add_compute_exec_queue (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct xe_vm *, struct xe_exec_queue *))(vm (ImplicitCastExpr, LValueToRValue, struct xe_vm *), q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *))",
+          "err = xe_hw_engine_group_add_exec_queue (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct xe_hw_engine_group *, struct xe_exec_queue *))(q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->hwe (ImplicitCastExpr, LValueToRValue, struct xe_hw_engine *)->hw_engine_group (ImplicitCastExpr, LValueToRValue, struct xe_hw_engine_group *), q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *))",
+          "q = xe_exec_queue_create (ImplicitCastExpr, FunctionToPointerDecay, struct xe_exec_queue *(*)(struct xe_device *, struct xe_vm *, u32, u16, struct xe_hw_engine *, u32, u64))(xe (ImplicitCastExpr, LValueToRValue, struct xe_device *), vm (ImplicitCastExpr, LValueToRValue, struct xe_vm *), logical_mask (ImplicitCastExpr, LValueToRValue, u32), args (ImplicitCastExpr, LValueToRValue, struct drm_xe_exec_queue_create *)->width (ImplicitCastExpr, LValueToRValue, __u16), hwe (ImplicitCastExpr, LValueToRValue, struct xe_hw_engine *), 0 (ImplicitCastExpr, IntegralCast, u32), args (ImplicitCastExpr, LValueToRValue, struct drm_xe_exec_queue_create *)->extensions (ImplicitCastExpr, LValueToRValue, __u64))",
+          "err = xa_alloc (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct xarray *, u32 *, void *, struct xa_limit, gfp_t))(&xef (ImplicitCastExpr, LValueToRValue, struct xe_file *)->exec_queue.xa, &id, q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *) (ImplicitCastExpr, BitCast, void *), (struct xa_limit){.min = 0 (ImplicitCastExpr, IntegralCast, u32), .max = (~0U)} (ImplicitCastExpr, LValueToRValue, struct xa_limit), (((gfp_t)(((((1UL))) << (___GFP_DIRECT_RECLAIM_BIT)) | ((((1UL))) << (___GFP_KSWAPD_RECLAIM_BIT))) (CStyleCastExpr, IntegralCast, gfp_t)) | ((gfp_t)((((1UL))) << (___GFP_IO_BIT)) (CStyleCastExpr, IntegralCast, gfp_t)) | ((gfp_t)((((1UL))) << (___GFP_FS_BIT)) (CStyleCastExpr, IntegralCast, gfp_t))))",
+          "struct xe_exec_queue *q = ((void *)0);",
+          "q = new (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)"
+        ],
+        "call_edges": [
+          "xe_exec_queue_create_ioctl -> to_xe_device",
+          "xe_exec_queue_create_ioctl -> to_xe_file",
+          "xe_exec_queue_create_ioctl -> __drm_dev_dbg",
+          "xe_exec_queue_create_ioctl -> __copy_from_user",
+          "xe_exec_queue_create_ioctl -> xe_exec_queue_create_bind",
+          "xe_exec_queue_create_ioctl -> IS_ERR",
+          "xe_exec_queue_create_ioctl -> PTR_ERR",
+          "xe_exec_queue_create_ioctl -> list_add_tail",
+          "xe_exec_queue_create_ioctl -> xe_device_get_gt",
+          "xe_exec_queue_create_ioctl -> calc_validate_logical_mask",
+          "xe_exec_queue_create_ioctl -> xe_hw_engine_lookup",
+          "xe_exec_queue_create_ioctl -> xe_vm_lookup"
+        ],
+        "call_targets": [
+          "to_xe_device",
+          "to_xe_file",
+          "__drm_dev_dbg",
+          "__copy_from_user",
+          "xe_exec_queue_create_bind",
+          "IS_ERR",
+          "PTR_ERR",
+          "list_add_tail",
+          "xe_device_get_gt",
+          "calc_validate_logical_mask"
+        ],
+        "state_statements": [
+          "return [B1.7];",
+          "[B3.4]->exec_queue_id",
+          "[B3.5] = [B3.2]",
+          "[B3.13]->xef",
+          "[B3.14] = [B3.11]",
+          "return [B3.16];",
+          "[B5.4]->exec_queue",
+          "{.min = [B5.16], .max = ([B5.14])}",
+          "[B5.39] = [B5.38]",
+          "[B7.4]->hwe",
+          "[B7.6]->hw_engine_group",
+          "[B7.12] = [B7.11]"
+        ],
+        "field_accesses": [
+          "args->num_placements",
+          "args->width",
+          "xe->info",
+          "args->reserved",
+          "args->flags",
+          "args->instances"
+        ],
+        "return_statements": [
+          "return [B1.7];",
+          "return [B3.16];",
+          "return [B17.7];",
+          "return [B19.14];",
+          "return [B25.7];",
+          "return [B27.2];"
+        ],
+        "dump_excerpt": " --- Call graph Dump --- \n  Function: < root > calls: offset_to_ptr __kasan_check_read __kasan_check_write kasan_check_read kasan_check_write __read_once_word_nocheck read_word_at_a_time gen_endbr gen_endbr_poison is_endbr __must_check_fn rip_rel_ptr get_current __compiletime_assert_0 __bad_size_call_parameter preempt_count preempt_count_set __builtin_expect set_preempt_need_resched clear_preempt_need_resched test_preempt_need_resched __preempt_count_add __builtin_constant_p __preempt_count_sub __preempt_count_dec_and_test should_resched interrupt_context_level preempt_notifier_init preempt_enable_nested preempt_count_sub class_preempt_destructor class_preempt_lock_ptr class_preempt_constructor preempt_count_add class_preempt_notrace_destructor class_preempt_notrace_lock_ptr class_preempt_notrace_constructor class_migrate_destructor migrate_enable class_migrate_lock_ptr class_migrate_constructor migrate_disable preempt_model_rt preempt_model_preemptible preempt_model_full initcall_from_entry sme_get_me_mask arch_static_branch arch_static_branch_jump jump_entry_code jump_entry_target jump_entry_key jump_entry_is_branch jump_entry_is_init jump_entry_set_init jump_entry_size arch_jump_entry_size static_key_false static_key_true __arch_swab32 __arch_swab64 __fswab16 __fswab32 __fswab64 __fswahw32 __fswahb32 __swab __builtin_bswap64 __swab16p __builtin_bswap16 __swab32p __builtin_bswap32 __swab64p __swahw32p __swahb32p __swab16s __swab32s __swab64s __swahw32s __swahb32s swab16_array swab32_array swab64_array __cpu_to_le64p __le64_to_cpup __cpu_to_le32p __le32_to_cpup __cpu_to_le16p __le16_to_cpup __cpu_to_be64p __be64_to_cpup __cpu_to_be32p __be32_to_cpup __cpu_to_be16p __be16_to_cpup le16_add_cpu le32_add_cpu le64_add_cpu le32_to_cpu_array cpu_to_le32_array be16_add_cpu be32_add_cpu be64_add_cpu cpu_to_be32_array be32_to_cpu_array alternative_msr_write indirect_branch_prediction_barrier vdso_encode_cpunode vdso_read_cpunode __loadsegment_fs mds_clear_cpu_buffers mds_idle_clear_cpu_buffers ____wrong_branch_error native_save_fl native_irq_disable native_irq_enable native_safe_halt native_halt native_irqs_disabled_flags native_local_irq_save native_local_irq_restore gate_offset gate_segment get_max_mapped pgprot_nx native_make_pgd native_pgd_val pgd_flags native_make_p4d native_p4d_val native_make_pud native_pud_val native_make_pmd native_pmd_val p4d_pfn_mask p4d_flags_mask p4d_flags pud_pfn_mask pud_flags_mask pud_flags pmd_pfn_mask pmd_flags_mask pmd_flags native_make_pte native_pte_val pte_flags protval_4k_2_large pgprot_4k_2_large protval_large_2_4k pgprot_large_2_4k set_arch_panic_timeout printk_get_level printk_skip_level printk_skip_headers is_warning_bug check_data_corruption generic___set_bit generic___clear_bit generic___change_bit generic___test_and_set_bit generic___test_and_clear_bit generic___test_and_change_bit generic_test_bit generic_test_bit_acquire __compiletime_assert_4 __compiletime_assert_5 const_test_bit arch_set_bit arch___set_bit arch_clear_bit arch_clear_bit_unlock arch___clear_bit arch_xor_unlock_is_negative_byte arch___clear_bit_unlock arch___change_bit arch_change_bit arch_test_and_set_bit arch_test_and_set_bit_lock arch___test_and_set_bit arch_test_and_clear_bit arch___test_and_clear_bit arch___test_and_change_bit arch_test_and_change_bit constant_test_bit constant_test_bit_acquire variable_test_bit arch_test_bit arch_test_bit_acquire variable__ffs variable_ffz __fls __builtin_clzl variable_ffs fls __builtin_clz fls64 __builtin_clzll sched_find_first_bit __builtin_ctzl __arch_hweight32 __arch_hweight16 __arch_hweight8 __arch_hweight64 kmsan_poison_memory kmsan_unpoison_memory kmsan_check_memory kmsan_copy_to_user kmsan_memmove instrument_read __kcsan_check_access instrument_write instrument_read_write instrument_atomic_read instrument_atomic_write instrument_atomic_read_write instrument_copy_to_user instrument_copy_from_user_before instrument_copy_from_user_after instrument_memcpy_before instrument_memcp",
+        "error": "",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/generate_only_evidence_all39_v8_r5/G11_67801fa67b94_UAF/csa/patchweaver_runtime/csa_raw/drivers-gpu-drm-xe-xe_exec_queue.c-xe_exec_queue_create_ioctl.txt",
+        "raw_output_sha256": "c80c01b92619467b77be1745cb3afcfa078abfd2932ea809db66e87b847f40dd",
+        "command_sha256": "cecc04c0bcb046b2a101c2db3f95575aa4f61132bf01b1c053e3df8498fe1fee",
+        "clang_command_preview": "/usr/lib/llvm-18/bin/clang --analyze -nostdinc -I./arch/x86/include -I./arch/x86/include/generated -I./include -I./arch/x86/include/uapi -I./arch/x86/include/generated/uapi -I./...",
+        "return_code": 0
+      }
+    ],
+    "call_edges": [
+      "xe_exec_queue_create_ioctl -> to_xe_device",
+      "xe_exec_queue_create_ioctl -> to_xe_file",
+      "xe_exec_queue_create_ioctl -> __drm_dev_dbg",
+      "xe_exec_queue_create_ioctl -> __copy_from_user",
+      "xe_exec_queue_create_ioctl -> xe_exec_queue_create_bind",
+      "xe_exec_queue_create_ioctl -> IS_ERR",
+      "xe_exec_queue_create_ioctl -> PTR_ERR",
+      "xe_exec_queue_create_ioctl -> list_add_tail",
+      "xe_exec_queue_create_ioctl -> xe_device_get_gt",
+      "xe_exec_queue_create_ioctl -> calc_validate_logical_mask",
+      "xe_exec_queue_create_ioctl -> xe_hw_engine_lookup",
+      "xe_exec_queue_create_ioctl -> xe_vm_lookup"
+    ],
+    "error": ""
+  }
+}

@@ -1,0 +1,824 @@
+# Role
+
+You are an expert in developing and analyzing Clang Static Analyzer checkers, with decades of experience in the Clang project, particularly in the Static Analyzer plugin.
+
+# Instruction
+
+Please analyze this false positive case and propose fixes to the checker code to eliminate this specific false positive while maintaining detection of true positives.
+
+Please help improve this checker to eliminate the false positive while maintaining its ability to detect actual issues. Your solution should:
+
+1. Identify the root cause of the false positive
+2. Propose specific fixes to the checker logic
+3. Consider edge cases and possible regressions
+4. Maintain compatibility with Clang-18 API
+
+Note, the repaired checker needs to still **detect the target buggy code**.
+
+## Suggestions
+
+1. Use proper visitor patterns and state tracking
+2. Handle corner cases gracefully
+3. You could register a program state like `REGISTER_MAP_WITH_PROGRAMSTATE(...)` to track the information you need.
+4. Follow Clang Static Analyzer best practices for checker development
+5. DO NOT remove any existing `#include` in the checker code.
+
+You could add some functions like `bool isFalsePositive(...)` to help you define and detect the false positive.
+
+# Utility Functions
+
+```cpp
+// Going upward in an AST tree, and find the Stmt of a specific type
+template <typename T>
+const T* findSpecificTypeInParents(const Stmt *S, CheckerContext &C);
+
+// Going downward in an AST tree, and find the Stmt of a secific type
+// Only return one of the statements if there are many
+template <typename T>
+const T* findSpecificTypeInChildren(const Stmt *S);
+
+bool EvaluateExprToInt(llvm::APSInt &EvalRes, const Expr *expr, CheckerContext &C) {
+  Expr::EvalResult ExprRes;
+  if (expr->EvaluateAsInt(ExprRes, C.getASTContext())) {
+    EvalRes = ExprRes.Val.getInt();
+    return true;
+  }
+  return false;
+}
+
+const llvm::APSInt *inferSymbolMaxVal(SymbolRef Sym, CheckerContext &C) {
+  ProgramStateRef State = C.getState();
+  const llvm::APSInt *maxVal = State->getConstraintManager().getSymMaxVal(State, Sym);
+  return maxVal;
+}
+
+// The expression should be the DeclRefExpr of the array
+bool getArraySizeFromExpr(llvm::APInt &ArraySize, const Expr *E) {
+  if (const DeclRefExpr *DRE = dyn_cast<DeclRefExpr>(E->IgnoreImplicit())) {
+    if (const VarDecl *VD = dyn_cast<VarDecl>(DRE->getDecl())) {
+      QualType QT = VD->getType();
+      if (const ConstantArrayType *ArrayType = dyn_cast<ConstantArrayType>(QT.getTypePtr())) {
+        ArraySize = ArrayType->getSize();
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+bool getStringSize(llvm::APInt &StringSize, const Expr *E) {
+  if (const auto *SL = dyn_cast<StringLiteral>(E->IgnoreImpCasts())) {
+    StringSize = llvm::APInt(32, SL->getLength());
+    return true;
+  }
+  return false;
+}
+
+const MemRegion* getMemRegionFromExpr(const Expr* E, CheckerContext &C) {
+  ProgramStateRef State = C.getState();
+  return State->getSVal(E, C.getLocationContext()).getAsRegion();
+}
+
+struct KnownDerefFunction {
+  const char *Name;                    ///< The function name.
+  llvm::SmallVector<unsigned, 4> Params; ///< The parameter indices that get dereferenced.
+};
+
+/// \brief Determines if the given call is to a function known to dereference
+///        certain pointer parameters.
+///
+/// This function looks up the call's callee name in a known table of functions
+/// that definitely dereference one or more of their pointer parameters. If the
+/// function is found, it appends the 0-based parameter indices that are dereferenced
+/// into \p DerefParams and returns \c true. Otherwise, it returns \c false.
+///
+/// \param[in] Call        The function call to examine.
+/// \param[out] DerefParams
+///     A list of parameter indices that the function is known to dereference.
+///
+/// \return \c true if the function is found in the known-dereference table,
+///         \c false otherwise.
+bool functionKnownToDeref(const CallEvent &Call,
+                                 llvm::SmallVectorImpl<unsigned> &DerefParams) {
+  if (const IdentifierInfo *ID = Call.getCalleeIdentifier()) {
+    StringRef FnName = ID->getName();
+
+    for (const auto &Entry : DerefTable) {
+      if (FnName.equals(Entry.Name)) {
+        // We found the function in our table, copy its param indices
+        DerefParams.append(Entry.Params.begin(), Entry.Params.end());
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+/// \brief Determines if the source text of an expression contains a specified name.
+bool ExprHasName(const Expr *E, StringRef Name, CheckerContext &C) {
+  if (!E)
+    return false;
+
+  // Use const reference since getSourceManager() returns a const SourceManager.
+  const SourceManager &SM = C.getSourceManager();
+  const LangOptions &LangOpts = C.getLangOpts();
+  // Retrieve the source text corresponding to the expression.
+  CharSourceRange Range = CharSourceRange::getTokenRange(E->getSourceRange());
+  StringRef ExprText = Lexer::getSourceText(Range, SM, LangOpts);
+
+  // Check if the extracted text contains the specified name.
+  return ExprText.contains(Name);
+}
+```
+
+# Clang Check Functions
+
+```cpp
+void checkPreStmt (const ReturnStmt *DS, CheckerContext &C) const
+ // Pre-visit the Statement.
+
+void checkPostStmt (const DeclStmt *DS, CheckerContext &C) const
+ // Post-visit the Statement.
+
+void checkPreCall (const CallEvent &Call, CheckerContext &C) const
+ // Pre-visit an abstract "call" event.
+
+void checkPostCall (const CallEvent &Call, CheckerContext &C) const
+ // Post-visit an abstract "call" event.
+
+void checkBranchCondition (const Stmt *Condition, CheckerContext &Ctx) const
+ // Pre-visit of the condition statement of a branch (such as IfStmt).
+
+
+void checkLocation (SVal Loc, bool IsLoad, const Stmt *S, CheckerContext &) const
+ // Called on a load from and a store to a location.
+
+void checkBind (SVal Loc, SVal Val, const Stmt *S, CheckerContext &) const
+ // Called on binding of a value to a location.
+
+
+void checkBeginFunction (CheckerContext &Ctx) const
+ // Called when the analyzer core starts analyzing a function, regardless of whether it is analyzed at the top level or is inlined.
+
+void checkEndFunction (const ReturnStmt *RS, CheckerContext &Ctx) const
+ // Called when the analyzer core reaches the end of a function being analyzed regardless of whether it is analyzed at the top level or is inlined.
+
+void checkEndAnalysis (ExplodedGraph &G, BugReporter &BR, ExprEngine &Eng) const
+ // Called after all the paths in the ExplodedGraph reach end of path.
+
+
+bool evalCall (const CallEvent &Call, CheckerContext &C) const
+ // Evaluates function call.
+
+ProgramStateRef evalAssume (ProgramStateRef State, SVal Cond, bool Assumption) const
+ // Handles assumptions on symbolic values.
+
+ProgramStateRef checkRegionChanges (ProgramStateRef State, const InvalidatedSymbols *Invalidated, ArrayRef< const MemRegion * > ExplicitRegions, ArrayRef< const MemRegion * > Regions, const LocationContext *LCtx, const CallEvent *Call) const
+ // Called when the contents of one or more regions change.
+
+void checkASTDecl (const FunctionDecl *D, AnalysisManager &Mgr, BugReporter &BR) const
+ // Check every declaration in the AST.
+
+void checkASTCodeBody (const Decl *D, AnalysisManager &Mgr, BugReporter &BR) const
+ // Check every declaration that has a statement body in the AST.
+```
+
+
+The following pattern is the checker designed to detect:
+
+## Bug Pattern
+
+Manually multiplying count by element size when allocating an array with kmalloc/kzalloc:
+ptr = kzalloc(count * sizeof(*ptr), GFP_KERNEL);
+This risks integer overflow in the size calculation, leading to undersized allocations and subsequent out-of-bounds writes/reads. Use kcalloc(count, sizeof(*ptr), GFP_KERNEL) which performs overflow checking.
+
+
+The patch that needs to be detected:
+
+## Patch Description
+
+amdkfd: use calloc instead of kzalloc to avoid integer overflow
+
+This uses calloc instead of doing the multiplication which might
+overflow.
+
+Cc: stable@vger.kernel.org
+Signed-off-by: Dave Airlie <airlied@redhat.com>
+
+## Buggy Code
+
+```c
+// Function: kfd_ioctl_get_process_apertures_new in drivers/gpu/drm/amd/amdkfd/kfd_chardev.c
+static int kfd_ioctl_get_process_apertures_new(struct file *filp,
+				struct kfd_process *p, void *data)
+{
+	struct kfd_ioctl_get_process_apertures_new_args *args = data;
+	struct kfd_process_device_apertures *pa;
+	int ret;
+	int i;
+
+	dev_dbg(kfd_device, "get apertures for PASID 0x%x", p->pasid);
+
+	if (args->num_of_nodes == 0) {
+		/* Return number of nodes, so that user space can alloacate
+		 * sufficient memory
+		 */
+		mutex_lock(&p->mutex);
+		args->num_of_nodes = p->n_pdds;
+		goto out_unlock;
+	}
+
+	/* Fill in process-aperture information for all available
+	 * nodes, but not more than args->num_of_nodes as that is
+	 * the amount of memory allocated by user
+	 */
+	pa = kzalloc((sizeof(struct kfd_process_device_apertures) *
+				args->num_of_nodes), GFP_KERNEL);
+	if (!pa)
+		return -ENOMEM;
+
+	mutex_lock(&p->mutex);
+
+	if (!p->n_pdds) {
+		args->num_of_nodes = 0;
+		kfree(pa);
+		goto out_unlock;
+	}
+
+	/* Run over all pdd of the process */
+	for (i = 0; i < min(p->n_pdds, args->num_of_nodes); i++) {
+		struct kfd_process_device *pdd = p->pdds[i];
+
+		pa[i].gpu_id = pdd->dev->id;
+		pa[i].lds_base = pdd->lds_base;
+		pa[i].lds_limit = pdd->lds_limit;
+		pa[i].gpuvm_base = pdd->gpuvm_base;
+		pa[i].gpuvm_limit = pdd->gpuvm_limit;
+		pa[i].scratch_base = pdd->scratch_base;
+		pa[i].scratch_limit = pdd->scratch_limit;
+
+		dev_dbg(kfd_device,
+			"gpu id %u\n", pdd->dev->id);
+		dev_dbg(kfd_device,
+			"lds_base %llX\n", pdd->lds_base);
+		dev_dbg(kfd_device,
+			"lds_limit %llX\n", pdd->lds_limit);
+		dev_dbg(kfd_device,
+			"gpuvm_base %llX\n", pdd->gpuvm_base);
+		dev_dbg(kfd_device,
+			"gpuvm_limit %llX\n", pdd->gpuvm_limit);
+		dev_dbg(kfd_device,
+			"scratch_base %llX\n", pdd->scratch_base);
+		dev_dbg(kfd_device,
+			"scratch_limit %llX\n", pdd->scratch_limit);
+	}
+	mutex_unlock(&p->mutex);
+
+	args->num_of_nodes = i;
+	ret = copy_to_user(
+			(void __user *)args->kfd_process_device_apertures_ptr,
+			pa,
+			(i * sizeof(struct kfd_process_device_apertures)));
+	kfree(pa);
+	return ret ? -EFAULT : 0;
+
+out_unlock:
+	mutex_unlock(&p->mutex);
+	return 0;
+}
+```
+
+## Bug Fix Patch
+
+```diff
+diff --git a/drivers/gpu/drm/amd/amdkfd/kfd_chardev.c b/drivers/gpu/drm/amd/amdkfd/kfd_chardev.c
+index f9631f4b1a02..55aa74cbc532 100644
+--- a/drivers/gpu/drm/amd/amdkfd/kfd_chardev.c
++++ b/drivers/gpu/drm/amd/amdkfd/kfd_chardev.c
+@@ -779,8 +779,8 @@ static int kfd_ioctl_get_process_apertures_new(struct file *filp,
+ 	 * nodes, but not more than args->num_of_nodes as that is
+ 	 * the amount of memory allocated by user
+ 	 */
+-	pa = kzalloc((sizeof(struct kfd_process_device_apertures) *
+-				args->num_of_nodes), GFP_KERNEL);
++	pa = kcalloc(args->num_of_nodes, sizeof(struct kfd_process_device_apertures),
++		     GFP_KERNEL);
+ 	if (!pa)
+ 		return -ENOMEM;
+
+```
+
+
+# False Positive Report
+
+BuildSource:| drivers/gpu/drm/amd/amdkfd/kfd_chardev.c
+### Report Summary
+
+File:|
+/work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/amd/amdgpu/../amdkfd/kfd_chardev.c  
+---|---  
+Warning:| line 1793, column 16  
+Use kcalloc(count, size, ...) instead of count*sizeof in allocation to avoid
+integer overflow  
+  
+### Annotated Source Code
+
+
+1699  |  
+1700  |  if (p->xnack_enabled == args->xnack_enabled)
+1701  |  goto out_unlock;
+1702  |  
+1703  |  if (args->xnack_enabled && !kfd_process_xnack_mode(p, true)) {
+1704  | 			r = -EPERM;
+1705  |  goto out_unlock;
+1706  | 		}
+1707  |  
+1708  | 		r = svm_range_switch_xnack_reserve_mem(p, args->xnack_enabled);
+1709  | 	} else {
+1710  | 		args->xnack_enabled = p->xnack_enabled;
+1711  | 	}
+1712  |  
+1713  | out_unlock:
+1714  | 	mutex_unlock(&p->mutex);
+1715  |  
+1716  |  return r;
+1717  | }
+1718  |  
+1719  | static int kfd_ioctl_svm(struct file *filep, struct kfd_process *p, void *data)
+1720  | {
+1721  |  struct kfd_ioctl_svm_args *args = data;
+1722  |  int r = 0;
+1723  |  
+1724  |  pr_debug("start 0x%llx size 0x%llx op 0x%x nattr 0x%x\n",
+1725  |  args->start_addr, args->size, args->op, args->nattr);
+1726  |  
+1727  |  if ((args->start_addr & ~PAGE_MASK) || (args->size & ~PAGE_MASK))
+1728  |  return -EINVAL;
+1729  |  if (!args->start_addr || !args->size)
+1730  |  return -EINVAL;
+1731  |  
+1732  | 	r = svm_ioctl(p, args->op, args->start_addr, args->size, args->nattr,
+1733  | 		      args->attrs);
+1734  |  
+1735  |  return r;
+1736  | }
+1737  | #else
+1738  | static int kfd_ioctl_set_xnack_mode(struct file *filep,
+1739  |  struct kfd_process *p, void *data)
+1740  | {
+1741  |  return -EPERM;
+1742  | }
+1743  | static int kfd_ioctl_svm(struct file *filep, struct kfd_process *p, void *data)
+1744  | {
+1745  |  return -EPERM;
+1746  | }
+1747  | #endif
+1748  |  
+1749  | static int criu_checkpoint_process(struct kfd_process *p,
+1750  | 			     uint8_t __user *user_priv_data,
+1751  | 			     uint64_t *priv_offset)
+1752  | {
+1753  |  struct kfd_criu_process_priv_data process_priv;
+1754  |  int ret;
+1755  |  
+1756  |  memset(&process_priv, 0, sizeof(process_priv));
+1757  |  
+1758  | 	process_priv.version = KFD_CRIU_PRIV_VERSION;
+1759  |  /* For CR, we don't consider negative xnack mode which is used for
+1760  |  * querying without changing it, here 0 simply means disabled and 1
+1761  |  * means enabled so retry for finding a valid PTE.
+1762  |  */
+1763  | 	process_priv.xnack_mode = p->xnack_enabled ? 1 : 0;
+1764  |  
+1765  | 	ret = copy_to_user(user_priv_data + *priv_offset,
+1766  | 				&process_priv, sizeof(process_priv));
+1767  |  
+1768  |  if (ret) {
+1769  |  pr_err("Failed to copy process information to user\n");
+1770  | 		ret = -EFAULT;
+1771  | 	}
+1772  |  
+1773  | 	*priv_offset += sizeof(process_priv);
+1774  |  return ret;
+1775  | }
+1776  |  
+1777  | static int criu_checkpoint_devices(struct kfd_process *p,
+1778  | 			     uint32_t num_devices,
+1779  | 			     uint8_t __user *user_addr,
+1780  | 			     uint8_t __user *user_priv_data,
+1781  | 			     uint64_t *priv_offset)
+1782  | {
+1783  |  struct kfd_criu_device_priv_data *device_priv = NULL;
+1784  |  struct kfd_criu_device_bucket *device_buckets = NULL;
+1785  |  int ret = 0, i;
+1786  |  
+1787  | 	device_buckets = kvzalloc(num_devices * sizeof(*device_buckets), GFP_KERNEL);
+1788  |  if (!device_buckets) {
+    16←Assuming 'device_buckets' is non-null→
+    17←Taking false branch→
+1789  | 		ret = -ENOMEM;
+1790  |  goto exit;
+1791  | 	}
+1792  |  
+1793  |  device_priv = kvzalloc(num_devices * sizeof(*device_priv), GFP_KERNEL);
+    18←Use kcalloc(count, size, ...) instead of count*sizeof in allocation to avoid integer overflow
+1794  |  if (!device_priv) {
+1795  | 		ret = -ENOMEM;
+1796  |  goto exit;
+1797  | 	}
+1798  |  
+1799  |  for (i = 0; i < num_devices; i++) {
+1800  |  struct kfd_process_device *pdd = p->pdds[i];
+1801  |  
+1802  | 		device_buckets[i].user_gpu_id = pdd->user_gpu_id;
+1803  | 		device_buckets[i].actual_gpu_id = pdd->dev->id;
+1804  |  
+1805  |  /*
+1806  |  * priv_data does not contain useful information for now and is reserved for
+1807  |  * future use, so we do not set its contents.
+1808  |  */
+1809  | 	}
+1810  |  
+1811  | 	ret = copy_to_user(user_addr, device_buckets, num_devices * sizeof(*device_buckets));
+1812  |  if (ret) {
+1813  |  pr_err("Failed to copy device information to user\n");
+1814  | 		ret = -EFAULT;
+1815  |  goto exit;
+1816  | 	}
+1817  |  
+1818  | 	ret = copy_to_user(user_priv_data + *priv_offset,
+1819  | 			   device_priv,
+1820  | 			   num_devices * sizeof(*device_priv));
+1821  |  if (ret) {
+1822  |  pr_err("Failed to copy device information to user\n");
+1823  | 		ret = -EFAULT;
+1960  | 				bo_bucket->offset = KFD_MMAP_TYPE_MMIO |
+1961  |  KFD_MMAP_GPU_ID(pdd->dev->id);
+1962  |  else
+1963  | 				bo_bucket->offset = amdgpu_bo_mmap_offset(dumper_bo);
+1964  |  
+1965  |  for (i = 0; i < p->n_pdds; i++) {
+1966  |  if (amdgpu_amdkfd_bo_mapped_to_dev(p->pdds[i]->dev->adev, kgd_mem))
+1967  | 					bo_priv->mapped_gpuids[dev_idx++] = p->pdds[i]->user_gpu_id;
+1968  | 			}
+1969  |  
+1970  |  pr_debug("bo_size = 0x%llx, bo_addr = 0x%llx bo_offset = 0x%llx\n"
+1971  |  "gpu_id = 0x%x alloc_flags = 0x%x idr_handle = 0x%x",
+1972  |  bo_bucket->size,
+1973  |  bo_bucket->addr,
+1974  |  bo_bucket->offset,
+1975  |  bo_bucket->gpu_id,
+1976  |  bo_bucket->alloc_flags,
+1977  |  bo_priv->idr_handle);
+1978  | 			bo_index++;
+1979  | 		}
+1980  | 	}
+1981  |  
+1982  | 	ret = copy_to_user(user_bos, bo_buckets, num_bos * sizeof(*bo_buckets));
+1983  |  if (ret) {
+1984  |  pr_err("Failed to copy BO information to user\n");
+1985  | 		ret = -EFAULT;
+1986  |  goto exit;
+1987  | 	}
+1988  |  
+1989  | 	ret = copy_to_user(user_priv_data + *priv_offset, bo_privs, num_bos * sizeof(*bo_privs));
+1990  |  if (ret) {
+1991  |  pr_err("Failed to copy BO priv information to user\n");
+1992  | 		ret = -EFAULT;
+1993  |  goto exit;
+1994  | 	}
+1995  |  
+1996  | 	*priv_offset += num_bos * sizeof(*bo_privs);
+1997  |  
+1998  | exit:
+1999  |  while (ret && bo_index--) {
+2000  |  if (bo_buckets[bo_index].alloc_flags
+2001  | 		    & (KFD_IOC_ALLOC_MEM_FLAGS_VRAM | KFD_IOC_ALLOC_MEM_FLAGS_GTT))
+2002  | 			close_fd(bo_buckets[bo_index].dmabuf_fd);
+2003  | 	}
+2004  |  
+2005  | 	kvfree(bo_buckets);
+2006  | 	kvfree(bo_privs);
+2007  |  return ret;
+2008  | }
+2009  |  
+2010  | static int criu_get_process_object_info(struct kfd_process *p,
+2011  | 					uint32_t *num_devices,
+2012  | 					uint32_t *num_bos,
+2013  | 					uint32_t *num_objects,
+2014  | 					uint64_t *objs_priv_size)
+2015  | {
+2016  | 	uint64_t queues_priv_data_size, svm_priv_data_size, priv_size;
+2017  | 	uint32_t num_queues, num_events, num_svm_ranges;
+2018  |  int ret;
+2019  |  
+2020  | 	*num_devices = p->n_pdds;
+2021  | 	*num_bos = get_process_num_bos(p);
+2022  |  
+2023  | 	ret = kfd_process_get_queue_info(p, &num_queues, &queues_priv_data_size);
+2024  |  if (ret)
+2025  |  return ret;
+2026  |  
+2027  | 	num_events = kfd_get_num_events(p);
+2028  |  
+2029  | 	ret = svm_range_get_info(p, &num_svm_ranges, &svm_priv_data_size);
+2030  |  if (ret)
+2031  |  return ret;
+2032  |  
+2033  | 	*num_objects = num_queues + num_events + num_svm_ranges;
+2034  |  
+2035  |  if (objs_priv_size) {
+2036  | 		priv_size = sizeof(struct kfd_criu_process_priv_data);
+2037  | 		priv_size += *num_devices * sizeof(struct kfd_criu_device_priv_data);
+2038  | 		priv_size += *num_bos * sizeof(struct kfd_criu_bo_priv_data);
+2039  | 		priv_size += queues_priv_data_size;
+2040  | 		priv_size += num_events * sizeof(struct kfd_criu_event_priv_data);
+2041  | 		priv_size += svm_priv_data_size;
+2042  | 		*objs_priv_size = priv_size;
+2043  | 	}
+2044  |  return 0;
+2045  | }
+2046  |  
+2047  | static int criu_checkpoint(struct file *filep,
+2048  |  struct kfd_process *p,
+2049  |  struct kfd_ioctl_criu_args *args)
+2050  | {
+2051  |  int ret;
+2052  | 	uint32_t num_devices, num_bos, num_objects;
+2053  | 	uint64_t priv_size, priv_offset = 0, bo_priv_offset;
+2054  |  
+2055  |  if (!args->devices || !args->bos || !args->priv_data)
+    1Assuming field 'devices' is not equal to 0→
+    2←Assuming field 'bos' is not equal to 0→
+    3←Assuming field 'priv_data' is not equal to 0→
+    4←Taking false branch→
+2056  |  return -EINVAL;
+2057  |  
+2058  |  mutex_lock(&p->mutex);
+2059  |  
+2060  |  if (!p->n_pdds) {
+    5←Assuming field 'n_pdds' is not equal to 0→
+    6←Taking false branch→
+2061  |  pr_err("No pdd for given process\n");
+2062  | 		ret = -ENODEV;
+2063  |  goto exit_unlock;
+2064  | 	}
+2065  |  
+2066  |  /* Confirm all process queues are evicted */
+2067  |  if (!p->queues_paused) {
+    7←Assuming field 'queues_paused' is true→
+    8←Taking false branch→
+2068  |  pr_err("Cannot dump process when queues are not in evicted state\n");
+2069  |  /* CRIU plugin did not call op PROCESS_INFO before checkpointing */
+2070  | 		ret = -EINVAL;
+2071  |  goto exit_unlock;
+2072  | 	}
+2073  |  
+2074  |  ret = criu_get_process_object_info(p, &num_devices, &num_bos, &num_objects, &priv_size);
+2075  |  if (ret8.1'ret' is 0)
+2076  |  goto exit_unlock;
+2077  |  
+2078  |  if (num_devices != args->num_devices ||
+    9←Assuming 'num_devices' is equal to field 'num_devices'→
+    13←Taking false branch→
+2079  |  num_bos != args->num_bos ||
+    10←Assuming 'num_bos' is equal to field 'num_bos'→
+2080  |  num_objects != args->num_objects ||
+    11←Assuming 'num_objects' is equal to field 'num_objects'→
+2081  |  priv_size != args->priv_data_size) {
+    12←Assuming 'priv_size' is equal to field 'priv_data_size'→
+2082  |  
+2083  | 		ret = -EINVAL;
+2084  |  goto exit_unlock;
+2085  | 	}
+2086  |  
+2087  |  /* each function will store private data inside priv_data and adjust priv_offset */
+2088  |  ret = criu_checkpoint_process(p, (uint8_t __user *)args->priv_data, &priv_offset);
+2089  |  if (ret13.1'ret' is 0)
+    14←Taking false branch→
+2090  |  goto exit_unlock;
+2091  |  
+2092  |  ret = criu_checkpoint_devices(p, num_devices, (uint8_t __user *)args->devices,
+    15←Calling 'criu_checkpoint_devices'→
+2093  |  (uint8_t __user *)args->priv_data, &priv_offset);
+2094  |  if (ret)
+2095  |  goto exit_unlock;
+2096  |  
+2097  |  /* Leave room for BOs in the private data. They need to be restored
+2098  |  * before events, but we checkpoint them last to simplify the error
+2099  |  * handling.
+2100  |  */
+2101  | 	bo_priv_offset = priv_offset;
+2102  | 	priv_offset += num_bos * sizeof(struct kfd_criu_bo_priv_data);
+2103  |  
+2104  |  if (num_objects) {
+2105  | 		ret = kfd_criu_checkpoint_queues(p, (uint8_t __user *)args->priv_data,
+2106  | 						 &priv_offset);
+2107  |  if (ret)
+2108  |  goto exit_unlock;
+2109  |  
+2110  | 		ret = kfd_criu_checkpoint_events(p, (uint8_t __user *)args->priv_data,
+2111  | 						 &priv_offset);
+2112  |  if (ret)
+2113  |  goto exit_unlock;
+2114  |  
+2115  | 		ret = kfd_criu_checkpoint_svm(p, (uint8_t __user *)args->priv_data, &priv_offset);
+2116  |  if (ret)
+2117  |  goto exit_unlock;
+2118  | 	}
+2119  |  
+2120  |  /* This must be the last thing in this function that can fail.
+2121  |  * Otherwise we leak dmabuf file descriptors.
+2122  |  */
+2123  | 	ret = criu_checkpoint_bos(p, num_bos, (uint8_t __user *)args->bos,
+
+Analysis:
+- Decision: NotABug
+- Reason: The multiplication at `kvzalloc(num_devices * sizeof(*device_priv), GFP_KERNEL)` matches the target pattern syntactically, but this report does not establish a triggerable overflow. `num_devices` comes from `p->n_pdds`, the process’s internally maintained count of GPU devices; it is not supplied directly by the ioctl caller. On 64-bit builds, multiplying its `uint32_t` range by the structure size cannot overflow `size_t`. On a 32-bit build, overflow would require an unrealistically large device count, and the process device array and hardware-device count are already bounded by the devices actually present. The reported path therefore does not demonstrate a real undersized allocation followed by out-of-bounds access. The analogous overflow-safe allocator would be `kvcalloc`, but the target patch’s `kcalloc` change does not make this report a true positive.
+
+# Checker
+```cpp
+#include "clang/StaticAnalyzer/Core/BugReporter/BugReporter.h"
+#include "clang/StaticAnalyzer/Core/BugReporter/BugType.h"
+#include "clang/StaticAnalyzer/Checkers/Taint.h"
+#include "clang/StaticAnalyzer/Core/Checker.h"
+#include "clang/StaticAnalyzer/Core/PathSensitive/CallEvent.h"
+#include "clang/StaticAnalyzer/Core/PathSensitive/CheckerContext.h"
+#include "clang/StaticAnalyzer/Core/PathSensitive/Environment.h"
+#include "clang/StaticAnalyzer/Core/PathSensitive/ProgramState.h"
+#include "clang/StaticAnalyzer/Core/PathSensitive/ProgramStateTrait.h"
+#include "clang/StaticAnalyzer/Core/PathSensitive/SymExpr.h"
+#include "clang/StaticAnalyzer/Frontend/CheckerRegistry.h"
+#include "clang/AST/RecursiveASTVisitor.h"
+#include "clang/AST/StmtVisitor.h"
+#include "llvm/Support/raw_ostream.h"
+#include "clang/StaticAnalyzer/Checkers/utility.h"
+#include "clang/Lex/Lexer.h"
+
+using namespace clang;
+using namespace ento;
+using namespace taint;
+
+// No custom program state needed.
+
+namespace {
+/* The checker callbacks are to be decided. */
+class SAGenTestChecker : public Checker<check::PreCall> {
+   mutable std::unique_ptr<BugType> BT;
+
+   public:
+      SAGenTestChecker() : BT(new BugType(this, "Overflow-prone allocation size (use kcalloc)", "API Misuse")) {}
+
+      void checkPreCall(const CallEvent &Call, CheckerContext &C) const;
+
+   private:
+
+      // Return true if Call is one of the array-aware allocators that should be ignored.
+      bool isArrayAwareAllocator(const CallEvent &Call, CheckerContext &C) const;
+
+      // If Call is a target allocator that takes a single total size parameter,
+      // set Idx to the index of that size argument and return true.
+      bool getAllocatorSizeArgIndex(const CallEvent &Call, unsigned &Idx, CheckerContext &C) const;
+
+      // Returns true if expression subtree contains a sizeof(...) (UnaryExprOrTypeTraitExpr of kind SizeOf).
+      static bool exprContainsSizeof(const Expr *E);
+
+      // Report helper
+      void reportMulPattern(const BinaryOperator *Mul, CheckerContext &C) const;
+};
+
+bool SAGenTestChecker::isArrayAwareAllocator(const CallEvent &Call, CheckerContext &C) const {
+  const Expr *Orig = Call.getOriginExpr();
+  if (!Orig)
+    return false;
+
+  // Ignore calls that already use overflow-safe array helpers.
+  static const char *ArrayAware[] = {
+      "kcalloc",
+      "kvcalloc",
+      "kmalloc_array",
+      "kvmalloc_array",
+      "devm_kcalloc"
+  };
+
+  for (const char *Name : ArrayAware) {
+    if (ExprHasName(Orig, Name, C))
+      return true;
+  }
+  return false;
+}
+
+bool SAGenTestChecker::getAllocatorSizeArgIndex(const CallEvent &Call, unsigned &Idx, CheckerContext &C) const {
+  const Expr *Orig = Call.getOriginExpr();
+  if (!Orig)
+    return false;
+
+  // Order matters where names can be substrings of others. Keep more specific first.
+  struct Entry { const char *Name; unsigned SizeIdx; };
+  static const Entry Targets[] = {
+      {"devm_kzalloc", 1},
+      {"devm_kmalloc", 1},
+      {"kvzalloc", 0},
+      {"kvmalloc", 0},
+      {"kzalloc", 0},
+      {"kmalloc", 0},
+      {"vzalloc", 0},
+  };
+
+  for (const auto &E : Targets) {
+    if (ExprHasName(Orig, E.Name, C)) {
+      Idx = E.SizeIdx;
+      return true;
+    }
+  }
+  return false;
+}
+
+bool SAGenTestChecker::exprContainsSizeof(const Expr *E) {
+  if (!E) return false;
+  const Stmt *S = dyn_cast<Stmt>(E);
+  if (!S) return false;
+
+  const auto *UETT = findSpecificTypeInChildren<UnaryExprOrTypeTraitExpr>(S);
+  if (!UETT) return false;
+  return UETT->getKind() == UETT_SizeOf;
+}
+
+void SAGenTestChecker::reportMulPattern(const BinaryOperator *Mul, CheckerContext &C) const {
+  if (!Mul) return;
+  ExplodedNode *N = C.generateNonFatalErrorNode();
+  if (!N) return;
+
+  auto R = std::make_unique<PathSensitiveBugReport>(
+      *BT,
+      "Use kcalloc(count, size, ...) instead of count*sizeof in allocation to avoid integer overflow",
+      N);
+  R->addRange(Mul->getSourceRange());
+  C.emitReport(std::move(R));
+}
+
+void SAGenTestChecker::checkPreCall(const CallEvent &Call, CheckerContext &C) const {
+  // Ignore non-interesting calls first.
+  if (isArrayAwareAllocator(Call, C))
+    return;
+
+  unsigned SizeIdx = 0;
+  if (!getAllocatorSizeArgIndex(Call, SizeIdx, C))
+    return;
+
+  if (Call.getNumArgs() <= SizeIdx)
+    return;
+
+  const Expr *SizeE = Call.getArgExpr(SizeIdx);
+  if (!SizeE)
+    return;
+
+  // Suppress safe helpers used inside size expression.
+  if (ExprHasName(SizeE, "array_size", C) ||
+      ExprHasName(SizeE, "struct_size", C) ||
+      ExprHasName(SizeE, "flex_array_size", C))
+    return;
+
+  SizeE = SizeE->IgnoreParenImpCasts();
+  const auto *BO = dyn_cast<BinaryOperator>(SizeE);
+  if (!BO || BO->getOpcode() != BO_Mul)
+    return;
+
+  const Expr *LHS = BO->getLHS()->IgnoreParenImpCasts();
+  const Expr *RHS = BO->getRHS()->IgnoreParenImpCasts();
+
+  // Look for sizeof(...) on either side to match "count * sizeof(T)" or "sizeof(T) * count"
+  bool HasSizeof = exprContainsSizeof(LHS) || exprContainsSizeof(RHS);
+  if (!HasSizeof)
+    return;
+
+  reportMulPattern(BO, C);
+}
+
+} // end anonymous namespace
+
+extern "C" void clang_registerCheckers(CheckerRegistry &registry) {
+  registry.addChecker<SAGenTestChecker>(
+      "custom.SAGenTestChecker",
+      "Detects kmalloc/kzalloc-style allocations that multiply count by sizeof; suggest kcalloc to avoid overflow",
+      "");
+}
+
+extern "C" const char clang_analyzerAPIVersionString[] =
+    CLANG_ANALYZER_API_VERSION_STRING;
+
+```
+
+# Formatting
+
+Please provide the whole checker code after fixing the false positive.
+The refined code must be surrounded by ```cpp and ```.
+Your response should be like:
+
+Refinment Plan:
+XXX
+
+Refined Code:
+```cpp
+{{fixed checker code here}}
+```

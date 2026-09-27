@@ -1,0 +1,17 @@
+diff --git a/io_uring/net.c b/io_uring/net.c
+index 40d4542bfe2a7..1640e985cd087 100644
+--- a/io_uring/net.c
++++ b/io_uring/net.c
+@@ -559,10 +559,10 @@ static int io_recvmsg_mshot_prep(struct io_kiocb *req,
+ 
+ 		if (unlikely(namelen < 0))
+ 			return -EOVERFLOW;
+-		if (check_add_overflow((int)sizeof(struct io_uring_recvmsg_out),
++		if (check_add_overflow(sizeof(struct io_uring_recvmsg_out),
+ 					namelen, &hdr))
+ 			return -EOVERFLOW;
+-		if (check_add_overflow(hdr, (int)controllen, &hdr))
++		if (check_add_overflow(hdr, controllen, &hdr))
+ 			return -EOVERFLOW;
+ 
+ 		iomsg->namelen = namelen;

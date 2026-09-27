@@ -1,0 +1,355 @@
+{
+  "vulnerability_patterns": [
+    {
+      "type": "concurrency",
+      "description": "## Bug Pattern\n\nUnconditionally reading a shared/concurrently modified field before checking the precondition that guarantees safe access, even when the value is only needed in one guarded branch. This speculative/early read happens without synchronization and can race with concurrent writers, triggering KCSAN/data-race reports despite the value being discarded when the guard is false.\n\nPattern example:\n- Buggy:\n  - data = *shared_field;\n  - if (safe_to_access) use data;\n- Correct:\n  - if (safe_to_access) {\n      data = *shared_field;\n      use data;\n    }\n\nIn the patch: reading work->data occurred before verifying from_cancel (the condition that implies exclusive ownership), causing a spurious data race. Moving the read inside the from_cancel branch fixes it.\n",
+      "source": "upstream_generator_pattern_text"
+    }
+  ],
+  "detection_strategy": {
+    "primary_pattern": "concurrency"
+  },
+  "analysis_backend": "deterministic_projection_of_upstream_generation_metadata",
+  "analysis_confidence": 0,
+  "patchweaver": {
+    "summary": "Patch suggests concurrency semantics across 0 file(s); added guards=4, removed risky operations=0, fix patterns=0, metadata refs=0.",
+    "patch_facts": [
+      {
+        "fact_type": "patch_overview",
+        "label": "Patch overview",
+        "attributes": {
+          "patch_path": "/artifact/work/artifacts/fse_revision/generate_only_materialized_v1/cases/G17_8bc35475ef1a_Concurrency/patches/commit.patch",
+          "changed_files": [],
+          "changed_file_count": 0,
+          "added_line_count": 25,
+          "deleted_line_count": 20
+        }
+      },
+      {
+        "fact_type": "vulnerability_patterns",
+        "label": "Vulnerability patterns inferred from patch",
+        "attributes": {
+          "patterns": [
+            "concurrency"
+          ],
+          "descriptions": [
+            "## Bug Pattern\n\nUnconditionally reading a shared/concurrently modified field before checking the precondition that guarantees safe access, even when the value is only needed in one guarded branch. This speculative/early read happens without synchronization and can race with concurrent writers, triggering KCSAN/data-race reports despite the value being discarded when the guard is false.\n\nPattern example:\n- Buggy:\n  - data = *shared_field;\n  - if (safe_to_access) use data;\n- Correct:\n  - if (safe_to_access) {\n      data = *shared_field;\n      use data;\n    }\n\nIn the patch: reading work->data occurred before verifying from_cancel (the condition that implies exclusive ownership), causing a spurious data race. Moving the read inside the from_cancel branch fixes it.\n"
+          ]
+        }
+      },
+      {
+        "fact_type": "affected_functions",
+        "label": "Functions implicated by removed or fixed code",
+        "attributes": {
+          "functions": []
+        }
+      },
+      {
+        "fact_type": "detection_strategy",
+        "label": "Existing patch analysis detection strategy",
+        "attributes": {
+          "primary_pattern": "concurrency"
+        }
+      },
+      {
+        "fact_type": "added_guards",
+        "label": "Patch introduces or strengthens guards",
+        "attributes": {
+          "guards": [
+            "if (from_cancel) {",
+            "if (!WARN_ON_ONCE(data & WORK_STRUCT_PWQ) &&",
+            "while (!try_wait_for_completion(&barr.done)) {",
+            "if (IS_ENABLED(CONFIG_PREEMPT_RT)) {"
+          ]
+        }
+      },
+      {
+        "fact_type": "added_api_calls",
+        "label": "Patch introduces or highlights API usage",
+        "attributes": {
+          "apis": [
+            "work_data_bits",
+            "WARN_ON_ONCE",
+            "tasklet_unlock_spin_wait",
+            "try_wait_for_completion",
+            "IS_ENABLED",
+            "local_bh_disable",
+            "local_bh_enable",
+            "cpu_relax",
+            "wait_for_completion"
+          ]
+        }
+      }
+    ],
+    "mechanism_graph": {
+      "summary": "Patch suggests concurrency semantics across 0 file(s); added guards=4, removed risky operations=0, fix patterns=0, metadata refs=0.",
+      "primary_patterns": [
+        "concurrency"
+      ],
+      "nodes": [
+        {
+          "node_id": "patch",
+          "kind": "patch",
+          "label": "Security patch",
+          "attributes": {
+            "changed_files": []
+          }
+        },
+        {
+          "node_id": "pattern_0",
+          "kind": "pattern",
+          "label": "concurrency",
+          "attributes": {
+            "type": "concurrency",
+            "description": "## Bug Pattern\n\nUnconditionally reading a shared/concurrently modified field before checking the precondition that guarantees safe access, even when the value is only needed in one guarded branch. This speculative/early read happens without synchronization and can race with concurrent writers, triggering KCSAN/data-race reports despite the value being discarded when the guard is false.\n\nPattern example:\n- Buggy:\n  - data = *shared_field;\n  - if (safe_to_access) use data;\n- Correct:\n  - if (safe_to_access) {\n      data = *shared_field;\n      use data;\n    }\n\nIn the patch: reading work->data occurred before verifying from_cancel (the condition that implies exclusive ownership), causing a spurious data race. Moving the read inside the from_cancel branch fixes it.\n",
+            "source": "upstream_generator_pattern_text"
+          }
+        },
+        {
+          "node_id": "strategy",
+          "kind": "strategy",
+          "label": "concurrency",
+          "attributes": {
+            "primary_pattern": "concurrency"
+          }
+        },
+        {
+          "node_id": "guard_1",
+          "kind": "guard",
+          "label": "if (from_cancel) {",
+          "attributes": {
+            "condition": "if (from_cancel) {",
+            "source": "patch_fact"
+          }
+        },
+        {
+          "node_id": "guard_2",
+          "kind": "guard",
+          "label": "if (!WARN_ON_ONCE(data & WORK_STRUCT_PWQ) &&",
+          "attributes": {
+            "condition": "if (!WARN_ON_ONCE(data & WORK_STRUCT_PWQ) &&",
+            "source": "patch_fact"
+          }
+        },
+        {
+          "node_id": "guard_3",
+          "kind": "guard",
+          "label": "while (!try_wait_for_completion(&barr.done)) {",
+          "attributes": {
+            "condition": "while (!try_wait_for_completion(&barr.done)) {",
+            "source": "patch_fact"
+          }
+        },
+        {
+          "node_id": "guard_4",
+          "kind": "guard",
+          "label": "if (IS_ENABLED(CONFIG_PREEMPT_RT)) {",
+          "attributes": {
+            "condition": "if (IS_ENABLED(CONFIG_PREEMPT_RT)) {",
+            "source": "patch_fact"
+          }
+        },
+        {
+          "node_id": "fix_1",
+          "kind": "fix",
+          "label": "work_data_bits",
+          "attributes": {
+            "kind": "added_api_calls",
+            "value": "work_data_bits"
+          }
+        },
+        {
+          "node_id": "fix_2",
+          "kind": "fix",
+          "label": "WARN_ON_ONCE",
+          "attributes": {
+            "kind": "added_api_calls",
+            "value": "WARN_ON_ONCE"
+          }
+        },
+        {
+          "node_id": "fix_3",
+          "kind": "fix",
+          "label": "tasklet_unlock_spin_wait",
+          "attributes": {
+            "kind": "added_api_calls",
+            "value": "tasklet_unlock_spin_wait"
+          }
+        },
+        {
+          "node_id": "fix_4",
+          "kind": "fix",
+          "label": "try_wait_for_completion",
+          "attributes": {
+            "kind": "added_api_calls",
+            "value": "try_wait_for_completion"
+          }
+        },
+        {
+          "node_id": "fix_5",
+          "kind": "fix",
+          "label": "IS_ENABLED",
+          "attributes": {
+            "kind": "added_api_calls",
+            "value": "IS_ENABLED"
+          }
+        },
+        {
+          "node_id": "fix_6",
+          "kind": "fix",
+          "label": "local_bh_disable",
+          "attributes": {
+            "kind": "added_api_calls",
+            "value": "local_bh_disable"
+          }
+        },
+        {
+          "node_id": "fix_7",
+          "kind": "fix",
+          "label": "local_bh_enable",
+          "attributes": {
+            "kind": "added_api_calls",
+            "value": "local_bh_enable"
+          }
+        },
+        {
+          "node_id": "fix_8",
+          "kind": "fix",
+          "label": "cpu_relax",
+          "attributes": {
+            "kind": "added_api_calls",
+            "value": "cpu_relax"
+          }
+        },
+        {
+          "node_id": "fix_9",
+          "kind": "fix",
+          "label": "wait_for_completion",
+          "attributes": {
+            "kind": "added_api_calls",
+            "value": "wait_for_completion"
+          }
+        }
+      ],
+      "edges": [
+        {
+          "source": "patch",
+          "target": "pattern_0",
+          "relation": "indicates",
+          "confidence": 0.9
+        },
+        {
+          "source": "patch",
+          "target": "strategy",
+          "relation": "guides",
+          "confidence": 0.85
+        },
+        {
+          "source": "patch",
+          "target": "guard_1",
+          "relation": "adds_guard",
+          "confidence": 0.84
+        },
+        {
+          "source": "patch",
+          "target": "guard_2",
+          "relation": "adds_guard",
+          "confidence": 0.84
+        },
+        {
+          "source": "patch",
+          "target": "guard_3",
+          "relation": "adds_guard",
+          "confidence": 0.84
+        },
+        {
+          "source": "patch",
+          "target": "guard_4",
+          "relation": "adds_guard",
+          "confidence": 0.84
+        },
+        {
+          "source": "patch",
+          "target": "fix_1",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_2",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_3",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_4",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_5",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_6",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_7",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_8",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_9",
+          "relation": "introduces",
+          "confidence": 0.8
+        }
+      ]
+    },
+    "evidence_plan": {
+      "primary_pattern": "concurrency",
+      "hypotheses": [
+        "Patch likely encodes a reusable vulnerability mechanism but available metadata is weak; keep evidence collection broad."
+      ],
+      "requirements": [
+        {
+          "evidence_type": "patch_fact",
+          "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+          "priority": 100,
+          "preferred_analyzers": [],
+          "confidence": 1.0,
+          "mechanism_refs": [
+            "patch"
+          ]
+        }
+      ],
+      "recommended_analyzers": [],
+      "planner_notes": [
+        "Added guards detected in patch diff; path-sensitive evidence should stay near top priority."
+      ],
+      "coverage_gaps": [],
+      "uncertainty_budget": "medium",
+      "escalation_triggers": [
+        "no_anchor_function"
+      ]
+    }
+  }
+}

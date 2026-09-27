@@ -1,0 +1,1343 @@
+{
+  "analyzer_id": "csa",
+  "detector_artifact": "checker_plugin",
+  "primary_pattern": "use_after_free",
+  "objective": "Synthesize a path-sensitive use_after_free detector that encodes the same local state, guards, and lifecycle mechanism evidenced by the patch, while still generalizing to semantically equivalent sites.",
+  "mechanism_contract": {
+    "mechanism_family": "resource_lifetime_violation",
+    "semantic_dimensions": [
+      "resource identity or alias",
+      "release event",
+      "later use sink on the same resource",
+      "reinitialization/nulling/ownership transfer barrier"
+    ],
+    "trigger_invariants": [
+      "a resource is released",
+      "the same symbolic resource reaches a later use without reinitialization or ownership transfer",
+      "Patch-backed trigger clue: added or highlighted APIs: guard"
+    ],
+    "silence_invariants": [
+      "the resource is nulled, rebound, or reinitialized before reuse",
+      "ownership transfer or guard logic blocks access after release"
+    ],
+    "transfer_axes": [
+      "equivalent release-then-use sequences on the same resource role",
+      "equivalent lifecycle transitions across wrappers or helper functions",
+      "equivalent guard or barrier predicates on sibling paths",
+      "equivalent local state transitions around the same sink or dereference",
+      "equivalent ownership or release/reinit lifecycle on the same symbolic resource"
+    ],
+    "forbidden_shortcuts": [
+      "bind the detector to fixed file paths, line numbers, or exact patch strings",
+      "broaden into unrelated bug families just to improve hit count",
+      "report every free/delete call as if it were a bug",
+      "ignore resource identity and alias continuity between release and use",
+      "identify resources only by variable or field names such as session/cache/context instead of lifecycle evidence",
+      "placeholder helper logic or empty ProgramState modeling"
+    ],
+    "evidence_backed_axes": [
+      "path guards and barrier conditions",
+      "resource lifecycle",
+      "state transitions",
+      "semantic trigger slice"
+    ]
+  },
+  "detector_name_hint": "",
+  "focus_files": [],
+  "focus_functions": [],
+  "hypotheses": [
+    "The patch likely changes a resource lifecycle or stale-state transition."
+  ],
+  "required_evidence_types": [
+    "patch_fact",
+    "allocation_lifecycle",
+    "state_transition"
+  ],
+  "missing_evidence_types": [],
+  "evidence_degraded": false,
+  "patch_mechanism_signals": [
+    "added or highlighted APIs: guard"
+  ],
+  "silencing_conditions": [],
+  "retry_guidance": [],
+  "selected_evidence_ids": [
+    "csa_guard_0",
+    "csa_lifecycle_0",
+    "csa_state_0",
+    "csa_validation_semantic_slice_0"
+  ],
+  "selected_evidence": [
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/tty/n_gsm.c",
+        "function": "gsm_cleanup_mux"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "if gsm (ImplicitCastExpr, LValueToRValue, struct gsm_mux *)->dlci (ImplicitCastExpr, ArrayToPointerDecay, struct gsm_dlci **)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, struct gsm_dlci *)",
+        "summary": "Analyzer CFG for gsm_cleanup_mux in drivers/tty/n_gsm.c: bindings: dlci (ImplicitCastExpr, LValueToRValue, struct gsm_dlci *)->dead = true (ImplicitCastExpr, IntegralToBoolean, bool); dlci = gsm (ImplicitCastExpr, LValueToRValue, struct gsm_mux *)->dlci (ImplicitCastExpr, ArrayToPointerDecay, struct gsm_dlci **)[0] (ImplicitCastExpr, LValueToRValue, struct gsm_dlci *) | branches: if gsm (ImplicitCastExpr, LValueToRValue, struct gsm_mux *)->dlci (ImplicitCastExpr, ArrayToPointerDecay, struct gsm_dlci **)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, struct gsm_dlci *); if dlci (ImplicitCastExpr, LValueToRValue, struct gsm_dlci *)->state (ImplicitCastExpr, LValueToRValue, enum gsm_dlci_state) (ImplicitCastExpr, IntegralCast, unsigned int) == DLCI_CLOSED (ImplicitCastExpr, IntegralCast, unsigned int) | calls: gsm_cleanup_mux -> mutex_lock_nested; gsm_cleanup_mux -> gsm_dlci_begin_close",
+        "summary_line": 3157,
+        "state_before": [
+          "input(gsm)",
+          "input(disc)",
+          "buffer(gsm->tx_data_list)",
+          "buffer(gsm->tx_ctrl_list)",
+          "sinks(mutex_lock, gsm_dlci_begin_close)"
+        ],
+        "state_after": [
+          "cfg_binding(dlci (ImplicitCastExpr, LValueToRValue, struct gsm_dlci *)->dead = true (ImplicitCastExpr, IntegralToBoolean, bool))",
+          "cfg_binding(dlci = gsm (ImplicitCastExpr, LValueToRValue, struct gsm_mux *)->dlci (ImplicitCastExpr, ArrayToPointerDecay, struct gsm_dlci **)[0] (ImplicitCastExpr, LValueToRValue, struct gsm_dlci *))",
+          "cfg_branch(if gsm (ImplicitCastExpr, LValueToRValue, struct gsm_mux *)->dlci (ImplicitCastExpr, ArrayToPointerDecay, struct gsm_dlci **)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, struct gsm_dlci *))",
+          "cfg_branch(if dlci (ImplicitCastExpr, LValueToRValue, struct gsm_dlci *)->state (ImplicitCastExpr, LValueToRValue, enum gsm_dlci_state) (ImplicitCastExpr, IntegralCast, unsigned int) == DLCI_CLOSED (ImplicitCastExpr, IntegralCast, unsigned int))"
+        ],
+        "tracked_symbols": [
+          "gsm",
+          "disc",
+          "gsm->tx_data_list",
+          "gsm->tx_ctrl_list",
+          "gsm->event",
+          "gsm->dead",
+          "gsm->mutex",
+          "gsm->dlci"
+        ],
+        "buffer_fields": [
+          "gsm->tx_data_list",
+          "gsm->tx_ctrl_list",
+          "gsm->event",
+          "gsm->dead",
+          "gsm->mutex",
+          "gsm->dlci"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "gsm_cleanup_mux"
+        ],
+        "call_targets": [
+          "mutex_lock",
+          "gsm_dlci_begin_close",
+          "wait_event",
+          "del_timer_sync",
+          "flush_work",
+          "gsm_unregister_devices",
+          "gsm_dlci_release",
+          "mutex_unlock"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,drivers/tty/.n_gsm.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/uapi -I./arch/x86/inclu...",
+        "cfg_branch_kinds": [
+          "for",
+          "if"
+        ],
+        "branch_conditions": [
+          "for (...; [B4.14]; ...)",
+          "for (...; [B8.14]; ...)",
+          "if [B12.8]",
+          "for (...; [B13.4]; ...)",
+          "if [B16.32]",
+          "do ... while [B18.1]"
+        ],
+        "call_edges": [
+          "gsm_cleanup_mux -> mutex_lock_nested",
+          "gsm_cleanup_mux -> gsm_dlci_begin_close",
+          "gsm_cleanup_mux -> __might_sleep",
+          "gsm_cleanup_mux -> might_resched",
+          "gsm_cleanup_mux -> init_wait_entry",
+          "gsm_cleanup_mux -> prepare_to_wait_event"
+        ],
+        "state_statements": [
+          "[B1.4]->tx_data_list",
+          "[B2.3] = [B2.2]",
+          "[B2.6]->list",
+          "void *__mptr = (void *)((ntxq)->list.next);",
+          "[B2.18] = [B2.17]",
+          "kfree"
+        ],
+        "source_file": "drivers/tty/n_gsm.c"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/tty/n_gsm.c",
+          "hunk_index": 0,
+          "source_line": 3157
+        },
+        "summary": "Analyzer CFG for gsm_cleanup_mux in drivers/tty/n_gsm.c: bindings: dlci (ImplicitCastExpr, LValueToRValue, struct gsm_dlci *)->dead = true (ImplicitCastExpr, IntegralToBoolean, bool); dlci = gsm (ImplicitCastExpr, LValueToRValue, struct gsm_mux *)->dlci (ImplicitCastExpr, ArrayToPointerDecay, struct gsm_dlci **)[0] (ImplicitCastExpr, LValueToRValue, struct gsm_dlci *) | branches: if gsm (ImplicitCastExpr, LValueToRValue, struct gsm_mux *)->dlci (ImplicitCastExpr, ArrayToPointerDecay, struct gsm_dlci **)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, struct gsm_dlci *); if dlci (ImplicitCastExpr, LValueToRValue, struct gsm_dlci *)->state (ImplicitCastExpr, LValueToRValue, enum gsm_dlci_state) (ImplicitCastExpr, IntegralCast, unsigned int) == DLCI_CLOSED (ImplicitCastExpr, IntegralCast, unsigned int) | calls: gsm_cleanup_mux -> mutex_lock_nested; gsm_cleanup_mux -> gsm_dlci_begin_close",
+        "statements": [
+          "3125: \tint i;",
+          "3126: \tstruct gsm_dlci *dlci;",
+          "3127: \tstruct gsm_msg *txq, *ntxq;",
+          "3128:",
+          "3129: \tgsm->dead = true;",
+          "3130: \tmutex_lock(&gsm->mutex);"
+        ],
+        "guards": [
+          "if gsm (ImplicitCastExpr, LValueToRValue, struct gsm_mux *)->dlci (ImplicitCastExpr, ArrayToPointerDecay, struct gsm_dlci **)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, struct gsm_dlci *)",
+          "if dlci (ImplicitCastExpr, LValueToRValue, struct gsm_dlci *)->state (ImplicitCastExpr, LValueToRValue, enum gsm_dlci_state) (ImplicitCastExpr, IntegralCast, unsigned int) == DLCI_CLOSED (ImplicitCastExpr, IntegralCast, unsigned int)",
+          "if disc (ImplicitCastExpr, LValueToRValue, bool) (ImplicitCastExpr, IntegralCast, int) && dlci (ImplicitCastExpr, LValueToRValue, struct gsm_dlci *)->state (ImplicitCastExpr, LValueToRValue, enum gsm_dlci_state) (ImplicitCastExpr, IntegralCast, unsigned int) != DLCI_CLOSED (ImplicitCastExpr, IntegralCast, unsigned int)",
+          "if dlci (ImplicitCastExpr, LValueToRValue, struct gsm_dlci *)"
+        ],
+        "call_boundary": [
+          "mutex_lock",
+          "gsm_dlci_begin_close",
+          "wait_event",
+          "del_timer_sync",
+          "flush_work",
+          "gsm_unregister_devices"
+        ],
+        "call_edges": [
+          "gsm_cleanup_mux -> mutex_lock_nested",
+          "gsm_cleanup_mux -> gsm_dlci_begin_close",
+          "gsm_cleanup_mux -> __might_sleep",
+          "gsm_cleanup_mux -> might_resched",
+          "gsm_cleanup_mux -> init_wait_entry",
+          "gsm_cleanup_mux -> prepare_to_wait_event",
+          "gsm_cleanup_mux -> __builtin_constant_p",
+          "gsm_cleanup_mux -> schedule"
+        ],
+        "state_transitions": [
+          "cfg_binding(dlci (ImplicitCastExpr, LValueToRValue, struct gsm_dlci *)->dead = true (ImplicitCastExpr, IntegralToBoolean, bool))",
+          "cfg_binding(dlci = gsm (ImplicitCastExpr, LValueToRValue, struct gsm_mux *)->dlci (ImplicitCastExpr, ArrayToPointerDecay, struct gsm_dlci **)[0] (ImplicitCastExpr, LValueToRValue, struct gsm_dlci *))",
+          "cfg_branch(if gsm (ImplicitCastExpr, LValueToRValue, struct gsm_mux *)->dlci (ImplicitCastExpr, ArrayToPointerDecay, struct gsm_dlci **)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, struct gsm_dlci *))",
+          "cfg_branch(if dlci (ImplicitCastExpr, LValueToRValue, struct gsm_dlci *)->state (ImplicitCastExpr, LValueToRValue, enum gsm_dlci_state) (ImplicitCastExpr, IntegralCast, unsigned int) == DLCI_CLOSED (ImplicitCastExpr, IntegralCast, unsigned int))",
+          "[B1.4]->tx_data_list",
+          "[B2.3] = [B2.2]"
+        ],
+        "api_terms": [
+          "mutex_lock_nested",
+          "gsm_dlci_begin_close",
+          "__might_sleep",
+          "might_resched",
+          "init_wait_entry",
+          "prepare_to_wait_event"
+        ],
+        "related_symbols": [
+          "gsm",
+          "disc",
+          "gsm->tx_data_list",
+          "gsm->tx_ctrl_list",
+          "gsm->event",
+          "gsm->dead"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_lifecycle_0",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/tty/n_gsm.c",
+        "function": "gsm_cleanup_mux"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "gsm_cleanup_mux in drivers/tty/n_gsm.c reaches flush_work, init_wait_entry",
+        "state_before": [
+          "input(gsm)",
+          "input(disc)",
+          "buffer(gsm->tx_data_list)",
+          "buffer(gsm->tx_ctrl_list)",
+          "sinks(mutex_lock, gsm_dlci_begin_close)"
+        ],
+        "state_after": [
+          "transition(flush_work)",
+          "transition(init_wait_entry)",
+          "locked(mutex_lock, mutex_unlock)"
+        ],
+        "tracked_symbols": [
+          "gsm",
+          "disc",
+          "gsm->tx_data_list",
+          "gsm->tx_ctrl_list",
+          "gsm->event",
+          "gsm->dead",
+          "gsm->mutex",
+          "gsm->dlci"
+        ],
+        "buffer_fields": [
+          "gsm->tx_data_list",
+          "gsm->tx_ctrl_list",
+          "gsm->event",
+          "gsm->dead",
+          "gsm->mutex",
+          "gsm->dlci"
+        ],
+        "coverage_status": "full",
+        "operations": [
+          "flush_work",
+          "init_wait_entry"
+        ],
+        "functions": [
+          "gsm_cleanup_mux"
+        ],
+        "call_edges": [
+          "gsm_cleanup_mux -> mutex_lock_nested",
+          "gsm_cleanup_mux -> gsm_dlci_begin_close",
+          "gsm_cleanup_mux -> __might_sleep",
+          "gsm_cleanup_mux -> might_resched",
+          "gsm_cleanup_mux -> init_wait_entry",
+          "gsm_cleanup_mux -> prepare_to_wait_event"
+        ],
+        "source_file": "drivers/tty/n_gsm.c"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "drivers/tty/n_gsm.c",
+          "hunk_index": 0,
+          "source_line": 3157
+        },
+        "summary": "gsm_cleanup_mux in drivers/tty/n_gsm.c reaches flush_work, init_wait_entry",
+        "statements": [
+          "3125: \tint i;",
+          "3126: \tstruct gsm_dlci *dlci;",
+          "3127: \tstruct gsm_msg *txq, *ntxq;",
+          "3128:",
+          "3129: \tgsm->dead = true;",
+          "3130: \tmutex_lock(&gsm->mutex);"
+        ],
+        "guards": [
+          "for (...; [B4.14]; ...)",
+          "for (...; [B8.14]; ...)",
+          "if [B12.8]"
+        ],
+        "call_boundary": [
+          "mutex_lock",
+          "gsm_dlci_begin_close",
+          "wait_event",
+          "del_timer_sync",
+          "flush_work",
+          "gsm_unregister_devices"
+        ],
+        "call_edges": [
+          "gsm_cleanup_mux -> mutex_lock_nested",
+          "gsm_cleanup_mux -> gsm_dlci_begin_close",
+          "gsm_cleanup_mux -> __might_sleep",
+          "gsm_cleanup_mux -> might_resched",
+          "gsm_cleanup_mux -> init_wait_entry",
+          "gsm_cleanup_mux -> prepare_to_wait_event",
+          "gsm_cleanup_mux -> __builtin_constant_p",
+          "gsm_cleanup_mux -> schedule"
+        ],
+        "state_transitions": [
+          "transition(flush_work)",
+          "transition(init_wait_entry)",
+          "locked(mutex_lock, mutex_unlock)",
+          "[B1.4]->tx_data_list",
+          "[B2.3] = [B2.2]",
+          "[B2.6]->list"
+        ],
+        "api_terms": [
+          "flush_work",
+          "init_wait_entry",
+          "mutex_lock_nested",
+          "gsm_dlci_begin_close",
+          "__might_sleep",
+          "might_resched"
+        ],
+        "related_symbols": [
+          "gsm",
+          "disc",
+          "gsm->tx_data_list",
+          "gsm->tx_ctrl_list",
+          "gsm->event",
+          "gsm->dead"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.9
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/tty/n_gsm.c",
+        "function": "gsm_cleanup_mux"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "gsm_cleanup_mux in drivers/tty/n_gsm.c: locks=mutex_lock, mutex_unlock | state_ops=for (i = NUM_DLCI - 1; i >= 0; i--) | cfg_calls=gsm_cleanup_mux -> mutex_lock_nested; gsm_cleanup_mux -> gsm_dlci_begin_close",
+        "state_before": [
+          "input(gsm)",
+          "input(disc)",
+          "buffer(gsm->tx_data_list)",
+          "buffer(gsm->tx_ctrl_list)",
+          "sinks(mutex_lock, gsm_dlci_begin_close)"
+        ],
+        "state_after": [
+          "transition(for (i = NUM_DLCI - 1; i >= 0; i--))",
+          "transition([B1.4]->tx_data_list)",
+          "transition([B2.3] = [B2.2])",
+          "locked(mutex_lock, mutex_unlock)"
+        ],
+        "tracked_symbols": [
+          "gsm",
+          "disc",
+          "gsm->tx_data_list",
+          "gsm->tx_ctrl_list",
+          "gsm->event",
+          "gsm->dead",
+          "gsm->mutex",
+          "gsm->dlci"
+        ],
+        "buffer_fields": [
+          "gsm->tx_data_list",
+          "gsm->tx_ctrl_list",
+          "gsm->event",
+          "gsm->dead",
+          "gsm->mutex",
+          "gsm->dlci"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "gsm_cleanup_mux"
+        ],
+        "call_targets": [
+          "mutex_lock",
+          "gsm_dlci_begin_close",
+          "wait_event",
+          "del_timer_sync",
+          "flush_work",
+          "gsm_unregister_devices",
+          "gsm_dlci_release",
+          "mutex_unlock"
+        ],
+        "cfg_branch_kinds": [
+          "for",
+          "if"
+        ],
+        "branch_conditions": [
+          "for (...; [B4.14]; ...)",
+          "for (...; [B8.14]; ...)",
+          "if [B12.8]",
+          "for (...; [B13.4]; ...)"
+        ],
+        "call_edges": [
+          "gsm_cleanup_mux -> mutex_lock_nested",
+          "gsm_cleanup_mux -> gsm_dlci_begin_close",
+          "gsm_cleanup_mux -> __might_sleep",
+          "gsm_cleanup_mux -> might_resched",
+          "gsm_cleanup_mux -> init_wait_entry",
+          "gsm_cleanup_mux -> prepare_to_wait_event"
+        ],
+        "state_statements": [
+          "[B1.4]->tx_data_list",
+          "[B2.3] = [B2.2]",
+          "[B2.6]->list",
+          "void *__mptr = (void *)((ntxq)->list.next);",
+          "[B2.18] = [B2.17]",
+          "kfree",
+          "[B4.4]->list",
+          "[B4.9]->tx_data_list"
+        ],
+        "source_file": "drivers/tty/n_gsm.c"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "drivers/tty/n_gsm.c",
+          "hunk_index": 0,
+          "source_line": 3157
+        },
+        "summary": "gsm_cleanup_mux in drivers/tty/n_gsm.c: locks=mutex_lock, mutex_unlock | state_ops=for (i = NUM_DLCI - 1; i >= 0; i--) | cfg_calls=gsm_cleanup_mux -> mutex_lock_nested; gsm_cleanup_mux -> gsm_dlci_begin_close",
+        "statements": [
+          "3125: \tint i;",
+          "3126: \tstruct gsm_dlci *dlci;",
+          "3127: \tstruct gsm_msg *txq, *ntxq;",
+          "3128:",
+          "3129: \tgsm->dead = true;",
+          "3130: \tmutex_lock(&gsm->mutex);"
+        ],
+        "guards": [
+          "for (...; [B4.14]; ...)",
+          "for (...; [B8.14]; ...)",
+          "if [B12.8]"
+        ],
+        "call_boundary": [
+          "mutex_lock",
+          "gsm_dlci_begin_close",
+          "wait_event",
+          "del_timer_sync",
+          "flush_work",
+          "gsm_unregister_devices"
+        ],
+        "call_edges": [
+          "gsm_cleanup_mux -> mutex_lock_nested",
+          "gsm_cleanup_mux -> gsm_dlci_begin_close",
+          "gsm_cleanup_mux -> __might_sleep",
+          "gsm_cleanup_mux -> might_resched",
+          "gsm_cleanup_mux -> init_wait_entry",
+          "gsm_cleanup_mux -> prepare_to_wait_event",
+          "gsm_cleanup_mux -> __builtin_constant_p",
+          "gsm_cleanup_mux -> schedule"
+        ],
+        "state_transitions": [
+          "transition(for (i = NUM_DLCI - 1; i >= 0; i--))",
+          "transition([B1.4]->tx_data_list)",
+          "transition([B2.3] = [B2.2])",
+          "locked(mutex_lock, mutex_unlock)",
+          "[B1.4]->tx_data_list",
+          "[B2.3] = [B2.2]"
+        ],
+        "api_terms": [
+          "mutex_lock",
+          "mutex_unlock",
+          "mutex_lock_nested",
+          "gsm_dlci_begin_close",
+          "__might_sleep",
+          "might_resched"
+        ],
+        "related_symbols": [
+          "gsm",
+          "disc",
+          "gsm->tx_data_list",
+          "gsm->tx_ctrl_list",
+          "gsm->event",
+          "gsm->dead"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.88
+    },
+    {
+      "evidence_id": "csa_validation_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/tty/n_gsm.c",
+        "function": "gsm_cleanup_mux"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at drivers/tty/n_gsm.c:3157",
+        "state_before": [
+          "input(gsm)",
+          "input(disc)",
+          "buffer(gsm->tx_data_list)",
+          "buffer(gsm->tx_ctrl_list)",
+          "sinks(mutex_lock, gsm_dlci_begin_close)"
+        ],
+        "state_after": [
+          "diagnostic(csa)"
+        ],
+        "tracked_symbols": [
+          "gsm",
+          "disc"
+        ],
+        "buffer_fields": [
+          "gsm->tx_data_list",
+          "gsm->tx_ctrl_list",
+          "gsm->event",
+          "gsm->dead",
+          "gsm->mutex",
+          "gsm->dlci"
+        ],
+        "coverage_status": "partial",
+        "functions": [
+          "gsm_cleanup_mux"
+        ],
+        "call_targets": [
+          "mutex_lock",
+          "gsm_dlci_begin_close",
+          "wait_event",
+          "del_timer_sync",
+          "flush_work",
+          "gsm_unregister_devices"
+        ],
+        "call_edges": [
+          "gsm_cleanup_mux -> mutex_lock_nested",
+          "gsm_cleanup_mux -> gsm_dlci_begin_close",
+          "gsm_cleanup_mux -> __might_sleep",
+          "gsm_cleanup_mux -> might_resched",
+          "gsm_cleanup_mux -> init_wait_entry",
+          "gsm_cleanup_mux -> prepare_to_wait_event"
+        ],
+        "state_statements": [
+          "for (i = NUM_DLCI - 1; i >= 0; i--)",
+          "[B1.4]->tx_data_list",
+          "[B2.3] = [B2.2]",
+          "[B2.6]->list",
+          "void *__mptr = (void *)((ntxq)->list.next);",
+          "[B2.18] = [B2.17]"
+        ],
+        "source_file": "drivers/tty/n_gsm.c"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "drivers/tty/n_gsm.c",
+          "hunk_index": 0,
+          "source_line": 3157
+        },
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at drivers/tty/n_gsm.c:3157",
+        "statements": [
+          "3125: \tint i;",
+          "3126: \tstruct gsm_dlci *dlci;",
+          "3127: \tstruct gsm_msg *txq, *ntxq;",
+          "3128:",
+          "3129: \tgsm->dead = true;",
+          "3130: \tmutex_lock(&gsm->mutex);"
+        ],
+        "guards": [
+          "dlci",
+          "disc && dlci->state != DLCI_CLOSED",
+          "gsm->has_devices",
+          "i = NUM_DLCI - 1; i >= 0; i--"
+        ],
+        "call_boundary": [
+          "mutex_lock",
+          "gsm_dlci_begin_close",
+          "wait_event",
+          "del_timer_sync",
+          "flush_work",
+          "gsm_unregister_devices"
+        ],
+        "call_edges": [
+          "gsm_cleanup_mux -> mutex_lock_nested",
+          "gsm_cleanup_mux -> gsm_dlci_begin_close",
+          "gsm_cleanup_mux -> __might_sleep",
+          "gsm_cleanup_mux -> might_resched",
+          "gsm_cleanup_mux -> init_wait_entry",
+          "gsm_cleanup_mux -> prepare_to_wait_event"
+        ],
+        "state_transitions": [
+          "diagnostic(csa)"
+        ],
+        "api_terms": [
+          "flush_work",
+          "for (i = NUM_DLCI - 1; i >= 0; i--)",
+          "[B1.4]->tx_data_list",
+          "[B2.3] = [B2.2]",
+          "[B2.6]->list",
+          "void *__mptr = (void *)((ntxq)->list.next);"
+        ],
+        "related_symbols": [
+          "gsm",
+          "disc"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      },
+      "confidence": 0.72
+    }
+  ],
+  "semantic_slice_count": 4,
+  "context_summary_count": 0,
+  "semantic_slice_coverage": "partial",
+  "selected_semantic_slice_ids": [
+    "csa_guard_0",
+    "csa_lifecycle_0",
+    "csa_state_0",
+    "csa_validation_semantic_slice_0"
+  ],
+  "selected_context_summary_ids": [],
+  "selected_semantic_slices": [
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/tty/n_gsm.c",
+        "function": "gsm_cleanup_mux"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "if gsm (ImplicitCastExpr, LValueToRValue, struct gsm_mux *)->dlci (ImplicitCastExpr, ArrayToPointerDecay, struct gsm_dlci **)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, struct gsm_dlci *)",
+        "summary": "Analyzer CFG for gsm_cleanup_mux in drivers/tty/n_gsm.c: bindings: dlci (ImplicitCastExpr, LValueToRValue, struct gsm_dlci *)->dead = true (ImplicitCastExpr, IntegralToBoolean, bool); dlci = gsm (ImplicitCastExpr, LValueToRValue, struct gsm_mux *)->dlci (ImplicitCastExpr, ArrayToPointerDecay, struct gsm_dlci **)[0] (ImplicitCastExpr, LValueToRValue, struct gsm_dlci *) | branches: if gsm (ImplicitCastExpr, LValueToRValue, struct gsm_mux *)->dlci (ImplicitCastExpr, ArrayToPointerDecay, struct gsm_dlci **)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, struct gsm_dlci *); if dlci (ImplicitCastExpr, LValueToRValue, struct gsm_dlci *)->state (ImplicitCastExpr, LValueToRValue, enum gsm_dlci_state) (ImplicitCastExpr, IntegralCast, unsigned int) == DLCI_CLOSED (ImplicitCastExpr, IntegralCast, unsigned int) | calls: gsm_cleanup_mux -> mutex_lock_nested; gsm_cleanup_mux -> gsm_dlci_begin_close",
+        "summary_line": 3157,
+        "state_before": [
+          "input(gsm)",
+          "input(disc)",
+          "buffer(gsm->tx_data_list)",
+          "buffer(gsm->tx_ctrl_list)",
+          "sinks(mutex_lock, gsm_dlci_begin_close)"
+        ],
+        "state_after": [
+          "cfg_binding(dlci (ImplicitCastExpr, LValueToRValue, struct gsm_dlci *)->dead = true (ImplicitCastExpr, IntegralToBoolean, bool))",
+          "cfg_binding(dlci = gsm (ImplicitCastExpr, LValueToRValue, struct gsm_mux *)->dlci (ImplicitCastExpr, ArrayToPointerDecay, struct gsm_dlci **)[0] (ImplicitCastExpr, LValueToRValue, struct gsm_dlci *))",
+          "cfg_branch(if gsm (ImplicitCastExpr, LValueToRValue, struct gsm_mux *)->dlci (ImplicitCastExpr, ArrayToPointerDecay, struct gsm_dlci **)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, struct gsm_dlci *))",
+          "cfg_branch(if dlci (ImplicitCastExpr, LValueToRValue, struct gsm_dlci *)->state (ImplicitCastExpr, LValueToRValue, enum gsm_dlci_state) (ImplicitCastExpr, IntegralCast, unsigned int) == DLCI_CLOSED (ImplicitCastExpr, IntegralCast, unsigned int))"
+        ],
+        "tracked_symbols": [
+          "gsm",
+          "disc",
+          "gsm->tx_data_list",
+          "gsm->tx_ctrl_list",
+          "gsm->event",
+          "gsm->dead",
+          "gsm->mutex",
+          "gsm->dlci"
+        ],
+        "buffer_fields": [
+          "gsm->tx_data_list",
+          "gsm->tx_ctrl_list",
+          "gsm->event",
+          "gsm->dead",
+          "gsm->mutex",
+          "gsm->dlci"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "gsm_cleanup_mux"
+        ],
+        "call_targets": [
+          "mutex_lock",
+          "gsm_dlci_begin_close",
+          "wait_event",
+          "del_timer_sync",
+          "flush_work",
+          "gsm_unregister_devices",
+          "gsm_dlci_release",
+          "mutex_unlock"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,drivers/tty/.n_gsm.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/uapi -I./arch/x86/inclu...",
+        "cfg_branch_kinds": [
+          "for",
+          "if"
+        ],
+        "branch_conditions": [
+          "for (...; [B4.14]; ...)",
+          "for (...; [B8.14]; ...)",
+          "if [B12.8]",
+          "for (...; [B13.4]; ...)",
+          "if [B16.32]",
+          "do ... while [B18.1]"
+        ],
+        "call_edges": [
+          "gsm_cleanup_mux -> mutex_lock_nested",
+          "gsm_cleanup_mux -> gsm_dlci_begin_close",
+          "gsm_cleanup_mux -> __might_sleep",
+          "gsm_cleanup_mux -> might_resched",
+          "gsm_cleanup_mux -> init_wait_entry",
+          "gsm_cleanup_mux -> prepare_to_wait_event"
+        ],
+        "state_statements": [
+          "[B1.4]->tx_data_list",
+          "[B2.3] = [B2.2]",
+          "[B2.6]->list",
+          "void *__mptr = (void *)((ntxq)->list.next);",
+          "[B2.18] = [B2.17]",
+          "kfree"
+        ],
+        "source_file": "drivers/tty/n_gsm.c"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/tty/n_gsm.c",
+          "hunk_index": 0,
+          "source_line": 3157
+        },
+        "summary": "Analyzer CFG for gsm_cleanup_mux in drivers/tty/n_gsm.c: bindings: dlci (ImplicitCastExpr, LValueToRValue, struct gsm_dlci *)->dead = true (ImplicitCastExpr, IntegralToBoolean, bool); dlci = gsm (ImplicitCastExpr, LValueToRValue, struct gsm_mux *)->dlci (ImplicitCastExpr, ArrayToPointerDecay, struct gsm_dlci **)[0] (ImplicitCastExpr, LValueToRValue, struct gsm_dlci *) | branches: if gsm (ImplicitCastExpr, LValueToRValue, struct gsm_mux *)->dlci (ImplicitCastExpr, ArrayToPointerDecay, struct gsm_dlci **)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, struct gsm_dlci *); if dlci (ImplicitCastExpr, LValueToRValue, struct gsm_dlci *)->state (ImplicitCastExpr, LValueToRValue, enum gsm_dlci_state) (ImplicitCastExpr, IntegralCast, unsigned int) == DLCI_CLOSED (ImplicitCastExpr, IntegralCast, unsigned int) | calls: gsm_cleanup_mux -> mutex_lock_nested; gsm_cleanup_mux -> gsm_dlci_begin_close",
+        "statements": [
+          "3125: \tint i;",
+          "3126: \tstruct gsm_dlci *dlci;",
+          "3127: \tstruct gsm_msg *txq, *ntxq;",
+          "3128:",
+          "3129: \tgsm->dead = true;",
+          "3130: \tmutex_lock(&gsm->mutex);"
+        ],
+        "guards": [
+          "if gsm (ImplicitCastExpr, LValueToRValue, struct gsm_mux *)->dlci (ImplicitCastExpr, ArrayToPointerDecay, struct gsm_dlci **)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, struct gsm_dlci *)",
+          "if dlci (ImplicitCastExpr, LValueToRValue, struct gsm_dlci *)->state (ImplicitCastExpr, LValueToRValue, enum gsm_dlci_state) (ImplicitCastExpr, IntegralCast, unsigned int) == DLCI_CLOSED (ImplicitCastExpr, IntegralCast, unsigned int)",
+          "if disc (ImplicitCastExpr, LValueToRValue, bool) (ImplicitCastExpr, IntegralCast, int) && dlci (ImplicitCastExpr, LValueToRValue, struct gsm_dlci *)->state (ImplicitCastExpr, LValueToRValue, enum gsm_dlci_state) (ImplicitCastExpr, IntegralCast, unsigned int) != DLCI_CLOSED (ImplicitCastExpr, IntegralCast, unsigned int)",
+          "if dlci (ImplicitCastExpr, LValueToRValue, struct gsm_dlci *)"
+        ],
+        "call_boundary": [
+          "mutex_lock",
+          "gsm_dlci_begin_close",
+          "wait_event",
+          "del_timer_sync",
+          "flush_work",
+          "gsm_unregister_devices"
+        ],
+        "call_edges": [
+          "gsm_cleanup_mux -> mutex_lock_nested",
+          "gsm_cleanup_mux -> gsm_dlci_begin_close",
+          "gsm_cleanup_mux -> __might_sleep",
+          "gsm_cleanup_mux -> might_resched",
+          "gsm_cleanup_mux -> init_wait_entry",
+          "gsm_cleanup_mux -> prepare_to_wait_event",
+          "gsm_cleanup_mux -> __builtin_constant_p",
+          "gsm_cleanup_mux -> schedule"
+        ],
+        "state_transitions": [
+          "cfg_binding(dlci (ImplicitCastExpr, LValueToRValue, struct gsm_dlci *)->dead = true (ImplicitCastExpr, IntegralToBoolean, bool))",
+          "cfg_binding(dlci = gsm (ImplicitCastExpr, LValueToRValue, struct gsm_mux *)->dlci (ImplicitCastExpr, ArrayToPointerDecay, struct gsm_dlci **)[0] (ImplicitCastExpr, LValueToRValue, struct gsm_dlci *))",
+          "cfg_branch(if gsm (ImplicitCastExpr, LValueToRValue, struct gsm_mux *)->dlci (ImplicitCastExpr, ArrayToPointerDecay, struct gsm_dlci **)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, struct gsm_dlci *))",
+          "cfg_branch(if dlci (ImplicitCastExpr, LValueToRValue, struct gsm_dlci *)->state (ImplicitCastExpr, LValueToRValue, enum gsm_dlci_state) (ImplicitCastExpr, IntegralCast, unsigned int) == DLCI_CLOSED (ImplicitCastExpr, IntegralCast, unsigned int))",
+          "[B1.4]->tx_data_list",
+          "[B2.3] = [B2.2]"
+        ],
+        "api_terms": [
+          "mutex_lock_nested",
+          "gsm_dlci_begin_close",
+          "__might_sleep",
+          "might_resched",
+          "init_wait_entry",
+          "prepare_to_wait_event"
+        ],
+        "related_symbols": [
+          "gsm",
+          "disc",
+          "gsm->tx_data_list",
+          "gsm->tx_ctrl_list",
+          "gsm->event",
+          "gsm->dead"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_lifecycle_0",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/tty/n_gsm.c",
+        "function": "gsm_cleanup_mux"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "gsm_cleanup_mux in drivers/tty/n_gsm.c reaches flush_work, init_wait_entry",
+        "state_before": [
+          "input(gsm)",
+          "input(disc)",
+          "buffer(gsm->tx_data_list)",
+          "buffer(gsm->tx_ctrl_list)",
+          "sinks(mutex_lock, gsm_dlci_begin_close)"
+        ],
+        "state_after": [
+          "transition(flush_work)",
+          "transition(init_wait_entry)",
+          "locked(mutex_lock, mutex_unlock)"
+        ],
+        "tracked_symbols": [
+          "gsm",
+          "disc",
+          "gsm->tx_data_list",
+          "gsm->tx_ctrl_list",
+          "gsm->event",
+          "gsm->dead",
+          "gsm->mutex",
+          "gsm->dlci"
+        ],
+        "buffer_fields": [
+          "gsm->tx_data_list",
+          "gsm->tx_ctrl_list",
+          "gsm->event",
+          "gsm->dead",
+          "gsm->mutex",
+          "gsm->dlci"
+        ],
+        "coverage_status": "full",
+        "operations": [
+          "flush_work",
+          "init_wait_entry"
+        ],
+        "functions": [
+          "gsm_cleanup_mux"
+        ],
+        "call_edges": [
+          "gsm_cleanup_mux -> mutex_lock_nested",
+          "gsm_cleanup_mux -> gsm_dlci_begin_close",
+          "gsm_cleanup_mux -> __might_sleep",
+          "gsm_cleanup_mux -> might_resched",
+          "gsm_cleanup_mux -> init_wait_entry",
+          "gsm_cleanup_mux -> prepare_to_wait_event"
+        ],
+        "source_file": "drivers/tty/n_gsm.c"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "drivers/tty/n_gsm.c",
+          "hunk_index": 0,
+          "source_line": 3157
+        },
+        "summary": "gsm_cleanup_mux in drivers/tty/n_gsm.c reaches flush_work, init_wait_entry",
+        "statements": [
+          "3125: \tint i;",
+          "3126: \tstruct gsm_dlci *dlci;",
+          "3127: \tstruct gsm_msg *txq, *ntxq;",
+          "3128:",
+          "3129: \tgsm->dead = true;",
+          "3130: \tmutex_lock(&gsm->mutex);"
+        ],
+        "guards": [
+          "for (...; [B4.14]; ...)",
+          "for (...; [B8.14]; ...)",
+          "if [B12.8]"
+        ],
+        "call_boundary": [
+          "mutex_lock",
+          "gsm_dlci_begin_close",
+          "wait_event",
+          "del_timer_sync",
+          "flush_work",
+          "gsm_unregister_devices"
+        ],
+        "call_edges": [
+          "gsm_cleanup_mux -> mutex_lock_nested",
+          "gsm_cleanup_mux -> gsm_dlci_begin_close",
+          "gsm_cleanup_mux -> __might_sleep",
+          "gsm_cleanup_mux -> might_resched",
+          "gsm_cleanup_mux -> init_wait_entry",
+          "gsm_cleanup_mux -> prepare_to_wait_event",
+          "gsm_cleanup_mux -> __builtin_constant_p",
+          "gsm_cleanup_mux -> schedule"
+        ],
+        "state_transitions": [
+          "transition(flush_work)",
+          "transition(init_wait_entry)",
+          "locked(mutex_lock, mutex_unlock)",
+          "[B1.4]->tx_data_list",
+          "[B2.3] = [B2.2]",
+          "[B2.6]->list"
+        ],
+        "api_terms": [
+          "flush_work",
+          "init_wait_entry",
+          "mutex_lock_nested",
+          "gsm_dlci_begin_close",
+          "__might_sleep",
+          "might_resched"
+        ],
+        "related_symbols": [
+          "gsm",
+          "disc",
+          "gsm->tx_data_list",
+          "gsm->tx_ctrl_list",
+          "gsm->event",
+          "gsm->dead"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.9
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/tty/n_gsm.c",
+        "function": "gsm_cleanup_mux"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "gsm_cleanup_mux in drivers/tty/n_gsm.c: locks=mutex_lock, mutex_unlock | state_ops=for (i = NUM_DLCI - 1; i >= 0; i--) | cfg_calls=gsm_cleanup_mux -> mutex_lock_nested; gsm_cleanup_mux -> gsm_dlci_begin_close",
+        "state_before": [
+          "input(gsm)",
+          "input(disc)",
+          "buffer(gsm->tx_data_list)",
+          "buffer(gsm->tx_ctrl_list)",
+          "sinks(mutex_lock, gsm_dlci_begin_close)"
+        ],
+        "state_after": [
+          "transition(for (i = NUM_DLCI - 1; i >= 0; i--))",
+          "transition([B1.4]->tx_data_list)",
+          "transition([B2.3] = [B2.2])",
+          "locked(mutex_lock, mutex_unlock)"
+        ],
+        "tracked_symbols": [
+          "gsm",
+          "disc",
+          "gsm->tx_data_list",
+          "gsm->tx_ctrl_list",
+          "gsm->event",
+          "gsm->dead",
+          "gsm->mutex",
+          "gsm->dlci"
+        ],
+        "buffer_fields": [
+          "gsm->tx_data_list",
+          "gsm->tx_ctrl_list",
+          "gsm->event",
+          "gsm->dead",
+          "gsm->mutex",
+          "gsm->dlci"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "gsm_cleanup_mux"
+        ],
+        "call_targets": [
+          "mutex_lock",
+          "gsm_dlci_begin_close",
+          "wait_event",
+          "del_timer_sync",
+          "flush_work",
+          "gsm_unregister_devices",
+          "gsm_dlci_release",
+          "mutex_unlock"
+        ],
+        "cfg_branch_kinds": [
+          "for",
+          "if"
+        ],
+        "branch_conditions": [
+          "for (...; [B4.14]; ...)",
+          "for (...; [B8.14]; ...)",
+          "if [B12.8]",
+          "for (...; [B13.4]; ...)"
+        ],
+        "call_edges": [
+          "gsm_cleanup_mux -> mutex_lock_nested",
+          "gsm_cleanup_mux -> gsm_dlci_begin_close",
+          "gsm_cleanup_mux -> __might_sleep",
+          "gsm_cleanup_mux -> might_resched",
+          "gsm_cleanup_mux -> init_wait_entry",
+          "gsm_cleanup_mux -> prepare_to_wait_event"
+        ],
+        "state_statements": [
+          "[B1.4]->tx_data_list",
+          "[B2.3] = [B2.2]",
+          "[B2.6]->list",
+          "void *__mptr = (void *)((ntxq)->list.next);",
+          "[B2.18] = [B2.17]",
+          "kfree",
+          "[B4.4]->list",
+          "[B4.9]->tx_data_list"
+        ],
+        "source_file": "drivers/tty/n_gsm.c"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "drivers/tty/n_gsm.c",
+          "hunk_index": 0,
+          "source_line": 3157
+        },
+        "summary": "gsm_cleanup_mux in drivers/tty/n_gsm.c: locks=mutex_lock, mutex_unlock | state_ops=for (i = NUM_DLCI - 1; i >= 0; i--) | cfg_calls=gsm_cleanup_mux -> mutex_lock_nested; gsm_cleanup_mux -> gsm_dlci_begin_close",
+        "statements": [
+          "3125: \tint i;",
+          "3126: \tstruct gsm_dlci *dlci;",
+          "3127: \tstruct gsm_msg *txq, *ntxq;",
+          "3128:",
+          "3129: \tgsm->dead = true;",
+          "3130: \tmutex_lock(&gsm->mutex);"
+        ],
+        "guards": [
+          "for (...; [B4.14]; ...)",
+          "for (...; [B8.14]; ...)",
+          "if [B12.8]"
+        ],
+        "call_boundary": [
+          "mutex_lock",
+          "gsm_dlci_begin_close",
+          "wait_event",
+          "del_timer_sync",
+          "flush_work",
+          "gsm_unregister_devices"
+        ],
+        "call_edges": [
+          "gsm_cleanup_mux -> mutex_lock_nested",
+          "gsm_cleanup_mux -> gsm_dlci_begin_close",
+          "gsm_cleanup_mux -> __might_sleep",
+          "gsm_cleanup_mux -> might_resched",
+          "gsm_cleanup_mux -> init_wait_entry",
+          "gsm_cleanup_mux -> prepare_to_wait_event",
+          "gsm_cleanup_mux -> __builtin_constant_p",
+          "gsm_cleanup_mux -> schedule"
+        ],
+        "state_transitions": [
+          "transition(for (i = NUM_DLCI - 1; i >= 0; i--))",
+          "transition([B1.4]->tx_data_list)",
+          "transition([B2.3] = [B2.2])",
+          "locked(mutex_lock, mutex_unlock)",
+          "[B1.4]->tx_data_list",
+          "[B2.3] = [B2.2]"
+        ],
+        "api_terms": [
+          "mutex_lock",
+          "mutex_unlock",
+          "mutex_lock_nested",
+          "gsm_dlci_begin_close",
+          "__might_sleep",
+          "might_resched"
+        ],
+        "related_symbols": [
+          "gsm",
+          "disc",
+          "gsm->tx_data_list",
+          "gsm->tx_ctrl_list",
+          "gsm->event",
+          "gsm->dead"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.88
+    },
+    {
+      "evidence_id": "csa_validation_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/tty/n_gsm.c",
+        "function": "gsm_cleanup_mux"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at drivers/tty/n_gsm.c:3157",
+        "state_before": [
+          "input(gsm)",
+          "input(disc)",
+          "buffer(gsm->tx_data_list)",
+          "buffer(gsm->tx_ctrl_list)",
+          "sinks(mutex_lock, gsm_dlci_begin_close)"
+        ],
+        "state_after": [
+          "diagnostic(csa)"
+        ],
+        "tracked_symbols": [
+          "gsm",
+          "disc"
+        ],
+        "buffer_fields": [
+          "gsm->tx_data_list",
+          "gsm->tx_ctrl_list",
+          "gsm->event",
+          "gsm->dead",
+          "gsm->mutex",
+          "gsm->dlci"
+        ],
+        "coverage_status": "partial",
+        "functions": [
+          "gsm_cleanup_mux"
+        ],
+        "call_targets": [
+          "mutex_lock",
+          "gsm_dlci_begin_close",
+          "wait_event",
+          "del_timer_sync",
+          "flush_work",
+          "gsm_unregister_devices"
+        ],
+        "call_edges": [
+          "gsm_cleanup_mux -> mutex_lock_nested",
+          "gsm_cleanup_mux -> gsm_dlci_begin_close",
+          "gsm_cleanup_mux -> __might_sleep",
+          "gsm_cleanup_mux -> might_resched",
+          "gsm_cleanup_mux -> init_wait_entry",
+          "gsm_cleanup_mux -> prepare_to_wait_event"
+        ],
+        "state_statements": [
+          "for (i = NUM_DLCI - 1; i >= 0; i--)",
+          "[B1.4]->tx_data_list",
+          "[B2.3] = [B2.2]",
+          "[B2.6]->list",
+          "void *__mptr = (void *)((ntxq)->list.next);",
+          "[B2.18] = [B2.17]"
+        ],
+        "source_file": "drivers/tty/n_gsm.c"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "drivers/tty/n_gsm.c",
+          "hunk_index": 0,
+          "source_line": 3157
+        },
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at drivers/tty/n_gsm.c:3157",
+        "statements": [
+          "3125: \tint i;",
+          "3126: \tstruct gsm_dlci *dlci;",
+          "3127: \tstruct gsm_msg *txq, *ntxq;",
+          "3128:",
+          "3129: \tgsm->dead = true;",
+          "3130: \tmutex_lock(&gsm->mutex);"
+        ],
+        "guards": [
+          "dlci",
+          "disc && dlci->state != DLCI_CLOSED",
+          "gsm->has_devices",
+          "i = NUM_DLCI - 1; i >= 0; i--"
+        ],
+        "call_boundary": [
+          "mutex_lock",
+          "gsm_dlci_begin_close",
+          "wait_event",
+          "del_timer_sync",
+          "flush_work",
+          "gsm_unregister_devices"
+        ],
+        "call_edges": [
+          "gsm_cleanup_mux -> mutex_lock_nested",
+          "gsm_cleanup_mux -> gsm_dlci_begin_close",
+          "gsm_cleanup_mux -> __might_sleep",
+          "gsm_cleanup_mux -> might_resched",
+          "gsm_cleanup_mux -> init_wait_entry",
+          "gsm_cleanup_mux -> prepare_to_wait_event"
+        ],
+        "state_transitions": [
+          "diagnostic(csa)"
+        ],
+        "api_terms": [
+          "flush_work",
+          "for (i = NUM_DLCI - 1; i >= 0; i--)",
+          "[B1.4]->tx_data_list",
+          "[B2.3] = [B2.2]",
+          "[B2.6]->list",
+          "void *__mptr = (void *)((ntxq)->list.next);"
+        ],
+        "related_symbols": [
+          "gsm",
+          "disc"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      },
+      "confidence": 0.72
+    }
+  ],
+  "selected_context_summaries": [],
+  "semantic_clause_plan": [
+    {
+      "clause_id": "vulnerable_trigger_clause",
+      "intent": "Trigger on the vulnerable use_after_free mechanism using evidence-backed path/flow semantics.",
+      "supporting_evidence_ids": [
+        "csa_guard_0",
+        "csa_lifecycle_0",
+        "csa_state_0",
+        "csa_validation_semantic_slice_0"
+      ],
+      "repair_when": [
+        "semantic_no_hits"
+      ],
+      "focus_functions": []
+    },
+    {
+      "clause_id": "patched_silence_clause",
+      "intent": "Stay silent on patched code when patch-added guards, barriers, or safe APIs prove the mechanism is blocked.",
+      "supporting_evidence_ids": [
+        "csa_guard_0",
+        "csa_state_0",
+        "csa_validation_semantic_slice_0"
+      ],
+      "repair_when": [],
+      "silencing_conditions": []
+    },
+    {
+      "clause_id": "semantic_transfer_clause",
+      "intent": "Generalize along semantic slices and call-chain evidence rather than patch-local syntax.",
+      "supporting_evidence_ids": [
+        "csa_validation_semantic_slice_0"
+      ],
+      "repair_when": [],
+      "analyzer_id": "csa"
+    },
+    {
+      "clause_id": "analyzer_interface_clause",
+      "intent": "Preserve valid analyzer-facing syntax and interfaces while keeping semantics unchanged.",
+      "supporting_evidence_ids": [],
+      "repair_when": [
+        "semantic_execution_error"
+      ],
+      "analyzer_id": "csa"
+    }
+  ],
+  "repair_directives": [],
+  "constraints": [
+    {
+      "title": "Generalize beyond patch site",
+      "description": "Do not bind the detector to fixed file paths, line numbers, or exact patch strings.",
+      "priority": "high"
+    },
+    {
+      "title": "Preserve vulnerability semantics",
+      "description": "Keep the detector focused on the vulnerability family implied by the patch and evidence.",
+      "priority": "high"
+    },
+    {
+      "title": "Respect analyzer-native form",
+      "description": "Output must be a valid checker_plugin for csa.",
+      "priority": "high"
+    },
+    {
+      "title": "Stay within proven mechanism scope",
+      "description": "Generalize only along evidence-supported semantic dimensions. Do not broaden the detector into unrelated globals, APIs, or bug families.",
+      "priority": "high"
+    },
+    {
+      "title": "Honor mechanism contract",
+      "description": "Preserve the mechanism family `resource_lifetime_violation` by keeping trigger invariants a resource is released; the same symbolic resource reaches a later use without reinitialization or ownership transfer; Patch-backed trigger clue: added or highlighted APIs: guard.",
+      "priority": "high"
+    },
+    {
+      "title": "Generalize only on contract axes",
+      "description": "Reuse semantics only along these transfer axes: equivalent release-then-use sequences on the same resource role; equivalent lifecycle transitions across wrappers or helper functions; equivalent guard or barrier predicates on sibling paths.",
+      "priority": "high"
+    },
+    {
+      "title": "Encode the patch-added barrier",
+      "description": "use APIs such as guard as semantic clues, not string matches.",
+      "priority": "high"
+    },
+    {
+      "title": "Track resource identity across lifetime edges",
+      "description": "Model release, reuse, reinitialization, and ownership transfer on the same symbolic resource; do not count frees or uses in isolation.",
+      "priority": "high"
+    },
+    {
+      "title": "Do not key on local identifier names",
+      "description": "Do not define the vulnerable resource role solely by field/variable names such as session/cache/context; infer it from release-use-nulling-relookup semantics and alias continuity.",
+      "priority": "high"
+    },
+    {
+      "title": "Use path-sensitive evidence",
+      "description": "Prefer guards, state transitions, and lifecycle facts over broad textual matching.",
+      "priority": "high"
+    },
+    {
+      "title": "No placeholder helper logic",
+      "description": "Helper predicates must inspect AST/program state and must not be unconditional return-true/return-false stubs.",
+      "priority": "high"
+    }
+  ],
+  "implementation_hints": [
+    "Mechanism family: resource_lifetime_violation",
+    "Mechanism dimensions: resource identity or alias, release event, later use sink on the same resource, reinitialization/nulling/ownership transfer barrier",
+    "Trigger invariants: a resource is released, the same symbolic resource reaches a later use without reinitialization or ownership transfer, Patch-backed trigger clue: added or highlighted APIs: guard",
+    "Silence invariants: the resource is nulled, rebound, or reinitialized before reuse, ownership transfer or guard logic blocks access after release",
+    "Transfer axes: equivalent release-then-use sequences on the same resource role, equivalent lifecycle transitions across wrappers or helper functions, equivalent guard or barrier predicates on sibling paths",
+    "Relevant APIs: guard",
+    "Patch mechanism: added or highlighted APIs: guard",
+    "Track the same symbolic resource across release, nulling/reinit, and later use/free; do not reduce lifecycle reasoning to raw API names."
+  ],
+  "validation_expectations": [
+    "Vulnerable version should trigger a use_after_free finding.",
+    "Patched version should stay silent for the same mechanism.",
+    "Semantic validation that executes but returns zero hits is not acceptable; recover coverage with evidence-backed semantics.",
+    "Repair phase may fix syntax/interfaces only; it must not simplify away the core detection logic.",
+    "Generalization must stay inside the mechanism contract transfer axes instead of widening to adjacent bug families.",
+    "Sibling variants that preserve the same release-then-use lifecycle should also trigger; patch-local identifier matching is not sufficient.",
+    "Trigger invariant: a resource is released.",
+    "Trigger invariant: the same symbolic resource reaches a later use without reinitialization or ownership transfer."
+  ]
+}

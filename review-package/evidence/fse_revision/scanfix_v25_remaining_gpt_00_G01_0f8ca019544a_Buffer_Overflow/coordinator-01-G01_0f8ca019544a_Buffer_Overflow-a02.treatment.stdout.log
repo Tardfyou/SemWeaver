@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "method": "semweaver_analyzer_evidence_csa_target_hit_recovery",
+  "objective": "target_hit_recovery",
+  "evidence_mode": "native",
+  "origin_gate_enabled": true,
+  "case_id": "G01_0f8ca019544a_Buffer_Overflow",
+  "model": "gpt-6-luna",
+  "provider": "openai_compatible",
+  "wire_api": "responses",
+  "reasoning_effort": "high",
+  "max_iterations": 4,
+  "max_tokens_per_call": 16384,
+  "max_model_calls": 4,
+  "temperature": 0.0,
+  "request_timeout_seconds": 3000,
+  "wrapper_max_retries": 0,
+  "inline_semantic_validation": false,
+  "external_paired_validation_required": true,
+  "internal_evidence_preloaded": true,
+  "evidence_requests_disabled": true,
+  "compile_after_each_edit": true,
+  "budget_finalized_candidate_ready": false,
+  "llm_exchange_log": "/artifact/work/artifacts/fse_revision/scanfix_v25_remaining_gpt_00_G01_0f8ca019544a_Buffer_Overflow/G01_0f8ca019544a_Buffer_Overflow/attempt-02/llm_exchanges.jsonl",
+  "llm_exchange_log_sha256": "dfbdd91a489a02ca172470f8efd1813415ce1e97399276b46d165e5d19a7fc07",
+  "preloaded_internal_evidence_ids": [
+    "csa_guard_1"
+  ],
+  "patch_sha256": "0bc641fc44439de69f65cc8285474cfb42be223e0be70e15c8f53c546b5d5799",
+  "original_checker_sha256": "8114804e2d808b94d79cff1eb0658dad4818d4de0197883fde11528bf5196e68",
+  "starting_checker_sha256": "8114804e2d808b94d79cff1eb0658dad4818d4de0197883fde11528bf5196e68",
+  "evidence_bundle_sha256": "905753906664c2fe297dbb36cc2a50085e6765a3543121dced038e0fa72030bd",
+  "fixed_report_bindings": [],
+  "fixed_report_feedback_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "generated_fixed_report_bindings": [],
+  "generated_fixed_report_feedback_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "visible_evidence_sha256": "1b044206335f895999e835454d2956a703b7d9b6aca58daa719f9759c6581ea6",
+  "visible_evidence_record_count": 5,
+  "frozen_source_revision": "0f8ca019544a252d1afb468ce840c6dcbac73af4^",
+  "frozen_source_hashes": {
+    "drivers/gpu/drm/amd/display/dc/dml2/dml2_wrapper.c": "1c1d6b3bde4e6c3a28b52780d47b8529871170402657184f2eb76c4acd019959"
+  },
+  "feedback_result_sha256": null,
+  "feedback_run_manifest_sha256": "a8ef0383331dd87e2f02822a7d4eb79fde3f0e8650a0261e891b013136559913",
+  "feedback_candidate_sha256": "8114804e2d808b94d79cff1eb0658dad4818d4de0197883fde11528bf5196e68",
+  "feedback_kind": "failed_tool",
+  "candidate_sha256": "8114804e2d808b94d79cff1eb0658dad4818d4de0197883fde11528bf5196e68",
+  "candidate_changed": false,
+  "success": false,
+  "agent_success": false,
+  "iterations": 1,
+  "compile_attempts": 0,
+  "error_message": "模型返回了 apply_patch，但没有提供任何有效 edits。",
+  "final_message": "模型未返回可解析的 refine 决策。",
+  "output_path": "",
+  "elapsed_seconds": 82.35637068748474,
+  "llm_usage": {
+    "prompt_tokens": 14861,
+    "completion_tokens": 3167,
+    "total_tokens": 18028,
+    "call_count": 1,
+    "available": true,
+    "model": "gpt-6-luna",
+    "phases": 1
+  },
+  "model_calls_used": 1,
+  "model_call_budget_exhausted": false,
+  "llm_usage_by_phase": {
+    "decide": {
+      "prompt_tokens": 14861,
+      "completion_tokens": 3167,
+      "total_tokens": 18028,
+      "call_count": 1,
+      "available": true,
+      "model": "gpt-6-luna"
+    }
+  },
+  "artifact_review": {
+    "artifact_path": "/artifact/work/artifacts/fse_revision/scanfix_v25_remaining_gpt_00_G01_0f8ca019544a_Buffer_Overflow/G01_0f8ca019544a_Buffer_Overflow/attempt-02/SAGenTestChecker.cpp",
+    "analyzer": "csa",
+    "review_mode": "refine",
+    "findings": [],
+    "warnings": [
+      "CSA 代码引入了 `ProgramState` / 路径敏感相关符号或说明，但实现里没有对应的状态读写、约束传播或 guard 绑定。 如果当前路线本来就是 AST/实参/guard 建模，应删掉这类 stateful 话术；只有显式声明了状态建模却完全未落地时才应继续升级处理。"
+    ]
+  },
+  "failure_type": "",
+  "latest_failure_title": "",
+  "latest_failure_text": "",
+  "event_count": 16,
+  "model_rate_limit_retries": 0
+}

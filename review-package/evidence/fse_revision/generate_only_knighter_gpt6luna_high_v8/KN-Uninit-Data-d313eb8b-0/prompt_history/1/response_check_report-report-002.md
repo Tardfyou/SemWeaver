@@ -1,0 +1,4 @@
+- Decision: NotABug
+- Reason: The pre-patch code did contain the target bug: `struct tc_skbmod opt` was only partially initialized, then copied in full with `nla_put(..., sizeof(opt), &opt)`, exposing its four-byte padding hole. The fix’s `memset(&opt, 0, sizeof(opt))` clears that padding before the fields are assigned.
+
+  This report, however, points to a different operation in code that already includes that fix: `nla_put_64bit(..., sizeof(t), &t, ...)` at line 269. Its payload is `struct tcf_t`, not `struct tc_skbmod opt`. `struct tcf_t` consists of three `__u64` fields, and `tcf_tm_dump()` fills those fields before the copy; there is no padding hole matching the target pattern. Thus the historical `opt` leak was real, but the specific reported warning does not identify that bug.

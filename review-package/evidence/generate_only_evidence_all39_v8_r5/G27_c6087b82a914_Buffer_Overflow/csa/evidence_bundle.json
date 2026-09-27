@@ -1,0 +1,634 @@
+{
+  "records": [
+    {
+      "evidence_id": "csa_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/scsi/lpfc/lpfc_debugfs.c",
+        "function": "lpfc_debugfs_lockstat_write"
+      },
+      "location": {
+        "line": 2157,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "lpfc_debugfs_lockstat_write adds patch barrier `copy_from_user(mybuf, buf, bsize)` around memset, min.",
+        "contract_type": "patch_barrier",
+        "same_call_binding": "tie the guard to the current downstream sink or protected state transition instead of any unrelated if-statement",
+        "trigger_contract": "report when a risky write proceeds without the patch-style barrier",
+        "silence_contract": "stay silent when the nearby guard proves the current write is blocked or bounded",
+        "guard_exprs": [
+          "copy_from_user(mybuf, buf, bsize)"
+        ],
+        "removed_calls": [
+          "copy_from_user"
+        ],
+        "added_calls": [
+          "min",
+          "copy_from_user"
+        ],
+        "tracked_symbols": [
+          "copy_from_user",
+          "mybuf",
+          "buf",
+          "bsize",
+          "size_t",
+          "min",
+          "nbytes"
+        ],
+        "widened_variables": [],
+        "state_resets": [],
+        "old_numeric_type": "",
+        "new_numeric_type": "",
+        "numeric_domain_change": "",
+        "arithmetic_operations": [],
+        "sink_calls": [
+          "memset",
+          "min"
+        ],
+        "buffer_fields": [],
+        "source_file": "drivers/scsi/lpfc/lpfc_debugfs.c",
+        "function": "lpfc_debugfs_lockstat_write",
+        "source_excerpt": "3111: }\n3112: \n3113: /*\n3114:  * ---------------------------------\n3115:  * iDiag debugfs file access methods\n3116:  * ---------------------------------\n3117:  *\n3118:  * All access methods are through the proper SLI4 PCI function's debugfs\n3119:  * iDiag directory:\n3120:  *\n3121:  *     /sys/kernel/debug/lpfc/fn<#>/iDiag\n3122:  */\n3123: \n3124: /**\n3125:  * lpfc_idiag_cmd_get - Get and parse idiag debugfs comands from user space\n3126:  * @buf: The pointer to the user space buffer.\n3127:  * @nbytes: The number of bytes in the user space buffer.\n3128:  * @idiag_cmd: pointer to the idiag command struct.\n3129:  *\n3130:  * This routine reads data from debugfs user space buffer and parses the\n3131:  * buffer for getting the idiag command and arguments. The while space in\n3132:  * between the set of data is used as the parsing separator.\n3133:  *\n3134:  * This routine returns 0 when successful, it returns proper error code\n3135:  * back to the user space in error conditions.\n3136:  */\n3137: static int lpfc_idiag_cmd_get(const char __user *buf, size_t nbytes,\n3138: \t\t\t      struct lpfc_idiag_cmd *idiag_cmd)\n3139: {\n3140: \tchar mybuf[64];\n3141: \tchar *pbuf, *step_str;\n3142: \tint i;\n3143: \tsize_t bsize;\n3144: \n3145: \tmemset(mybuf, 0, sizeof(mybuf));\n3146: \tmemset(idiag_cmd, 0, sizeof(*idiag_cmd));\n3147: \tbsize = min(nbytes, (sizeof(mybuf)-1));\n3148: \n3149: \tif (copy_from_user(mybuf, buf, bsize))\n3150: \t\treturn -EFAULT;\n3151: \tpbuf = &mybuf[0];\n3152: \tstep_str = strsep(&pbuf, \"\\t \");\n3153: \n3154: \t/* The opcode must present */\n3155: \tif (!step_str)\n3156: \t\treturn -EINVAL;\n3157: \n3158: \tidiag_cmd->opcode = simple_strtol(step_str, NULL, 0);\n3159: \tif (idiag_cmd->opcode == 0)\n3160: \t\treturn -EINVAL;\n3161: \n3162: \tfor (i = 0; i < LPFC_IDIAG_CMD_DATA_SIZE; i++) {\n3163: \t\tstep_str = strsep(&pbuf, \"\\t \");\n3164: \t\tif (!step_str)\n3165: \t\t\treturn i;\n3166: \t\tidiag_cmd->data[i] = simple_strtol(step_str, NULL, 0);\n3167: \t}\n3168: \treturn i;\n3169: }\n3170: \n3171: /**\n3172:  * lpfc_idiag_open - idiag open debugfs\n3173:  * @inode: The inode pointer that contains a pointer to phba.\n3174:  * @file: The file pointer to attach the file operation.\n3175:  *",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:semantic-contract",
+        "confidence": 0.92,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "drivers/scsi/lpfc/lpfc_debugfs.c",
+          "hunk_index": 0,
+          "source_line": 2157
+        },
+        "summary": "lpfc_debugfs_lockstat_write adds patch barrier `copy_from_user(mybuf, buf, bsize)` around memset, min.",
+        "statements": [
+          "size_t bsize;",
+          "bsize = min(nbytes, (sizeof(mybuf) - 1));",
+          "if (copy_from_user(mybuf, buf, bsize))"
+        ],
+        "guards": [
+          "copy_from_user(mybuf, buf, bsize)"
+        ],
+        "call_boundary": [
+          "memset",
+          "min"
+        ],
+        "call_edges": [
+          "lpfc_debugfs_lockstat_write -> memset",
+          "lpfc_debugfs_lockstat_write -> min"
+        ],
+        "state_transitions": [
+          "",
+          "report when a risky write proceeds without the patch-style barrier",
+          "stay silent when the nearby guard proves the current write is blocked or bounded"
+        ],
+        "api_terms": [
+          "memset",
+          "min",
+          "min",
+          "copy_from_user",
+          "copy_from_user"
+        ],
+        "related_symbols": [
+          "copy_from_user",
+          "mybuf",
+          "buf",
+          "bsize",
+          "size_t",
+          "min"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/scsi/lpfc/lpfc_debugfs.c",
+        "function": "lpfc_debugfs_lockstat_write"
+      },
+      "location": {
+        "line": 2157,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "copy_from_user(mybuf, buf, bsize)",
+        "summary": "lpfc_debugfs_lockstat_write introduces patch guard `copy_from_user(mybuf, buf, bsize)` before memset, min.",
+        "state_before": [
+          "input(copy_from_user)",
+          "input(mybuf)",
+          "risky(copy_from_user)"
+        ],
+        "state_after": [
+          "guard(copy_from_user(mybuf, buf, bsize))",
+          "current_call(memset)",
+          "current_call(min)"
+        ],
+        "functions": [
+          "lpfc_debugfs_lockstat_write"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "copy_from_user",
+          "mybuf",
+          "buf",
+          "bsize",
+          "size_t",
+          "min"
+        ],
+        "buffer_fields": [],
+        "call_targets": [
+          "memset",
+          "min"
+        ],
+        "call_edges": [
+          "lpfc_debugfs_lockstat_write -> memset",
+          "lpfc_debugfs_lockstat_write -> min"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "copy_from_user(mybuf, buf, bsize)"
+        ],
+        "state_statements": [
+          "size_t bsize;",
+          "bsize = min(nbytes, (sizeof(mybuf) - 1));",
+          "if (copy_from_user(mybuf, buf, bsize))"
+        ],
+        "compile_command_preview": "",
+        "source_file": "drivers/scsi/lpfc/lpfc_debugfs.c",
+        "source_excerpt": "3111: }\n3112: \n3113: /*\n3114:  * ---------------------------------\n3115:  * iDiag debugfs file access methods\n3116:  * ---------------------------------\n3117:  *\n3118:  * All access methods are through the proper SLI4 PCI function's debugfs\n3119:  * iDiag directory:\n3120:  *\n3121:  *     /sys/kernel/debug/lpfc/fn<#>/iDiag\n3122:  */\n3123: \n3124: /**\n3125:  * lpfc_idiag_cmd_get - Get and parse idiag debugfs comands from user space\n3126:  * @buf: The pointer to the user space buffer.\n3127:  * @nbytes: The number of bytes in the user space buffer.\n3128:  * @idiag_cmd: pointer to the idiag command struct.\n3129:  *\n3130:  * This routine reads data from debugfs user space buffer and parses the\n3131:  * buffer for getting the idiag command and arguments. The while space in\n3132:  * between the set of data is used as the parsing separator.\n3133:  *\n3134:  * This routine returns 0 when successful, it returns proper error code\n3135:  * back to the user space in error conditions.\n3136:  */\n3137: static int lpfc_idiag_cmd_get(const char __user *buf, size_t nbytes,\n3138: \t\t\t      struct lpfc_idiag_cmd *idiag_cmd)\n3139: {\n3140: \tchar mybuf[64];\n3141: \tchar *pbuf, *step_str;\n3142: \tint i;\n3143: \tsize_t bsize;\n3144: \n3145: \tmemset(mybuf, 0, sizeof(mybuf));\n3146: \tmemset(idiag_cmd, 0, sizeof(*idiag_cmd));\n3147: \tbsize = min(nbytes, (sizeof(mybuf)-1));\n3148: \n3149: \tif (copy_from_user(mybuf, buf, bsize))\n3150: \t\treturn -EFAULT;\n3151: \tpbuf = &mybuf[0];\n3152: \tstep_str = strsep(&pbuf, \"\\t \");\n3153: \n3154: \t/* The opcode must present */\n3155: \tif (!step_str)\n3156: \t\treturn -EINVAL;\n3157: \n3158: \tidiag_cmd->opcode = simple_strtol(step_str, NULL, 0);\n3159: \tif (idiag_cmd->opcode == 0)\n3160: \t\treturn -EINVAL;\n3161: \n3162: \tfor (i = 0; i < LPFC_IDIAG_CMD_DATA_SIZE; i++) {\n3163: \t\tstep_str = strsep(&pbuf, \"\\t \");\n3164: \t\tif (!step_str)\n3165: \t\t\treturn i;\n3166: \t\tidiag_cmd->data[i] = simple_strtol(step_str, NULL, 0);\n3167: \t}\n3168: \treturn i;\n3169: }\n3170: \n3171: /**\n3172:  * lpfc_idiag_open - idiag open debugfs\n3173:  * @inode: The inode pointer that contains a pointer to phba.\n3174:  * @file: The file pointer to attach the file operation.\n3175:  *",
+        "summary_line": 2157,
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:path-guard",
+        "confidence": 0.92,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/scsi/lpfc/lpfc_debugfs.c",
+          "hunk_index": 0,
+          "source_line": 2157
+        },
+        "summary": "lpfc_debugfs_lockstat_write introduces patch guard `copy_from_user(mybuf, buf, bsize)` before memset, min.",
+        "statements": [
+          "size_t bsize;",
+          "bsize = min(nbytes, (sizeof(mybuf) - 1));",
+          "if (copy_from_user(mybuf, buf, bsize))"
+        ],
+        "guards": [
+          "copy_from_user(mybuf, buf, bsize)"
+        ],
+        "call_boundary": [
+          "memset",
+          "min"
+        ],
+        "call_edges": [
+          "lpfc_debugfs_lockstat_write -> memset",
+          "lpfc_debugfs_lockstat_write -> min"
+        ],
+        "state_transitions": [
+          "guard(copy_from_user(mybuf, buf, bsize))",
+          "current_call(memset)",
+          "current_call(min)"
+        ],
+        "api_terms": [
+          "memset",
+          "min"
+        ],
+        "related_symbols": [
+          "copy_from_user",
+          "mybuf",
+          "buf",
+          "bsize",
+          "size_t",
+          "min"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_guard_1",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/scsi/lpfc/lpfc_debugfs.c",
+        "function": "lpfc_debugfs_lockstat_write"
+      },
+      "location": {
+        "line": 3143,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "<no branch in selected CFG>",
+        "summary": "Analyzer CFG for lpfc_debugfs_lockstat_write in drivers/scsi/lpfc/lpfc_debugfs.c: calls: lpfc_debug_dump_all_queues -> lpfc_debug_dump_wq; lpfc_debug_dump_all_queues -> lpfc_debug_dump_hdr_rq",
+        "state_before": [
+          "buffer(idiag_cmd->opcode)",
+          "buffer(idiag_cmd->data)",
+          "sinks(lpfc_idiag_cmd_get, memset)"
+        ],
+        "state_after": [],
+        "functions": [
+          "lpfc_debugfs_lockstat_write"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "idiag_cmd->opcode",
+          "idiag_cmd->data"
+        ],
+        "buffer_fields": [
+          "idiag_cmd->opcode",
+          "idiag_cmd->data"
+        ],
+        "call_targets": [
+          "lpfc_idiag_cmd_get",
+          "memset",
+          "min",
+          "strsep",
+          "simple_strtol",
+          "lpfc_debug_dump_wq",
+          "lpfc_debug_dump_hdr_rq",
+          "lpfc_debug_dump_dat_rq"
+        ],
+        "call_edges": [
+          "lpfc_debug_dump_all_queues -> lpfc_debug_dump_wq",
+          "lpfc_debug_dump_all_queues -> lpfc_debug_dump_hdr_rq",
+          "lpfc_debug_dump_all_queues -> lpfc_debug_dump_dat_rq",
+          "lpfc_debug_dump_all_queues -> lpfc_debug_dump_cq",
+          "lpfc_debug_dump_all_queues -> lpfc_debug_dump_hba_eq",
+          "lpfc_debugfs_terminate -> kfree"
+        ],
+        "cfg_branch_kinds": [],
+        "branch_conditions": [],
+        "resolved_branch_conditions": [],
+        "cfg_value_bindings": [],
+        "state_statements": [],
+        "compile_command_preview": "clang -Wp,-MMD,drivers/scsi/lpfc/.lpfc_debugfs.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/uapi -I./a...",
+        "source_file": "drivers/scsi/lpfc/lpfc_debugfs.c",
+        "source_excerpt": "3111: }\n3112: \n3113: /*\n3114:  * ---------------------------------\n3115:  * iDiag debugfs file access methods\n3116:  * ---------------------------------\n3117:  *\n3118:  * All access methods are through the proper SLI4 PCI function's debugfs\n3119:  * iDiag directory:\n3120:  *\n3121:  *     /sys/kernel/debug/lpfc/fn<#>/iDiag\n3122:  */\n3123: \n3124: /**\n3125:  * lpfc_idiag_cmd_get - Get and parse idiag debugfs comands from user space\n3126:  * @buf: The pointer to the user space buffer.\n3127:  * @nbytes: The number of bytes in the user space buffer.\n3128:  * @idiag_cmd: pointer to the idiag command struct.\n3129:  *\n3130:  * This routine reads data from debugfs user space buffer and parses the\n3131:  * buffer for getting the idiag command and arguments. The while space in\n3132:  * between the set of data is used as the parsing separator.\n3133:  *\n3134:  * This routine returns 0 when successful, it returns proper error code\n3135:  * back to the user space in error conditions.\n3136:  */\n3137: static int lpfc_idiag_cmd_get(const char __user *buf, size_t nbytes,\n3138: \t\t\t      struct lpfc_idiag_cmd *idiag_cmd)\n3139: {\n3140: \tchar mybuf[64];\n3141: \tchar *pbuf, *step_str;\n3142: \tint i;\n3143: \tsize_t bsize;\n3144: \n3145: \tmemset(mybuf, 0, sizeof(mybuf));\n3146: \tmemset(idiag_cmd, 0, sizeof(*idiag_cmd));\n3147: \tbsize = min(nbytes, (sizeof(mybuf)-1));\n3148: \n3149: \tif (copy_from_user(mybuf, buf, bsize))\n3150: \t\treturn -EFAULT;\n3151: \tpbuf = &mybuf[0];\n3152: \tstep_str = strsep(&pbuf, \"\\t \");\n3153: \n3154: \t/* The opcode must present */\n3155: \tif (!step_str)\n3156: \t\treturn -EINVAL;\n3157: \n3158: \tidiag_cmd->opcode = simple_strtol(step_str, NULL, 0);\n3159: \tif (idiag_cmd->opcode == 0)\n3160: \t\treturn -EINVAL;\n3161: \n3162: \tfor (i = 0; i < LPFC_IDIAG_CMD_DATA_SIZE; i++) {\n3163: \t\tstep_str = strsep(&pbuf, \"\\t \");\n3164: \t\tif (!step_str)\n3165: \t\t\treturn i;\n3166: \t\tidiag_cmd->data[i] = simple_strtol(step_str, NULL, 0);\n3167: \t}\n3168: \treturn i;\n3169: }\n3170: \n3171: /**\n3172:  * lpfc_idiag_open - idiag open debugfs\n3173:  * @inode: The inode pointer that contains a pointer to phba.\n3174:  * @file: The file pointer to attach the file operation.\n3175:  *",
+        "summary_line": 3143,
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/generate_only_evidence_all39_v8_r5/G27_c6087b82a914_Buffer_Overflow/csa/patchweaver_runtime/csa_raw/drivers-scsi-lpfc-lpfc_debugfs.c-lpfc_debugfs_lockstat_write.txt",
+        "raw_output_sha256": "565f13cdbf6443fc85efe3aca455a45df760244058ef0a8d44ebe87654de0ca4",
+        "command_sha256": "abbcf7c972be18ebcf97505dbe0a1b62deb7c5d0bd4c9890c9ea3ec5a205fbb2"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:debug-cfg",
+        "confidence": 0.92,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/scsi/lpfc/lpfc_debugfs.c",
+          "hunk_index": 0,
+          "source_line": 3143
+        },
+        "summary": "Analyzer CFG for lpfc_debugfs_lockstat_write in drivers/scsi/lpfc/lpfc_debugfs.c: calls: lpfc_debug_dump_all_queues -> lpfc_debug_dump_wq; lpfc_debug_dump_all_queues -> lpfc_debug_dump_hdr_rq",
+        "statements": [
+          "3111: }",
+          "3112:",
+          "3113: /*",
+          "3114:  * ---------------------------------",
+          "3115:  * iDiag debugfs file access methods",
+          "3116:  * ---------------------------------"
+        ],
+        "guards": [],
+        "call_boundary": [
+          "lpfc_idiag_cmd_get",
+          "memset",
+          "min",
+          "strsep",
+          "simple_strtol",
+          "lpfc_debug_dump_wq"
+        ],
+        "call_edges": [
+          "lpfc_debug_dump_all_queues -> lpfc_debug_dump_wq",
+          "lpfc_debug_dump_all_queues -> lpfc_debug_dump_hdr_rq",
+          "lpfc_debug_dump_all_queues -> lpfc_debug_dump_dat_rq",
+          "lpfc_debug_dump_all_queues -> lpfc_debug_dump_cq",
+          "lpfc_debug_dump_all_queues -> lpfc_debug_dump_hba_eq",
+          "lpfc_debugfs_terminate -> kfree"
+        ],
+        "state_transitions": [],
+        "api_terms": [
+          "lpfc_debug_dump_wq",
+          "lpfc_debug_dump_hdr_rq",
+          "lpfc_debug_dump_dat_rq",
+          "lpfc_debug_dump_cq",
+          "lpfc_debug_dump_hba_eq",
+          "kfree"
+        ],
+        "related_symbols": [
+          "idiag_cmd->opcode",
+          "idiag_cmd->data"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/scsi/lpfc/lpfc_debugfs.c",
+        "function": "lpfc_debugfs_lockstat_write"
+      },
+      "location": {
+        "line": 2157,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "lpfc_debugfs_lockstat_write adds patch barrier `copy_from_user(mybuf, buf, bsize)` around memset, min.",
+        "state_before": [
+          "input(copy_from_user)",
+          "input(mybuf)",
+          "risky(copy_from_user)"
+        ],
+        "state_after": [
+          "guard(copy_from_user(mybuf, buf, bsize))",
+          "sink(memset)",
+          "sink(min)",
+          "replaces(copy_from_user)"
+        ],
+        "functions": [
+          "lpfc_debugfs_lockstat_write"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "copy_from_user",
+          "mybuf",
+          "buf",
+          "bsize",
+          "size_t",
+          "min"
+        ],
+        "buffer_fields": [],
+        "call_targets": [
+          "memset",
+          "min"
+        ],
+        "call_edges": [
+          "lpfc_debugfs_lockstat_write -> memset",
+          "lpfc_debugfs_lockstat_write -> min"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "copy_from_user(mybuf, buf, bsize)"
+        ],
+        "state_statements": [
+          "size_t bsize;",
+          "bsize = min(nbytes, (sizeof(mybuf) - 1));",
+          "if (copy_from_user(mybuf, buf, bsize))"
+        ],
+        "return_statements": [],
+        "source_file": "drivers/scsi/lpfc/lpfc_debugfs.c",
+        "source_excerpt": "3111: }\n3112: \n3113: /*\n3114:  * ---------------------------------\n3115:  * iDiag debugfs file access methods\n3116:  * ---------------------------------\n3117:  *\n3118:  * All access methods are through the proper SLI4 PCI function's debugfs\n3119:  * iDiag directory:\n3120:  *\n3121:  *     /sys/kernel/debug/lpfc/fn<#>/iDiag\n3122:  */\n3123: \n3124: /**\n3125:  * lpfc_idiag_cmd_get - Get and parse idiag debugfs comands from user space\n3126:  * @buf: The pointer to the user space buffer.\n3127:  * @nbytes: The number of bytes in the user space buffer.\n3128:  * @idiag_cmd: pointer to the idiag command struct.\n3129:  *\n3130:  * This routine reads data from debugfs user space buffer and parses the\n3131:  * buffer for getting the idiag command and arguments. The while space in\n3132:  * between the set of data is used as the parsing separator.\n3133:  *\n3134:  * This routine returns 0 when successful, it returns proper error code\n3135:  * back to the user space in error conditions.\n3136:  */\n3137: static int lpfc_idiag_cmd_get(const char __user *buf, size_t nbytes,\n3138: \t\t\t      struct lpfc_idiag_cmd *idiag_cmd)\n3139: {\n3140: \tchar mybuf[64];\n3141: \tchar *pbuf, *step_str;\n3142: \tint i;\n3143: \tsize_t bsize;\n3144: \n3145: \tmemset(mybuf, 0, sizeof(mybuf));\n3146: \tmemset(idiag_cmd, 0, sizeof(*idiag_cmd));\n3147: \tbsize = min(nbytes, (sizeof(mybuf)-1));\n3148: \n3149: \tif (copy_from_user(mybuf, buf, bsize))\n3150: \t\treturn -EFAULT;\n3151: \tpbuf = &mybuf[0];\n3152: \tstep_str = strsep(&pbuf, \"\\t \");\n3153: \n3154: \t/* The opcode must present */\n3155: \tif (!step_str)\n3156: \t\treturn -EINVAL;\n3157: \n3158: \tidiag_cmd->opcode = simple_strtol(step_str, NULL, 0);\n3159: \tif (idiag_cmd->opcode == 0)\n3160: \t\treturn -EINVAL;\n3161: \n3162: \tfor (i = 0; i < LPFC_IDIAG_CMD_DATA_SIZE; i++) {\n3163: \t\tstep_str = strsep(&pbuf, \"\\t \");\n3164: \t\tif (!step_str)\n3165: \t\t\treturn i;\n3166: \t\tidiag_cmd->data[i] = simple_strtol(step_str, NULL, 0);\n3167: \t}\n3168: \treturn i;\n3169: }\n3170: \n3171: /**\n3172:  * lpfc_idiag_open - idiag open debugfs\n3173:  * @inode: The inode pointer that contains a pointer to phba.\n3174:  * @file: The file pointer to attach the file operation.\n3175:  *",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:guarded-state",
+        "confidence": 0.9,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "drivers/scsi/lpfc/lpfc_debugfs.c",
+          "hunk_index": 0,
+          "source_line": 2157
+        },
+        "summary": "lpfc_debugfs_lockstat_write adds patch barrier `copy_from_user(mybuf, buf, bsize)` around memset, min.",
+        "statements": [
+          "size_t bsize;",
+          "bsize = min(nbytes, (sizeof(mybuf) - 1));",
+          "if (copy_from_user(mybuf, buf, bsize))"
+        ],
+        "guards": [
+          "copy_from_user(mybuf, buf, bsize)"
+        ],
+        "call_boundary": [
+          "memset",
+          "min"
+        ],
+        "call_edges": [
+          "lpfc_debugfs_lockstat_write -> memset",
+          "lpfc_debugfs_lockstat_write -> min"
+        ],
+        "state_transitions": [
+          "guard(copy_from_user(mybuf, buf, bsize))",
+          "sink(memset)",
+          "sink(min)",
+          "replaces(copy_from_user)"
+        ],
+        "api_terms": [
+          "memset",
+          "min"
+        ],
+        "related_symbols": [
+          "copy_from_user",
+          "mybuf",
+          "buf",
+          "bsize",
+          "size_t",
+          "min"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_0",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/scsi/lpfc/lpfc_debugfs.c",
+        "function": "lpfc_debugfs_lockstat_write"
+      },
+      "location": {
+        "line": 3143,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "lpfc_debugfs_lockstat_write in drivers/scsi/lpfc/lpfc_debugfs.c provides CSA-backed pointer/resource lifecycle context near line 3143",
+        "diagnostic_message": "",
+        "diagnostic_checker": "",
+        "state_before": [
+          "buffer(idiag_cmd->opcode)",
+          "buffer(idiag_cmd->data)",
+          "sinks(lpfc_idiag_cmd_get, memset)"
+        ],
+        "state_after": [
+          "operation(* ---------------------------------)",
+          "operation(for (i = 0; i < LPFC_IDIAG_CMD_DATA_SIZE; i++) {)"
+        ],
+        "functions": [
+          "lpfc_debugfs_lockstat_write"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "copy_from_user",
+          "mybuf",
+          "buf",
+          "bsize",
+          "size_t",
+          "min"
+        ],
+        "buffer_fields": [
+          "idiag_cmd->opcode",
+          "idiag_cmd->data"
+        ],
+        "call_targets": [
+          "lpfc_idiag_cmd_get",
+          "memset",
+          "min",
+          "strsep",
+          "simple_strtol",
+          "copy_from_user"
+        ],
+        "call_edges": [
+          "lpfc_debug_dump_all_queues -> lpfc_debug_dump_wq",
+          "lpfc_debug_dump_all_queues -> lpfc_debug_dump_hdr_rq",
+          "lpfc_debug_dump_all_queues -> lpfc_debug_dump_dat_rq",
+          "lpfc_debug_dump_all_queues -> lpfc_debug_dump_cq",
+          "lpfc_debug_dump_all_queues -> lpfc_debug_dump_hba_eq",
+          "lpfc_debugfs_terminate -> kfree"
+        ],
+        "state_statements": [
+          "* ---------------------------------",
+          "for (i = 0; i < LPFC_IDIAG_CMD_DATA_SIZE; i++) {"
+        ],
+        "source_file": "drivers/scsi/lpfc/lpfc_debugfs.c",
+        "source_excerpt": "3111: }\n3112: \n3113: /*\n3114:  * ---------------------------------\n3115:  * iDiag debugfs file access methods\n3116:  * ---------------------------------\n3117:  *\n3118:  * All access methods are through the proper SLI4 PCI function's debugfs\n3119:  * iDiag directory:\n3120:  *\n3121:  *     /sys/kernel/debug/lpfc/fn<#>/iDiag\n3122:  */\n3123: \n3124: /**\n3125:  * lpfc_idiag_cmd_get - Get and parse idiag debugfs comands from user space\n3126:  * @buf: The pointer to the user space buffer.\n3127:  * @nbytes: The number of bytes in the user space buffer.\n3128:  * @idiag_cmd: pointer to the idiag command struct.\n3129:  *\n3130:  * This routine reads data from debugfs user space buffer and parses the\n3131:  * buffer for getting the idiag command and arguments. The while space in\n3132:  * between the set of data is used as the parsing separator.\n3133:  *\n3134:  * This routine returns 0 when successful, it returns proper error code\n3135:  * back to the user space in error conditions.\n3136:  */\n3137: static int lpfc_idiag_cmd_get(const char __user *buf, size_t nbytes,\n3138: \t\t\t      struct lpfc_idiag_cmd *idiag_cmd)\n3139: {\n3140: \tchar mybuf[64];\n3141: \tchar *pbuf, *step_str;\n3142: \tint i;\n3143: \tsize_t bsize;\n3144: \n3145: \tmemset(mybuf, 0, sizeof(mybuf));\n3146: \tmemset(idiag_cmd, 0, sizeof(*idiag_cmd));\n3147: \tbsize = min(nbytes, (sizeof(mybuf)-1));\n3148: \n3149: \tif (copy_from_user(mybuf, buf, bsize))\n3150: \t\treturn -EFAULT;\n3151: \tpbuf = &mybuf[0];\n3152: \tstep_str = strsep(&pbuf, \"\\t \");\n3153: \n3154: \t/* The opcode must present */\n3155: \tif (!step_str)\n3156: \t\treturn -EINVAL;\n3157: \n3158: \tidiag_cmd->opcode = simple_strtol(step_str, NULL, 0);\n3159: \tif (idiag_cmd->opcode == 0)\n3160: \t\treturn -EINVAL;\n3161: \n3162: \tfor (i = 0; i < LPFC_IDIAG_CMD_DATA_SIZE; i++) {\n3163: \t\tstep_str = strsep(&pbuf, \"\\t \");\n3164: \t\tif (!step_str)\n3165: \t\t\treturn i;\n3166: \t\tidiag_cmd->data[i] = simple_strtol(step_str, NULL, 0);\n3167: \t}\n3168: \treturn i;\n3169: }\n3170: \n3171: /**\n3172:  * lpfc_idiag_open - idiag open debugfs\n3173:  * @inode: The inode pointer that contains a pointer to phba.\n3174:  * @file: The file pointer to attach the file operation.\n3175:  *",
+        "coverage_status": "partial",
+        "operations": [
+          "* ---------------------------------",
+          "for (i = 0; i < LPFC_IDIAG_CMD_DATA_SIZE; i++) {"
+        ],
+        "acquisition_ops": [],
+        "release_ops": []
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.72,
+        "origin": "analyzer_output"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "drivers/scsi/lpfc/lpfc_debugfs.c",
+          "hunk_index": 0,
+          "source_line": 3143
+        },
+        "summary": "lpfc_debugfs_lockstat_write in drivers/scsi/lpfc/lpfc_debugfs.c provides CSA-backed pointer/resource lifecycle context near line 3143",
+        "statements": [
+          "3111: }",
+          "3112:",
+          "3113: /*",
+          "3114:  * ---------------------------------",
+          "3115:  * iDiag debugfs file access methods",
+          "3116:  * ---------------------------------"
+        ],
+        "guards": [
+          "copy_from_user(mybuf, buf, bsize)",
+          "!step_str",
+          "idiag_cmd->opcode == 0",
+          "i = 0; i < LPFC_IDIAG_CMD_DATA_SIZE; i++"
+        ],
+        "call_boundary": [
+          "lpfc_idiag_cmd_get",
+          "memset",
+          "min",
+          "strsep",
+          "simple_strtol",
+          "copy_from_user"
+        ],
+        "call_edges": [
+          "lpfc_debug_dump_all_queues -> lpfc_debug_dump_wq",
+          "lpfc_debug_dump_all_queues -> lpfc_debug_dump_hdr_rq",
+          "lpfc_debug_dump_all_queues -> lpfc_debug_dump_dat_rq",
+          "lpfc_debug_dump_all_queues -> lpfc_debug_dump_cq",
+          "lpfc_debug_dump_all_queues -> lpfc_debug_dump_hba_eq",
+          "lpfc_debugfs_terminate -> kfree"
+        ],
+        "state_transitions": [
+          "operation(* ---------------------------------)",
+          "operation(for (i = 0; i < LPFC_IDIAG_CMD_DATA_SIZE; i++) {)"
+        ],
+        "api_terms": [
+          "* ---------------------------------",
+          "for (i = 0; i < LPFC_IDIAG_CMD_DATA_SIZE; i++) {",
+          "lpfc_idiag_cmd_get",
+          "memset",
+          "min",
+          "strsep"
+        ],
+        "related_symbols": [
+          "copy_from_user",
+          "mybuf",
+          "buf",
+          "bsize",
+          "size_t",
+          "min"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "collected_analyzers": [
+    "csa"
+  ],
+  "provenance_summary": {
+    "total_records": 5,
+    "origin_counts": {
+      "analyzer_internal": 1,
+      "analyzer_output": 1,
+      "source_derived": 3
+    },
+    "analyzer_internal_records": 1,
+    "analyzer_internal_fraction": 0.2,
+    "analyzer_backed_records": 2,
+    "analyzer_backed_fraction": 0.4,
+    "source_derived_records": 3,
+    "source_derived_fraction": 0.6
+  }
+}

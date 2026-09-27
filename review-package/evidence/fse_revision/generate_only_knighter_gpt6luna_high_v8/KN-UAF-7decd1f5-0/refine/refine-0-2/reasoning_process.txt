@@ -1,0 +1,10 @@
+Refinement Plan:
+- The false positive comes from `PtrAliasMap`: `checkBind` treats a pointer variable’s storage region and the object it points to as interchangeable aliases. It also never removes those aliases when the variable is rebound. In the list-flush loop, that stale, one-hop alias state can make a later access to the list head appear to access the previously freed entry.
+- Track releases only by the released object’s base region. Do not propagate release state through pointer-variable storage regions. The target bug still uses the same subflow object region for the `mptcp_close_ssk` argument and the later `subflow->request_join` access, so the direct check remains effective.
+- Match release functions by the callee identifier instead of searching source text, avoiding accidental matches when a function’s arguments or surrounding expression contain a release-function name.
+
+Refined Code:
+```cpp
+```
+
+The `mptcp_close_ssk` entry still marks its third argument as released. A subsequent access through the same `subflow` object region, including `subflow->request_join`, remains reportable. This is a focused fix for the stale-alias false positive; broader interprocedural lifetime and pointer-reassignment modeling would need additional state handling and tests.

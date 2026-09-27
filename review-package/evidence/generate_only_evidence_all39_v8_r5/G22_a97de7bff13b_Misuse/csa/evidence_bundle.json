@@ -1,0 +1,1414 @@
+{
+  "records": [
+    {
+      "evidence_id": "csa_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/bluetooth/rfcomm/sock.c",
+        "function": "rfcomm_sock_setsockopt_old"
+      },
+      "location": {
+        "line": 629,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "rfcomm_sock_setsockopt_old adds patch barrier `bt_copy_from_sockptr(&opt, sizeof(opt), optval, optlen)` around rfcomm_pi, rfcomm_dlc_accept.",
+        "contract_type": "patch_barrier",
+        "same_call_binding": "tie the guard to the current downstream sink or protected state transition instead of any unrelated if-statement",
+        "trigger_contract": "report when a risky write proceeds without the patch-style barrier",
+        "silence_contract": "stay silent when the nearby guard proves the current write is blocked or bounded",
+        "guard_exprs": [
+          "bt_copy_from_sockptr(&opt, sizeof(opt), optval, optlen)"
+        ],
+        "removed_calls": [
+          "copy_from_sockptr"
+        ],
+        "added_calls": [
+          "bt_copy_from_sockptr"
+        ],
+        "tracked_symbols": [
+          "bt_copy_from_sockptr",
+          "opt",
+          "optval",
+          "optlen"
+        ],
+        "widened_variables": [],
+        "state_resets": [],
+        "old_numeric_type": "",
+        "new_numeric_type": "",
+        "numeric_domain_change": "",
+        "arithmetic_operations": [],
+        "sink_calls": [
+          "rfcomm_pi",
+          "rfcomm_dlc_accept",
+          "bt_sock_stream_recvmsg",
+          "lock_sock"
+        ],
+        "buffer_fields": [],
+        "source_file": "net/bluetooth/rfcomm/sock.c",
+        "function": "rfcomm_sock_setsockopt_old",
+        "source_excerpt": "597: \tstruct sock *sk = sock->sk;\n598: \tstruct rfcomm_dlc *d = rfcomm_pi(sk)->dlc;\n599: \tint len;\n600: \n601: \tif (test_and_clear_bit(RFCOMM_DEFER_SETUP, &d->flags)) {\n602: \t\trfcomm_dlc_accept(d);\n603: \t\treturn 0;\n604: \t}\n605: \n606: \tlen = bt_sock_stream_recvmsg(sock, msg, size, flags);\n607: \n608: \tlock_sock(sk);\n609: \tif (!(flags & MSG_PEEK) && len > 0)\n610: \t\tatomic_sub(len, &sk->sk_rmem_alloc);\n611: \n612: \tif (atomic_read(&sk->sk_rmem_alloc) <= (sk->sk_rcvbuf >> 2))\n613: \t\trfcomm_dlc_unthrottle(rfcomm_pi(sk)->dlc);\n614: \trelease_sock(sk);\n615: \n616: \treturn len;\n617: }\n618: \n619: static int rfcomm_sock_setsockopt_old(struct socket *sock, int optname,\n620: \t\tsockptr_t optval, unsigned int optlen)\n621: {\n622: \tstruct sock *sk = sock->sk;\n623: \tint err = 0;\n624: \tu32 opt;\n625: \n626: \tBT_DBG(\"sk %p\", sk);\n627: \n628: \tlock_sock(sk);\n629: \n630: \tswitch (optname) {\n631: \tcase RFCOMM_LM:\n632: \t\tif (copy_from_sockptr(&opt, optval, sizeof(u32))) {\n633: \t\t\terr = -EFAULT;\n634: \t\t\tbreak;\n635: \t\t}\n636: \n637: \t\tif (opt & RFCOMM_LM_FIPS) {\n638: \t\t\terr = -EINVAL;\n639: \t\t\tbreak;\n640: \t\t}\n641: \n642: \t\tif (opt & RFCOMM_LM_AUTH)\n643: \t\t\trfcomm_pi(sk)->sec_level = BT_SECURITY_LOW;\n644: \t\tif (opt & RFCOMM_LM_ENCRYPT)\n645: \t\t\trfcomm_pi(sk)->sec_level = BT_SECURITY_MEDIUM;\n646: \t\tif (opt & RFCOMM_LM_SECURE)\n647: \t\t\trfcomm_pi(sk)->sec_level = BT_SECURITY_HIGH;\n648: \n649: \t\trfcomm_pi(sk)->role_switch = (opt & RFCOMM_LM_MASTER);\n650: \t\tbreak;\n651: \n652: \tdefault:\n653: \t\terr = -ENOPROTOOPT;\n654: \t\tbreak;\n655: \t}\n656: \n657: \trelease_sock(sk);\n658: \treturn err;\n659: }\n660: \n661: static int rfcomm_sock_setsockopt(struct socket *sock, int level, int optname,",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:semantic-contract",
+        "confidence": 0.92,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "net/bluetooth/rfcomm/sock.c",
+          "hunk_index": 0,
+          "source_line": 629
+        },
+        "summary": "rfcomm_sock_setsockopt_old adds patch barrier `bt_copy_from_sockptr(&opt, sizeof(opt), optval, optlen)` around rfcomm_pi, rfcomm_dlc_accept.",
+        "statements": [
+          "if (bt_copy_from_sockptr(&opt, sizeof(opt), optval, optlen)) {"
+        ],
+        "guards": [
+          "bt_copy_from_sockptr(&opt, sizeof(opt), optval, optlen)"
+        ],
+        "call_boundary": [
+          "rfcomm_pi",
+          "rfcomm_dlc_accept",
+          "bt_sock_stream_recvmsg",
+          "lock_sock"
+        ],
+        "call_edges": [
+          "rfcomm_sock_setsockopt_old -> rfcomm_pi",
+          "rfcomm_sock_setsockopt_old -> rfcomm_dlc_accept",
+          "rfcomm_sock_setsockopt_old -> bt_sock_stream_recvmsg"
+        ],
+        "state_transitions": [
+          "",
+          "report when a risky write proceeds without the patch-style barrier",
+          "stay silent when the nearby guard proves the current write is blocked or bounded"
+        ],
+        "api_terms": [
+          "rfcomm_pi",
+          "rfcomm_dlc_accept",
+          "bt_sock_stream_recvmsg",
+          "bt_copy_from_sockptr",
+          "copy_from_sockptr"
+        ],
+        "related_symbols": [
+          "bt_copy_from_sockptr",
+          "opt",
+          "optval",
+          "optlen"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_semantic_slice_1",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/bluetooth/rfcomm/sock.c",
+        "function": "rfcomm_sock_setsockopt"
+      },
+      "location": {
+        "line": 686,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "rfcomm_sock_setsockopt adds patch barrier `err` around rfcomm_sock_setsockopt_old, min_t.",
+        "contract_type": "patch_barrier",
+        "same_call_binding": "tie the guard to the current downstream sink or protected state transition instead of any unrelated if-statement",
+        "trigger_contract": "report when a risky write proceeds without the patch-style barrier",
+        "silence_contract": "stay silent when the nearby guard proves the current write is blocked or bounded",
+        "guard_exprs": [
+          "err"
+        ],
+        "removed_calls": [
+          "min_t",
+          "copy_from_sockptr"
+        ],
+        "added_calls": [
+          "bt_copy_from_sockptr"
+        ],
+        "tracked_symbols": [
+          "err",
+          "bt_copy_from_sockptr",
+          "sec",
+          "optval",
+          "optlen"
+        ],
+        "widened_variables": [],
+        "state_resets": [],
+        "old_numeric_type": "",
+        "new_numeric_type": "",
+        "numeric_domain_change": "",
+        "arithmetic_operations": [],
+        "sink_calls": [
+          "rfcomm_sock_setsockopt_old",
+          "min_t"
+        ],
+        "buffer_fields": [],
+        "source_file": "net/bluetooth/rfcomm/sock.c",
+        "function": "rfcomm_sock_setsockopt",
+        "source_excerpt": "657: \trelease_sock(sk);\n658: \treturn err;\n659: }\n660: \n661: static int rfcomm_sock_setsockopt(struct socket *sock, int level, int optname,\n662: \t\tsockptr_t optval, unsigned int optlen)\n663: {\n664: \tstruct sock *sk = sock->sk;\n665: \tstruct bt_security sec;\n666: \tint err = 0;\n667: \tsize_t len;\n668: \tu32 opt;\n669: \n670: \tBT_DBG(\"sk %p\", sk);\n671: \n672: \tif (level == SOL_RFCOMM)\n673: \t\treturn rfcomm_sock_setsockopt_old(sock, optname, optval, optlen);\n674: \n675: \tif (level != SOL_BLUETOOTH)\n676: \t\treturn -ENOPROTOOPT;\n677: \n678: \tlock_sock(sk);\n679: \n680: \tswitch (optname) {\n681: \tcase BT_SECURITY:\n682: \t\tif (sk->sk_type != SOCK_STREAM) {\n683: \t\t\terr = -EINVAL;\n684: \t\t\tbreak;\n685: \t\t}\n686: \n687: \t\tsec.level = BT_SECURITY_LOW;\n688: \n689: \t\tlen = min_t(unsigned int, sizeof(sec), optlen);\n690: \t\tif (copy_from_sockptr(&sec, optval, len)) {\n691: \t\t\terr = -EFAULT;\n692: \t\t\tbreak;\n693: \t\t}\n694: \n695: \t\tif (sec.level > BT_SECURITY_HIGH) {\n696: \t\t\terr = -EINVAL;\n697: \t\t\tbreak;\n698: \t\t}\n699: \n700: \t\trfcomm_pi(sk)->sec_level = sec.level;\n701: \t\tbreak;\n702: \n703: \tcase BT_DEFER_SETUP:\n704: \t\tif (sk->sk_state != BT_BOUND && sk->sk_state != BT_LISTEN) {\n705: \t\t\terr = -EINVAL;\n706: \t\t\tbreak;\n707: \t\t}\n708: \n709: \t\tif (copy_from_sockptr(&opt, optval, sizeof(u32))) {\n710: \t\t\terr = -EFAULT;\n711: \t\t\tbreak;\n712: \t\t}\n713: \n714: \t\tif (opt)\n715: \t\t\tset_bit(BT_SK_DEFER_SETUP, &bt_sk(sk)->flags);\n716: \t\telse\n717: \t\t\tclear_bit(BT_SK_DEFER_SETUP, &bt_sk(sk)->flags);\n718: \n719: \t\tbreak;\n720: \n721: \tdefault:",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:semantic-contract",
+        "confidence": 0.92,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "net/bluetooth/rfcomm/sock.c",
+          "hunk_index": 2,
+          "source_line": 686
+        },
+        "summary": "rfcomm_sock_setsockopt adds patch barrier `err` around rfcomm_sock_setsockopt_old, min_t.",
+        "statements": [
+          "err = bt_copy_from_sockptr(&sec, sizeof(sec), optval, optlen);",
+          "if (err)"
+        ],
+        "guards": [
+          "err"
+        ],
+        "call_boundary": [
+          "rfcomm_sock_setsockopt_old",
+          "min_t"
+        ],
+        "call_edges": [
+          "rfcomm_sock_setsockopt -> rfcomm_sock_setsockopt_old",
+          "rfcomm_sock_setsockopt -> min_t"
+        ],
+        "state_transitions": [
+          "",
+          "report when a risky write proceeds without the patch-style barrier",
+          "stay silent when the nearby guard proves the current write is blocked or bounded"
+        ],
+        "api_terms": [
+          "rfcomm_sock_setsockopt_old",
+          "min_t",
+          "bt_copy_from_sockptr",
+          "min_t",
+          "copy_from_sockptr"
+        ],
+        "related_symbols": [
+          "err",
+          "bt_copy_from_sockptr",
+          "sec",
+          "optval",
+          "optlen"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_semantic_slice_2",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/bluetooth/rfcomm/sock.c",
+        "function": "rfcomm_sock_setsockopt"
+      },
+      "location": {
+        "line": 706,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "rfcomm_sock_setsockopt adds patch barrier `err` around rfcomm_sock_getsockopt_old.",
+        "contract_type": "patch_barrier",
+        "same_call_binding": "tie the guard to the current downstream sink or protected state transition instead of any unrelated if-statement",
+        "trigger_contract": "report when a risky write proceeds without the patch-style barrier",
+        "silence_contract": "stay silent when the nearby guard proves the current write is blocked or bounded",
+        "guard_exprs": [
+          "err"
+        ],
+        "removed_calls": [
+          "copy_from_sockptr"
+        ],
+        "added_calls": [
+          "bt_copy_from_sockptr"
+        ],
+        "tracked_symbols": [
+          "err",
+          "bt_copy_from_sockptr",
+          "opt",
+          "optval",
+          "optlen"
+        ],
+        "widened_variables": [],
+        "state_resets": [],
+        "old_numeric_type": "",
+        "new_numeric_type": "",
+        "numeric_domain_change": "",
+        "arithmetic_operations": [],
+        "sink_calls": [
+          "rfcomm_sock_getsockopt_old"
+        ],
+        "buffer_fields": [],
+        "source_file": "net/bluetooth/rfcomm/sock.c",
+        "function": "rfcomm_sock_setsockopt",
+        "source_excerpt": "674: \n675: \tif (level != SOL_BLUETOOTH)\n676: \t\treturn -ENOPROTOOPT;\n677: \n678: \tlock_sock(sk);\n679: \n680: \tswitch (optname) {\n681: \tcase BT_SECURITY:\n682: \t\tif (sk->sk_type != SOCK_STREAM) {\n683: \t\t\terr = -EINVAL;\n684: \t\t\tbreak;\n685: \t\t}\n686: \n687: \t\tsec.level = BT_SECURITY_LOW;\n688: \n689: \t\tlen = min_t(unsigned int, sizeof(sec), optlen);\n690: \t\tif (copy_from_sockptr(&sec, optval, len)) {\n691: \t\t\terr = -EFAULT;\n692: \t\t\tbreak;\n693: \t\t}\n694: \n695: \t\tif (sec.level > BT_SECURITY_HIGH) {\n696: \t\t\terr = -EINVAL;\n697: \t\t\tbreak;\n698: \t\t}\n699: \n700: \t\trfcomm_pi(sk)->sec_level = sec.level;\n701: \t\tbreak;\n702: \n703: \tcase BT_DEFER_SETUP:\n704: \t\tif (sk->sk_state != BT_BOUND && sk->sk_state != BT_LISTEN) {\n705: \t\t\terr = -EINVAL;\n706: \t\t\tbreak;\n707: \t\t}\n708: \n709: \t\tif (copy_from_sockptr(&opt, optval, sizeof(u32))) {\n710: \t\t\terr = -EFAULT;\n711: \t\t\tbreak;\n712: \t\t}\n713: \n714: \t\tif (opt)\n715: \t\t\tset_bit(BT_SK_DEFER_SETUP, &bt_sk(sk)->flags);\n716: \t\telse\n717: \t\t\tclear_bit(BT_SK_DEFER_SETUP, &bt_sk(sk)->flags);\n718: \n719: \t\tbreak;\n720: \n721: \tdefault:\n722: \t\terr = -ENOPROTOOPT;\n723: \t\tbreak;\n724: \t}\n725: \n726: \trelease_sock(sk);\n727: \treturn err;\n728: }\n729: \n730: static int rfcomm_sock_getsockopt_old(struct socket *sock, int optname, char __user *optval, int __user *optlen)\n731: {\n732: \tstruct sock *sk = sock->sk;\n733: \tstruct sock *l2cap_sk;\n734: \tstruct l2cap_conn *conn;\n735: \tstruct rfcomm_conninfo cinfo;\n736: \tint len, err = 0;\n737: \tu32 opt;\n738: ",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:semantic-contract",
+        "confidence": 0.92,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "net/bluetooth/rfcomm/sock.c",
+          "hunk_index": 3,
+          "source_line": 706
+        },
+        "summary": "rfcomm_sock_setsockopt adds patch barrier `err` around rfcomm_sock_getsockopt_old.",
+        "statements": [
+          "err = bt_copy_from_sockptr(&opt, sizeof(opt), optval, optlen);",
+          "if (err)"
+        ],
+        "guards": [
+          "err"
+        ],
+        "call_boundary": [
+          "rfcomm_sock_getsockopt_old"
+        ],
+        "call_edges": [
+          "rfcomm_sock_setsockopt -> rfcomm_sock_getsockopt_old"
+        ],
+        "state_transitions": [
+          "",
+          "report when a risky write proceeds without the patch-style barrier",
+          "stay silent when the nearby guard proves the current write is blocked or bounded"
+        ],
+        "api_terms": [
+          "rfcomm_sock_getsockopt_old",
+          "bt_copy_from_sockptr",
+          "copy_from_sockptr"
+        ],
+        "related_symbols": [
+          "err",
+          "bt_copy_from_sockptr",
+          "opt",
+          "optval",
+          "optlen"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/bluetooth/rfcomm/sock.c",
+        "function": "rfcomm_sock_setsockopt_old"
+      },
+      "location": {
+        "line": 629,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "bt_copy_from_sockptr(&opt, sizeof(opt), optval, optlen)",
+        "summary": "rfcomm_sock_setsockopt_old introduces patch guard `bt_copy_from_sockptr(&opt, sizeof(opt), optval, optlen)` before rfcomm_pi, rfcomm_dlc_accept.",
+        "state_before": [
+          "input(bt_copy_from_sockptr)",
+          "input(opt)",
+          "risky(copy_from_sockptr)"
+        ],
+        "state_after": [
+          "guard(bt_copy_from_sockptr(&opt, sizeof(opt), optval, optlen))",
+          "current_call(rfcomm_pi)",
+          "current_call(rfcomm_dlc_accept)"
+        ],
+        "functions": [
+          "rfcomm_sock_setsockopt_old"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "bt_copy_from_sockptr",
+          "opt",
+          "optval",
+          "optlen"
+        ],
+        "buffer_fields": [],
+        "call_targets": [
+          "rfcomm_pi",
+          "rfcomm_dlc_accept",
+          "bt_sock_stream_recvmsg",
+          "lock_sock"
+        ],
+        "call_edges": [
+          "rfcomm_sock_setsockopt_old -> rfcomm_pi",
+          "rfcomm_sock_setsockopt_old -> rfcomm_dlc_accept",
+          "rfcomm_sock_setsockopt_old -> bt_sock_stream_recvmsg"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "bt_copy_from_sockptr(&opt, sizeof(opt), optval, optlen)"
+        ],
+        "state_statements": [
+          "if (bt_copy_from_sockptr(&opt, sizeof(opt), optval, optlen)) {"
+        ],
+        "compile_command_preview": "",
+        "source_file": "net/bluetooth/rfcomm/sock.c",
+        "source_excerpt": "597: \tstruct sock *sk = sock->sk;\n598: \tstruct rfcomm_dlc *d = rfcomm_pi(sk)->dlc;\n599: \tint len;\n600: \n601: \tif (test_and_clear_bit(RFCOMM_DEFER_SETUP, &d->flags)) {\n602: \t\trfcomm_dlc_accept(d);\n603: \t\treturn 0;\n604: \t}\n605: \n606: \tlen = bt_sock_stream_recvmsg(sock, msg, size, flags);\n607: \n608: \tlock_sock(sk);\n609: \tif (!(flags & MSG_PEEK) && len > 0)\n610: \t\tatomic_sub(len, &sk->sk_rmem_alloc);\n611: \n612: \tif (atomic_read(&sk->sk_rmem_alloc) <= (sk->sk_rcvbuf >> 2))\n613: \t\trfcomm_dlc_unthrottle(rfcomm_pi(sk)->dlc);\n614: \trelease_sock(sk);\n615: \n616: \treturn len;\n617: }\n618: \n619: static int rfcomm_sock_setsockopt_old(struct socket *sock, int optname,\n620: \t\tsockptr_t optval, unsigned int optlen)\n621: {\n622: \tstruct sock *sk = sock->sk;\n623: \tint err = 0;\n624: \tu32 opt;\n625: \n626: \tBT_DBG(\"sk %p\", sk);\n627: \n628: \tlock_sock(sk);\n629: \n630: \tswitch (optname) {\n631: \tcase RFCOMM_LM:\n632: \t\tif (copy_from_sockptr(&opt, optval, sizeof(u32))) {\n633: \t\t\terr = -EFAULT;\n634: \t\t\tbreak;\n635: \t\t}\n636: \n637: \t\tif (opt & RFCOMM_LM_FIPS) {\n638: \t\t\terr = -EINVAL;\n639: \t\t\tbreak;\n640: \t\t}\n641: \n642: \t\tif (opt & RFCOMM_LM_AUTH)\n643: \t\t\trfcomm_pi(sk)->sec_level = BT_SECURITY_LOW;\n644: \t\tif (opt & RFCOMM_LM_ENCRYPT)\n645: \t\t\trfcomm_pi(sk)->sec_level = BT_SECURITY_MEDIUM;\n646: \t\tif (opt & RFCOMM_LM_SECURE)\n647: \t\t\trfcomm_pi(sk)->sec_level = BT_SECURITY_HIGH;\n648: \n649: \t\trfcomm_pi(sk)->role_switch = (opt & RFCOMM_LM_MASTER);\n650: \t\tbreak;\n651: \n652: \tdefault:\n653: \t\terr = -ENOPROTOOPT;\n654: \t\tbreak;\n655: \t}\n656: \n657: \trelease_sock(sk);\n658: \treturn err;\n659: }\n660: \n661: static int rfcomm_sock_setsockopt(struct socket *sock, int level, int optname,",
+        "summary_line": 629,
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:path-guard",
+        "confidence": 0.92,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "net/bluetooth/rfcomm/sock.c",
+          "hunk_index": 0,
+          "source_line": 629
+        },
+        "summary": "rfcomm_sock_setsockopt_old introduces patch guard `bt_copy_from_sockptr(&opt, sizeof(opt), optval, optlen)` before rfcomm_pi, rfcomm_dlc_accept.",
+        "statements": [
+          "if (bt_copy_from_sockptr(&opt, sizeof(opt), optval, optlen)) {"
+        ],
+        "guards": [
+          "bt_copy_from_sockptr(&opt, sizeof(opt), optval, optlen)"
+        ],
+        "call_boundary": [
+          "rfcomm_pi",
+          "rfcomm_dlc_accept",
+          "bt_sock_stream_recvmsg",
+          "lock_sock"
+        ],
+        "call_edges": [
+          "rfcomm_sock_setsockopt_old -> rfcomm_pi",
+          "rfcomm_sock_setsockopt_old -> rfcomm_dlc_accept",
+          "rfcomm_sock_setsockopt_old -> bt_sock_stream_recvmsg"
+        ],
+        "state_transitions": [
+          "guard(bt_copy_from_sockptr(&opt, sizeof(opt), optval, optlen))",
+          "current_call(rfcomm_pi)",
+          "current_call(rfcomm_dlc_accept)"
+        ],
+        "api_terms": [
+          "rfcomm_pi",
+          "rfcomm_dlc_accept",
+          "bt_sock_stream_recvmsg"
+        ],
+        "related_symbols": [
+          "bt_copy_from_sockptr",
+          "opt",
+          "optval",
+          "optlen"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_guard_1",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/bluetooth/rfcomm/sock.c",
+        "function": "rfcomm_sock_setsockopt"
+      },
+      "location": {
+        "line": 686,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "err",
+        "summary": "rfcomm_sock_setsockopt introduces patch guard `err` before rfcomm_sock_setsockopt_old, min_t.",
+        "state_before": [
+          "input(err)",
+          "input(bt_copy_from_sockptr)",
+          "risky(min_t)",
+          "risky(copy_from_sockptr)"
+        ],
+        "state_after": [
+          "guard(err)",
+          "current_call(rfcomm_sock_setsockopt_old)",
+          "current_call(min_t)"
+        ],
+        "functions": [
+          "rfcomm_sock_setsockopt"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "err",
+          "bt_copy_from_sockptr",
+          "sec",
+          "optval",
+          "optlen"
+        ],
+        "buffer_fields": [],
+        "call_targets": [
+          "rfcomm_sock_setsockopt_old",
+          "min_t"
+        ],
+        "call_edges": [
+          "rfcomm_sock_setsockopt -> rfcomm_sock_setsockopt_old",
+          "rfcomm_sock_setsockopt -> min_t"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "err"
+        ],
+        "state_statements": [
+          "err = bt_copy_from_sockptr(&sec, sizeof(sec), optval, optlen);",
+          "if (err)"
+        ],
+        "compile_command_preview": "",
+        "source_file": "net/bluetooth/rfcomm/sock.c",
+        "source_excerpt": "657: \trelease_sock(sk);\n658: \treturn err;\n659: }\n660: \n661: static int rfcomm_sock_setsockopt(struct socket *sock, int level, int optname,\n662: \t\tsockptr_t optval, unsigned int optlen)\n663: {\n664: \tstruct sock *sk = sock->sk;\n665: \tstruct bt_security sec;\n666: \tint err = 0;\n667: \tsize_t len;\n668: \tu32 opt;\n669: \n670: \tBT_DBG(\"sk %p\", sk);\n671: \n672: \tif (level == SOL_RFCOMM)\n673: \t\treturn rfcomm_sock_setsockopt_old(sock, optname, optval, optlen);\n674: \n675: \tif (level != SOL_BLUETOOTH)\n676: \t\treturn -ENOPROTOOPT;\n677: \n678: \tlock_sock(sk);\n679: \n680: \tswitch (optname) {\n681: \tcase BT_SECURITY:\n682: \t\tif (sk->sk_type != SOCK_STREAM) {\n683: \t\t\terr = -EINVAL;\n684: \t\t\tbreak;\n685: \t\t}\n686: \n687: \t\tsec.level = BT_SECURITY_LOW;\n688: \n689: \t\tlen = min_t(unsigned int, sizeof(sec), optlen);\n690: \t\tif (copy_from_sockptr(&sec, optval, len)) {\n691: \t\t\terr = -EFAULT;\n692: \t\t\tbreak;\n693: \t\t}\n694: \n695: \t\tif (sec.level > BT_SECURITY_HIGH) {\n696: \t\t\terr = -EINVAL;\n697: \t\t\tbreak;\n698: \t\t}\n699: \n700: \t\trfcomm_pi(sk)->sec_level = sec.level;\n701: \t\tbreak;\n702: \n703: \tcase BT_DEFER_SETUP:\n704: \t\tif (sk->sk_state != BT_BOUND && sk->sk_state != BT_LISTEN) {\n705: \t\t\terr = -EINVAL;\n706: \t\t\tbreak;\n707: \t\t}\n708: \n709: \t\tif (copy_from_sockptr(&opt, optval, sizeof(u32))) {\n710: \t\t\terr = -EFAULT;\n711: \t\t\tbreak;\n712: \t\t}\n713: \n714: \t\tif (opt)\n715: \t\t\tset_bit(BT_SK_DEFER_SETUP, &bt_sk(sk)->flags);\n716: \t\telse\n717: \t\t\tclear_bit(BT_SK_DEFER_SETUP, &bt_sk(sk)->flags);\n718: \n719: \t\tbreak;\n720: \n721: \tdefault:",
+        "summary_line": 686,
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:path-guard",
+        "confidence": 0.92,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "net/bluetooth/rfcomm/sock.c",
+          "hunk_index": 2,
+          "source_line": 686
+        },
+        "summary": "rfcomm_sock_setsockopt introduces patch guard `err` before rfcomm_sock_setsockopt_old, min_t.",
+        "statements": [
+          "err = bt_copy_from_sockptr(&sec, sizeof(sec), optval, optlen);",
+          "if (err)"
+        ],
+        "guards": [
+          "err"
+        ],
+        "call_boundary": [
+          "rfcomm_sock_setsockopt_old",
+          "min_t"
+        ],
+        "call_edges": [
+          "rfcomm_sock_setsockopt -> rfcomm_sock_setsockopt_old",
+          "rfcomm_sock_setsockopt -> min_t"
+        ],
+        "state_transitions": [
+          "guard(err)",
+          "current_call(rfcomm_sock_setsockopt_old)",
+          "current_call(min_t)"
+        ],
+        "api_terms": [
+          "rfcomm_sock_setsockopt_old",
+          "min_t"
+        ],
+        "related_symbols": [
+          "err",
+          "bt_copy_from_sockptr",
+          "sec",
+          "optval",
+          "optlen"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_guard_2",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/bluetooth/rfcomm/sock.c",
+        "function": "rfcomm_sock_setsockopt_old"
+      },
+      "location": {
+        "line": 629,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "switch optname (ImplicitCastExpr, LValueToRValue, int)",
+        "summary": "Analyzer CFG for rfcomm_sock_setsockopt_old in net/bluetooth/rfcomm/sock.c: bindings: static struct _ddebug __UNIQUE_ID_ddebug1671 __attribute__((aligned(8))) __attribute__((section(\"__dyndbg\"))) = {.modname = \"rfcomm\", .function = __func__, .filename = \"/work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/net/bluetooth/rfcomm/sock.c\", .format = (\"sk %p\\n\"), .lineno = 626, .flags = 0, .class_id = ((1 << 6) - 1), .key.dd_key_false = ((struct static_key_false){.key = {.enabled = {0}, {.type = 0UL}}})};; {.modname = \"rfcomm\" (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *), .function = __func__ (ImplicitCastExpr, ArrayToPointerDecay, const char *), .filename = \"/work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/net/bluetooth/rfcomm/sock.c\" (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *), .format = (\"sk %p\\n\") (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *), .lineno = 626 (ImplicitCastExpr, IntegralCast, unsigned int), .flags = 0 (ImplicitCastExpr, IntegralCast, unsigned int), .class_id = ((1 << 6) - 1) (ImplicitCastExpr, IntegralCast, unsigned int), .key.dd_key_false = ((struct static_key_false){.key = {.enabled = {0}, {.type = 0UL}}})} | branches: switch optname (ImplicitCastExpr, LValueToRValue, int); break; | calls: rfcomm_sock_setsockopt_old -> __compiletime_assert_1672; rfcomm_sock_setsockopt_old -> arch_static_branch_jump",
+        "state_before": [
+          "buffer(sock->sk)",
+          "buffer(d->flags)",
+          "sinks(rfcomm_pi, rfcomm_dlc_accept)"
+        ],
+        "state_after": [
+          "cfg_binding(static struct _ddebug __UNIQUE_ID_ddebug1671 __attribute__((aligned(8))) __attribute__((section(\"__dyndbg\"))) = {.modname = \"rfcomm\", .function = __func__, .filename = \"/work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/net/bluetooth/rfcomm/sock.c\", .format = (\"sk %p\\n\"), .lineno = 626, .flags = 0, .class_id = ((1 << 6) - 1), .key.dd_key_false = ((struct static_key_false){.key = {.enabled = {0}, {.type = 0UL}}})};)",
+          "cfg_binding({.modname = \"rfcomm\" (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *), .function = __func__ (ImplicitCastExpr, ArrayToPointerDecay, const char *), .filename = \"/work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/net/bluetooth/rfcomm/sock.c\" (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *), .format = (\"sk %p\\n\") (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *), .lineno = 626 (ImplicitCastExpr, IntegralCast, unsigned int), .flags = 0 (ImplicitCastExpr, IntegralCast, unsigned int), .class_id = ((1 << 6) - 1) (ImplicitCastExpr, IntegralCast, unsigned int), .key.dd_key_false = ((struct static_key_false){.key = {.enabled = {0}, {.type = 0UL}}})})",
+          "cfg_branch(switch optname (ImplicitCastExpr, LValueToRValue, int))",
+          "cfg_branch(break;)"
+        ],
+        "functions": [
+          "rfcomm_sock_setsockopt_old"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "sock->sk",
+          "d->flags",
+          "sk->sk_rmem_alloc",
+          "sk->sk_rcvbuf"
+        ],
+        "buffer_fields": [
+          "sock->sk",
+          "d->flags",
+          "sk->sk_rmem_alloc",
+          "sk->sk_rcvbuf"
+        ],
+        "call_targets": [
+          "rfcomm_pi",
+          "rfcomm_dlc_accept",
+          "bt_sock_stream_recvmsg",
+          "lock_sock",
+          "atomic_sub",
+          "rfcomm_dlc_unthrottle",
+          "release_sock",
+          "rfcomm_sock_setsockopt_old"
+        ],
+        "call_edges": [
+          "rfcomm_sock_setsockopt_old -> __compiletime_assert_1672",
+          "rfcomm_sock_setsockopt_old -> arch_static_branch_jump",
+          "rfcomm_sock_setsockopt_old -> arch_static_branch",
+          "rfcomm_sock_setsockopt_old -> ____wrong_branch_error",
+          "rfcomm_sock_setsockopt_old -> __builtin_expect",
+          "rfcomm_sock_setsockopt_old -> __dynamic_pr_debug"
+        ],
+        "cfg_branch_kinds": [
+          "switch",
+          "if"
+        ],
+        "branch_conditions": [
+          "switch [B2.7]",
+          "break;",
+          "if [B6.5]",
+          "if [B8.5]",
+          "if [B10.5]",
+          "if [B12.5]"
+        ],
+        "resolved_branch_conditions": [
+          "switch optname (ImplicitCastExpr, LValueToRValue, int)",
+          "break;",
+          "if opt (ImplicitCastExpr, LValueToRValue, u32) & 32 (ImplicitCastExpr, IntegralCast, u32)",
+          "if opt (ImplicitCastExpr, LValueToRValue, u32) & 4 (ImplicitCastExpr, IntegralCast, u32)",
+          "if opt (ImplicitCastExpr, LValueToRValue, u32) & 2 (ImplicitCastExpr, IntegralCast, u32)",
+          "if opt (ImplicitCastExpr, LValueToRValue, u32) & 64 (ImplicitCastExpr, IntegralCast, u32)"
+        ],
+        "cfg_value_bindings": [
+          "static struct _ddebug __UNIQUE_ID_ddebug1671 __attribute__((aligned(8))) __attribute__((section(\"__dyndbg\"))) = {.modname = \"rfcomm\", .function = __func__, .filename = \"/work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/net/bluetooth/rfcomm/sock.c\", .format = (\"sk %p\\n\"), .lineno = 626, .flags = 0, .class_id = ((1 << 6) - 1), .key.dd_key_false = ((struct static_key_false){.key = {.enabled = {0}, {.type = 0UL}}})};",
+          "{.modname = \"rfcomm\" (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *), .function = __func__ (ImplicitCastExpr, ArrayToPointerDecay, const char *), .filename = \"/work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/net/bluetooth/rfcomm/sock.c\" (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *), .format = (\"sk %p\\n\") (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *), .lineno = 626 (ImplicitCastExpr, IntegralCast, unsigned int), .flags = 0 (ImplicitCastExpr, IntegralCast, unsigned int), .class_id = ((1 << 6) - 1) (ImplicitCastExpr, IntegralCast, unsigned int), .key.dd_key_false = ((struct static_key_false){.key = {.enabled = {0}, {.type = 0UL}}})}",
+          "((struct rfcomm_pinfo *)sk (ImplicitCastExpr, LValueToRValue, struct sock *) (CStyleCastExpr, BitCast, struct rfcomm_pinfo *))->sec_level = 3 (ImplicitCastExpr, IntegralCast, u8)",
+          "((struct rfcomm_pinfo *)sk (ImplicitCastExpr, LValueToRValue, struct sock *) (CStyleCastExpr, BitCast, struct rfcomm_pinfo *))->sec_level = 2 (ImplicitCastExpr, IntegralCast, u8)",
+          "((struct rfcomm_pinfo *)sk (ImplicitCastExpr, LValueToRValue, struct sock *) (CStyleCastExpr, BitCast, struct rfcomm_pinfo *))->sec_level = 1 (ImplicitCastExpr, IntegralCast, u8)",
+          "((struct rfcomm_pinfo *)sk (ImplicitCastExpr, LValueToRValue, struct sock *) (CStyleCastExpr, BitCast, struct rfcomm_pinfo *))->role_switch = (opt (ImplicitCastExpr, LValueToRValue, u32) & 1 (ImplicitCastExpr, IntegralCast, u32)) (ImplicitCastExpr, IntegralCast, u8)"
+        ],
+        "state_statements": [
+          "return [B1.7];",
+          "[B3.3] = [B3.2]",
+          "([B4.9])->role_switch",
+          "[B4.10] = [B4.6]",
+          "([B5.5])->sec_level",
+          "[B5.6] = [B5.2]"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,net/bluetooth/rfcomm/.sock.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/uapi -I./arch/x...",
+        "source_file": "net/bluetooth/rfcomm/sock.c",
+        "source_excerpt": "597: \tstruct sock *sk = sock->sk;\n598: \tstruct rfcomm_dlc *d = rfcomm_pi(sk)->dlc;\n599: \tint len;\n600: \n601: \tif (test_and_clear_bit(RFCOMM_DEFER_SETUP, &d->flags)) {\n602: \t\trfcomm_dlc_accept(d);\n603: \t\treturn 0;\n604: \t}\n605: \n606: \tlen = bt_sock_stream_recvmsg(sock, msg, size, flags);\n607: \n608: \tlock_sock(sk);\n609: \tif (!(flags & MSG_PEEK) && len > 0)\n610: \t\tatomic_sub(len, &sk->sk_rmem_alloc);\n611: \n612: \tif (atomic_read(&sk->sk_rmem_alloc) <= (sk->sk_rcvbuf >> 2))\n613: \t\trfcomm_dlc_unthrottle(rfcomm_pi(sk)->dlc);\n614: \trelease_sock(sk);\n615: \n616: \treturn len;\n617: }\n618: \n619: static int rfcomm_sock_setsockopt_old(struct socket *sock, int optname,\n620: \t\tsockptr_t optval, unsigned int optlen)\n621: {\n622: \tstruct sock *sk = sock->sk;\n623: \tint err = 0;\n624: \tu32 opt;\n625: \n626: \tBT_DBG(\"sk %p\", sk);\n627: \n628: \tlock_sock(sk);\n629: \n630: \tswitch (optname) {\n631: \tcase RFCOMM_LM:\n632: \t\tif (copy_from_sockptr(&opt, optval, sizeof(u32))) {\n633: \t\t\terr = -EFAULT;\n634: \t\t\tbreak;\n635: \t\t}\n636: \n637: \t\tif (opt & RFCOMM_LM_FIPS) {\n638: \t\t\terr = -EINVAL;\n639: \t\t\tbreak;\n640: \t\t}\n641: \n642: \t\tif (opt & RFCOMM_LM_AUTH)\n643: \t\t\trfcomm_pi(sk)->sec_level = BT_SECURITY_LOW;\n644: \t\tif (opt & RFCOMM_LM_ENCRYPT)\n645: \t\t\trfcomm_pi(sk)->sec_level = BT_SECURITY_MEDIUM;\n646: \t\tif (opt & RFCOMM_LM_SECURE)\n647: \t\t\trfcomm_pi(sk)->sec_level = BT_SECURITY_HIGH;\n648: \n649: \t\trfcomm_pi(sk)->role_switch = (opt & RFCOMM_LM_MASTER);\n650: \t\tbreak;\n651: \n652: \tdefault:\n653: \t\terr = -ENOPROTOOPT;\n654: \t\tbreak;\n655: \t}\n656: \n657: \trelease_sock(sk);\n658: \treturn err;\n659: }\n660: \n661: static int rfcomm_sock_setsockopt(struct socket *sock, int level, int optname,",
+        "summary_line": 629,
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/generate_only_evidence_all39_v8_r5/G22_a97de7bff13b_Misuse/csa/patchweaver_runtime/csa_raw/net-bluetooth-rfcomm-sock.c-rfcomm_sock_setsockopt_old.txt",
+        "raw_output_sha256": "6a45626390f642abdc357e948480ffe45dd9c14057b011906ec196f87bfaee52",
+        "command_sha256": "1341b834501a71ed4c96982118a9ebdcd76a90851849d9b33006ae2889f48ae0"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:debug-cfg",
+        "confidence": 0.92,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "net/bluetooth/rfcomm/sock.c",
+          "hunk_index": 0,
+          "source_line": 629
+        },
+        "summary": "Analyzer CFG for rfcomm_sock_setsockopt_old in net/bluetooth/rfcomm/sock.c: bindings: static struct _ddebug __UNIQUE_ID_ddebug1671 __attribute__((aligned(8))) __attribute__((section(\"__dyndbg\"))) = {.modname = \"rfcomm\", .function = __func__, .filename = \"/work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/net/bluetooth/rfcomm/sock.c\", .format = (\"sk %p\\n\"), .lineno = 626, .flags = 0, .class_id = ((1 << 6) - 1), .key.dd_key_false = ((struct static_key_false){.key = {.enabled = {0}, {.type = 0UL}}})};; {.modname = \"rfcomm\" (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *), .function = __func__ (ImplicitCastExpr, ArrayToPointerDecay, const char *), .filename = \"/work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/net/bluetooth/rfcomm/sock.c\" (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *), .format = (\"sk %p\\n\") (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *), .lineno = 626 (ImplicitCastExpr, IntegralCast, unsigned int), .flags = 0 (ImplicitCastExpr, IntegralCast, unsigned int), .class_id = ((1 << 6) - 1) (ImplicitCastExpr, IntegralCast, unsigned int), .key.dd_key_false = ((struct static_key_false){.key = {.enabled = {0}, {.type = 0UL}}})} | branches: switch optname (ImplicitCastExpr, LValueToRValue, int); break; | calls: rfcomm_sock_setsockopt_old -> __compiletime_assert_1672; rfcomm_sock_setsockopt_old -> arch_static_branch_jump",
+        "statements": [
+          "597: \tstruct sock *sk = sock->sk;",
+          "598: \tstruct rfcomm_dlc *d = rfcomm_pi(sk)->dlc;",
+          "599: \tint len;",
+          "600:",
+          "601: \tif (test_and_clear_bit(RFCOMM_DEFER_SETUP, &d->flags)) {",
+          "602: \t\trfcomm_dlc_accept(d);"
+        ],
+        "guards": [
+          "switch optname (ImplicitCastExpr, LValueToRValue, int)",
+          "break;",
+          "if opt (ImplicitCastExpr, LValueToRValue, u32) & 32 (ImplicitCastExpr, IntegralCast, u32)",
+          "if opt (ImplicitCastExpr, LValueToRValue, u32) & 4 (ImplicitCastExpr, IntegralCast, u32)"
+        ],
+        "call_boundary": [
+          "rfcomm_pi",
+          "rfcomm_dlc_accept",
+          "bt_sock_stream_recvmsg",
+          "lock_sock",
+          "atomic_sub",
+          "rfcomm_dlc_unthrottle"
+        ],
+        "call_edges": [
+          "rfcomm_sock_setsockopt_old -> __compiletime_assert_1672",
+          "rfcomm_sock_setsockopt_old -> arch_static_branch_jump",
+          "rfcomm_sock_setsockopt_old -> arch_static_branch",
+          "rfcomm_sock_setsockopt_old -> ____wrong_branch_error",
+          "rfcomm_sock_setsockopt_old -> __builtin_expect",
+          "rfcomm_sock_setsockopt_old -> __dynamic_pr_debug",
+          "rfcomm_sock_setsockopt_old -> lock_sock",
+          "rfcomm_sock_setsockopt_old -> copy_from_sockptr"
+        ],
+        "state_transitions": [
+          "cfg_binding(static struct _ddebug __UNIQUE_ID_ddebug1671 __attribute__((aligned(8))) __attribute__((section(\"__dyndbg\"))) = {.modname = \"rfcomm\", .function = __func__, .filename = \"/work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/net/bluetooth/rfcomm/sock.c\", .format = (\"sk %p\\n\"), .lineno = 626, .flags = 0, .class_id = ((1 << 6) - 1), .key.dd_key_false = ((struct static_key_false){.key = {.enabled = {0}, {.type = 0UL}}})};)",
+          "cfg_binding({.modname = \"rfcomm\" (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *), .function = __func__ (ImplicitCastExpr, ArrayToPointerDecay, const char *), .filename = \"/work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/net/bluetooth/rfcomm/sock.c\" (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *), .format = (\"sk %p\\n\") (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *), .lineno = 626 (ImplicitCastExpr, IntegralCast, unsigned int), .flags = 0 (ImplicitCastExpr, IntegralCast, unsigned int), .class_id = ((1 << 6) - 1) (ImplicitCastExpr, IntegralCast, unsigned int), .key.dd_key_false = ((struct static_key_false){.key = {.enabled = {0}, {.type = 0UL}}})})",
+          "cfg_branch(switch optname (ImplicitCastExpr, LValueToRValue, int))",
+          "cfg_branch(break;)",
+          "return [B1.7];",
+          "[B3.3] = [B3.2]"
+        ],
+        "api_terms": [
+          "__compiletime_assert_1672",
+          "arch_static_branch_jump",
+          "arch_static_branch",
+          "____wrong_branch_error",
+          "__builtin_expect",
+          "__dynamic_pr_debug"
+        ],
+        "related_symbols": [
+          "sock->sk",
+          "d->flags",
+          "sk->sk_rmem_alloc",
+          "sk->sk_rcvbuf"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_guard_3",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/bluetooth/rfcomm/sock.c",
+        "function": "rfcomm_sock_setsockopt"
+      },
+      "location": {
+        "line": 667,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "if sec.level (ImplicitCastExpr, LValueToRValue, __u8) (ImplicitCastExpr, IntegralCast, int) > 3",
+        "summary": "Analyzer CFG for rfcomm_sock_setsockopt in net/bluetooth/rfcomm/sock.c: bindings: ((struct rfcomm_pinfo *)sk (ImplicitCastExpr, LValueToRValue, struct sock *) (CStyleCastExpr, BitCast, struct rfcomm_pinfo *))->sec_level = sec.level (ImplicitCastExpr, LValueToRValue, __u8); level (ImplicitCastExpr, LValueToRValue, int) == 18 | branches: if sec.level (ImplicitCastExpr, LValueToRValue, __u8) (ImplicitCastExpr, IntegralCast, int) > 3; if level (ImplicitCastExpr, LValueToRValue, int) != 274 | calls: rfcomm_sock_setsockopt -> __compiletime_assert_1674; rfcomm_sock_setsockopt -> arch_static_branch_jump",
+        "state_before": [
+          "buffer(sock->sk)",
+          "buffer(sk->sk_type)",
+          "sinks(rfcomm_pi, release_sock)"
+        ],
+        "state_after": [
+          "cfg_binding(((struct rfcomm_pinfo *)sk (ImplicitCastExpr, LValueToRValue, struct sock *) (CStyleCastExpr, BitCast, struct rfcomm_pinfo *))->sec_level = sec.level (ImplicitCastExpr, LValueToRValue, __u8))",
+          "cfg_binding(level (ImplicitCastExpr, LValueToRValue, int) == 18)",
+          "cfg_branch(if sec.level (ImplicitCastExpr, LValueToRValue, __u8) (ImplicitCastExpr, IntegralCast, int) > 3)",
+          "cfg_branch(if level (ImplicitCastExpr, LValueToRValue, int) != 274)"
+        ],
+        "functions": [
+          "rfcomm_sock_setsockopt"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "sock->sk",
+          "sk->sk_type"
+        ],
+        "buffer_fields": [
+          "sock->sk",
+          "sk->sk_type"
+        ],
+        "call_targets": [
+          "rfcomm_pi",
+          "release_sock",
+          "rfcomm_sock_setsockopt",
+          "rfcomm_sock_setsockopt_old",
+          "lock_sock",
+          "min_t",
+          "__compiletime_assert_1674",
+          "arch_static_branch_jump"
+        ],
+        "call_edges": [
+          "rfcomm_sock_setsockopt -> __compiletime_assert_1674",
+          "rfcomm_sock_setsockopt -> arch_static_branch_jump",
+          "rfcomm_sock_setsockopt -> arch_static_branch",
+          "rfcomm_sock_setsockopt -> ____wrong_branch_error",
+          "rfcomm_sock_setsockopt -> __builtin_expect",
+          "rfcomm_sock_setsockopt -> __dynamic_pr_debug"
+        ],
+        "cfg_branch_kinds": [
+          "switch",
+          "if"
+        ],
+        "branch_conditions": [
+          "switch [B2.7]",
+          "break;",
+          "if [B7.2]",
+          "if [B9.9]",
+          "if [B12.8] && [B11.8]",
+          "[B12.8] && ..."
+        ],
+        "resolved_branch_conditions": [
+          "if sec.level (ImplicitCastExpr, LValueToRValue, __u8) (ImplicitCastExpr, IntegralCast, int) > 3",
+          "if level (ImplicitCastExpr, LValueToRValue, int) != 274",
+          "if level (ImplicitCastExpr, LValueToRValue, int) == 18",
+          "switch optname (ImplicitCastExpr, LValueToRValue, int)",
+          "break;",
+          "if opt (ImplicitCastExpr, LValueToRValue, u32)"
+        ],
+        "cfg_value_bindings": [
+          "((struct rfcomm_pinfo *)sk (ImplicitCastExpr, LValueToRValue, struct sock *) (CStyleCastExpr, BitCast, struct rfcomm_pinfo *))->sec_level = sec.level (ImplicitCastExpr, LValueToRValue, __u8)",
+          "level (ImplicitCastExpr, LValueToRValue, int) == 18",
+          "sec.level = 1 (ImplicitCastExpr, IntegralCast, __u8)",
+          "level (ImplicitCastExpr, LValueToRValue, int) != 274",
+          "err = -92",
+          "err = -14"
+        ],
+        "state_statements": [
+          "return [B1.7];",
+          "[B3.3] = [B3.2]",
+          "([B5.7])->flags",
+          "([B6.7])->flags",
+          "[B8.3] = [B8.2]",
+          "sizeof(u32)"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,net/bluetooth/rfcomm/.sock.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/uapi -I./arch/x...",
+        "source_file": "net/bluetooth/rfcomm/sock.c",
+        "source_excerpt": "635: \t\t}\n636: \n637: \t\tif (opt & RFCOMM_LM_FIPS) {\n638: \t\t\terr = -EINVAL;\n639: \t\t\tbreak;\n640: \t\t}\n641: \n642: \t\tif (opt & RFCOMM_LM_AUTH)\n643: \t\t\trfcomm_pi(sk)->sec_level = BT_SECURITY_LOW;\n644: \t\tif (opt & RFCOMM_LM_ENCRYPT)\n645: \t\t\trfcomm_pi(sk)->sec_level = BT_SECURITY_MEDIUM;\n646: \t\tif (opt & RFCOMM_LM_SECURE)\n647: \t\t\trfcomm_pi(sk)->sec_level = BT_SECURITY_HIGH;\n648: \n649: \t\trfcomm_pi(sk)->role_switch = (opt & RFCOMM_LM_MASTER);\n650: \t\tbreak;\n651: \n652: \tdefault:\n653: \t\terr = -ENOPROTOOPT;\n654: \t\tbreak;\n655: \t}\n656: \n657: \trelease_sock(sk);\n658: \treturn err;\n659: }\n660: \n661: static int rfcomm_sock_setsockopt(struct socket *sock, int level, int optname,\n662: \t\tsockptr_t optval, unsigned int optlen)\n663: {\n664: \tstruct sock *sk = sock->sk;\n665: \tstruct bt_security sec;\n666: \tint err = 0;\n667: \tsize_t len;\n668: \tu32 opt;\n669: \n670: \tBT_DBG(\"sk %p\", sk);\n671: \n672: \tif (level == SOL_RFCOMM)\n673: \t\treturn rfcomm_sock_setsockopt_old(sock, optname, optval, optlen);\n674: \n675: \tif (level != SOL_BLUETOOTH)\n676: \t\treturn -ENOPROTOOPT;\n677: \n678: \tlock_sock(sk);\n679: \n680: \tswitch (optname) {\n681: \tcase BT_SECURITY:\n682: \t\tif (sk->sk_type != SOCK_STREAM) {\n683: \t\t\terr = -EINVAL;\n684: \t\t\tbreak;\n685: \t\t}\n686: \n687: \t\tsec.level = BT_SECURITY_LOW;\n688: \n689: \t\tlen = min_t(unsigned int, sizeof(sec), optlen);\n690: \t\tif (copy_from_sockptr(&sec, optval, len)) {\n691: \t\t\terr = -EFAULT;\n692: \t\t\tbreak;\n693: \t\t}\n694: \n695: \t\tif (sec.level > BT_SECURITY_HIGH) {\n696: \t\t\terr = -EINVAL;\n697: \t\t\tbreak;\n698: \t\t}\n699: ",
+        "summary_line": 667,
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/generate_only_evidence_all39_v8_r5/G22_a97de7bff13b_Misuse/csa/patchweaver_runtime/csa_raw/net-bluetooth-rfcomm-sock.c-rfcomm_sock_setsockopt.txt",
+        "raw_output_sha256": "6a45626390f642abdc357e948480ffe45dd9c14057b011906ec196f87bfaee52",
+        "command_sha256": "1341b834501a71ed4c96982118a9ebdcd76a90851849d9b33006ae2889f48ae0"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:debug-cfg",
+        "confidence": 0.92,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "net/bluetooth/rfcomm/sock.c",
+          "hunk_index": 1,
+          "source_line": 667
+        },
+        "summary": "Analyzer CFG for rfcomm_sock_setsockopt in net/bluetooth/rfcomm/sock.c: bindings: ((struct rfcomm_pinfo *)sk (ImplicitCastExpr, LValueToRValue, struct sock *) (CStyleCastExpr, BitCast, struct rfcomm_pinfo *))->sec_level = sec.level (ImplicitCastExpr, LValueToRValue, __u8); level (ImplicitCastExpr, LValueToRValue, int) == 18 | branches: if sec.level (ImplicitCastExpr, LValueToRValue, __u8) (ImplicitCastExpr, IntegralCast, int) > 3; if level (ImplicitCastExpr, LValueToRValue, int) != 274 | calls: rfcomm_sock_setsockopt -> __compiletime_assert_1674; rfcomm_sock_setsockopt -> arch_static_branch_jump",
+        "statements": [
+          "635: \t\t}",
+          "636:",
+          "637: \t\tif (opt & RFCOMM_LM_FIPS) {",
+          "638: \t\t\terr = -EINVAL;",
+          "639: \t\t\tbreak;",
+          "640: \t\t}"
+        ],
+        "guards": [
+          "if sec.level (ImplicitCastExpr, LValueToRValue, __u8) (ImplicitCastExpr, IntegralCast, int) > 3",
+          "if level (ImplicitCastExpr, LValueToRValue, int) != 274",
+          "if level (ImplicitCastExpr, LValueToRValue, int) == 18",
+          "switch optname (ImplicitCastExpr, LValueToRValue, int)"
+        ],
+        "call_boundary": [
+          "rfcomm_pi",
+          "release_sock",
+          "rfcomm_sock_setsockopt",
+          "rfcomm_sock_setsockopt_old",
+          "lock_sock",
+          "min_t"
+        ],
+        "call_edges": [
+          "rfcomm_sock_setsockopt -> __compiletime_assert_1674",
+          "rfcomm_sock_setsockopt -> arch_static_branch_jump",
+          "rfcomm_sock_setsockopt -> arch_static_branch",
+          "rfcomm_sock_setsockopt -> ____wrong_branch_error",
+          "rfcomm_sock_setsockopt -> __builtin_expect",
+          "rfcomm_sock_setsockopt -> __dynamic_pr_debug",
+          "rfcomm_sock_setsockopt -> rfcomm_sock_setsockopt_old",
+          "rfcomm_sock_setsockopt -> lock_sock"
+        ],
+        "state_transitions": [
+          "cfg_binding(((struct rfcomm_pinfo *)sk (ImplicitCastExpr, LValueToRValue, struct sock *) (CStyleCastExpr, BitCast, struct rfcomm_pinfo *))->sec_level = sec.level (ImplicitCastExpr, LValueToRValue, __u8))",
+          "cfg_binding(level (ImplicitCastExpr, LValueToRValue, int) == 18)",
+          "cfg_branch(if sec.level (ImplicitCastExpr, LValueToRValue, __u8) (ImplicitCastExpr, IntegralCast, int) > 3)",
+          "cfg_branch(if level (ImplicitCastExpr, LValueToRValue, int) != 274)",
+          "return [B1.7];",
+          "[B3.3] = [B3.2]"
+        ],
+        "api_terms": [
+          "__compiletime_assert_1674",
+          "arch_static_branch_jump",
+          "arch_static_branch",
+          "____wrong_branch_error",
+          "__builtin_expect",
+          "__dynamic_pr_debug"
+        ],
+        "related_symbols": [
+          "sock->sk",
+          "sk->sk_type"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/bluetooth/rfcomm/sock.c",
+        "function": "rfcomm_sock_setsockopt_old"
+      },
+      "location": {
+        "line": 629,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "rfcomm_sock_setsockopt_old adds patch barrier `bt_copy_from_sockptr(&opt, sizeof(opt), optval, optlen)` around rfcomm_pi, rfcomm_dlc_accept.",
+        "state_before": [
+          "input(bt_copy_from_sockptr)",
+          "input(opt)",
+          "risky(copy_from_sockptr)"
+        ],
+        "state_after": [
+          "guard(bt_copy_from_sockptr(&opt, sizeof(opt), optval, optlen))",
+          "sink(rfcomm_pi)",
+          "sink(rfcomm_dlc_accept)",
+          "replaces(copy_from_sockptr)"
+        ],
+        "functions": [
+          "rfcomm_sock_setsockopt_old"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "bt_copy_from_sockptr",
+          "opt",
+          "optval",
+          "optlen"
+        ],
+        "buffer_fields": [],
+        "call_targets": [
+          "rfcomm_pi",
+          "rfcomm_dlc_accept",
+          "bt_sock_stream_recvmsg",
+          "lock_sock"
+        ],
+        "call_edges": [
+          "rfcomm_sock_setsockopt_old -> rfcomm_pi",
+          "rfcomm_sock_setsockopt_old -> rfcomm_dlc_accept",
+          "rfcomm_sock_setsockopt_old -> bt_sock_stream_recvmsg"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "bt_copy_from_sockptr(&opt, sizeof(opt), optval, optlen)"
+        ],
+        "state_statements": [
+          "if (bt_copy_from_sockptr(&opt, sizeof(opt), optval, optlen)) {"
+        ],
+        "return_statements": [],
+        "source_file": "net/bluetooth/rfcomm/sock.c",
+        "source_excerpt": "597: \tstruct sock *sk = sock->sk;\n598: \tstruct rfcomm_dlc *d = rfcomm_pi(sk)->dlc;\n599: \tint len;\n600: \n601: \tif (test_and_clear_bit(RFCOMM_DEFER_SETUP, &d->flags)) {\n602: \t\trfcomm_dlc_accept(d);\n603: \t\treturn 0;\n604: \t}\n605: \n606: \tlen = bt_sock_stream_recvmsg(sock, msg, size, flags);\n607: \n608: \tlock_sock(sk);\n609: \tif (!(flags & MSG_PEEK) && len > 0)\n610: \t\tatomic_sub(len, &sk->sk_rmem_alloc);\n611: \n612: \tif (atomic_read(&sk->sk_rmem_alloc) <= (sk->sk_rcvbuf >> 2))\n613: \t\trfcomm_dlc_unthrottle(rfcomm_pi(sk)->dlc);\n614: \trelease_sock(sk);\n615: \n616: \treturn len;\n617: }\n618: \n619: static int rfcomm_sock_setsockopt_old(struct socket *sock, int optname,\n620: \t\tsockptr_t optval, unsigned int optlen)\n621: {\n622: \tstruct sock *sk = sock->sk;\n623: \tint err = 0;\n624: \tu32 opt;\n625: \n626: \tBT_DBG(\"sk %p\", sk);\n627: \n628: \tlock_sock(sk);\n629: \n630: \tswitch (optname) {\n631: \tcase RFCOMM_LM:\n632: \t\tif (copy_from_sockptr(&opt, optval, sizeof(u32))) {\n633: \t\t\terr = -EFAULT;\n634: \t\t\tbreak;\n635: \t\t}\n636: \n637: \t\tif (opt & RFCOMM_LM_FIPS) {\n638: \t\t\terr = -EINVAL;\n639: \t\t\tbreak;\n640: \t\t}\n641: \n642: \t\tif (opt & RFCOMM_LM_AUTH)\n643: \t\t\trfcomm_pi(sk)->sec_level = BT_SECURITY_LOW;\n644: \t\tif (opt & RFCOMM_LM_ENCRYPT)\n645: \t\t\trfcomm_pi(sk)->sec_level = BT_SECURITY_MEDIUM;\n646: \t\tif (opt & RFCOMM_LM_SECURE)\n647: \t\t\trfcomm_pi(sk)->sec_level = BT_SECURITY_HIGH;\n648: \n649: \t\trfcomm_pi(sk)->role_switch = (opt & RFCOMM_LM_MASTER);\n650: \t\tbreak;\n651: \n652: \tdefault:\n653: \t\terr = -ENOPROTOOPT;\n654: \t\tbreak;\n655: \t}\n656: \n657: \trelease_sock(sk);\n658: \treturn err;\n659: }\n660: \n661: static int rfcomm_sock_setsockopt(struct socket *sock, int level, int optname,",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:guarded-state",
+        "confidence": 0.9,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "net/bluetooth/rfcomm/sock.c",
+          "hunk_index": 0,
+          "source_line": 629
+        },
+        "summary": "rfcomm_sock_setsockopt_old adds patch barrier `bt_copy_from_sockptr(&opt, sizeof(opt), optval, optlen)` around rfcomm_pi, rfcomm_dlc_accept.",
+        "statements": [
+          "if (bt_copy_from_sockptr(&opt, sizeof(opt), optval, optlen)) {"
+        ],
+        "guards": [
+          "bt_copy_from_sockptr(&opt, sizeof(opt), optval, optlen)"
+        ],
+        "call_boundary": [
+          "rfcomm_pi",
+          "rfcomm_dlc_accept",
+          "bt_sock_stream_recvmsg",
+          "lock_sock"
+        ],
+        "call_edges": [
+          "rfcomm_sock_setsockopt_old -> rfcomm_pi",
+          "rfcomm_sock_setsockopt_old -> rfcomm_dlc_accept",
+          "rfcomm_sock_setsockopt_old -> bt_sock_stream_recvmsg"
+        ],
+        "state_transitions": [
+          "guard(bt_copy_from_sockptr(&opt, sizeof(opt), optval, optlen))",
+          "sink(rfcomm_pi)",
+          "sink(rfcomm_dlc_accept)",
+          "replaces(copy_from_sockptr)"
+        ],
+        "api_terms": [
+          "rfcomm_pi",
+          "rfcomm_dlc_accept",
+          "bt_sock_stream_recvmsg"
+        ],
+        "related_symbols": [
+          "bt_copy_from_sockptr",
+          "opt",
+          "optval",
+          "optlen"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_state_1",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/bluetooth/rfcomm/sock.c",
+        "function": "rfcomm_sock_setsockopt"
+      },
+      "location": {
+        "line": 686,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "rfcomm_sock_setsockopt adds patch barrier `err` around rfcomm_sock_setsockopt_old, min_t.",
+        "state_before": [
+          "input(err)",
+          "input(bt_copy_from_sockptr)",
+          "risky(min_t)",
+          "risky(copy_from_sockptr)"
+        ],
+        "state_after": [
+          "guard(err)",
+          "sink(rfcomm_sock_setsockopt_old)",
+          "sink(min_t)",
+          "replaces(min_t)",
+          "replaces(copy_from_sockptr)"
+        ],
+        "functions": [
+          "rfcomm_sock_setsockopt"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "err",
+          "bt_copy_from_sockptr",
+          "sec",
+          "optval",
+          "optlen"
+        ],
+        "buffer_fields": [],
+        "call_targets": [
+          "rfcomm_sock_setsockopt_old",
+          "min_t"
+        ],
+        "call_edges": [
+          "rfcomm_sock_setsockopt -> rfcomm_sock_setsockopt_old",
+          "rfcomm_sock_setsockopt -> min_t"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "err"
+        ],
+        "state_statements": [
+          "err = bt_copy_from_sockptr(&sec, sizeof(sec), optval, optlen);",
+          "if (err)"
+        ],
+        "return_statements": [],
+        "source_file": "net/bluetooth/rfcomm/sock.c",
+        "source_excerpt": "657: \trelease_sock(sk);\n658: \treturn err;\n659: }\n660: \n661: static int rfcomm_sock_setsockopt(struct socket *sock, int level, int optname,\n662: \t\tsockptr_t optval, unsigned int optlen)\n663: {\n664: \tstruct sock *sk = sock->sk;\n665: \tstruct bt_security sec;\n666: \tint err = 0;\n667: \tsize_t len;\n668: \tu32 opt;\n669: \n670: \tBT_DBG(\"sk %p\", sk);\n671: \n672: \tif (level == SOL_RFCOMM)\n673: \t\treturn rfcomm_sock_setsockopt_old(sock, optname, optval, optlen);\n674: \n675: \tif (level != SOL_BLUETOOTH)\n676: \t\treturn -ENOPROTOOPT;\n677: \n678: \tlock_sock(sk);\n679: \n680: \tswitch (optname) {\n681: \tcase BT_SECURITY:\n682: \t\tif (sk->sk_type != SOCK_STREAM) {\n683: \t\t\terr = -EINVAL;\n684: \t\t\tbreak;\n685: \t\t}\n686: \n687: \t\tsec.level = BT_SECURITY_LOW;\n688: \n689: \t\tlen = min_t(unsigned int, sizeof(sec), optlen);\n690: \t\tif (copy_from_sockptr(&sec, optval, len)) {\n691: \t\t\terr = -EFAULT;\n692: \t\t\tbreak;\n693: \t\t}\n694: \n695: \t\tif (sec.level > BT_SECURITY_HIGH) {\n696: \t\t\terr = -EINVAL;\n697: \t\t\tbreak;\n698: \t\t}\n699: \n700: \t\trfcomm_pi(sk)->sec_level = sec.level;\n701: \t\tbreak;\n702: \n703: \tcase BT_DEFER_SETUP:\n704: \t\tif (sk->sk_state != BT_BOUND && sk->sk_state != BT_LISTEN) {\n705: \t\t\terr = -EINVAL;\n706: \t\t\tbreak;\n707: \t\t}\n708: \n709: \t\tif (copy_from_sockptr(&opt, optval, sizeof(u32))) {\n710: \t\t\terr = -EFAULT;\n711: \t\t\tbreak;\n712: \t\t}\n713: \n714: \t\tif (opt)\n715: \t\t\tset_bit(BT_SK_DEFER_SETUP, &bt_sk(sk)->flags);\n716: \t\telse\n717: \t\t\tclear_bit(BT_SK_DEFER_SETUP, &bt_sk(sk)->flags);\n718: \n719: \t\tbreak;\n720: \n721: \tdefault:",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:guarded-state",
+        "confidence": 0.9,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "net/bluetooth/rfcomm/sock.c",
+          "hunk_index": 2,
+          "source_line": 686
+        },
+        "summary": "rfcomm_sock_setsockopt adds patch barrier `err` around rfcomm_sock_setsockopt_old, min_t.",
+        "statements": [
+          "err = bt_copy_from_sockptr(&sec, sizeof(sec), optval, optlen);",
+          "if (err)"
+        ],
+        "guards": [
+          "err"
+        ],
+        "call_boundary": [
+          "rfcomm_sock_setsockopt_old",
+          "min_t"
+        ],
+        "call_edges": [
+          "rfcomm_sock_setsockopt -> rfcomm_sock_setsockopt_old",
+          "rfcomm_sock_setsockopt -> min_t"
+        ],
+        "state_transitions": [
+          "guard(err)",
+          "sink(rfcomm_sock_setsockopt_old)",
+          "sink(min_t)",
+          "replaces(min_t)",
+          "replaces(copy_from_sockptr)"
+        ],
+        "api_terms": [
+          "rfcomm_sock_setsockopt_old",
+          "min_t"
+        ],
+        "related_symbols": [
+          "err",
+          "bt_copy_from_sockptr",
+          "sec",
+          "optval",
+          "optlen"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_state_2",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/bluetooth/rfcomm/sock.c",
+        "function": "rfcomm_sock_setsockopt"
+      },
+      "location": {
+        "line": 706,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "rfcomm_sock_setsockopt adds patch barrier `err` around rfcomm_sock_getsockopt_old.",
+        "state_before": [
+          "input(err)",
+          "input(bt_copy_from_sockptr)",
+          "risky(copy_from_sockptr)"
+        ],
+        "state_after": [
+          "guard(err)",
+          "sink(rfcomm_sock_getsockopt_old)",
+          "replaces(copy_from_sockptr)"
+        ],
+        "functions": [
+          "rfcomm_sock_setsockopt"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "err",
+          "bt_copy_from_sockptr",
+          "opt",
+          "optval",
+          "optlen"
+        ],
+        "buffer_fields": [],
+        "call_targets": [
+          "rfcomm_sock_getsockopt_old"
+        ],
+        "call_edges": [
+          "rfcomm_sock_setsockopt -> rfcomm_sock_getsockopt_old"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "err"
+        ],
+        "state_statements": [
+          "err = bt_copy_from_sockptr(&opt, sizeof(opt), optval, optlen);",
+          "if (err)"
+        ],
+        "return_statements": [],
+        "source_file": "net/bluetooth/rfcomm/sock.c",
+        "source_excerpt": "674: \n675: \tif (level != SOL_BLUETOOTH)\n676: \t\treturn -ENOPROTOOPT;\n677: \n678: \tlock_sock(sk);\n679: \n680: \tswitch (optname) {\n681: \tcase BT_SECURITY:\n682: \t\tif (sk->sk_type != SOCK_STREAM) {\n683: \t\t\terr = -EINVAL;\n684: \t\t\tbreak;\n685: \t\t}\n686: \n687: \t\tsec.level = BT_SECURITY_LOW;\n688: \n689: \t\tlen = min_t(unsigned int, sizeof(sec), optlen);\n690: \t\tif (copy_from_sockptr(&sec, optval, len)) {\n691: \t\t\terr = -EFAULT;\n692: \t\t\tbreak;\n693: \t\t}\n694: \n695: \t\tif (sec.level > BT_SECURITY_HIGH) {\n696: \t\t\terr = -EINVAL;\n697: \t\t\tbreak;\n698: \t\t}\n699: \n700: \t\trfcomm_pi(sk)->sec_level = sec.level;\n701: \t\tbreak;\n702: \n703: \tcase BT_DEFER_SETUP:\n704: \t\tif (sk->sk_state != BT_BOUND && sk->sk_state != BT_LISTEN) {\n705: \t\t\terr = -EINVAL;\n706: \t\t\tbreak;\n707: \t\t}\n708: \n709: \t\tif (copy_from_sockptr(&opt, optval, sizeof(u32))) {\n710: \t\t\terr = -EFAULT;\n711: \t\t\tbreak;\n712: \t\t}\n713: \n714: \t\tif (opt)\n715: \t\t\tset_bit(BT_SK_DEFER_SETUP, &bt_sk(sk)->flags);\n716: \t\telse\n717: \t\t\tclear_bit(BT_SK_DEFER_SETUP, &bt_sk(sk)->flags);\n718: \n719: \t\tbreak;\n720: \n721: \tdefault:\n722: \t\terr = -ENOPROTOOPT;\n723: \t\tbreak;\n724: \t}\n725: \n726: \trelease_sock(sk);\n727: \treturn err;\n728: }\n729: \n730: static int rfcomm_sock_getsockopt_old(struct socket *sock, int optname, char __user *optval, int __user *optlen)\n731: {\n732: \tstruct sock *sk = sock->sk;\n733: \tstruct sock *l2cap_sk;\n734: \tstruct l2cap_conn *conn;\n735: \tstruct rfcomm_conninfo cinfo;\n736: \tint len, err = 0;\n737: \tu32 opt;\n738: ",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:guarded-state",
+        "confidence": 0.9,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "net/bluetooth/rfcomm/sock.c",
+          "hunk_index": 3,
+          "source_line": 706
+        },
+        "summary": "rfcomm_sock_setsockopt adds patch barrier `err` around rfcomm_sock_getsockopt_old.",
+        "statements": [
+          "err = bt_copy_from_sockptr(&opt, sizeof(opt), optval, optlen);",
+          "if (err)"
+        ],
+        "guards": [
+          "err"
+        ],
+        "call_boundary": [
+          "rfcomm_sock_getsockopt_old"
+        ],
+        "call_edges": [
+          "rfcomm_sock_setsockopt -> rfcomm_sock_getsockopt_old"
+        ],
+        "state_transitions": [
+          "guard(err)",
+          "sink(rfcomm_sock_getsockopt_old)",
+          "replaces(copy_from_sockptr)"
+        ],
+        "api_terms": [
+          "rfcomm_sock_getsockopt_old"
+        ],
+        "related_symbols": [
+          "err",
+          "bt_copy_from_sockptr",
+          "opt",
+          "optval",
+          "optlen"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_lifecycle_0",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "net/bluetooth/rfcomm/sock.c",
+        "function": "rfcomm_sock_setsockopt_old"
+      },
+      "location": {
+        "line": 629,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "rfcomm_sock_setsockopt_old in net/bluetooth/rfcomm/sock.c reaches release_sock",
+        "operations": [
+          "release_sock"
+        ],
+        "acquisition_ops": [],
+        "release_ops": [
+          "release_sock"
+        ],
+        "transition_ops": [],
+        "state_before": [
+          "buffer(sock->sk)",
+          "buffer(d->flags)",
+          "sinks(rfcomm_pi, rfcomm_dlc_accept)"
+        ],
+        "state_after": [
+          "transition(release_sock)",
+          "locked(lock_sock)"
+        ],
+        "functions": [
+          "rfcomm_sock_setsockopt_old"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "sock->sk",
+          "d->flags",
+          "sk->sk_rmem_alloc",
+          "sk->sk_rcvbuf"
+        ],
+        "buffer_fields": [
+          "sock->sk",
+          "d->flags",
+          "sk->sk_rmem_alloc",
+          "sk->sk_rcvbuf"
+        ],
+        "call_edges": [
+          "rfcomm_sock_setsockopt_old -> __compiletime_assert_1672",
+          "rfcomm_sock_setsockopt_old -> arch_static_branch_jump",
+          "rfcomm_sock_setsockopt_old -> arch_static_branch",
+          "rfcomm_sock_setsockopt_old -> ____wrong_branch_error",
+          "rfcomm_sock_setsockopt_old -> __builtin_expect",
+          "rfcomm_sock_setsockopt_old -> __dynamic_pr_debug"
+        ],
+        "cfg_value_bindings": [
+          "static struct _ddebug __UNIQUE_ID_ddebug1671 __attribute__((aligned(8))) __attribute__((section(\"__dyndbg\"))) = {.modname = \"rfcomm\", .function = __func__, .filename = \"/work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/net/bluetooth/rfcomm/sock.c\", .format = (\"sk %p\\n\"), .lineno = 626, .flags = 0, .class_id = ((1 << 6) - 1), .key.dd_key_false = ((struct static_key_false){.key = {.enabled = {0}, {.type = 0UL}}})};",
+          "{.modname = \"rfcomm\" (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *), .function = __func__ (ImplicitCastExpr, ArrayToPointerDecay, const char *), .filename = \"/work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/net/bluetooth/rfcomm/sock.c\" (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *), .format = (\"sk %p\\n\") (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *), .lineno = 626 (ImplicitCastExpr, IntegralCast, unsigned int), .flags = 0 (ImplicitCastExpr, IntegralCast, unsigned int), .class_id = ((1 << 6) - 1) (ImplicitCastExpr, IntegralCast, unsigned int), .key.dd_key_false = ((struct static_key_false){.key = {.enabled = {0}, {.type = 0UL}}})}",
+          "((struct rfcomm_pinfo *)sk (ImplicitCastExpr, LValueToRValue, struct sock *) (CStyleCastExpr, BitCast, struct rfcomm_pinfo *))->sec_level = 3 (ImplicitCastExpr, IntegralCast, u8)",
+          "((struct rfcomm_pinfo *)sk (ImplicitCastExpr, LValueToRValue, struct sock *) (CStyleCastExpr, BitCast, struct rfcomm_pinfo *))->sec_level = 2 (ImplicitCastExpr, IntegralCast, u8)",
+          "((struct rfcomm_pinfo *)sk (ImplicitCastExpr, LValueToRValue, struct sock *) (CStyleCastExpr, BitCast, struct rfcomm_pinfo *))->sec_level = 1 (ImplicitCastExpr, IntegralCast, u8)",
+          "((struct rfcomm_pinfo *)sk (ImplicitCastExpr, LValueToRValue, struct sock *) (CStyleCastExpr, BitCast, struct rfcomm_pinfo *))->role_switch = (opt (ImplicitCastExpr, LValueToRValue, u32) & 1 (ImplicitCastExpr, IntegralCast, u32)) (ImplicitCastExpr, IntegralCast, u8)"
+        ],
+        "resolved_branch_conditions": [
+          "switch optname (ImplicitCastExpr, LValueToRValue, int)",
+          "break;",
+          "if opt (ImplicitCastExpr, LValueToRValue, u32) & 32 (ImplicitCastExpr, IntegralCast, u32)",
+          "if opt (ImplicitCastExpr, LValueToRValue, u32) & 4 (ImplicitCastExpr, IntegralCast, u32)",
+          "if opt (ImplicitCastExpr, LValueToRValue, u32) & 2 (ImplicitCastExpr, IntegralCast, u32)",
+          "if opt (ImplicitCastExpr, LValueToRValue, u32) & 64 (ImplicitCastExpr, IntegralCast, u32)"
+        ],
+        "source_file": "net/bluetooth/rfcomm/sock.c",
+        "source_excerpt": "597: \tstruct sock *sk = sock->sk;\n598: \tstruct rfcomm_dlc *d = rfcomm_pi(sk)->dlc;\n599: \tint len;\n600: \n601: \tif (test_and_clear_bit(RFCOMM_DEFER_SETUP, &d->flags)) {\n602: \t\trfcomm_dlc_accept(d);\n603: \t\treturn 0;\n604: \t}\n605: \n606: \tlen = bt_sock_stream_recvmsg(sock, msg, size, flags);\n607: \n608: \tlock_sock(sk);\n609: \tif (!(flags & MSG_PEEK) && len > 0)\n610: \t\tatomic_sub(len, &sk->sk_rmem_alloc);\n611: \n612: \tif (atomic_read(&sk->sk_rmem_alloc) <= (sk->sk_rcvbuf >> 2))\n613: \t\trfcomm_dlc_unthrottle(rfcomm_pi(sk)->dlc);\n614: \trelease_sock(sk);\n615: \n616: \treturn len;\n617: }\n618: \n619: static int rfcomm_sock_setsockopt_old(struct socket *sock, int optname,\n620: \t\tsockptr_t optval, unsigned int optlen)\n621: {\n622: \tstruct sock *sk = sock->sk;\n623: \tint err = 0;\n624: \tu32 opt;\n625: \n626: \tBT_DBG(\"sk %p\", sk);\n627: \n628: \tlock_sock(sk);\n629: \n630: \tswitch (optname) {\n631: \tcase RFCOMM_LM:\n632: \t\tif (copy_from_sockptr(&opt, optval, sizeof(u32))) {\n633: \t\t\terr = -EFAULT;\n634: \t\t\tbreak;\n635: \t\t}\n636: \n637: \t\tif (opt & RFCOMM_LM_FIPS) {\n638: \t\t\terr = -EINVAL;\n639: \t\t\tbreak;\n640: \t\t}\n641: \n642: \t\tif (opt & RFCOMM_LM_AUTH)\n643: \t\t\trfcomm_pi(sk)->sec_level = BT_SECURITY_LOW;\n644: \t\tif (opt & RFCOMM_LM_ENCRYPT)\n645: \t\t\trfcomm_pi(sk)->sec_level = BT_SECURITY_MEDIUM;\n646: \t\tif (opt & RFCOMM_LM_SECURE)\n647: \t\t\trfcomm_pi(sk)->sec_level = BT_SECURITY_HIGH;\n648: \n649: \t\trfcomm_pi(sk)->role_switch = (opt & RFCOMM_LM_MASTER);\n650: \t\tbreak;\n651: \n652: \tdefault:\n653: \t\terr = -ENOPROTOOPT;\n654: \t\tbreak;\n655: \t}\n656: \n657: \trelease_sock(sk);\n658: \treturn err;\n659: }\n660: \n661: static int rfcomm_sock_setsockopt(struct socket *sock, int level, int optname,",
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/generate_only_evidence_all39_v8_r5/G22_a97de7bff13b_Misuse/csa/patchweaver_runtime/csa_raw/net-bluetooth-rfcomm-sock.c-rfcomm_sock_setsockopt_old.txt",
+        "raw_output_sha256": "6a45626390f642abdc357e948480ffe45dd9c14057b011906ec196f87bfaee52",
+        "command_sha256": "1341b834501a71ed4c96982118a9ebdcd76a90851849d9b33006ae2889f48ae0"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:lifecycle",
+        "confidence": 0.9,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "net/bluetooth/rfcomm/sock.c",
+          "hunk_index": 0,
+          "source_line": 629
+        },
+        "summary": "rfcomm_sock_setsockopt_old in net/bluetooth/rfcomm/sock.c reaches release_sock",
+        "statements": [
+          "597: \tstruct sock *sk = sock->sk;",
+          "598: \tstruct rfcomm_dlc *d = rfcomm_pi(sk)->dlc;",
+          "599: \tint len;",
+          "600:",
+          "601: \tif (test_and_clear_bit(RFCOMM_DEFER_SETUP, &d->flags)) {",
+          "602: \t\trfcomm_dlc_accept(d);"
+        ],
+        "guards": [
+          "switch [B2.7]",
+          "break;",
+          "if [B6.5]"
+        ],
+        "call_boundary": [
+          "rfcomm_pi",
+          "rfcomm_dlc_accept",
+          "bt_sock_stream_recvmsg",
+          "lock_sock",
+          "atomic_sub",
+          "rfcomm_dlc_unthrottle"
+        ],
+        "call_edges": [
+          "rfcomm_sock_setsockopt_old -> __compiletime_assert_1672",
+          "rfcomm_sock_setsockopt_old -> arch_static_branch_jump",
+          "rfcomm_sock_setsockopt_old -> arch_static_branch",
+          "rfcomm_sock_setsockopt_old -> ____wrong_branch_error",
+          "rfcomm_sock_setsockopt_old -> __builtin_expect",
+          "rfcomm_sock_setsockopt_old -> __dynamic_pr_debug",
+          "rfcomm_sock_setsockopt_old -> lock_sock",
+          "rfcomm_sock_setsockopt_old -> copy_from_sockptr"
+        ],
+        "state_transitions": [
+          "transition(release_sock)",
+          "locked(lock_sock)",
+          "return [B1.7];",
+          "[B3.3] = [B3.2]",
+          "([B4.9])->role_switch",
+          "[B4.10] = [B4.6]"
+        ],
+        "api_terms": [
+          "release_sock",
+          "__compiletime_assert_1672",
+          "arch_static_branch_jump",
+          "arch_static_branch",
+          "____wrong_branch_error",
+          "__builtin_expect"
+        ],
+        "related_symbols": [
+          "sock->sk",
+          "d->flags",
+          "sk->sk_rmem_alloc",
+          "sk->sk_rcvbuf"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "collected_analyzers": [
+    "csa"
+  ],
+  "provenance_summary": {
+    "total_records": 11,
+    "origin_counts": {
+      "analyzer_internal": 3,
+      "source_derived": 8
+    },
+    "analyzer_internal_records": 3,
+    "analyzer_internal_fraction": 0.2727272727272727,
+    "analyzer_backed_records": 3,
+    "analyzer_backed_fraction": 0.2727272727272727,
+    "source_derived_records": 8,
+    "source_derived_fraction": 0.7272727272727273
+  }
+}

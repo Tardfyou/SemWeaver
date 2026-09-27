@@ -1,0 +1,762 @@
+{
+  "records": [
+    {
+      "evidence_id": "csa_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "io_uring/net.c",
+        "function": "io_recvmsg_mshot_prep"
+      },
+      "location": {
+        "line": 559,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "io_recvmsg_mshot_prep adds patch barrier `check_add_overflow(sizeof(struct io_uring_recvmsg_out` around iomsg->controllen = controllen.",
+        "contract_type": "patch_barrier",
+        "same_call_binding": "tie the guard to the current downstream sink or protected state transition instead of any unrelated if-statement",
+        "trigger_contract": "report when a risky write proceeds without the patch-style barrier",
+        "silence_contract": "stay silent when the nearby guard proves the current write is blocked or bounded",
+        "guard_exprs": [
+          "check_add_overflow(sizeof(struct io_uring_recvmsg_out",
+          "check_add_overflow(hdr, controllen, &hdr)"
+        ],
+        "removed_calls": [
+          "check_add_overflow"
+        ],
+        "added_calls": [
+          "check_add_overflow"
+        ],
+        "tracked_symbols": [
+          "check_add_overflow",
+          "io_uring_recvmsg_out",
+          "hdr",
+          "controllen"
+        ],
+        "widened_variables": [],
+        "state_resets": [],
+        "old_numeric_type": "",
+        "new_numeric_type": "",
+        "numeric_domain_change": "",
+        "arithmetic_operations": [],
+        "sink_calls": [
+          "iomsg->controllen = controllen"
+        ],
+        "buffer_fields": [
+          "iomsg->controllen"
+        ],
+        "source_file": "io_uring/net.c",
+        "function": "io_recvmsg_mshot_prep",
+        "source_excerpt": "530: \t\tif (ret == -EAGAIN && (issue_flags & IO_URING_F_NONBLOCK))\n531: \t\t\treturn io_setup_async_addr(req, &__address, issue_flags);\n532: \n533: \t\tif (ret > 0 && io_net_retry(sock, flags)) {\n534: \t\t\tsr->len -= ret;\n535: \t\t\tsr->buf += ret;\n536: \t\t\tsr->done_io += ret;\n537: \t\t\treq->flags |= REQ_F_PARTIAL_IO;\n538: \t\t\treturn io_setup_async_addr(req, &__address, issue_flags);\n539: \t\t}\n540: \t\tif (ret == -ERESTARTSYS)\n541: \t\t\tret = -EINTR;\n542: \t\treq_set_fail(req);\n543: \t}\n544: \tif (ret >= 0)\n545: \t\tret += sr->done_io;\n546: \telse if (sr->done_io)\n547: \t\tret = sr->done_io;\n548: \tio_req_set_res(req, ret, 0);\n549: \treturn IOU_OK;\n550: }\n551: \n552: static int io_recvmsg_mshot_prep(struct io_kiocb *req,\n553: \t\t\t\t struct io_async_msghdr *iomsg,\n554: \t\t\t\t int namelen, size_t controllen)\n555: {\n556: \tif ((req->flags & (REQ_F_APOLL_MULTISHOT|REQ_F_BUFFER_SELECT)) ==\n557: \t\t\t  (REQ_F_APOLL_MULTISHOT|REQ_F_BUFFER_SELECT)) {\n558: \t\tint hdr;\n559: \n560: \t\tif (unlikely(namelen < 0))\n561: \t\t\treturn -EOVERFLOW;\n562: \t\tif (check_add_overflow((int)sizeof(struct io_uring_recvmsg_out),\n563: \t\t\t\t\tnamelen, &hdr))\n564: \t\t\treturn -EOVERFLOW;\n565: \t\tif (check_add_overflow(hdr, (int)controllen, &hdr))\n566: \t\t\treturn -EOVERFLOW;\n567: \n568: \t\tiomsg->namelen = namelen;\n569: \t\tiomsg->controllen = controllen;\n570: \t\treturn 0;\n571: \t}\n572: \n573: \treturn 0;\n574: }\n575: \n576: static int io_recvmsg_copy_hdr(struct io_kiocb *req,\n577: \t\t\t       struct io_async_msghdr *iomsg)\n578: {\n579: \tstruct user_msghdr msg;\n580: \tint ret;\n581: \n582: \tiomsg->msg.msg_name = &iomsg->addr;\n583: \tiomsg->msg.msg_iter.nr_segs = 0;\n584: \n585: #ifdef CONFIG_COMPAT\n586: \tif (unlikely(req->ctx->compat)) {\n587: \t\tstruct compat_msghdr cmsg;\n588: \n589: \t\tret = io_compat_msg_copy_hdr(req, iomsg, &cmsg, ITER_DEST);\n590: \t\tif (unlikely(ret))\n591: \t\t\treturn ret;\n592: \n593: \t\tret = __get_compat_msghdr(&iomsg->msg, &cmsg, &iomsg->uaddr);\n594: \t\tif (unlikely(ret))",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:semantic-contract",
+        "confidence": 0.92,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "io_uring/net.c",
+          "hunk_index": 0,
+          "source_line": 559
+        },
+        "summary": "io_recvmsg_mshot_prep adds patch barrier `check_add_overflow(sizeof(struct io_uring_recvmsg_out` around iomsg->controllen = controllen.",
+        "statements": [
+          "if (check_add_overflow(sizeof(struct io_uring_recvmsg_out),",
+          "if (check_add_overflow(hdr, controllen, &hdr))"
+        ],
+        "guards": [
+          "check_add_overflow(sizeof(struct io_uring_recvmsg_out",
+          "check_add_overflow(hdr, controllen, &hdr)"
+        ],
+        "call_boundary": [
+          "iomsg->controllen = controllen"
+        ],
+        "call_edges": [
+          "io_recvmsg_mshot_prep -> iomsg->controllen = controllen"
+        ],
+        "state_transitions": [
+          "",
+          "report when a risky write proceeds without the patch-style barrier",
+          "stay silent when the nearby guard proves the current write is blocked or bounded"
+        ],
+        "api_terms": [
+          "iomsg->controllen = controllen",
+          "check_add_overflow",
+          "check_add_overflow"
+        ],
+        "related_symbols": [
+          "check_add_overflow",
+          "io_uring_recvmsg_out",
+          "hdr",
+          "controllen"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "io_uring/net.c",
+        "function": "io_recvmsg_mshot_prep"
+      },
+      "location": {
+        "line": 559,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "check_add_overflow(sizeof(struct io_uring_recvmsg_out",
+        "summary": "io_recvmsg_mshot_prep introduces patch guard `check_add_overflow(sizeof(struct io_uring_recvmsg_out` before iomsg->controllen = controllen.",
+        "state_before": [
+          "input(check_add_overflow)",
+          "input(io_uring_recvmsg_out)",
+          "buffer(iomsg->controllen)",
+          "risky(check_add_overflow)"
+        ],
+        "state_after": [
+          "guard(check_add_overflow(sizeof(struct io_uring_recvmsg_out)",
+          "current_call(iomsg->controllen = controllen)"
+        ],
+        "functions": [
+          "io_recvmsg_mshot_prep"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "check_add_overflow",
+          "io_uring_recvmsg_out",
+          "hdr",
+          "controllen"
+        ],
+        "buffer_fields": [
+          "iomsg->controllen"
+        ],
+        "call_targets": [
+          "iomsg->controllen = controllen"
+        ],
+        "call_edges": [
+          "io_recvmsg_mshot_prep -> iomsg->controllen = controllen"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "check_add_overflow(sizeof(struct io_uring_recvmsg_out"
+        ],
+        "state_statements": [
+          "if (check_add_overflow(sizeof(struct io_uring_recvmsg_out),",
+          "if (check_add_overflow(hdr, controllen, &hdr))"
+        ],
+        "compile_command_preview": "",
+        "source_file": "io_uring/net.c",
+        "source_excerpt": "530: \t\tif (ret == -EAGAIN && (issue_flags & IO_URING_F_NONBLOCK))\n531: \t\t\treturn io_setup_async_addr(req, &__address, issue_flags);\n532: \n533: \t\tif (ret > 0 && io_net_retry(sock, flags)) {\n534: \t\t\tsr->len -= ret;\n535: \t\t\tsr->buf += ret;\n536: \t\t\tsr->done_io += ret;\n537: \t\t\treq->flags |= REQ_F_PARTIAL_IO;\n538: \t\t\treturn io_setup_async_addr(req, &__address, issue_flags);\n539: \t\t}\n540: \t\tif (ret == -ERESTARTSYS)\n541: \t\t\tret = -EINTR;\n542: \t\treq_set_fail(req);\n543: \t}\n544: \tif (ret >= 0)\n545: \t\tret += sr->done_io;\n546: \telse if (sr->done_io)\n547: \t\tret = sr->done_io;\n548: \tio_req_set_res(req, ret, 0);\n549: \treturn IOU_OK;\n550: }\n551: \n552: static int io_recvmsg_mshot_prep(struct io_kiocb *req,\n553: \t\t\t\t struct io_async_msghdr *iomsg,\n554: \t\t\t\t int namelen, size_t controllen)\n555: {\n556: \tif ((req->flags & (REQ_F_APOLL_MULTISHOT|REQ_F_BUFFER_SELECT)) ==\n557: \t\t\t  (REQ_F_APOLL_MULTISHOT|REQ_F_BUFFER_SELECT)) {\n558: \t\tint hdr;\n559: \n560: \t\tif (unlikely(namelen < 0))\n561: \t\t\treturn -EOVERFLOW;\n562: \t\tif (check_add_overflow((int)sizeof(struct io_uring_recvmsg_out),\n563: \t\t\t\t\tnamelen, &hdr))\n564: \t\t\treturn -EOVERFLOW;\n565: \t\tif (check_add_overflow(hdr, (int)controllen, &hdr))\n566: \t\t\treturn -EOVERFLOW;\n567: \n568: \t\tiomsg->namelen = namelen;\n569: \t\tiomsg->controllen = controllen;\n570: \t\treturn 0;\n571: \t}\n572: \n573: \treturn 0;\n574: }\n575: \n576: static int io_recvmsg_copy_hdr(struct io_kiocb *req,\n577: \t\t\t       struct io_async_msghdr *iomsg)\n578: {\n579: \tstruct user_msghdr msg;\n580: \tint ret;\n581: \n582: \tiomsg->msg.msg_name = &iomsg->addr;\n583: \tiomsg->msg.msg_iter.nr_segs = 0;\n584: \n585: #ifdef CONFIG_COMPAT\n586: \tif (unlikely(req->ctx->compat)) {\n587: \t\tstruct compat_msghdr cmsg;\n588: \n589: \t\tret = io_compat_msg_copy_hdr(req, iomsg, &cmsg, ITER_DEST);\n590: \t\tif (unlikely(ret))\n591: \t\t\treturn ret;\n592: \n593: \t\tret = __get_compat_msghdr(&iomsg->msg, &cmsg, &iomsg->uaddr);\n594: \t\tif (unlikely(ret))",
+        "summary_line": 559,
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:path-guard",
+        "confidence": 0.92,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "io_uring/net.c",
+          "hunk_index": 0,
+          "source_line": 559
+        },
+        "summary": "io_recvmsg_mshot_prep introduces patch guard `check_add_overflow(sizeof(struct io_uring_recvmsg_out` before iomsg->controllen = controllen.",
+        "statements": [
+          "if (check_add_overflow(sizeof(struct io_uring_recvmsg_out),",
+          "if (check_add_overflow(hdr, controllen, &hdr))"
+        ],
+        "guards": [
+          "check_add_overflow(sizeof(struct io_uring_recvmsg_out"
+        ],
+        "call_boundary": [
+          "iomsg->controllen = controllen"
+        ],
+        "call_edges": [
+          "io_recvmsg_mshot_prep -> iomsg->controllen = controllen"
+        ],
+        "state_transitions": [
+          "guard(check_add_overflow(sizeof(struct io_uring_recvmsg_out)",
+          "current_call(iomsg->controllen = controllen)"
+        ],
+        "api_terms": [
+          "iomsg->controllen = controllen"
+        ],
+        "related_symbols": [
+          "check_add_overflow",
+          "io_uring_recvmsg_out",
+          "hdr",
+          "controllen"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_guard_1",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "io_uring/net.c",
+        "function": "io_recvmsg_mshot_prep"
+      },
+      "location": {
+        "line": 559,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "check_add_overflow(hdr, controllen, &hdr)",
+        "summary": "io_recvmsg_mshot_prep introduces patch guard `check_add_overflow(hdr, controllen, &hdr)` before iomsg->controllen = controllen.",
+        "state_before": [
+          "input(check_add_overflow)",
+          "input(io_uring_recvmsg_out)",
+          "buffer(iomsg->controllen)",
+          "risky(check_add_overflow)"
+        ],
+        "state_after": [
+          "guard(check_add_overflow(hdr, controllen, &hdr))",
+          "current_call(iomsg->controllen = controllen)"
+        ],
+        "functions": [
+          "io_recvmsg_mshot_prep"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "check_add_overflow",
+          "io_uring_recvmsg_out",
+          "hdr",
+          "controllen"
+        ],
+        "buffer_fields": [
+          "iomsg->controllen"
+        ],
+        "call_targets": [
+          "iomsg->controllen = controllen"
+        ],
+        "call_edges": [
+          "io_recvmsg_mshot_prep -> iomsg->controllen = controllen"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "check_add_overflow(hdr, controllen, &hdr)"
+        ],
+        "state_statements": [
+          "if (check_add_overflow(sizeof(struct io_uring_recvmsg_out),",
+          "if (check_add_overflow(hdr, controllen, &hdr))"
+        ],
+        "compile_command_preview": "",
+        "source_file": "io_uring/net.c",
+        "source_excerpt": "530: \t\tif (ret == -EAGAIN && (issue_flags & IO_URING_F_NONBLOCK))\n531: \t\t\treturn io_setup_async_addr(req, &__address, issue_flags);\n532: \n533: \t\tif (ret > 0 && io_net_retry(sock, flags)) {\n534: \t\t\tsr->len -= ret;\n535: \t\t\tsr->buf += ret;\n536: \t\t\tsr->done_io += ret;\n537: \t\t\treq->flags |= REQ_F_PARTIAL_IO;\n538: \t\t\treturn io_setup_async_addr(req, &__address, issue_flags);\n539: \t\t}\n540: \t\tif (ret == -ERESTARTSYS)\n541: \t\t\tret = -EINTR;\n542: \t\treq_set_fail(req);\n543: \t}\n544: \tif (ret >= 0)\n545: \t\tret += sr->done_io;\n546: \telse if (sr->done_io)\n547: \t\tret = sr->done_io;\n548: \tio_req_set_res(req, ret, 0);\n549: \treturn IOU_OK;\n550: }\n551: \n552: static int io_recvmsg_mshot_prep(struct io_kiocb *req,\n553: \t\t\t\t struct io_async_msghdr *iomsg,\n554: \t\t\t\t int namelen, size_t controllen)\n555: {\n556: \tif ((req->flags & (REQ_F_APOLL_MULTISHOT|REQ_F_BUFFER_SELECT)) ==\n557: \t\t\t  (REQ_F_APOLL_MULTISHOT|REQ_F_BUFFER_SELECT)) {\n558: \t\tint hdr;\n559: \n560: \t\tif (unlikely(namelen < 0))\n561: \t\t\treturn -EOVERFLOW;\n562: \t\tif (check_add_overflow((int)sizeof(struct io_uring_recvmsg_out),\n563: \t\t\t\t\tnamelen, &hdr))\n564: \t\t\treturn -EOVERFLOW;\n565: \t\tif (check_add_overflow(hdr, (int)controllen, &hdr))\n566: \t\t\treturn -EOVERFLOW;\n567: \n568: \t\tiomsg->namelen = namelen;\n569: \t\tiomsg->controllen = controllen;\n570: \t\treturn 0;\n571: \t}\n572: \n573: \treturn 0;\n574: }\n575: \n576: static int io_recvmsg_copy_hdr(struct io_kiocb *req,\n577: \t\t\t       struct io_async_msghdr *iomsg)\n578: {\n579: \tstruct user_msghdr msg;\n580: \tint ret;\n581: \n582: \tiomsg->msg.msg_name = &iomsg->addr;\n583: \tiomsg->msg.msg_iter.nr_segs = 0;\n584: \n585: #ifdef CONFIG_COMPAT\n586: \tif (unlikely(req->ctx->compat)) {\n587: \t\tstruct compat_msghdr cmsg;\n588: \n589: \t\tret = io_compat_msg_copy_hdr(req, iomsg, &cmsg, ITER_DEST);\n590: \t\tif (unlikely(ret))\n591: \t\t\treturn ret;\n592: \n593: \t\tret = __get_compat_msghdr(&iomsg->msg, &cmsg, &iomsg->uaddr);\n594: \t\tif (unlikely(ret))",
+        "summary_line": 559,
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:path-guard",
+        "confidence": 0.92,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "io_uring/net.c",
+          "hunk_index": 0,
+          "source_line": 559
+        },
+        "summary": "io_recvmsg_mshot_prep introduces patch guard `check_add_overflow(hdr, controllen, &hdr)` before iomsg->controllen = controllen.",
+        "statements": [
+          "if (check_add_overflow(sizeof(struct io_uring_recvmsg_out),",
+          "if (check_add_overflow(hdr, controllen, &hdr))"
+        ],
+        "guards": [
+          "check_add_overflow(hdr, controllen, &hdr)"
+        ],
+        "call_boundary": [
+          "iomsg->controllen = controllen"
+        ],
+        "call_edges": [
+          "io_recvmsg_mshot_prep -> iomsg->controllen = controllen"
+        ],
+        "state_transitions": [
+          "guard(check_add_overflow(hdr, controllen, &hdr))",
+          "current_call(iomsg->controllen = controllen)"
+        ],
+        "api_terms": [
+          "iomsg->controllen = controllen"
+        ],
+        "related_symbols": [
+          "check_add_overflow",
+          "io_uring_recvmsg_out",
+          "hdr",
+          "controllen"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_guard_2",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "io_uring/net.c",
+        "function": "io_recvmsg_mshot_prep"
+      },
+      "location": {
+        "line": 562,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "if (req (ImplicitCastExpr, LValueToRValue, struct io_kiocb *)->flags (ImplicitCastExpr, LValueToRValue, io_req_flags_t) & (REQ_F_APOLL_MULTISHOT | REQ_F_BUFFER_SELECT) (ImplicitCastExpr, IntegralCast, io_req_flags_t)) == (REQ_F_APOLL_MULTISHOT | REQ_F_BUFFER_SELECT) (ImplicitCastExpr, IntegralCast, io_req_flags_t)",
+        "summary": "Analyzer CFG for io_recvmsg_mshot_prep in io_uring/net.c: bindings: (req (ImplicitCastExpr, LValueToRValue, struct io_kiocb *)->flags (ImplicitCastExpr, LValueToRValue, io_req_flags_t) & (REQ_F_APOLL_MULTISHOT | REQ_F_BUFFER_SELECT) (ImplicitCastExpr, IntegralCast, io_req_flags_t)) == (REQ_F_APOLL_MULTISHOT | REQ_F_BUFFER_SELECT) (ImplicitCastExpr, IntegralCast, io_req_flags_t); iomsg (ImplicitCastExpr, LValueToRValue, struct io_async_msghdr *)->namelen = namelen (ImplicitCastExpr, LValueToRValue, int) | branches: if (req (ImplicitCastExpr, LValueToRValue, struct io_kiocb *)->flags (ImplicitCastExpr, LValueToRValue, io_req_flags_t) & (REQ_F_APOLL_MULTISHOT | REQ_F_BUFFER_SELECT) (ImplicitCastExpr, IntegralCast, io_req_flags_t)) == (REQ_F_APOLL_MULTISHOT | REQ_F_BUFFER_SELECT) (ImplicitCastExpr, IntegralCast, io_req_flags_t); if __must_check_overflow (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(bool))(__builtin_add_overflow (ImplicitCastExpr, BuiltinFnToFnPtr, _Bool (*)())(hdr (ImplicitCastExpr, LValueToRValue, int), (int)controllen (ImplicitCastExpr, LValueToRValue, size_t) (CStyleCastExpr, IntegralCast, int), &hdr)) | calls: io_recvmsg_mshot_prep -> __builtin_expect; io_recvmsg_mshot_prep -> __must_check_overflow",
+        "state_before": [
+          "buffer(sr->len)",
+          "buffer(sr->buf)",
+          "sinks(io_setup_async_addr, req_set_fail)"
+        ],
+        "state_after": [
+          "cfg_binding((req (ImplicitCastExpr, LValueToRValue, struct io_kiocb *)->flags (ImplicitCastExpr, LValueToRValue, io_req_flags_t) & (REQ_F_APOLL_MULTISHOT | REQ_F_BUFFER_SELECT) (ImplicitCastExpr, IntegralCast, io_req_flags_t)) == (REQ_F_APOLL_MULTISHOT | REQ_F_BUFFER_SELECT) (ImplicitCastExpr, IntegralCast, io_req_flags_t))",
+          "cfg_binding(iomsg (ImplicitCastExpr, LValueToRValue, struct io_async_msghdr *)->namelen = namelen (ImplicitCastExpr, LValueToRValue, int))",
+          "cfg_branch(if (req (ImplicitCastExpr, LValueToRValue, struct io_kiocb *)->flags (ImplicitCastExpr, LValueToRValue, io_req_flags_t) & (REQ_F_APOLL_MULTISHOT | REQ_F_BUFFER_SELECT) (ImplicitCastExpr, IntegralCast, io_req_flags_t)) == (REQ_F_APOLL_MULTISHOT | REQ_F_BUFFER_SELECT) (ImplicitCastExpr, IntegralCast, io_req_flags_t))",
+          "cfg_branch(if __must_check_overflow (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(bool))(__builtin_add_overflow (ImplicitCastExpr, BuiltinFnToFnPtr, _Bool (*)())(hdr (ImplicitCastExpr, LValueToRValue, int), (int)controllen (ImplicitCastExpr, LValueToRValue, size_t) (CStyleCastExpr, IntegralCast, int), &hdr)))"
+        ],
+        "functions": [
+          "io_recvmsg_mshot_prep"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "sr->len",
+          "sr->buf",
+          "sr->done_io",
+          "req->flags",
+          "iomsg->namelen",
+          "iomsg->controllen"
+        ],
+        "buffer_fields": [
+          "sr->len",
+          "sr->buf",
+          "sr->done_io",
+          "req->flags",
+          "iomsg->namelen",
+          "iomsg->controllen"
+        ],
+        "call_targets": [
+          "io_setup_async_addr",
+          "req_set_fail",
+          "io_req_set_res",
+          "io_recvmsg_mshot_prep",
+          "check_add_overflow",
+          "io_recvmsg_copy_hdr",
+          "io_compat_msg_copy_hdr",
+          "__get_compat_msghdr"
+        ],
+        "call_edges": [
+          "io_recvmsg_mshot_prep -> __builtin_expect",
+          "io_recvmsg_mshot_prep -> __must_check_overflow",
+          "io_recvmsg_mshot_prep -> __builtin_add_overflow"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "if [B4.13]",
+          "if [B6.12]",
+          "if [B8.13]",
+          "if [B9.14]"
+        ],
+        "resolved_branch_conditions": [
+          "if (req (ImplicitCastExpr, LValueToRValue, struct io_kiocb *)->flags (ImplicitCastExpr, LValueToRValue, io_req_flags_t) & (REQ_F_APOLL_MULTISHOT | REQ_F_BUFFER_SELECT) (ImplicitCastExpr, IntegralCast, io_req_flags_t)) == (REQ_F_APOLL_MULTISHOT | REQ_F_BUFFER_SELECT) (ImplicitCastExpr, IntegralCast, io_req_flags_t)",
+          "if __must_check_overflow (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(bool))(__builtin_add_overflow (ImplicitCastExpr, BuiltinFnToFnPtr, _Bool (*)())(hdr (ImplicitCastExpr, LValueToRValue, int), (int)controllen (ImplicitCastExpr, LValueToRValue, size_t) (CStyleCastExpr, IntegralCast, int), &hdr))",
+          "if __must_check_overflow (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(bool))(__builtin_add_overflow (ImplicitCastExpr, BuiltinFnToFnPtr, _Bool (*)())((int)sizeof(struct io_uring_recvmsg_out) (CStyleCastExpr, IntegralCast, int), namelen (ImplicitCastExpr, LValueToRValue, int), &hdr))",
+          "if __builtin_expect (ImplicitCastExpr, BuiltinFnToFnPtr, long (*)(long, long))(!!(namelen (ImplicitCastExpr, LValueToRValue, int) < 0) (ImplicitCastExpr, IntegralCast, long), 0 (ImplicitCastExpr, IntegralCast, long))"
+        ],
+        "cfg_value_bindings": [
+          "(req (ImplicitCastExpr, LValueToRValue, struct io_kiocb *)->flags (ImplicitCastExpr, LValueToRValue, io_req_flags_t) & (REQ_F_APOLL_MULTISHOT | REQ_F_BUFFER_SELECT) (ImplicitCastExpr, IntegralCast, io_req_flags_t)) == (REQ_F_APOLL_MULTISHOT | REQ_F_BUFFER_SELECT) (ImplicitCastExpr, IntegralCast, io_req_flags_t)",
+          "iomsg (ImplicitCastExpr, LValueToRValue, struct io_async_msghdr *)->namelen = namelen (ImplicitCastExpr, LValueToRValue, int)",
+          "iomsg (ImplicitCastExpr, LValueToRValue, struct io_async_msghdr *)->controllen = controllen (ImplicitCastExpr, LValueToRValue, size_t)"
+        ],
+        "state_statements": [
+          "return [B1.1];",
+          "[B2.4]->",
+          "[B2.7] = [B2.2]",
+          "[B2.12]->",
+          "[B2.15] = [B2.10]",
+          "return [B2.17];"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,io_uring/.net.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/uapi -I./arch/x86/include/ge...",
+        "source_file": "io_uring/net.c",
+        "source_excerpt": "530: \t\tif (ret == -EAGAIN && (issue_flags & IO_URING_F_NONBLOCK))\n531: \t\t\treturn io_setup_async_addr(req, &__address, issue_flags);\n532: \n533: \t\tif (ret > 0 && io_net_retry(sock, flags)) {\n534: \t\t\tsr->len -= ret;\n535: \t\t\tsr->buf += ret;\n536: \t\t\tsr->done_io += ret;\n537: \t\t\treq->flags |= REQ_F_PARTIAL_IO;\n538: \t\t\treturn io_setup_async_addr(req, &__address, issue_flags);\n539: \t\t}\n540: \t\tif (ret == -ERESTARTSYS)\n541: \t\t\tret = -EINTR;\n542: \t\treq_set_fail(req);\n543: \t}\n544: \tif (ret >= 0)\n545: \t\tret += sr->done_io;\n546: \telse if (sr->done_io)\n547: \t\tret = sr->done_io;\n548: \tio_req_set_res(req, ret, 0);\n549: \treturn IOU_OK;\n550: }\n551: \n552: static int io_recvmsg_mshot_prep(struct io_kiocb *req,\n553: \t\t\t\t struct io_async_msghdr *iomsg,\n554: \t\t\t\t int namelen, size_t controllen)\n555: {\n556: \tif ((req->flags & (REQ_F_APOLL_MULTISHOT|REQ_F_BUFFER_SELECT)) ==\n557: \t\t\t  (REQ_F_APOLL_MULTISHOT|REQ_F_BUFFER_SELECT)) {\n558: \t\tint hdr;\n559: \n560: \t\tif (unlikely(namelen < 0))\n561: \t\t\treturn -EOVERFLOW;\n562: \t\tif (check_add_overflow((int)sizeof(struct io_uring_recvmsg_out),\n563: \t\t\t\t\tnamelen, &hdr))\n564: \t\t\treturn -EOVERFLOW;\n565: \t\tif (check_add_overflow(hdr, (int)controllen, &hdr))\n566: \t\t\treturn -EOVERFLOW;\n567: \n568: \t\tiomsg->namelen = namelen;\n569: \t\tiomsg->controllen = controllen;\n570: \t\treturn 0;\n571: \t}\n572: \n573: \treturn 0;\n574: }\n575: \n576: static int io_recvmsg_copy_hdr(struct io_kiocb *req,\n577: \t\t\t       struct io_async_msghdr *iomsg)\n578: {\n579: \tstruct user_msghdr msg;\n580: \tint ret;\n581: \n582: \tiomsg->msg.msg_name = &iomsg->addr;\n583: \tiomsg->msg.msg_iter.nr_segs = 0;\n584: \n585: #ifdef CONFIG_COMPAT\n586: \tif (unlikely(req->ctx->compat)) {\n587: \t\tstruct compat_msghdr cmsg;\n588: \n589: \t\tret = io_compat_msg_copy_hdr(req, iomsg, &cmsg, ITER_DEST);\n590: \t\tif (unlikely(ret))\n591: \t\t\treturn ret;\n592: \n593: \t\tret = __get_compat_msghdr(&iomsg->msg, &cmsg, &iomsg->uaddr);\n594: \t\tif (unlikely(ret))",
+        "summary_line": 562,
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/generate_only_evidence_all39_v8_r5/G18_8ede3db5061b_Integer_Overflow/csa/patchweaver_runtime/csa_raw/io_uring-net.c-io_recvmsg_mshot_prep.txt",
+        "raw_output_sha256": "f28151444af2f1a167e8fc26e3c29034089c06b9c30aaa914522d995249fd2c9",
+        "command_sha256": "b696656c101da2c23d727d248c08cfbd720b7b74aa34026ccfe9fc58f4a29989"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:debug-cfg",
+        "confidence": 0.92,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "io_uring/net.c",
+          "hunk_index": 0,
+          "source_line": 562
+        },
+        "summary": "Analyzer CFG for io_recvmsg_mshot_prep in io_uring/net.c: bindings: (req (ImplicitCastExpr, LValueToRValue, struct io_kiocb *)->flags (ImplicitCastExpr, LValueToRValue, io_req_flags_t) & (REQ_F_APOLL_MULTISHOT | REQ_F_BUFFER_SELECT) (ImplicitCastExpr, IntegralCast, io_req_flags_t)) == (REQ_F_APOLL_MULTISHOT | REQ_F_BUFFER_SELECT) (ImplicitCastExpr, IntegralCast, io_req_flags_t); iomsg (ImplicitCastExpr, LValueToRValue, struct io_async_msghdr *)->namelen = namelen (ImplicitCastExpr, LValueToRValue, int) | branches: if (req (ImplicitCastExpr, LValueToRValue, struct io_kiocb *)->flags (ImplicitCastExpr, LValueToRValue, io_req_flags_t) & (REQ_F_APOLL_MULTISHOT | REQ_F_BUFFER_SELECT) (ImplicitCastExpr, IntegralCast, io_req_flags_t)) == (REQ_F_APOLL_MULTISHOT | REQ_F_BUFFER_SELECT) (ImplicitCastExpr, IntegralCast, io_req_flags_t); if __must_check_overflow (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(bool))(__builtin_add_overflow (ImplicitCastExpr, BuiltinFnToFnPtr, _Bool (*)())(hdr (ImplicitCastExpr, LValueToRValue, int), (int)controllen (ImplicitCastExpr, LValueToRValue, size_t) (CStyleCastExpr, IntegralCast, int), &hdr)) | calls: io_recvmsg_mshot_prep -> __builtin_expect; io_recvmsg_mshot_prep -> __must_check_overflow",
+        "statements": [
+          "530: \t\tif (ret == -EAGAIN && (issue_flags & IO_URING_F_NONBLOCK))",
+          "531: \t\t\treturn io_setup_async_addr(req, &__address, issue_flags);",
+          "532:",
+          "533: \t\tif (ret > 0 && io_net_retry(sock, flags)) {",
+          "534: \t\t\tsr->len -= ret;",
+          "535: \t\t\tsr->buf += ret;"
+        ],
+        "guards": [
+          "if (req (ImplicitCastExpr, LValueToRValue, struct io_kiocb *)->flags (ImplicitCastExpr, LValueToRValue, io_req_flags_t) & (REQ_F_APOLL_MULTISHOT | REQ_F_BUFFER_SELECT) (ImplicitCastExpr, IntegralCast, io_req_flags_t)) == (REQ_F_APOLL_MULTISHOT | REQ_F_BUFFER_SELECT) (ImplicitCastExpr, IntegralCast, io_req_flags_t)",
+          "if __must_check_overflow (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(bool))(__builtin_add_overflow (ImplicitCastExpr, BuiltinFnToFnPtr, _Bool (*)())(hdr (ImplicitCastExpr, LValueToRValue, int), (int)controllen (ImplicitCastExpr, LValueToRValue, size_t) (CStyleCastExpr, IntegralCast, int), &hdr))",
+          "if __must_check_overflow (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(bool))(__builtin_add_overflow (ImplicitCastExpr, BuiltinFnToFnPtr, _Bool (*)())((int)sizeof(struct io_uring_recvmsg_out) (CStyleCastExpr, IntegralCast, int), namelen (ImplicitCastExpr, LValueToRValue, int), &hdr))",
+          "if __builtin_expect (ImplicitCastExpr, BuiltinFnToFnPtr, long (*)(long, long))(!!(namelen (ImplicitCastExpr, LValueToRValue, int) < 0) (ImplicitCastExpr, IntegralCast, long), 0 (ImplicitCastExpr, IntegralCast, long))"
+        ],
+        "call_boundary": [
+          "io_setup_async_addr",
+          "req_set_fail",
+          "io_req_set_res",
+          "io_recvmsg_mshot_prep",
+          "check_add_overflow",
+          "io_recvmsg_copy_hdr"
+        ],
+        "call_edges": [
+          "io_recvmsg_mshot_prep -> __builtin_expect",
+          "io_recvmsg_mshot_prep -> __must_check_overflow",
+          "io_recvmsg_mshot_prep -> __builtin_add_overflow"
+        ],
+        "state_transitions": [
+          "cfg_binding((req (ImplicitCastExpr, LValueToRValue, struct io_kiocb *)->flags (ImplicitCastExpr, LValueToRValue, io_req_flags_t) & (REQ_F_APOLL_MULTISHOT | REQ_F_BUFFER_SELECT) (ImplicitCastExpr, IntegralCast, io_req_flags_t)) == (REQ_F_APOLL_MULTISHOT | REQ_F_BUFFER_SELECT) (ImplicitCastExpr, IntegralCast, io_req_flags_t))",
+          "cfg_binding(iomsg (ImplicitCastExpr, LValueToRValue, struct io_async_msghdr *)->namelen = namelen (ImplicitCastExpr, LValueToRValue, int))",
+          "cfg_branch(if (req (ImplicitCastExpr, LValueToRValue, struct io_kiocb *)->flags (ImplicitCastExpr, LValueToRValue, io_req_flags_t) & (REQ_F_APOLL_MULTISHOT | REQ_F_BUFFER_SELECT) (ImplicitCastExpr, IntegralCast, io_req_flags_t)) == (REQ_F_APOLL_MULTISHOT | REQ_F_BUFFER_SELECT) (ImplicitCastExpr, IntegralCast, io_req_flags_t))",
+          "cfg_branch(if __must_check_overflow (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(bool))(__builtin_add_overflow (ImplicitCastExpr, BuiltinFnToFnPtr, _Bool (*)())(hdr (ImplicitCastExpr, LValueToRValue, int), (int)controllen (ImplicitCastExpr, LValueToRValue, size_t) (CStyleCastExpr, IntegralCast, int), &hdr)))",
+          "return [B1.1];",
+          "[B2.4]->"
+        ],
+        "api_terms": [
+          "__builtin_expect",
+          "__must_check_overflow",
+          "__builtin_add_overflow"
+        ],
+        "related_symbols": [
+          "sr->len",
+          "sr->buf",
+          "sr->done_io",
+          "req->flags",
+          "iomsg->namelen",
+          "iomsg->controllen"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "io_uring/net.c",
+        "function": "io_recvmsg_mshot_prep"
+      },
+      "location": {
+        "line": 559,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "io_recvmsg_mshot_prep adds patch barrier `check_add_overflow(sizeof(struct io_uring_recvmsg_out` around iomsg->controllen = controllen.",
+        "state_before": [
+          "input(check_add_overflow)",
+          "input(io_uring_recvmsg_out)",
+          "buffer(iomsg->controllen)",
+          "risky(check_add_overflow)"
+        ],
+        "state_after": [
+          "guard(check_add_overflow(sizeof(struct io_uring_recvmsg_out)",
+          "sink(iomsg->controllen = controllen)",
+          "replaces(check_add_overflow)"
+        ],
+        "functions": [
+          "io_recvmsg_mshot_prep"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "check_add_overflow",
+          "io_uring_recvmsg_out",
+          "hdr",
+          "controllen"
+        ],
+        "buffer_fields": [
+          "iomsg->controllen"
+        ],
+        "call_targets": [
+          "iomsg->controllen = controllen"
+        ],
+        "call_edges": [
+          "io_recvmsg_mshot_prep -> iomsg->controllen = controllen"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "check_add_overflow(sizeof(struct io_uring_recvmsg_out"
+        ],
+        "state_statements": [
+          "if (check_add_overflow(sizeof(struct io_uring_recvmsg_out),",
+          "if (check_add_overflow(hdr, controllen, &hdr))"
+        ],
+        "return_statements": [],
+        "source_file": "io_uring/net.c",
+        "source_excerpt": "530: \t\tif (ret == -EAGAIN && (issue_flags & IO_URING_F_NONBLOCK))\n531: \t\t\treturn io_setup_async_addr(req, &__address, issue_flags);\n532: \n533: \t\tif (ret > 0 && io_net_retry(sock, flags)) {\n534: \t\t\tsr->len -= ret;\n535: \t\t\tsr->buf += ret;\n536: \t\t\tsr->done_io += ret;\n537: \t\t\treq->flags |= REQ_F_PARTIAL_IO;\n538: \t\t\treturn io_setup_async_addr(req, &__address, issue_flags);\n539: \t\t}\n540: \t\tif (ret == -ERESTARTSYS)\n541: \t\t\tret = -EINTR;\n542: \t\treq_set_fail(req);\n543: \t}\n544: \tif (ret >= 0)\n545: \t\tret += sr->done_io;\n546: \telse if (sr->done_io)\n547: \t\tret = sr->done_io;\n548: \tio_req_set_res(req, ret, 0);\n549: \treturn IOU_OK;\n550: }\n551: \n552: static int io_recvmsg_mshot_prep(struct io_kiocb *req,\n553: \t\t\t\t struct io_async_msghdr *iomsg,\n554: \t\t\t\t int namelen, size_t controllen)\n555: {\n556: \tif ((req->flags & (REQ_F_APOLL_MULTISHOT|REQ_F_BUFFER_SELECT)) ==\n557: \t\t\t  (REQ_F_APOLL_MULTISHOT|REQ_F_BUFFER_SELECT)) {\n558: \t\tint hdr;\n559: \n560: \t\tif (unlikely(namelen < 0))\n561: \t\t\treturn -EOVERFLOW;\n562: \t\tif (check_add_overflow((int)sizeof(struct io_uring_recvmsg_out),\n563: \t\t\t\t\tnamelen, &hdr))\n564: \t\t\treturn -EOVERFLOW;\n565: \t\tif (check_add_overflow(hdr, (int)controllen, &hdr))\n566: \t\t\treturn -EOVERFLOW;\n567: \n568: \t\tiomsg->namelen = namelen;\n569: \t\tiomsg->controllen = controllen;\n570: \t\treturn 0;\n571: \t}\n572: \n573: \treturn 0;\n574: }\n575: \n576: static int io_recvmsg_copy_hdr(struct io_kiocb *req,\n577: \t\t\t       struct io_async_msghdr *iomsg)\n578: {\n579: \tstruct user_msghdr msg;\n580: \tint ret;\n581: \n582: \tiomsg->msg.msg_name = &iomsg->addr;\n583: \tiomsg->msg.msg_iter.nr_segs = 0;\n584: \n585: #ifdef CONFIG_COMPAT\n586: \tif (unlikely(req->ctx->compat)) {\n587: \t\tstruct compat_msghdr cmsg;\n588: \n589: \t\tret = io_compat_msg_copy_hdr(req, iomsg, &cmsg, ITER_DEST);\n590: \t\tif (unlikely(ret))\n591: \t\t\treturn ret;\n592: \n593: \t\tret = __get_compat_msghdr(&iomsg->msg, &cmsg, &iomsg->uaddr);\n594: \t\tif (unlikely(ret))",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:guarded-state",
+        "confidence": 0.9,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "io_uring/net.c",
+          "hunk_index": 0,
+          "source_line": 559
+        },
+        "summary": "io_recvmsg_mshot_prep adds patch barrier `check_add_overflow(sizeof(struct io_uring_recvmsg_out` around iomsg->controllen = controllen.",
+        "statements": [
+          "if (check_add_overflow(sizeof(struct io_uring_recvmsg_out),",
+          "if (check_add_overflow(hdr, controllen, &hdr))"
+        ],
+        "guards": [
+          "check_add_overflow(sizeof(struct io_uring_recvmsg_out"
+        ],
+        "call_boundary": [
+          "iomsg->controllen = controllen"
+        ],
+        "call_edges": [
+          "io_recvmsg_mshot_prep -> iomsg->controllen = controllen"
+        ],
+        "state_transitions": [
+          "guard(check_add_overflow(sizeof(struct io_uring_recvmsg_out)",
+          "sink(iomsg->controllen = controllen)",
+          "replaces(check_add_overflow)"
+        ],
+        "api_terms": [
+          "iomsg->controllen = controllen"
+        ],
+        "related_symbols": [
+          "check_add_overflow",
+          "io_uring_recvmsg_out",
+          "hdr",
+          "controllen"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_0",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "io_uring/net.c",
+        "function": "io_recvmsg_mshot_prep"
+      },
+      "location": {
+        "line": 562,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "io_recvmsg_mshot_prep in io_uring/net.c provides CSA-backed pointer/resource lifecycle context near line 562",
+        "diagnostic_message": "",
+        "diagnostic_checker": "",
+        "state_before": [
+          "buffer(sr->len)",
+          "buffer(sr->buf)",
+          "sinks(io_setup_async_addr, req_set_fail)"
+        ],
+        "state_after": [
+          "operation(return [B1.1];)",
+          "operation([B2.4]->)",
+          "operation([B2.7] = [B2.2])",
+          "operation([B2.12]->)"
+        ],
+        "functions": [
+          "io_recvmsg_mshot_prep"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "check_add_overflow",
+          "io_uring_recvmsg_out",
+          "hdr",
+          "controllen"
+        ],
+        "buffer_fields": [
+          "sr->len",
+          "sr->buf",
+          "sr->done_io",
+          "req->flags",
+          "iomsg->namelen",
+          "iomsg->controllen"
+        ],
+        "call_targets": [
+          "io_setup_async_addr",
+          "req_set_fail",
+          "io_req_set_res",
+          "io_recvmsg_mshot_prep",
+          "check_add_overflow",
+          "io_recvmsg_copy_hdr"
+        ],
+        "call_edges": [
+          "io_recvmsg_mshot_prep -> __builtin_expect",
+          "io_recvmsg_mshot_prep -> __must_check_overflow",
+          "io_recvmsg_mshot_prep -> __builtin_add_overflow"
+        ],
+        "state_statements": [
+          "return [B1.1];",
+          "[B2.4]->",
+          "[B2.7] = [B2.2]",
+          "[B2.12]->",
+          "[B2.15] = [B2.10]",
+          "return [B2.17];"
+        ],
+        "source_file": "io_uring/net.c",
+        "source_excerpt": "530: \t\tif (ret == -EAGAIN && (issue_flags & IO_URING_F_NONBLOCK))\n531: \t\t\treturn io_setup_async_addr(req, &__address, issue_flags);\n532: \n533: \t\tif (ret > 0 && io_net_retry(sock, flags)) {\n534: \t\t\tsr->len -= ret;\n535: \t\t\tsr->buf += ret;\n536: \t\t\tsr->done_io += ret;\n537: \t\t\treq->flags |= REQ_F_PARTIAL_IO;\n538: \t\t\treturn io_setup_async_addr(req, &__address, issue_flags);\n539: \t\t}\n540: \t\tif (ret == -ERESTARTSYS)\n541: \t\t\tret = -EINTR;\n542: \t\treq_set_fail(req);\n543: \t}\n544: \tif (ret >= 0)\n545: \t\tret += sr->done_io;\n546: \telse if (sr->done_io)\n547: \t\tret = sr->done_io;\n548: \tio_req_set_res(req, ret, 0);\n549: \treturn IOU_OK;\n550: }\n551: \n552: static int io_recvmsg_mshot_prep(struct io_kiocb *req,\n553: \t\t\t\t struct io_async_msghdr *iomsg,\n554: \t\t\t\t int namelen, size_t controllen)\n555: {\n556: \tif ((req->flags & (REQ_F_APOLL_MULTISHOT|REQ_F_BUFFER_SELECT)) ==\n557: \t\t\t  (REQ_F_APOLL_MULTISHOT|REQ_F_BUFFER_SELECT)) {\n558: \t\tint hdr;\n559: \n560: \t\tif (unlikely(namelen < 0))\n561: \t\t\treturn -EOVERFLOW;\n562: \t\tif (check_add_overflow((int)sizeof(struct io_uring_recvmsg_out),\n563: \t\t\t\t\tnamelen, &hdr))\n564: \t\t\treturn -EOVERFLOW;\n565: \t\tif (check_add_overflow(hdr, (int)controllen, &hdr))\n566: \t\t\treturn -EOVERFLOW;\n567: \n568: \t\tiomsg->namelen = namelen;\n569: \t\tiomsg->controllen = controllen;\n570: \t\treturn 0;\n571: \t}\n572: \n573: \treturn 0;\n574: }\n575: \n576: static int io_recvmsg_copy_hdr(struct io_kiocb *req,\n577: \t\t\t       struct io_async_msghdr *iomsg)\n578: {\n579: \tstruct user_msghdr msg;\n580: \tint ret;\n581: \n582: \tiomsg->msg.msg_name = &iomsg->addr;\n583: \tiomsg->msg.msg_iter.nr_segs = 0;\n584: \n585: #ifdef CONFIG_COMPAT\n586: \tif (unlikely(req->ctx->compat)) {\n587: \t\tstruct compat_msghdr cmsg;\n588: \n589: \t\tret = io_compat_msg_copy_hdr(req, iomsg, &cmsg, ITER_DEST);\n590: \t\tif (unlikely(ret))\n591: \t\t\treturn ret;\n592: \n593: \t\tret = __get_compat_msghdr(&iomsg->msg, &cmsg, &iomsg->uaddr);\n594: \t\tif (unlikely(ret))",
+        "coverage_status": "partial",
+        "operations": [
+          "return [B1.1];",
+          "[B2.4]->",
+          "[B2.7] = [B2.2]",
+          "[B2.12]->",
+          "[B2.15] = [B2.10]",
+          "return [B2.17];"
+        ],
+        "acquisition_ops": [],
+        "release_ops": []
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.72,
+        "origin": "analyzer_output"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "io_uring/net.c",
+          "hunk_index": 0,
+          "source_line": 562
+        },
+        "summary": "io_recvmsg_mshot_prep in io_uring/net.c provides CSA-backed pointer/resource lifecycle context near line 562",
+        "statements": [
+          "530: \t\tif (ret == -EAGAIN && (issue_flags & IO_URING_F_NONBLOCK))",
+          "531: \t\t\treturn io_setup_async_addr(req, &__address, issue_flags);",
+          "532:",
+          "533: \t\tif (ret > 0 && io_net_retry(sock, flags)) {",
+          "534: \t\t\tsr->len -= ret;",
+          "535: \t\t\tsr->buf += ret;"
+        ],
+        "guards": [
+          "ret == -EAGAIN && (issue_flags & IO_URING_F_NONBLOCK)",
+          "ret > 0 && io_net_retry(sock, flags)",
+          "ret == -ERESTARTSYS",
+          "ret >= 0"
+        ],
+        "call_boundary": [
+          "io_setup_async_addr",
+          "req_set_fail",
+          "io_req_set_res",
+          "io_recvmsg_mshot_prep",
+          "check_add_overflow",
+          "io_recvmsg_copy_hdr"
+        ],
+        "call_edges": [
+          "io_recvmsg_mshot_prep -> __builtin_expect",
+          "io_recvmsg_mshot_prep -> __must_check_overflow",
+          "io_recvmsg_mshot_prep -> __builtin_add_overflow"
+        ],
+        "state_transitions": [
+          "operation(return [B1.1];)",
+          "operation([B2.4]->)",
+          "operation([B2.7] = [B2.2])",
+          "operation([B2.12]->)"
+        ],
+        "api_terms": [
+          "return [B1.1];",
+          "[B2.4]->",
+          "[B2.7] = [B2.2]",
+          "[B2.12]->",
+          "[B2.15] = [B2.10]",
+          "return [B2.17];"
+        ],
+        "related_symbols": [
+          "check_add_overflow",
+          "io_uring_recvmsg_out",
+          "hdr",
+          "controllen"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "collected_analyzers": [
+    "csa"
+  ],
+  "provenance_summary": {
+    "total_records": 6,
+    "origin_counts": {
+      "analyzer_internal": 1,
+      "analyzer_output": 1,
+      "source_derived": 4
+    },
+    "analyzer_internal_records": 1,
+    "analyzer_internal_fraction": 0.16666666666666666,
+    "analyzer_backed_records": 2,
+    "analyzer_backed_fraction": 0.3333333333333333,
+    "source_derived_records": 4,
+    "source_derived_fraction": 0.6666666666666666
+  }
+}

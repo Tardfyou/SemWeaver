@@ -1,0 +1,1079 @@
+{
+  "analyzer_id": "csa",
+  "detector_artifact": "checker_plugin",
+  "primary_pattern": "use_after_free",
+  "objective": "Synthesize a path-sensitive use_after_free detector that encodes the same local state, guards, and lifecycle mechanism evidenced by the patch, while still generalizing to semantically equivalent sites.",
+  "mechanism_contract": {
+    "mechanism_family": "resource_lifetime_violation",
+    "semantic_dimensions": [
+      "resource identity or alias",
+      "release event",
+      "later use sink on the same resource",
+      "reinitialization/nulling/ownership transfer barrier"
+    ],
+    "trigger_invariants": [
+      "a resource is released",
+      "the same symbolic resource reaches a later use without reinitialization or ownership transfer"
+    ],
+    "silence_invariants": [
+      "the resource is nulled, rebound, or reinitialized before reuse",
+      "ownership transfer or guard logic blocks access after release"
+    ],
+    "transfer_axes": [
+      "equivalent release-then-use sequences on the same resource role",
+      "equivalent lifecycle transitions across wrappers or helper functions",
+      "equivalent guard or barrier predicates on sibling paths",
+      "equivalent local state transitions around the same sink or dereference",
+      "equivalent ownership or release/reinit lifecycle on the same symbolic resource"
+    ],
+    "forbidden_shortcuts": [
+      "bind the detector to fixed file paths, line numbers, or exact patch strings",
+      "broaden into unrelated bug families just to improve hit count",
+      "report every free/delete call as if it were a bug",
+      "ignore resource identity and alias continuity between release and use",
+      "identify resources only by variable or field names such as session/cache/context instead of lifecycle evidence",
+      "placeholder helper logic or empty ProgramState modeling"
+    ],
+    "evidence_backed_axes": [
+      "path guards and barrier conditions",
+      "semantic trigger slice",
+      "state transitions",
+      "resource lifecycle"
+    ]
+  },
+  "detector_name_hint": "",
+  "focus_files": [],
+  "focus_functions": [],
+  "hypotheses": [
+    "The patch likely changes a resource lifecycle or stale-state transition."
+  ],
+  "required_evidence_types": [
+    "patch_fact",
+    "allocation_lifecycle",
+    "state_transition"
+  ],
+  "missing_evidence_types": [],
+  "evidence_degraded": false,
+  "patch_mechanism_signals": [],
+  "silencing_conditions": [],
+  "retry_guidance": [],
+  "selected_evidence_ids": [
+    "csa_guard_0",
+    "csa_semantic_slice_0",
+    "csa_state_0",
+    "csa_validation_allocation_lifecycle_0"
+  ],
+  "selected_evidence": [
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "fs/btrfs/volumes.c",
+        "function": "btrfs_close_one_device"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "(__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((3)) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t)) && (uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(*(const unsigned long *)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, NoOp, const unsigned long *) (ImplicitCastExpr, LValueToRValue, unsigned long))) ? ... : ...",
+        "summary": "Analyzer CFG for btrfs_close_one_device in fs/btrfs/volumes.c: bindings: int __ret_warn_on = !!(!list_empty(&device->dev_alloc_list));; int __ret_warn_on = !!(!list_empty(&device->post_commit_list)); | branches: (__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((3)) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t)) && (uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(*(const unsigned long *)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, NoOp, const unsigned long *) (ImplicitCastExpr, LValueToRValue, unsigned long))) ? ... : ...; __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((3)) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t)) && (uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t) && ... | calls: btrfs_close_one_device -> __builtin_constant_p; btrfs_close_one_device -> const_test_bit",
+        "summary_line": 1108,
+        "state_before": [
+          "input(device)",
+          "buffer(device->post_commit_list)",
+          "buffer(device->dev_alloc_list)",
+          "sinks(test_bit, list_del_init)"
+        ],
+        "state_after": [
+          "cfg_binding(int __ret_warn_on = !!(!list_empty(&device->dev_alloc_list));)",
+          "cfg_binding(int __ret_warn_on = !!(!list_empty(&device->post_commit_list));)",
+          "cfg_branch((__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((3)) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t)) && (uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(*(const unsigned long *)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, NoOp, const unsigned long *) (ImplicitCastExpr, LValueToRValue, unsigned long))) ? ... : ...)",
+          "cfg_branch(__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((3)) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t)) && (uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t) && ...)"
+        ],
+        "tracked_symbols": [
+          "device",
+          "device->post_commit_list",
+          "device->dev_alloc_list",
+          "device->dev_state",
+          "device->fs_devices",
+          "device->devid",
+          "fs_devices->rw_devices"
+        ],
+        "buffer_fields": [
+          "device->post_commit_list",
+          "device->dev_alloc_list",
+          "device->dev_state",
+          "device->fs_devices",
+          "device->devid",
+          "fs_devices->rw_devices"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "btrfs_close_one_device"
+        ],
+        "call_targets": [
+          "test_bit",
+          "list_del_init",
+          "clear_bit",
+          "btrfs_close_bdev",
+          "btrfs_destroy_dev_zone_info",
+          "atomic_set",
+          "extent_io_tree_release",
+          "list_empty"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,fs/btrfs/.volumes.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/uapi -I./arch/x86/includ...",
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "do ... while [B2.1]",
+          "do ... while [B4.1]",
+          "if [B9.33]",
+          "do ... while [B10.1]",
+          "do ... while [B12.1]",
+          "if [B17.33]"
+        ],
+        "call_edges": [
+          "btrfs_close_one_device -> __builtin_constant_p",
+          "btrfs_close_one_device -> const_test_bit",
+          "btrfs_close_one_device -> _test_bit",
+          "btrfs_close_one_device -> list_del_init",
+          "btrfs_close_one_device -> clear_bit",
+          "btrfs_close_one_device -> btrfs_close_bdev"
+        ],
+        "state_statements": [
+          "sizeof(struct bug_entry)",
+          "__auto_type __flags = (1 << 0) | (((9) << 8));",
+          "[B9.15]->post_commit_list",
+          "int __ret_warn_on = !!(!list_empty(&device->post_commit_list));",
+          "[B17.15]->dev_alloc_list",
+          "int __ret_warn_on = !!(!list_empty(&device->dev_alloc_list));"
+        ],
+        "source_file": "fs/btrfs/volumes.c"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "fs/btrfs/volumes.c",
+          "hunk_index": 0,
+          "source_line": 1108
+        },
+        "summary": "Analyzer CFG for btrfs_close_one_device in fs/btrfs/volumes.c: bindings: int __ret_warn_on = !!(!list_empty(&device->dev_alloc_list));; int __ret_warn_on = !!(!list_empty(&device->post_commit_list)); | branches: (__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((3)) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t)) && (uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(*(const unsigned long *)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, NoOp, const unsigned long *) (ImplicitCastExpr, LValueToRValue, unsigned long))) ? ... : ...; __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((3)) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t)) && (uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t) && ... | calls: btrfs_close_one_device -> __builtin_constant_p; btrfs_close_one_device -> const_test_bit",
+        "statements": [
+          "1086: static void btrfs_close_one_device(struct btrfs_device *device)",
+          "1087: {",
+          "1088: \tstruct btrfs_fs_devices *fs_devices = device->fs_devices;",
+          "1089:",
+          "1090: \tif (test_bit(BTRFS_DEV_STATE_WRITEABLE, &device->dev_state) &&",
+          "1091: \t    device->devid != BTRFS_DEV_REPLACE_DEVID) {"
+        ],
+        "guards": [
+          "(__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((3)) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t)) && (uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(*(const unsigned long *)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, NoOp, const unsigned long *) (ImplicitCastExpr, LValueToRValue, unsigned long))) ? ... : ...",
+          "__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((3)) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t)) && (uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t) && ...",
+          "__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((3)) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t)) && ...",
+          "(__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((4)) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t)) && (uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(*(const unsigned long *)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, NoOp, const unsigned long *) (ImplicitCastExpr, LValueToRValue, unsigned long))) ? ... : ..."
+        ],
+        "call_boundary": [
+          "test_bit",
+          "list_del_init",
+          "clear_bit",
+          "btrfs_close_bdev",
+          "btrfs_destroy_dev_zone_info",
+          "atomic_set"
+        ],
+        "call_edges": [
+          "btrfs_close_one_device -> __builtin_constant_p",
+          "btrfs_close_one_device -> const_test_bit",
+          "btrfs_close_one_device -> _test_bit",
+          "btrfs_close_one_device -> list_del_init",
+          "btrfs_close_one_device -> clear_bit",
+          "btrfs_close_one_device -> btrfs_close_bdev",
+          "btrfs_close_one_device -> btrfs_destroy_dev_zone_info",
+          "btrfs_close_one_device -> atomic_set"
+        ],
+        "state_transitions": [
+          "cfg_binding(int __ret_warn_on = !!(!list_empty(&device->dev_alloc_list));)",
+          "cfg_binding(int __ret_warn_on = !!(!list_empty(&device->post_commit_list));)",
+          "cfg_branch((__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((3)) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t)) && (uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(*(const unsigned long *)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, NoOp, const unsigned long *) (ImplicitCastExpr, LValueToRValue, unsigned long))) ? ... : ...)",
+          "cfg_branch(__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((3)) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t)) && (uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t) && ...)",
+          "sizeof(struct bug_entry)",
+          "__auto_type __flags = (1 << 0) | (((9) << 8));"
+        ],
+        "api_terms": [
+          "__builtin_constant_p",
+          "const_test_bit",
+          "_test_bit",
+          "list_del_init",
+          "clear_bit",
+          "btrfs_close_bdev"
+        ],
+        "related_symbols": [
+          "device",
+          "device->post_commit_list",
+          "device->dev_alloc_list",
+          "device->dev_state",
+          "device->fs_devices",
+          "device->devid"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "fs/btrfs/volumes.c",
+        "function": "btrfs_close_one_device"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "btrfs_close_one_device clears stale state via device->bdev_file = NULL after the lifetime transition so later consumers cannot reuse the invalid handle.",
+        "tracked_symbols": [
+          "device",
+          "bdev_file",
+          "NULL"
+        ],
+        "buffer_fields": [
+          "device->bdev_file"
+        ],
+        "coverage_status": "full",
+        "source_file": "fs/btrfs/volumes.c"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "fs/btrfs/volumes.c",
+          "hunk_index": 0,
+          "source_line": 1105
+        },
+        "summary": "btrfs_close_one_device clears stale state via device->bdev_file = NULL after the lifetime transition so later consumers cannot reuse the invalid handle.",
+        "statements": [
+          "device->bdev_file = NULL;"
+        ],
+        "guards": [],
+        "call_boundary": [
+          "btrfs_close_one_device",
+          "list_del_init",
+          "clear_bit",
+          "btrfs_close_bdev"
+        ],
+        "call_edges": [
+          "btrfs_close_one_device -> btrfs_close_one_device",
+          "btrfs_close_one_device -> list_del_init",
+          "btrfs_close_one_device -> clear_bit"
+        ],
+        "state_transitions": [
+          "",
+          "report when released or invalidated state remains reachable through the stale field or handle",
+          "stay silent when the same stale handle is cleared to a sentinel before later consumers run",
+          "transition(device->bdev_file = NULL)"
+        ],
+        "api_terms": [
+          "btrfs_close_one_device",
+          "list_del_init",
+          "clear_bit"
+        ],
+        "related_symbols": [
+          "device",
+          "bdev_file",
+          "NULL"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "fs/btrfs/volumes.c",
+        "function": "btrfs_close_one_device"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "btrfs_close_one_device clears stale state via device->bdev_file = NULL after the lifetime transition so later consumers cannot reuse the invalid handle.",
+        "state_before": [
+          "reachable(device->bdev_file)"
+        ],
+        "state_after": [
+          "transition(device->bdev_file = NULL)",
+          "call(btrfs_close_one_device -> btrfs_close_one_device)",
+          "call(btrfs_close_one_device -> list_del_init)"
+        ],
+        "tracked_symbols": [
+          "device",
+          "bdev_file",
+          "NULL"
+        ],
+        "buffer_fields": [
+          "device->bdev_file"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "btrfs_close_one_device"
+        ],
+        "call_edges": [
+          "btrfs_close_one_device -> btrfs_close_one_device",
+          "btrfs_close_one_device -> list_del_init",
+          "btrfs_close_one_device -> clear_bit"
+        ],
+        "state_statements": [
+          "device->bdev_file = NULL"
+        ],
+        "source_file": "fs/btrfs/volumes.c"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "fs/btrfs/volumes.c",
+          "hunk_index": 0,
+          "source_line": 1105
+        },
+        "summary": "btrfs_close_one_device clears stale state via device->bdev_file = NULL after the lifetime transition so later consumers cannot reuse the invalid handle.",
+        "statements": [
+          "device->bdev_file = NULL"
+        ],
+        "guards": [],
+        "call_boundary": [],
+        "call_edges": [
+          "btrfs_close_one_device -> btrfs_close_one_device",
+          "btrfs_close_one_device -> list_del_init",
+          "btrfs_close_one_device -> clear_bit"
+        ],
+        "state_transitions": [
+          "transition(device->bdev_file = NULL)",
+          "call(btrfs_close_one_device -> btrfs_close_one_device)",
+          "call(btrfs_close_one_device -> list_del_init)"
+        ],
+        "api_terms": [],
+        "related_symbols": [
+          "device",
+          "bdev_file",
+          "NULL"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      },
+      "confidence": 0.9
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_0",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "fs/btrfs/volumes.c",
+        "function": "btrfs_close_one_device"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "btrfs_close_one_device in fs/btrfs/volumes.c provides CSA-backed pointer/resource lifecycle context near line 1108",
+        "state_before": [
+          "input(device)",
+          "buffer(device->post_commit_list)",
+          "buffer(device->dev_alloc_list)",
+          "sinks(test_bit, list_del_init)"
+        ],
+        "state_after": [
+          "operation(fs_devices->rw_devices--;)",
+          "operation(fs_devices->missing_devices--;)",
+          "operation(fs_devices->open_devices--;)",
+          "operation(device->bdev_file = NULL)"
+        ],
+        "tracked_symbols": [
+          "device",
+          "bdev_file",
+          "NULL"
+        ],
+        "buffer_fields": [
+          "device->post_commit_list",
+          "device->dev_alloc_list",
+          "device->dev_state",
+          "device->fs_devices",
+          "device->devid",
+          "fs_devices->rw_devices"
+        ],
+        "coverage_status": "partial",
+        "operations": [
+          "fs_devices->rw_devices--;",
+          "fs_devices->missing_devices--;",
+          "fs_devices->open_devices--;",
+          "device->bdev_file = NULL",
+          "sizeof(struct bug_entry)",
+          "__auto_type __flags = (1 << 0) | (((9) << 8));"
+        ],
+        "functions": [
+          "btrfs_close_one_device"
+        ],
+        "call_targets": [
+          "test_bit",
+          "list_del_init",
+          "clear_bit",
+          "btrfs_close_bdev",
+          "btrfs_destroy_dev_zone_info",
+          "atomic_set"
+        ],
+        "call_edges": [
+          "btrfs_close_one_device -> __builtin_constant_p",
+          "btrfs_close_one_device -> const_test_bit",
+          "btrfs_close_one_device -> _test_bit",
+          "btrfs_close_one_device -> list_del_init",
+          "btrfs_close_one_device -> clear_bit",
+          "btrfs_close_one_device -> btrfs_close_bdev"
+        ],
+        "state_statements": [
+          "fs_devices->rw_devices--;",
+          "fs_devices->missing_devices--;",
+          "fs_devices->open_devices--;",
+          "device->bdev_file = NULL",
+          "sizeof(struct bug_entry)",
+          "__auto_type __flags = (1 << 0) | (((9) << 8));"
+        ],
+        "source_file": "fs/btrfs/volumes.c"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "fs/btrfs/volumes.c",
+          "hunk_index": 0,
+          "source_line": 1108
+        },
+        "summary": "btrfs_close_one_device in fs/btrfs/volumes.c provides CSA-backed pointer/resource lifecycle context near line 1108",
+        "statements": [
+          "1086: static void btrfs_close_one_device(struct btrfs_device *device)",
+          "1087: {",
+          "1088: \tstruct btrfs_fs_devices *fs_devices = device->fs_devices;",
+          "1089:",
+          "1090: \tif (test_bit(BTRFS_DEV_STATE_WRITEABLE, &device->dev_state) &&",
+          "1091: \t    device->devid != BTRFS_DEV_REPLACE_DEVID) {"
+        ],
+        "guards": [
+          "test_bit(BTRFS_DEV_STATE_WRITEABLE, &device->dev_state",
+          "device->devid == BTRFS_DEV_REPLACE_DEVID",
+          "test_bit(BTRFS_DEV_STATE_MISSING, &device->dev_state)",
+          "device->bdev"
+        ],
+        "call_boundary": [
+          "test_bit",
+          "list_del_init",
+          "clear_bit",
+          "btrfs_close_bdev",
+          "btrfs_destroy_dev_zone_info",
+          "atomic_set"
+        ],
+        "call_edges": [
+          "btrfs_close_one_device -> __builtin_constant_p",
+          "btrfs_close_one_device -> const_test_bit",
+          "btrfs_close_one_device -> _test_bit",
+          "btrfs_close_one_device -> list_del_init",
+          "btrfs_close_one_device -> clear_bit",
+          "btrfs_close_one_device -> btrfs_close_bdev"
+        ],
+        "state_transitions": [
+          "operation(fs_devices->rw_devices--;)",
+          "operation(fs_devices->missing_devices--;)",
+          "operation(fs_devices->open_devices--;)",
+          "operation(device->bdev_file = NULL)"
+        ],
+        "api_terms": [
+          "fs_devices->rw_devices--;",
+          "fs_devices->missing_devices--;",
+          "fs_devices->open_devices--;",
+          "device->bdev_file = NULL",
+          "sizeof(struct bug_entry)",
+          "__auto_type __flags = (1 << 0) | (((9) << 8));"
+        ],
+        "related_symbols": [
+          "device",
+          "bdev_file",
+          "NULL"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      },
+      "confidence": 0.72
+    }
+  ],
+  "semantic_slice_count": 4,
+  "context_summary_count": 0,
+  "semantic_slice_coverage": "partial",
+  "selected_semantic_slice_ids": [
+    "csa_guard_0",
+    "csa_semantic_slice_0",
+    "csa_state_0",
+    "csa_validation_allocation_lifecycle_0"
+  ],
+  "selected_context_summary_ids": [],
+  "selected_semantic_slices": [
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "fs/btrfs/volumes.c",
+        "function": "btrfs_close_one_device"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "(__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((3)) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t)) && (uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(*(const unsigned long *)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, NoOp, const unsigned long *) (ImplicitCastExpr, LValueToRValue, unsigned long))) ? ... : ...",
+        "summary": "Analyzer CFG for btrfs_close_one_device in fs/btrfs/volumes.c: bindings: int __ret_warn_on = !!(!list_empty(&device->dev_alloc_list));; int __ret_warn_on = !!(!list_empty(&device->post_commit_list)); | branches: (__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((3)) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t)) && (uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(*(const unsigned long *)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, NoOp, const unsigned long *) (ImplicitCastExpr, LValueToRValue, unsigned long))) ? ... : ...; __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((3)) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t)) && (uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t) && ... | calls: btrfs_close_one_device -> __builtin_constant_p; btrfs_close_one_device -> const_test_bit",
+        "summary_line": 1108,
+        "state_before": [
+          "input(device)",
+          "buffer(device->post_commit_list)",
+          "buffer(device->dev_alloc_list)",
+          "sinks(test_bit, list_del_init)"
+        ],
+        "state_after": [
+          "cfg_binding(int __ret_warn_on = !!(!list_empty(&device->dev_alloc_list));)",
+          "cfg_binding(int __ret_warn_on = !!(!list_empty(&device->post_commit_list));)",
+          "cfg_branch((__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((3)) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t)) && (uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(*(const unsigned long *)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, NoOp, const unsigned long *) (ImplicitCastExpr, LValueToRValue, unsigned long))) ? ... : ...)",
+          "cfg_branch(__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((3)) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t)) && (uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t) && ...)"
+        ],
+        "tracked_symbols": [
+          "device",
+          "device->post_commit_list",
+          "device->dev_alloc_list",
+          "device->dev_state",
+          "device->fs_devices",
+          "device->devid",
+          "fs_devices->rw_devices"
+        ],
+        "buffer_fields": [
+          "device->post_commit_list",
+          "device->dev_alloc_list",
+          "device->dev_state",
+          "device->fs_devices",
+          "device->devid",
+          "fs_devices->rw_devices"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "btrfs_close_one_device"
+        ],
+        "call_targets": [
+          "test_bit",
+          "list_del_init",
+          "clear_bit",
+          "btrfs_close_bdev",
+          "btrfs_destroy_dev_zone_info",
+          "atomic_set",
+          "extent_io_tree_release",
+          "list_empty"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,fs/btrfs/.volumes.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/uapi -I./arch/x86/includ...",
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "do ... while [B2.1]",
+          "do ... while [B4.1]",
+          "if [B9.33]",
+          "do ... while [B10.1]",
+          "do ... while [B12.1]",
+          "if [B17.33]"
+        ],
+        "call_edges": [
+          "btrfs_close_one_device -> __builtin_constant_p",
+          "btrfs_close_one_device -> const_test_bit",
+          "btrfs_close_one_device -> _test_bit",
+          "btrfs_close_one_device -> list_del_init",
+          "btrfs_close_one_device -> clear_bit",
+          "btrfs_close_one_device -> btrfs_close_bdev"
+        ],
+        "state_statements": [
+          "sizeof(struct bug_entry)",
+          "__auto_type __flags = (1 << 0) | (((9) << 8));",
+          "[B9.15]->post_commit_list",
+          "int __ret_warn_on = !!(!list_empty(&device->post_commit_list));",
+          "[B17.15]->dev_alloc_list",
+          "int __ret_warn_on = !!(!list_empty(&device->dev_alloc_list));"
+        ],
+        "source_file": "fs/btrfs/volumes.c"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "fs/btrfs/volumes.c",
+          "hunk_index": 0,
+          "source_line": 1108
+        },
+        "summary": "Analyzer CFG for btrfs_close_one_device in fs/btrfs/volumes.c: bindings: int __ret_warn_on = !!(!list_empty(&device->dev_alloc_list));; int __ret_warn_on = !!(!list_empty(&device->post_commit_list)); | branches: (__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((3)) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t)) && (uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(*(const unsigned long *)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, NoOp, const unsigned long *) (ImplicitCastExpr, LValueToRValue, unsigned long))) ? ... : ...; __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((3)) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t)) && (uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t) && ... | calls: btrfs_close_one_device -> __builtin_constant_p; btrfs_close_one_device -> const_test_bit",
+        "statements": [
+          "1086: static void btrfs_close_one_device(struct btrfs_device *device)",
+          "1087: {",
+          "1088: \tstruct btrfs_fs_devices *fs_devices = device->fs_devices;",
+          "1089:",
+          "1090: \tif (test_bit(BTRFS_DEV_STATE_WRITEABLE, &device->dev_state) &&",
+          "1091: \t    device->devid != BTRFS_DEV_REPLACE_DEVID) {"
+        ],
+        "guards": [
+          "(__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((3)) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t)) && (uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(*(const unsigned long *)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, NoOp, const unsigned long *) (ImplicitCastExpr, LValueToRValue, unsigned long))) ? ... : ...",
+          "__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((3)) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t)) && (uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t) && ...",
+          "__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((3)) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t)) && ...",
+          "(__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((4)) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t)) && (uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(*(const unsigned long *)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, NoOp, const unsigned long *) (ImplicitCastExpr, LValueToRValue, unsigned long))) ? ... : ..."
+        ],
+        "call_boundary": [
+          "test_bit",
+          "list_del_init",
+          "clear_bit",
+          "btrfs_close_bdev",
+          "btrfs_destroy_dev_zone_info",
+          "atomic_set"
+        ],
+        "call_edges": [
+          "btrfs_close_one_device -> __builtin_constant_p",
+          "btrfs_close_one_device -> const_test_bit",
+          "btrfs_close_one_device -> _test_bit",
+          "btrfs_close_one_device -> list_del_init",
+          "btrfs_close_one_device -> clear_bit",
+          "btrfs_close_one_device -> btrfs_close_bdev",
+          "btrfs_close_one_device -> btrfs_destroy_dev_zone_info",
+          "btrfs_close_one_device -> atomic_set"
+        ],
+        "state_transitions": [
+          "cfg_binding(int __ret_warn_on = !!(!list_empty(&device->dev_alloc_list));)",
+          "cfg_binding(int __ret_warn_on = !!(!list_empty(&device->post_commit_list));)",
+          "cfg_branch((__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((3)) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t)) && (uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(*(const unsigned long *)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, NoOp, const unsigned long *) (ImplicitCastExpr, LValueToRValue, unsigned long))) ? ... : ...)",
+          "cfg_branch(__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((3)) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t)) && (uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t) && ...)",
+          "sizeof(struct bug_entry)",
+          "__auto_type __flags = (1 << 0) | (((9) << 8));"
+        ],
+        "api_terms": [
+          "__builtin_constant_p",
+          "const_test_bit",
+          "_test_bit",
+          "list_del_init",
+          "clear_bit",
+          "btrfs_close_bdev"
+        ],
+        "related_symbols": [
+          "device",
+          "device->post_commit_list",
+          "device->dev_alloc_list",
+          "device->dev_state",
+          "device->fs_devices",
+          "device->devid"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "fs/btrfs/volumes.c",
+        "function": "btrfs_close_one_device"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "btrfs_close_one_device clears stale state via device->bdev_file = NULL after the lifetime transition so later consumers cannot reuse the invalid handle.",
+        "tracked_symbols": [
+          "device",
+          "bdev_file",
+          "NULL"
+        ],
+        "buffer_fields": [
+          "device->bdev_file"
+        ],
+        "coverage_status": "full",
+        "source_file": "fs/btrfs/volumes.c"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "fs/btrfs/volumes.c",
+          "hunk_index": 0,
+          "source_line": 1105
+        },
+        "summary": "btrfs_close_one_device clears stale state via device->bdev_file = NULL after the lifetime transition so later consumers cannot reuse the invalid handle.",
+        "statements": [
+          "device->bdev_file = NULL;"
+        ],
+        "guards": [],
+        "call_boundary": [
+          "btrfs_close_one_device",
+          "list_del_init",
+          "clear_bit",
+          "btrfs_close_bdev"
+        ],
+        "call_edges": [
+          "btrfs_close_one_device -> btrfs_close_one_device",
+          "btrfs_close_one_device -> list_del_init",
+          "btrfs_close_one_device -> clear_bit"
+        ],
+        "state_transitions": [
+          "",
+          "report when released or invalidated state remains reachable through the stale field or handle",
+          "stay silent when the same stale handle is cleared to a sentinel before later consumers run",
+          "transition(device->bdev_file = NULL)"
+        ],
+        "api_terms": [
+          "btrfs_close_one_device",
+          "list_del_init",
+          "clear_bit"
+        ],
+        "related_symbols": [
+          "device",
+          "bdev_file",
+          "NULL"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "fs/btrfs/volumes.c",
+        "function": "btrfs_close_one_device"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "btrfs_close_one_device clears stale state via device->bdev_file = NULL after the lifetime transition so later consumers cannot reuse the invalid handle.",
+        "state_before": [
+          "reachable(device->bdev_file)"
+        ],
+        "state_after": [
+          "transition(device->bdev_file = NULL)",
+          "call(btrfs_close_one_device -> btrfs_close_one_device)",
+          "call(btrfs_close_one_device -> list_del_init)"
+        ],
+        "tracked_symbols": [
+          "device",
+          "bdev_file",
+          "NULL"
+        ],
+        "buffer_fields": [
+          "device->bdev_file"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "btrfs_close_one_device"
+        ],
+        "call_edges": [
+          "btrfs_close_one_device -> btrfs_close_one_device",
+          "btrfs_close_one_device -> list_del_init",
+          "btrfs_close_one_device -> clear_bit"
+        ],
+        "state_statements": [
+          "device->bdev_file = NULL"
+        ],
+        "source_file": "fs/btrfs/volumes.c"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "fs/btrfs/volumes.c",
+          "hunk_index": 0,
+          "source_line": 1105
+        },
+        "summary": "btrfs_close_one_device clears stale state via device->bdev_file = NULL after the lifetime transition so later consumers cannot reuse the invalid handle.",
+        "statements": [
+          "device->bdev_file = NULL"
+        ],
+        "guards": [],
+        "call_boundary": [],
+        "call_edges": [
+          "btrfs_close_one_device -> btrfs_close_one_device",
+          "btrfs_close_one_device -> list_del_init",
+          "btrfs_close_one_device -> clear_bit"
+        ],
+        "state_transitions": [
+          "transition(device->bdev_file = NULL)",
+          "call(btrfs_close_one_device -> btrfs_close_one_device)",
+          "call(btrfs_close_one_device -> list_del_init)"
+        ],
+        "api_terms": [],
+        "related_symbols": [
+          "device",
+          "bdev_file",
+          "NULL"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      },
+      "confidence": 0.9
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_0",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "fs/btrfs/volumes.c",
+        "function": "btrfs_close_one_device"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "btrfs_close_one_device in fs/btrfs/volumes.c provides CSA-backed pointer/resource lifecycle context near line 1108",
+        "state_before": [
+          "input(device)",
+          "buffer(device->post_commit_list)",
+          "buffer(device->dev_alloc_list)",
+          "sinks(test_bit, list_del_init)"
+        ],
+        "state_after": [
+          "operation(fs_devices->rw_devices--;)",
+          "operation(fs_devices->missing_devices--;)",
+          "operation(fs_devices->open_devices--;)",
+          "operation(device->bdev_file = NULL)"
+        ],
+        "tracked_symbols": [
+          "device",
+          "bdev_file",
+          "NULL"
+        ],
+        "buffer_fields": [
+          "device->post_commit_list",
+          "device->dev_alloc_list",
+          "device->dev_state",
+          "device->fs_devices",
+          "device->devid",
+          "fs_devices->rw_devices"
+        ],
+        "coverage_status": "partial",
+        "operations": [
+          "fs_devices->rw_devices--;",
+          "fs_devices->missing_devices--;",
+          "fs_devices->open_devices--;",
+          "device->bdev_file = NULL",
+          "sizeof(struct bug_entry)",
+          "__auto_type __flags = (1 << 0) | (((9) << 8));"
+        ],
+        "functions": [
+          "btrfs_close_one_device"
+        ],
+        "call_targets": [
+          "test_bit",
+          "list_del_init",
+          "clear_bit",
+          "btrfs_close_bdev",
+          "btrfs_destroy_dev_zone_info",
+          "atomic_set"
+        ],
+        "call_edges": [
+          "btrfs_close_one_device -> __builtin_constant_p",
+          "btrfs_close_one_device -> const_test_bit",
+          "btrfs_close_one_device -> _test_bit",
+          "btrfs_close_one_device -> list_del_init",
+          "btrfs_close_one_device -> clear_bit",
+          "btrfs_close_one_device -> btrfs_close_bdev"
+        ],
+        "state_statements": [
+          "fs_devices->rw_devices--;",
+          "fs_devices->missing_devices--;",
+          "fs_devices->open_devices--;",
+          "device->bdev_file = NULL",
+          "sizeof(struct bug_entry)",
+          "__auto_type __flags = (1 << 0) | (((9) << 8));"
+        ],
+        "source_file": "fs/btrfs/volumes.c"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "fs/btrfs/volumes.c",
+          "hunk_index": 0,
+          "source_line": 1108
+        },
+        "summary": "btrfs_close_one_device in fs/btrfs/volumes.c provides CSA-backed pointer/resource lifecycle context near line 1108",
+        "statements": [
+          "1086: static void btrfs_close_one_device(struct btrfs_device *device)",
+          "1087: {",
+          "1088: \tstruct btrfs_fs_devices *fs_devices = device->fs_devices;",
+          "1089:",
+          "1090: \tif (test_bit(BTRFS_DEV_STATE_WRITEABLE, &device->dev_state) &&",
+          "1091: \t    device->devid != BTRFS_DEV_REPLACE_DEVID) {"
+        ],
+        "guards": [
+          "test_bit(BTRFS_DEV_STATE_WRITEABLE, &device->dev_state",
+          "device->devid == BTRFS_DEV_REPLACE_DEVID",
+          "test_bit(BTRFS_DEV_STATE_MISSING, &device->dev_state)",
+          "device->bdev"
+        ],
+        "call_boundary": [
+          "test_bit",
+          "list_del_init",
+          "clear_bit",
+          "btrfs_close_bdev",
+          "btrfs_destroy_dev_zone_info",
+          "atomic_set"
+        ],
+        "call_edges": [
+          "btrfs_close_one_device -> __builtin_constant_p",
+          "btrfs_close_one_device -> const_test_bit",
+          "btrfs_close_one_device -> _test_bit",
+          "btrfs_close_one_device -> list_del_init",
+          "btrfs_close_one_device -> clear_bit",
+          "btrfs_close_one_device -> btrfs_close_bdev"
+        ],
+        "state_transitions": [
+          "operation(fs_devices->rw_devices--;)",
+          "operation(fs_devices->missing_devices--;)",
+          "operation(fs_devices->open_devices--;)",
+          "operation(device->bdev_file = NULL)"
+        ],
+        "api_terms": [
+          "fs_devices->rw_devices--;",
+          "fs_devices->missing_devices--;",
+          "fs_devices->open_devices--;",
+          "device->bdev_file = NULL",
+          "sizeof(struct bug_entry)",
+          "__auto_type __flags = (1 << 0) | (((9) << 8));"
+        ],
+        "related_symbols": [
+          "device",
+          "bdev_file",
+          "NULL"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      },
+      "confidence": 0.72
+    }
+  ],
+  "selected_context_summaries": [],
+  "semantic_clause_plan": [
+    {
+      "clause_id": "vulnerable_trigger_clause",
+      "intent": "Trigger on the vulnerable use_after_free mechanism using evidence-backed path/flow semantics.",
+      "supporting_evidence_ids": [
+        "csa_guard_0",
+        "csa_semantic_slice_0",
+        "csa_state_0",
+        "csa_validation_allocation_lifecycle_0"
+      ],
+      "repair_when": [
+        "semantic_no_hits"
+      ],
+      "focus_functions": []
+    },
+    {
+      "clause_id": "patched_silence_clause",
+      "intent": "Stay silent on patched code when patch-added guards, barriers, or safe APIs prove the mechanism is blocked.",
+      "supporting_evidence_ids": [
+        "csa_guard_0",
+        "csa_semantic_slice_0",
+        "csa_state_0"
+      ],
+      "repair_when": [],
+      "silencing_conditions": []
+    },
+    {
+      "clause_id": "semantic_transfer_clause",
+      "intent": "Generalize along semantic slices and call-chain evidence rather than patch-local syntax.",
+      "supporting_evidence_ids": [
+        "csa_semantic_slice_0"
+      ],
+      "repair_when": [],
+      "analyzer_id": "csa"
+    },
+    {
+      "clause_id": "analyzer_interface_clause",
+      "intent": "Preserve valid analyzer-facing syntax and interfaces while keeping semantics unchanged.",
+      "supporting_evidence_ids": [],
+      "repair_when": [
+        "semantic_execution_error"
+      ],
+      "analyzer_id": "csa"
+    }
+  ],
+  "repair_directives": [],
+  "constraints": [
+    {
+      "title": "Generalize beyond patch site",
+      "description": "Do not bind the detector to fixed file paths, line numbers, or exact patch strings.",
+      "priority": "high"
+    },
+    {
+      "title": "Preserve vulnerability semantics",
+      "description": "Keep the detector focused on the vulnerability family implied by the patch and evidence.",
+      "priority": "high"
+    },
+    {
+      "title": "Respect analyzer-native form",
+      "description": "Output must be a valid checker_plugin for csa.",
+      "priority": "high"
+    },
+    {
+      "title": "Stay within proven mechanism scope",
+      "description": "Generalize only along evidence-supported semantic dimensions. Do not broaden the detector into unrelated globals, APIs, or bug families.",
+      "priority": "high"
+    },
+    {
+      "title": "Honor mechanism contract",
+      "description": "Preserve the mechanism family `resource_lifetime_violation` by keeping trigger invariants a resource is released; the same symbolic resource reaches a later use without reinitialization or ownership transfer.",
+      "priority": "high"
+    },
+    {
+      "title": "Generalize only on contract axes",
+      "description": "Reuse semantics only along these transfer axes: equivalent release-then-use sequences on the same resource role; equivalent lifecycle transitions across wrappers or helper functions; equivalent guard or barrier predicates on sibling paths.",
+      "priority": "high"
+    },
+    {
+      "title": "Track resource identity across lifetime edges",
+      "description": "Model release, reuse, reinitialization, and ownership transfer on the same symbolic resource; do not count frees or uses in isolation.",
+      "priority": "high"
+    },
+    {
+      "title": "Do not key on local identifier names",
+      "description": "Do not define the vulnerable resource role solely by field/variable names such as session/cache/context; infer it from release-use-nulling-relookup semantics and alias continuity.",
+      "priority": "high"
+    },
+    {
+      "title": "Use path-sensitive evidence",
+      "description": "Prefer guards, state transitions, and lifecycle facts over broad textual matching.",
+      "priority": "high"
+    },
+    {
+      "title": "No placeholder helper logic",
+      "description": "Helper predicates must inspect AST/program state and must not be unconditional return-true/return-false stubs.",
+      "priority": "high"
+    }
+  ],
+  "implementation_hints": [
+    "Mechanism family: resource_lifetime_violation",
+    "Mechanism dimensions: resource identity or alias, release event, later use sink on the same resource, reinitialization/nulling/ownership transfer barrier",
+    "Trigger invariants: a resource is released, the same symbolic resource reaches a later use without reinitialization or ownership transfer",
+    "Silence invariants: the resource is nulled, rebound, or reinitialized before reuse, ownership transfer or guard logic blocks access after release",
+    "Transfer axes: equivalent release-then-use sequences on the same resource role, equivalent lifecycle transitions across wrappers or helper functions, equivalent guard or barrier predicates on sibling paths",
+    "Track the same symbolic resource across release, nulling/reinit, and later use/free; do not reduce lifecycle reasoning to raw API names.",
+    "Do not classify the resource only by field or variable names; use release/use/nulling/relookup relations plus alias continuity.",
+    "Semantic slice (path_witness): Analyzer CFG for btrfs_close_one_device in fs/btrfs/volumes.c: bindings: int __ret_warn_on = !!(!list_empty(&device->dev_alloc_list));; int __ret_warn_on = !!(!list_empty(&device->post_commit_list)); | branches: (__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((3)) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t)) && (uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(*(const unsigned long *)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, NoOp, const unsigned long *) (ImplicitCastExpr, LValueToRValue, unsigned long))) ? ... : ...; __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((3)) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t)) && (uintptr_t)(&device (ImplicitCastExpr, LValueToRValue, struct btrfs_device *)->dev_state) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t) && ... | calls: btrfs_close_one_device -> __builtin_constant_p; btrfs_close_one_device -> const_test_bit"
+  ],
+  "validation_expectations": [
+    "Vulnerable version should trigger a use_after_free finding.",
+    "Patched version should stay silent for the same mechanism.",
+    "Semantic validation that executes but returns zero hits is not acceptable; recover coverage with evidence-backed semantics.",
+    "Repair phase may fix syntax/interfaces only; it must not simplify away the core detection logic.",
+    "Generalization must stay inside the mechanism contract transfer axes instead of widening to adjacent bug families.",
+    "Sibling variants that preserve the same release-then-use lifecycle should also trigger; patch-local identifier matching is not sufficient.",
+    "Trigger invariant: a resource is released.",
+    "Trigger invariant: the same symbolic resource reaches a later use without reinitialization or ownership transfer."
+  ]
+}

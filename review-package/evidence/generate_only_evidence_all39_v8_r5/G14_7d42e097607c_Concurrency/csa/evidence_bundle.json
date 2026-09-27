@@ -1,0 +1,677 @@
+{
+  "records": [
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/crypto/intel/qat/qat_common/adf_aer.c",
+        "function": "adf_device_reset_worker"
+      },
+      "location": {
+        "line": 133,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "if adf_dev_restart (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct adf_accel_dev *))(accel_dev (ImplicitCastExpr, LValueToRValue, struct adf_accel_dev *))",
+        "summary": "Analyzer CFG for adf_device_reset_worker in drivers/crypto/intel/qat/qat_common/adf_aer.c: bindings: struct adf_accel_dev *accel_dev = reset_data->accel_dev;; sriov_data.accel_dev = accel_dev (ImplicitCastExpr, LValueToRValue, struct adf_accel_dev *) | branches: if adf_dev_restart (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct adf_accel_dev *))(accel_dev (ImplicitCastExpr, LValueToRValue, struct adf_accel_dev *)); if reset_data (ImplicitCastExpr, LValueToRValue, struct adf_reset_dev_data *)->mode (ImplicitCastExpr, LValueToRValue, int) == ADF_DEV_RESET_SYNC | calls: adf_device_reset_worker -> msecs_to_jiffies; adf_device_reset_worker -> adf_dev_restarting_notify",
+        "state_before": [
+          "input(work)",
+          "buffer(reset_data->accel_dev)",
+          "buffer(reset_data->mode)",
+          "sinks(container_of, msecs_to_jiffies)"
+        ],
+        "state_after": [
+          "cfg_binding(struct adf_accel_dev *accel_dev = reset_data->accel_dev;)",
+          "cfg_binding(sriov_data.accel_dev = accel_dev (ImplicitCastExpr, LValueToRValue, struct adf_accel_dev *))",
+          "cfg_branch(if adf_dev_restart (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct adf_accel_dev *))(accel_dev (ImplicitCastExpr, LValueToRValue, struct adf_accel_dev *)))",
+          "cfg_branch(if reset_data (ImplicitCastExpr, LValueToRValue, struct adf_reset_dev_data *)->mode (ImplicitCastExpr, LValueToRValue, int) == ADF_DEV_RESET_SYNC)"
+        ],
+        "functions": [
+          "adf_device_reset_worker"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "work",
+          "reset_data->accel_dev",
+          "reset_data->mode",
+          "accel_dev->status",
+          "reset_data->compl"
+        ],
+        "buffer_fields": [
+          "reset_data->accel_dev",
+          "reset_data->mode",
+          "accel_dev->status",
+          "reset_data->compl"
+        ],
+        "call_targets": [
+          "container_of",
+          "msecs_to_jiffies",
+          "adf_dev_restarting_notify",
+          "dev_err",
+          "kfree",
+          "init_completion",
+          "queue_work",
+          "adf_pf2vf_notify_restarted"
+        ],
+        "call_edges": [
+          "adf_device_reset_worker -> msecs_to_jiffies",
+          "adf_device_reset_worker -> adf_dev_restarting_notify",
+          "adf_device_reset_worker -> adf_dev_restart",
+          "adf_device_reset_worker -> __builtin_constant_p",
+          "adf_device_reset_worker -> _dev_err",
+          "adf_device_reset_worker -> kfree"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "if [B3.21]",
+          "if [B5.16]",
+          "do ... while [B6.1]",
+          "do ... while [B7.1]",
+          "static init __key",
+          "do ... while [B15.1]"
+        ],
+        "resolved_branch_conditions": [
+          "if adf_dev_restart (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct adf_accel_dev *))(accel_dev (ImplicitCastExpr, LValueToRValue, struct adf_accel_dev *))",
+          "if reset_data (ImplicitCastExpr, LValueToRValue, struct adf_reset_dev_data *)->mode (ImplicitCastExpr, LValueToRValue, int) == ADF_DEV_RESET_SYNC",
+          "if wait_for_completion_timeout (ImplicitCastExpr, FunctionToPointerDecay, unsigned long (*)(struct completion *, unsigned long))(&sriov_data.compl, wait_jiffies (ImplicitCastExpr, LValueToRValue, unsigned long))",
+          "do ... while 0",
+          "static init __key",
+          "if __builtin_expect (ImplicitCastExpr, BuiltinFnToFnPtr, long (*)(long, long))(!!(__ret_warn_on) (ImplicitCastExpr, LValueToRValue, int) (ImplicitCastExpr, IntegralCast, long), 0 (ImplicitCastExpr, IntegralCast, long))"
+        ],
+        "cfg_value_bindings": [
+          "struct adf_accel_dev *accel_dev = reset_data->accel_dev;",
+          "sriov_data.accel_dev = accel_dev (ImplicitCastExpr, LValueToRValue, struct adf_accel_dev *)",
+          "unsigned long wait_jiffies = msecs_to_jiffies(10000);",
+          "int __ret_warn_on = !!(1);",
+          "void *__mptr = (void *)(work);",
+          "struct adf_reset_dev_data *reset_data = ({"
+        ],
+        "state_statements": [
+          "kfree",
+          "[B2.4]->compl",
+          "[B3.11]->status",
+          "[B3.17]->mode",
+          "[B3.19] == [B3.20]",
+          "(([B8.23]))->data"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,drivers/crypto/intel/qat/qat_common/.adf_aer.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/inclu...",
+        "source_file": "drivers/crypto/intel/qat/qat_common/adf_aer.c",
+        "source_excerpt": "121: static void adf_device_reset_worker(struct work_struct *work)\n122: {\n123: \tstruct adf_reset_dev_data *reset_data =\n124: \t\t  container_of(work, struct adf_reset_dev_data, reset_work);\n125: \tstruct adf_accel_dev *accel_dev = reset_data->accel_dev;\n126: \tunsigned long wait_jiffies = msecs_to_jiffies(10000);\n127: \tstruct adf_sriov_dev_data sriov_data;\n128: \n129: \tadf_dev_restarting_notify(accel_dev);\n130: \tif (adf_dev_restart(accel_dev)) {\n131: \t\t/* The device hanged and we can't restart it so stop here */\n132: \t\tdev_err(&GET_DEV(accel_dev), \"Restart device failed\\n\");\n133: \t\tif (reset_data->mode == ADF_DEV_RESET_ASYNC)\n134: \t\t\tkfree(reset_data);\n135: \t\tWARN(1, \"QAT: device restart failed. Device is unusable\\n\");\n136: \t\treturn;\n137: \t}\n138: \n139: \tsriov_data.accel_dev = accel_dev;\n140: \tinit_completion(&sriov_data.compl);\n141: \tINIT_WORK(&sriov_data.sriov_work, adf_device_sriov_worker);\n142: \tqueue_work(device_sriov_wq, &sriov_data.sriov_work);\n143: \tif (wait_for_completion_timeout(&sriov_data.compl, wait_jiffies))\n144: \t\tadf_pf2vf_notify_restarted(accel_dev);\n145: \n146: \tadf_dev_restarted_notify(accel_dev);\n147: \tclear_bit(ADF_STATUS_RESTARTING, &accel_dev->status);\n148: \n149: \t/* The dev is back alive. Notify the caller if in sync mode */\n150: \tif (reset_data->mode == ADF_DEV_RESET_SYNC)\n151: \t\tcomplete(&reset_data->compl);\n152: \telse\n153: \t\tkfree(reset_data);\n154: }",
+        "summary_line": 133,
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/generate_only_evidence_all39_v8_r5/G14_7d42e097607c_Concurrency/csa/patchweaver_runtime/csa_raw/drivers-crypto-intel-qat-qat_common-adf_aer.c-adf_device_reset_worker.txt",
+        "raw_output_sha256": "d81f1c4317acc80440eefee6be5f3d8226058c6ff87a99c70f28f4d46364632b",
+        "command_sha256": "43e50008988870ba0a2bccbd5c741374d01147867e947901562c08eb5c2d8c44"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:debug-cfg",
+        "confidence": 0.92,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/crypto/intel/qat/qat_common/adf_aer.c",
+          "hunk_index": 0,
+          "source_line": 133
+        },
+        "summary": "Analyzer CFG for adf_device_reset_worker in drivers/crypto/intel/qat/qat_common/adf_aer.c: bindings: struct adf_accel_dev *accel_dev = reset_data->accel_dev;; sriov_data.accel_dev = accel_dev (ImplicitCastExpr, LValueToRValue, struct adf_accel_dev *) | branches: if adf_dev_restart (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct adf_accel_dev *))(accel_dev (ImplicitCastExpr, LValueToRValue, struct adf_accel_dev *)); if reset_data (ImplicitCastExpr, LValueToRValue, struct adf_reset_dev_data *)->mode (ImplicitCastExpr, LValueToRValue, int) == ADF_DEV_RESET_SYNC | calls: adf_device_reset_worker -> msecs_to_jiffies; adf_device_reset_worker -> adf_dev_restarting_notify",
+        "statements": [
+          "121: static void adf_device_reset_worker(struct work_struct *work)",
+          "122: {",
+          "123: \tstruct adf_reset_dev_data *reset_data =",
+          "124: \t\t  container_of(work, struct adf_reset_dev_data, reset_work);",
+          "125: \tstruct adf_accel_dev *accel_dev = reset_data->accel_dev;",
+          "126: \tunsigned long wait_jiffies = msecs_to_jiffies(10000);"
+        ],
+        "guards": [
+          "if adf_dev_restart (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct adf_accel_dev *))(accel_dev (ImplicitCastExpr, LValueToRValue, struct adf_accel_dev *))",
+          "if reset_data (ImplicitCastExpr, LValueToRValue, struct adf_reset_dev_data *)->mode (ImplicitCastExpr, LValueToRValue, int) == ADF_DEV_RESET_SYNC",
+          "if wait_for_completion_timeout (ImplicitCastExpr, FunctionToPointerDecay, unsigned long (*)(struct completion *, unsigned long))(&sriov_data.compl, wait_jiffies (ImplicitCastExpr, LValueToRValue, unsigned long))",
+          "do ... while 0"
+        ],
+        "call_boundary": [
+          "container_of",
+          "msecs_to_jiffies",
+          "adf_dev_restarting_notify",
+          "dev_err",
+          "kfree",
+          "init_completion"
+        ],
+        "call_edges": [
+          "adf_device_reset_worker -> msecs_to_jiffies",
+          "adf_device_reset_worker -> adf_dev_restarting_notify",
+          "adf_device_reset_worker -> adf_dev_restart",
+          "adf_device_reset_worker -> __builtin_constant_p",
+          "adf_device_reset_worker -> _dev_err",
+          "adf_device_reset_worker -> kfree",
+          "adf_device_reset_worker -> __builtin_expect",
+          "adf_device_reset_worker -> __warn_printk"
+        ],
+        "state_transitions": [
+          "cfg_binding(struct adf_accel_dev *accel_dev = reset_data->accel_dev;)",
+          "cfg_binding(sriov_data.accel_dev = accel_dev (ImplicitCastExpr, LValueToRValue, struct adf_accel_dev *))",
+          "cfg_branch(if adf_dev_restart (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct adf_accel_dev *))(accel_dev (ImplicitCastExpr, LValueToRValue, struct adf_accel_dev *)))",
+          "cfg_branch(if reset_data (ImplicitCastExpr, LValueToRValue, struct adf_reset_dev_data *)->mode (ImplicitCastExpr, LValueToRValue, int) == ADF_DEV_RESET_SYNC)",
+          "kfree",
+          "[B2.4]->compl"
+        ],
+        "api_terms": [
+          "msecs_to_jiffies",
+          "adf_dev_restarting_notify",
+          "adf_dev_restart",
+          "__builtin_constant_p",
+          "_dev_err",
+          "kfree"
+        ],
+        "related_symbols": [
+          "work",
+          "reset_data->accel_dev",
+          "reset_data->mode",
+          "accel_dev->status",
+          "reset_data->compl"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/crypto/intel/qat/qat_common/adf_aer.c",
+        "function": "adf_device_reset_worker"
+      },
+      "location": {
+        "line": 133,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "adf_device_reset_worker in drivers/crypto/intel/qat/qat_common/adf_aer.c: cfg_calls=adf_device_reset_worker -> msecs_to_jiffies; adf_device_reset_worker -> adf_dev_restarting_notify",
+        "state_before": [
+          "input(work)",
+          "buffer(reset_data->accel_dev)",
+          "buffer(reset_data->mode)",
+          "sinks(container_of, msecs_to_jiffies)"
+        ],
+        "state_after": [
+          "transition(kfree)",
+          "transition([B2.4]->compl)",
+          "transition([B3.11]->status)"
+        ],
+        "functions": [
+          "adf_device_reset_worker"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "work",
+          "reset_data->accel_dev",
+          "reset_data->mode",
+          "accel_dev->status",
+          "reset_data->compl"
+        ],
+        "buffer_fields": [
+          "reset_data->accel_dev",
+          "reset_data->mode",
+          "accel_dev->status",
+          "reset_data->compl"
+        ],
+        "call_targets": [
+          "container_of",
+          "msecs_to_jiffies",
+          "adf_dev_restarting_notify",
+          "dev_err",
+          "kfree",
+          "init_completion",
+          "queue_work",
+          "adf_pf2vf_notify_restarted"
+        ],
+        "call_edges": [
+          "adf_device_reset_worker -> msecs_to_jiffies",
+          "adf_device_reset_worker -> adf_dev_restarting_notify",
+          "adf_device_reset_worker -> adf_dev_restart",
+          "adf_device_reset_worker -> __builtin_constant_p",
+          "adf_device_reset_worker -> _dev_err",
+          "adf_device_reset_worker -> kfree"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "if [B3.21]",
+          "if [B5.16]",
+          "do ... while [B6.1]",
+          "do ... while [B7.1]"
+        ],
+        "state_statements": [
+          "kfree",
+          "[B2.4]->compl",
+          "[B3.11]->status",
+          "[B3.17]->mode",
+          "[B3.19] == [B3.20]",
+          "(([B8.23]))->data",
+          "[B8.24] = [B8.20]",
+          "(([B8.30]))->lockdep_map"
+        ],
+        "return_statements": [
+          "return;"
+        ],
+        "source_file": "drivers/crypto/intel/qat/qat_common/adf_aer.c",
+        "source_excerpt": "121: static void adf_device_reset_worker(struct work_struct *work)\n122: {\n123: \tstruct adf_reset_dev_data *reset_data =\n124: \t\t  container_of(work, struct adf_reset_dev_data, reset_work);\n125: \tstruct adf_accel_dev *accel_dev = reset_data->accel_dev;\n126: \tunsigned long wait_jiffies = msecs_to_jiffies(10000);\n127: \tstruct adf_sriov_dev_data sriov_data;\n128: \n129: \tadf_dev_restarting_notify(accel_dev);\n130: \tif (adf_dev_restart(accel_dev)) {\n131: \t\t/* The device hanged and we can't restart it so stop here */\n132: \t\tdev_err(&GET_DEV(accel_dev), \"Restart device failed\\n\");\n133: \t\tif (reset_data->mode == ADF_DEV_RESET_ASYNC)\n134: \t\t\tkfree(reset_data);\n135: \t\tWARN(1, \"QAT: device restart failed. Device is unusable\\n\");\n136: \t\treturn;\n137: \t}\n138: \n139: \tsriov_data.accel_dev = accel_dev;\n140: \tinit_completion(&sriov_data.compl);\n141: \tINIT_WORK(&sriov_data.sriov_work, adf_device_sriov_worker);\n142: \tqueue_work(device_sriov_wq, &sriov_data.sriov_work);\n143: \tif (wait_for_completion_timeout(&sriov_data.compl, wait_jiffies))\n144: \t\tadf_pf2vf_notify_restarted(accel_dev);\n145: \n146: \tadf_dev_restarted_notify(accel_dev);\n147: \tclear_bit(ADF_STATUS_RESTARTING, &accel_dev->status);\n148: \n149: \t/* The dev is back alive. Notify the caller if in sync mode */\n150: \tif (reset_data->mode == ADF_DEV_RESET_SYNC)\n151: \t\tcomplete(&reset_data->compl);\n152: \telse\n153: \t\tkfree(reset_data);\n154: }",
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/generate_only_evidence_all39_v8_r5/G14_7d42e097607c_Concurrency/csa/patchweaver_runtime/csa_raw/drivers-crypto-intel-qat-qat_common-adf_aer.c-adf_device_reset_worker.txt",
+        "raw_output_sha256": "d81f1c4317acc80440eefee6be5f3d8226058c6ff87a99c70f28f4d46364632b",
+        "command_sha256": "43e50008988870ba0a2bccbd5c741374d01147867e947901562c08eb5c2d8c44"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:symbolic-state",
+        "confidence": 0.88,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "drivers/crypto/intel/qat/qat_common/adf_aer.c",
+          "hunk_index": 0,
+          "source_line": 133
+        },
+        "summary": "adf_device_reset_worker in drivers/crypto/intel/qat/qat_common/adf_aer.c: cfg_calls=adf_device_reset_worker -> msecs_to_jiffies; adf_device_reset_worker -> adf_dev_restarting_notify",
+        "statements": [
+          "121: static void adf_device_reset_worker(struct work_struct *work)",
+          "122: {",
+          "123: \tstruct adf_reset_dev_data *reset_data =",
+          "124: \t\t  container_of(work, struct adf_reset_dev_data, reset_work);",
+          "125: \tstruct adf_accel_dev *accel_dev = reset_data->accel_dev;",
+          "126: \tunsigned long wait_jiffies = msecs_to_jiffies(10000);"
+        ],
+        "guards": [
+          "if [B3.21]",
+          "if [B5.16]",
+          "do ... while [B6.1]"
+        ],
+        "call_boundary": [
+          "container_of",
+          "msecs_to_jiffies",
+          "adf_dev_restarting_notify",
+          "dev_err",
+          "kfree",
+          "init_completion"
+        ],
+        "call_edges": [
+          "adf_device_reset_worker -> msecs_to_jiffies",
+          "adf_device_reset_worker -> adf_dev_restarting_notify",
+          "adf_device_reset_worker -> adf_dev_restart",
+          "adf_device_reset_worker -> __builtin_constant_p",
+          "adf_device_reset_worker -> _dev_err",
+          "adf_device_reset_worker -> kfree",
+          "adf_device_reset_worker -> __builtin_expect",
+          "adf_device_reset_worker -> __warn_printk"
+        ],
+        "state_transitions": [
+          "transition(kfree)",
+          "transition([B2.4]->compl)",
+          "transition([B3.11]->status)",
+          "kfree",
+          "[B2.4]->compl",
+          "[B3.11]->status"
+        ],
+        "api_terms": [
+          "msecs_to_jiffies",
+          "adf_dev_restarting_notify",
+          "adf_dev_restart",
+          "__builtin_constant_p",
+          "_dev_err",
+          "kfree"
+        ],
+        "related_symbols": [
+          "work",
+          "reset_data->accel_dev",
+          "reset_data->mode",
+          "accel_dev->status",
+          "reset_data->compl"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_lifecycle_0",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/crypto/intel/qat/qat_common/adf_aer.c",
+        "function": "adf_dev_aer_schedule_reset"
+      },
+      "location": {
+        "line": 183,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "adf_dev_aer_schedule_reset in drivers/crypto/intel/qat/qat_common/adf_aer.c reaches init_completion, INIT_LIST_HEAD",
+        "operations": [
+          "init_completion",
+          "INIT_LIST_HEAD"
+        ],
+        "acquisition_ops": [
+          "init_completion",
+          "INIT_LIST_HEAD"
+        ],
+        "release_ops": [],
+        "transition_ops": [],
+        "state_before": [
+          "buffer(reset_data->compl)",
+          "buffer(reset_data->reset_work)",
+          "sinks(complete, kfree)"
+        ],
+        "state_after": [
+          "transition(init_completion)",
+          "transition(INIT_LIST_HEAD)"
+        ],
+        "functions": [
+          "adf_dev_aer_schedule_reset"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "reset_data->compl",
+          "reset_data->reset_work",
+          "accel_dev->status",
+          "reset_data->accel_dev",
+          "reset_data->mode",
+          "pdev->is_busmaster"
+        ],
+        "buffer_fields": [
+          "reset_data->compl",
+          "reset_data->reset_work",
+          "accel_dev->status",
+          "reset_data->accel_dev",
+          "reset_data->mode",
+          "pdev->is_busmaster"
+        ],
+        "call_edges": [
+          "adf_dev_aer_schedule_reset -> adf_dev_started",
+          "adf_dev_aer_schedule_reset -> __builtin_constant_p",
+          "adf_dev_aer_schedule_reset -> const_test_bit",
+          "adf_dev_aer_schedule_reset -> _test_bit",
+          "adf_dev_aer_schedule_reset -> set_bit",
+          "adf_dev_aer_schedule_reset -> kzalloc"
+        ],
+        "cfg_value_bindings": [
+          "reset_data (ImplicitCastExpr, LValueToRValue, struct adf_reset_dev_data *)->accel_dev = accel_dev (ImplicitCastExpr, LValueToRValue, struct adf_accel_dev *)",
+          "(uintptr_t)(&accel_dev (ImplicitCastExpr, LValueToRValue, struct adf_accel_dev *)->status) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t)",
+          "unsigned long wait_jiffies = msecs_to_jiffies(10000);",
+          "unsigned long timeout = wait_for_completion_timeout(&reset_data->compl, wait_jiffies);",
+          "reset_data = kzalloc (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(size_t, gfp_t))(sizeof (*reset_data), (((gfp_t)(1024U | 2048U) (CStyleCastExpr, NoOp, gfp_t)) | ((gfp_t)64U (CStyleCastExpr, NoOp, gfp_t)) | ((gfp_t)128U (CStyleCastExpr, NoOp, gfp_t)))) (ImplicitCastExpr, BitCast, struct adf_reset_dev_data *)",
+          "ret = -14"
+        ],
+        "resolved_branch_conditions": [
+          "if !adf_dev_started (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct adf_accel_dev *))(accel_dev (ImplicitCastExpr, LValueToRValue, struct adf_accel_dev *)) || ((__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(0) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((uintptr_t)(&accel_dev (ImplicitCastExpr, LValueToRValue, struct adf_accel_dev *)->status) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t)) && (uintptr_t)(&accel_dev (ImplicitCastExpr, LValueToRValue, struct adf_accel_dev *)->status) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(*(const unsigned long *)(&[B34.3] (ImplicitCastExpr, LValueToRValue, struct adf_accel_dev *)->status) (CStyleCastExpr, NoOp, const unsigned long *) (ImplicitCastExpr, LValueToRValue, unsigned long))) ? const_test_bit (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(unsigned long, const volatile unsigned long *))(0 (ImplicitCastExpr, IntegralCast, unsigned long), &accel_dev (ImplicitCastExpr, LValueToRValue, struct adf_accel_dev *)->status (ImplicitCastExpr, NoOp, const volatile unsigned long *)) (ImplicitCastExpr, IntegralCast, int) : _test_bit (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(unsigned long, const volatile unsigned long *))(0 (ImplicitCastExpr, IntegralCast, unsigned long), &accel_dev (ImplicitCastExpr, LValueToRValue, struct adf_accel_dev *)->status (ImplicitCastExpr, NoOp, const volatile unsigned long *)) (ImplicitCastExpr, IntegralCast, int))",
+          "(__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(0) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((uintptr_t)(&accel_dev (ImplicitCastExpr, LValueToRValue, struct adf_accel_dev *)->status) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t)) && (uintptr_t)(&accel_dev (ImplicitCastExpr, LValueToRValue, struct adf_accel_dev *)->status) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(*(const unsigned long *)(&accel_dev (ImplicitCastExpr, LValueToRValue, struct adf_accel_dev *)->status) (CStyleCastExpr, NoOp, const unsigned long *) (ImplicitCastExpr, LValueToRValue, unsigned long))) ? ... : ...",
+          "__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(0) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((uintptr_t)(&accel_dev (ImplicitCastExpr, LValueToRValue, struct adf_accel_dev *)->status) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t)) && (uintptr_t)(&accel_dev (ImplicitCastExpr, LValueToRValue, struct adf_accel_dev *)->status) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t) && ...",
+          "__builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())(0) && __builtin_constant_p (ImplicitCastExpr, BuiltinFnToFnPtr, int (*)())((uintptr_t)(&accel_dev (ImplicitCastExpr, LValueToRValue, struct adf_accel_dev *)->status) (CStyleCastExpr, PointerToIntegral, uintptr_t) != (uintptr_t)((void *)0 (CStyleCastExpr, NullToPointer, void *)) (CStyleCastExpr, PointerToIntegral, uintptr_t)) && ...",
+          "!adf_dev_started (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct adf_accel_dev *))(accel_dev (ImplicitCastExpr, LValueToRValue, struct adf_accel_dev *)) || ...",
+          "do ... while 0"
+        ],
+        "source_file": "drivers/crypto/intel/qat/qat_common/adf_aer.c",
+        "source_excerpt": "151: \t\tcomplete(&reset_data->compl);\n152: \telse\n153: \t\tkfree(reset_data);\n154: }\n155: \n156: static int adf_dev_aer_schedule_reset(struct adf_accel_dev *accel_dev,\n157: \t\t\t\t      enum adf_dev_reset_mode mode)\n158: {\n159: \tstruct adf_reset_dev_data *reset_data;\n160: \n161: \tif (!adf_dev_started(accel_dev) ||\n162: \t    test_bit(ADF_STATUS_RESTARTING, &accel_dev->status))\n163: \t\treturn 0;\n164: \n165: \tset_bit(ADF_STATUS_RESTARTING, &accel_dev->status);\n166: \treset_data = kzalloc(sizeof(*reset_data), GFP_KERNEL);\n167: \tif (!reset_data)\n168: \t\treturn -ENOMEM;\n169: \treset_data->accel_dev = accel_dev;\n170: \tinit_completion(&reset_data->compl);\n171: \treset_data->mode = mode;\n172: \tINIT_WORK(&reset_data->reset_work, adf_device_reset_worker);\n173: \tqueue_work(device_reset_wq, &reset_data->reset_work);\n174: \n175: \t/* If in sync mode wait for the result */\n176: \tif (mode == ADF_DEV_RESET_SYNC) {\n177: \t\tint ret = 0;\n178: \t\t/* Maximum device reset time is 10 seconds */\n179: \t\tunsigned long wait_jiffies = msecs_to_jiffies(10000);\n180: \t\tunsigned long timeout = wait_for_completion_timeout(\n181: \t\t\t\t   &reset_data->compl, wait_jiffies);\n182: \t\tif (!timeout) {\n183: \t\t\tdev_err(&GET_DEV(accel_dev),\n184: \t\t\t\t\"Reset device timeout expired\\n\");\n185: \t\t\tret = -EFAULT;\n186: \t\t}\n187: \t\tkfree(reset_data);\n188: \t\treturn ret;\n189: \t}\n190: \treturn 0;\n191: }\n192: \n193: static pci_ers_result_t adf_slot_reset(struct pci_dev *pdev)\n194: {\n195: \tstruct adf_accel_dev *accel_dev = adf_devmgr_pci_to_accel_dev(pdev);\n196: \tint res = 0;\n197: \n198: \tif (!accel_dev) {\n199: \t\tpr_err(\"QAT: Can't find acceleration device\\n\");\n200: \t\treturn PCI_ERS_RESULT_DISCONNECT;\n201: \t}\n202: \n203: \tif (!pdev->is_busmaster)\n204: \t\tpci_set_master(pdev);\n205: \tpci_restore_state(pdev);\n206: \tpci_save_state(pdev);\n207: \tres = adf_dev_up(accel_dev, false);\n208: \tif (res && res != -EALREADY)\n209: \t\treturn PCI_ERS_RESULT_DISCONNECT;\n210: \n211: \tadf_reenable_sriov(accel_dev);\n212: \tadf_pf2vf_notify_restarted(accel_dev);\n213: \tadf_dev_restarted_notify(accel_dev);\n214: \tclear_bit(ADF_STATUS_RESTARTING, &accel_dev->status);\n215: \treturn PCI_ERS_RESULT_RECOVERED;",
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/generate_only_evidence_all39_v8_r5/G14_7d42e097607c_Concurrency/csa/patchweaver_runtime/csa_raw/drivers-crypto-intel-qat-qat_common-adf_aer.c-adf_dev_aer_schedule_reset.txt",
+        "raw_output_sha256": "d81f1c4317acc80440eefee6be5f3d8226058c6ff87a99c70f28f4d46364632b",
+        "command_sha256": "43e50008988870ba0a2bccbd5c741374d01147867e947901562c08eb5c2d8c44"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:lifecycle",
+        "confidence": 0.9,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "drivers/crypto/intel/qat/qat_common/adf_aer.c",
+          "hunk_index": 2,
+          "source_line": 183
+        },
+        "summary": "adf_dev_aer_schedule_reset in drivers/crypto/intel/qat/qat_common/adf_aer.c reaches init_completion, INIT_LIST_HEAD",
+        "statements": [
+          "151: \t\tcomplete(&reset_data->compl);",
+          "152: \telse",
+          "153: \t\tkfree(reset_data);",
+          "154: }",
+          "155:",
+          "156: static int adf_dev_aer_schedule_reset(struct adf_accel_dev *accel_dev,"
+        ],
+        "guards": [
+          "do ... while [B4.1]",
+          "static init _entry_ptr",
+          "[B10.15] ? ... : ..."
+        ],
+        "call_boundary": [
+          "complete",
+          "kfree",
+          "adf_dev_aer_schedule_reset",
+          "adf_dev_started",
+          "set_bit",
+          "kzalloc"
+        ],
+        "call_edges": [
+          "adf_dev_aer_schedule_reset -> adf_dev_started",
+          "adf_dev_aer_schedule_reset -> __builtin_constant_p",
+          "adf_dev_aer_schedule_reset -> const_test_bit",
+          "adf_dev_aer_schedule_reset -> _test_bit",
+          "adf_dev_aer_schedule_reset -> set_bit",
+          "adf_dev_aer_schedule_reset -> kzalloc",
+          "adf_dev_aer_schedule_reset -> init_completion",
+          "adf_dev_aer_schedule_reset -> __init_work"
+        ],
+        "state_transitions": [
+          "transition(init_completion)",
+          "transition(INIT_LIST_HEAD)",
+          "return [B1.1];",
+          "kfree",
+          "return [B2.8];",
+          "[B3.4]->accel_pci_dev"
+        ],
+        "api_terms": [
+          "init_completion",
+          "INIT_LIST_HEAD",
+          "adf_dev_started",
+          "__builtin_constant_p",
+          "const_test_bit",
+          "_test_bit"
+        ],
+        "related_symbols": [
+          "reset_data->compl",
+          "reset_data->reset_work",
+          "accel_dev->status",
+          "reset_data->accel_dev",
+          "reset_data->mode",
+          "pdev->is_busmaster"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_validation_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/crypto/intel/qat/qat_common/adf_aer.c",
+        "function": "adf_device_reset_worker"
+      },
+      "location": {
+        "line": 133,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at drivers/crypto/intel/qat/qat_common/adf_aer.c:133",
+        "diagnostic_message": "",
+        "diagnostic_checker": "",
+        "state_before": [
+          "input(work)",
+          "buffer(reset_data->accel_dev)",
+          "buffer(reset_data->mode)",
+          "sinks(container_of, msecs_to_jiffies)"
+        ],
+        "state_after": [
+          "diagnostic(csa)"
+        ],
+        "functions": [
+          "adf_device_reset_worker"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "work"
+        ],
+        "buffer_fields": [
+          "reset_data->accel_dev",
+          "reset_data->mode",
+          "accel_dev->status",
+          "reset_data->compl"
+        ],
+        "call_targets": [
+          "container_of",
+          "msecs_to_jiffies",
+          "adf_dev_restarting_notify",
+          "dev_err",
+          "kfree",
+          "init_completion"
+        ],
+        "call_edges": [
+          "adf_device_reset_worker -> msecs_to_jiffies",
+          "adf_device_reset_worker -> adf_dev_restarting_notify",
+          "adf_device_reset_worker -> adf_dev_restart",
+          "adf_device_reset_worker -> __builtin_constant_p",
+          "adf_device_reset_worker -> _dev_err",
+          "adf_device_reset_worker -> kfree"
+        ],
+        "state_statements": [
+          "kfree",
+          "[B2.4]->compl",
+          "[B3.11]->status",
+          "[B3.17]->mode",
+          "[B3.19] == [B3.20]",
+          "(([B8.23]))->data"
+        ],
+        "source_file": "drivers/crypto/intel/qat/qat_common/adf_aer.c",
+        "source_excerpt": "121: static void adf_device_reset_worker(struct work_struct *work)\n122: {\n123: \tstruct adf_reset_dev_data *reset_data =\n124: \t\t  container_of(work, struct adf_reset_dev_data, reset_work);\n125: \tstruct adf_accel_dev *accel_dev = reset_data->accel_dev;\n126: \tunsigned long wait_jiffies = msecs_to_jiffies(10000);\n127: \tstruct adf_sriov_dev_data sriov_data;\n128: \n129: \tadf_dev_restarting_notify(accel_dev);\n130: \tif (adf_dev_restart(accel_dev)) {\n131: \t\t/* The device hanged and we can't restart it so stop here */\n132: \t\tdev_err(&GET_DEV(accel_dev), \"Restart device failed\\n\");\n133: \t\tif (reset_data->mode == ADF_DEV_RESET_ASYNC)\n134: \t\t\tkfree(reset_data);\n135: \t\tWARN(1, \"QAT: device restart failed. Device is unusable\\n\");\n136: \t\treturn;\n137: \t}\n138: \n139: \tsriov_data.accel_dev = accel_dev;\n140: \tinit_completion(&sriov_data.compl);\n141: \tINIT_WORK(&sriov_data.sriov_work, adf_device_sriov_worker);\n142: \tqueue_work(device_sriov_wq, &sriov_data.sriov_work);\n143: \tif (wait_for_completion_timeout(&sriov_data.compl, wait_jiffies))\n144: \t\tadf_pf2vf_notify_restarted(accel_dev);\n145: \n146: \tadf_dev_restarted_notify(accel_dev);\n147: \tclear_bit(ADF_STATUS_RESTARTING, &accel_dev->status);\n148: \n149: \t/* The dev is back alive. Notify the caller if in sync mode */\n150: \tif (reset_data->mode == ADF_DEV_RESET_SYNC)\n151: \t\tcomplete(&reset_data->compl);\n152: \telse\n153: \t\tkfree(reset_data);\n154: }",
+        "coverage_status": "partial",
+        "contract_type": "",
+        "guard_exprs": [
+          "adf_dev_restart(accel_dev)",
+          "reset_data->mode == ADF_DEV_RESET_ASYNC",
+          "wait_for_completion_timeout(&sriov_data.compl, wait_jiffies)",
+          "reset_data->mode == ADF_DEV_RESET_SYNC"
+        ],
+        "sink_calls": [
+          "container_of",
+          "msecs_to_jiffies",
+          "adf_dev_restarting_notify",
+          "dev_err"
+        ]
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.72,
+        "origin": "analyzer_output"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "drivers/crypto/intel/qat/qat_common/adf_aer.c",
+          "hunk_index": 0,
+          "source_line": 133
+        },
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at drivers/crypto/intel/qat/qat_common/adf_aer.c:133",
+        "statements": [
+          "121: static void adf_device_reset_worker(struct work_struct *work)",
+          "122: {",
+          "123: \tstruct adf_reset_dev_data *reset_data =",
+          "124: \t\t  container_of(work, struct adf_reset_dev_data, reset_work);",
+          "125: \tstruct adf_accel_dev *accel_dev = reset_data->accel_dev;",
+          "126: \tunsigned long wait_jiffies = msecs_to_jiffies(10000);"
+        ],
+        "guards": [
+          "adf_dev_restart(accel_dev)",
+          "reset_data->mode == ADF_DEV_RESET_ASYNC",
+          "wait_for_completion_timeout(&sriov_data.compl, wait_jiffies)",
+          "reset_data->mode == ADF_DEV_RESET_SYNC"
+        ],
+        "call_boundary": [
+          "container_of",
+          "msecs_to_jiffies",
+          "adf_dev_restarting_notify",
+          "dev_err",
+          "kfree",
+          "init_completion"
+        ],
+        "call_edges": [
+          "adf_device_reset_worker -> msecs_to_jiffies",
+          "adf_device_reset_worker -> adf_dev_restarting_notify",
+          "adf_device_reset_worker -> adf_dev_restart",
+          "adf_device_reset_worker -> __builtin_constant_p",
+          "adf_device_reset_worker -> _dev_err",
+          "adf_device_reset_worker -> kfree"
+        ],
+        "state_transitions": [
+          "diagnostic(csa)"
+        ],
+        "api_terms": [
+          "init_completion",
+          "kfree",
+          "[B2.4]->compl",
+          "[B3.11]->status",
+          "[B3.17]->mode",
+          "[B3.19] == [B3.20]"
+        ],
+        "related_symbols": [
+          "work"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "collected_analyzers": [
+    "csa"
+  ],
+  "provenance_summary": {
+    "total_records": 4,
+    "origin_counts": {
+      "analyzer_internal": 3,
+      "analyzer_output": 1
+    },
+    "analyzer_internal_records": 3,
+    "analyzer_internal_fraction": 0.75,
+    "analyzer_backed_records": 4,
+    "analyzer_backed_fraction": 1.0,
+    "source_derived_records": 0,
+    "source_derived_fraction": 0.0
+  }
+}

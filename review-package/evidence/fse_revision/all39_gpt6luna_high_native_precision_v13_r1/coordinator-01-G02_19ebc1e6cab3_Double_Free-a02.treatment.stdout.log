@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "method": "semweaver_provenance_gated_csa_treatment",
+  "objective": "precision_refine",
+  "evidence_mode": "native",
+  "origin_gate_enabled": true,
+  "case_id": "G02_19ebc1e6cab3_Double_Free",
+  "model": "gpt-6-luna",
+  "provider": "openai_compatible",
+  "wire_api": "responses",
+  "reasoning_effort": "high",
+  "max_iterations": 4,
+  "max_tokens_per_call": 16384,
+  "max_model_calls": 4,
+  "temperature": 0.0,
+  "request_timeout_seconds": 900,
+  "wrapper_max_retries": 0,
+  "inline_semantic_validation": false,
+  "external_paired_validation_required": true,
+  "internal_evidence_preloaded": true,
+  "evidence_requests_disabled": true,
+  "compile_after_each_edit": true,
+  "budget_finalized_candidate_ready": false,
+  "llm_exchange_log": "/work/artifacts/fse_revision/all39_gpt6luna_high_native_precision_v13_r1/G02_19ebc1e6cab3_Double_Free/attempt-02/llm_exchanges.jsonl",
+  "llm_exchange_log_sha256": "9b7c343207b7a2421fa404c79f5c84e79ea3f675655be493e653ef57222ec2f7",
+  "preloaded_internal_evidence_ids": [
+    "csa_guard_0",
+    "csa_state_0",
+    "csa_lifecycle_0"
+  ],
+  "patch_sha256": "8514c1568fa4e2d3ba0dabe63bb78bffbf5cfa1d31e77e74232f12622c3d0486",
+  "original_checker_sha256": "c59414960e8032358e94d3d33d9fb547865ad65577a00f1163612f39242f8145",
+  "starting_checker_sha256": "4bddd99a6566d682bd777b63ac0b433513c477ff71038e4adc92ff909de08604",
+  "evidence_bundle_sha256": "2a9c90ff8f4701e77edb3006b2a18b8f743737df5bdbfb862aa9a8faa72d4b71",
+  "fixed_report_bindings": [
+    {
+      "id": "report-001",
+      "sha256": "a025c6430ccfefc2712791b3aca905deb9a7679dbb350cc39d77444991111125"
+    }
+  ],
+  "fixed_report_feedback_sha256": "025d25c9a5b6f7304e3e2142ee941d79cff2851201a15a76d889e4799ed7eb41",
+  "visible_evidence_sha256": "ba361ce0a7b146d8f6f27eefdaea228afef6b59f2a6cf1b944cc5639da734b4b",
+  "visible_evidence_record_count": 4,
+  "frozen_source_revision": "19ebc1e6cab334a8193398d4152deb76019b5d34^",
+  "frozen_source_hashes": {
+    "fs/smb/client/smb2ops.c": "0d5b967be86042b55c6aa38dbed740c227092acded2410d4f6272452c4c17233"
+  },
+  "feedback_result_sha256": "47c8cf46ea7276c3eb4820105434fb56e1f79a6750aab29ce84a8dad8ec4916d",
+  "feedback_run_manifest_sha256": null,
+  "feedback_candidate_sha256": "4bddd99a6566d682bd777b63ac0b433513c477ff71038e4adc92ff909de08604",
+  "feedback_kind": "paired_validation",
+  "candidate_sha256": "fa02a448357b086425b6cfd8b72bf75664c3863c0661511cc40dafbb2ea022d2",
+  "candidate_changed": true,
+  "success": true,
+  "agent_success": true,
+  "iterations": 2,
+  "compile_attempts": 2,
+  "error_message": "",
+  "final_message": "The checker already models null resets as a barrier; validate whether the moved initialization suppresses the fixed-side alert while retaining the vulnerable hit.",
+  "output_path": "/work/artifacts/fse_revision/all39_gpt6luna_high_native_precision_v13_r1/G02_19ebc1e6cab3_Double_Free/attempt-02/SAGenTestChecker.so",
+  "elapsed_seconds": 196.87255215644836,
+  "llm_usage": {
+    "prompt_tokens": 32019,
+    "completion_tokens": 4875,
+    "total_tokens": 36894,
+    "call_count": 2,
+    "available": true,
+    "model": "gpt-6-luna",
+    "phases": 1
+  },
+  "model_calls_used": 2,
+  "model_call_budget_exhausted": false,
+  "llm_usage_by_phase": {
+    "decide": {
+      "prompt_tokens": 32019,
+      "completion_tokens": 4875,
+      "total_tokens": 36894,
+      "call_count": 2,
+      "available": true,
+      "model": "gpt-6-luna"
+    }
+  },
+  "artifact_review": {
+    "artifact_path": "/work/artifacts/fse_revision/all39_gpt6luna_high_native_precision_v13_r1/G02_19ebc1e6cab3_Double_Free/attempt-02/SAGenTestChecker.cpp",
+    "analyzer": "csa",
+    "review_mode": "refine",
+    "findings": [],
+    "warnings": [
+      "CSA 代码引入了 `ProgramState` / 路径敏感相关符号或说明，但实现里没有对应的状态读写、约束传播或 guard 绑定。 如果当前路线本来就是 AST/实参/guard 建模，应删掉这类 stateful 话术；只有显式声明了状态建模却完全未落地时才应继续升级处理。"
+    ]
+  },
+  "failure_type": "",
+  "latest_failure_title": "",
+  "latest_failure_text": "",
+  "event_count": 38,
+  "model_rate_limit_retries": 0
+}

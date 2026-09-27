@@ -1,0 +1,391 @@
+--- original_code.cpp+++ syntax_correct_refine_code.cpp@@ -20,52 +20,69 @@ using namespace ento;
+ using namespace taint;
+ 
+-// Program states
+-REGISTER_MAP_WITH_PROGRAMSTATE(CompUseMap, const MemRegion*, unsigned)
+-REGISTER_MAP_WITH_PROGRAMSTATE(CompLastUseStmt, const MemRegion*, const Stmt*)
+-
+ namespace {
+ 
+-class SAGenTestChecker : public Checker< check::PostCall, check::EndFunction > {
+-   mutable std::unique_ptr<BugType> BT;
+-
+-   // Heuristic TU-wide gate: set true if we ever see wait_for_completion_timeout
+-   mutable bool SawTimedWaitInTU = false;
+-
+-   // Flags for CompUseMap
+-   static constexpr unsigned SEEN_COMPLETE = 0x1;  // complete(&ctx->compl)
+-   static constexpr unsigned SEEN_KFREE    = 0x2;  // kfree(ctx)
+-   static constexpr unsigned SEEN_DONE     = 0x4;  // completion_done(&ctx->compl)
+-
+-   public:
+-      SAGenTestChecker() : BT(new BugType(this, "Workqueue timed-wait UAF risk", "Concurrency")) {}
+-
+-      void checkPostCall(const CallEvent &Call, CheckerContext &C) const;
+-      void checkEndFunction(const ReturnStmt *RS, CheckerContext &C) const;
+-
+-   private:
+-      // Helpers
+-      bool callIs(const CallEvent &Call, StringRef Name, CheckerContext &C) const;
+-      bool isWorkerFunction(const FunctionDecl *FD) const;
+-
+-      ProgramStateRef setFlag(ProgramStateRef State, const MemRegion *B, unsigned Flag) const;
+-      ProgramStateRef setLastUse(ProgramStateRef State, const MemRegion *B, const Stmt *S) const;
+-
+-      const MemRegion *getContextBaseFromCompletionArg(const Expr *ArgE, CheckerContext &C) const;
+-      const MemRegion *getBaseRegionFromExpr(const Expr *E, CheckerContext &C) const;
+-
+-      void reportMissingGuard(const MemRegion *B, const Stmt *S, CheckerContext &C) const;
+-};
+-
+-// Determine if Call refers to a function with given name using source text.
+-bool SAGenTestChecker::callIs(const CallEvent &Call, StringRef Name, CheckerContext &C) const {
+-  const Expr *Origin = Call.getOriginExpr();
+-  if (!Origin)
+-    return false;
+-  return ExprHasName(Origin, Name, C);
+-}
+-
+-// Identify worker function by parameter of type 'struct work_struct *'
++class SAGenTestChecker : public Checker<check::PostCall, check::EndFunction> {
++  mutable std::unique_ptr<BugType> BT;
++
++  // Retains the existing translation-unit gate for timed-wait patterns.
++  mutable bool SawTimedWaitInTU = false;
++
++public:
++  SAGenTestChecker()
++      : BT(new BugType(this, "Workqueue timed-wait UAF risk", "Concurrency")) {}
++
++  void checkPostCall(const CallEvent &Call, CheckerContext &C) const;
++  void checkEndFunction(const ReturnStmt *RS, CheckerContext &C) const;
++
++private:
++  bool callIs(const CallEvent &Call, StringRef Name) const;
++  bool isWorkerFunction(const FunctionDecl *FD) const;
++  bool workerHasRelevantContextUse(const FunctionDecl *FD) const;
++  bool workerHasMatchingCompletionDone(const FunctionDecl *FD) const;
++  void reportMissingGuard(const Stmt *S, CheckerContext &C) const;
++};
++
++// Return the first variable referenced by an expression. This handles common
++// forms such as ctx, &ctx->compl, and casts around either expression.
++class ReferencedVarVisitor : public RecursiveASTVisitor<ReferencedVarVisitor> {
++public:
++  const VarDecl *ReferencedVar = nullptr;
++
++  bool VisitDeclRefExpr(const DeclRefExpr *DRE) {
++    if (!ReferencedVar)
++      ReferencedVar = dyn_cast<VarDecl>(DRE->getDecl());
++    return ReferencedVar == nullptr;
++  }
++};
++
++static const VarDecl *getReferencedVar(const Expr *E) {
++  if (!E)
++    return nullptr;
++
++  ReferencedVarVisitor Visitor;
++  Visitor.TraverseStmt(const_cast<Expr *>(E->IgnoreParenImpCasts()));
++  return Visitor.ReferencedVar
++             ? Visitor.ReferencedVar->getCanonicalDecl()
++             : nullptr;
++}
++
++static StringRef getDirectCalleeName(const CallExpr *CE) {
++  if (!CE)
++    return {};
++
++  const FunctionDecl *FD = CE->getDirectCallee();
++  if (!FD || !FD->getIdentifier())
++    return {};
++
++  return FD->getName();
++}
++
++bool SAGenTestChecker::callIs(const CallEvent &Call, StringRef Name) const {
++  const IdentifierInfo *ID = Call.getCalleeIdentifier();
++  return ID && ID->getName() == Name;
++}
++
+ bool SAGenTestChecker::isWorkerFunction(const FunctionDecl *FD) const {
+   if (!FD)
+     return false;
+@@ -74,171 +91,139 @@     QualType QT = P->getType();
+     if (!QT->isPointerType())
+       continue;
++
+     QualType Pointee = QT->getPointeeType();
+     if (const RecordType *RT = Pointee->getAs<RecordType>()) {
+       const RecordDecl *RD = RT->getDecl();
+-      IdentifierInfo *II = RD->getIdentifier();
++      const IdentifierInfo *II = RD->getIdentifier();
+       if (II && II->getName() == "work_struct")
+         return true;
+     }
+   }
++
+   return false;
+ }
+ 
+-// Update flag bitmask for a given base region
+-ProgramStateRef SAGenTestChecker::setFlag(ProgramStateRef State, const MemRegion *B, unsigned Flag) const {
+-  if (!B)
+-    return State;
+-  const unsigned *Old = State->get<CompUseMap>(B);
+-  unsigned NewFlags = (Old ? *Old : 0) | Flag;
+-  State = State->set<CompUseMap>(B, NewFlags);
+-  return State;
+-}
+-
+-// Record the last interesting statement for a region
+-ProgramStateRef SAGenTestChecker::setLastUse(ProgramStateRef State, const MemRegion *B, const Stmt *S) const {
+-  if (!B || !S)
+-    return State;
+-  State = State->set<CompLastUseStmt>(B, S);
+-  return State;
+-}
+-
+-// Get base region for a pointer expression
+-const MemRegion *SAGenTestChecker::getBaseRegionFromExpr(const Expr *E, CheckerContext &C) const {
+-  if (!E)
+-    return nullptr;
+-  const MemRegion *MR = getMemRegionFromExpr(E, C);
+-  if (!MR)
+-    return nullptr;
+-  return MR->getBaseRegion();
+-}
+-
+-// Extract the context base region from an argument expected to be &ctx->compl or a pointer to a completion field.
+-// Strategy: get region for the arg; if it's a FieldRegion, use its super; otherwise use base.
+-const MemRegion *SAGenTestChecker::getContextBaseFromCompletionArg(const Expr *ArgE, CheckerContext &C) const {
+-  if (!ArgE)
+-    return nullptr;
+-
+-  ProgramStateRef State = C.getState();
+-  SVal V = State->getSVal(ArgE, C.getLocationContext());
+-  const MemRegion *MR = V.getAsRegion();
+-  if (!MR) {
+-    MR = getMemRegionFromExpr(ArgE, C);
+-    if (!MR)
+-      return nullptr;
+-  }
+-
+-  MR = MR->getBaseRegion();
+-  // If this is a field region (e.g., &ctx->compl), climb to its super region.
+-  if (const FieldRegion *FR = dyn_cast<FieldRegion>(MR)) {
+-    const MemRegion *Super = FR->getSuperRegion();
+-    if (Super)
+-      return Super->getBaseRegion();
+-  }
+-  // Otherwise return the base region as best-effort.
+-  return MR ? MR->getBaseRegion() : nullptr;
+-}
+-
+-void SAGenTestChecker::checkPostCall(const CallEvent &Call, CheckerContext &C) const {
+-  ProgramStateRef State = C.getState();
+-
+-  // Heuristic gate: remember if TU uses wait_for_completion_timeout
+-  if (callIs(Call, "wait_for_completion_timeout", C)) {
++class ContextUseVisitor
++    : public RecursiveASTVisitor<ContextUseVisitor> {
++public:
++  llvm::SmallPtrSet<const VarDecl *, 8> Contexts;
++
++  bool VisitCallExpr(const CallExpr *CE) {
++    StringRef Name = getDirectCalleeName(CE);
++    if (Name != "kfree" && Name != "complete")
++      return true;
++
++    if (CE->getNumArgs() == 0)
++      return true;
++
++    if (const VarDecl *VD = getReferencedVar(CE->getArg(0)))
++      Contexts.insert(VD);
++
++    return true;
++  }
++};
++
++class CompletionDoneVisitor
++    : public RecursiveASTVisitor<CompletionDoneVisitor> {
++public:
++  llvm::SmallPtrSet<const VarDecl *, 8> Contexts;
++
++  bool VisitCallExpr(const CallExpr *CE) {
++    if (getDirectCalleeName(CE) != "completion_done" ||
++        CE->getNumArgs() == 0)
++      return true;
++
++    if (const VarDecl *VD = getReferencedVar(CE->getArg(0)))
++      Contexts.insert(VD);
++
++    return true;
++  }
++};
++
++bool SAGenTestChecker::workerHasRelevantContextUse(
++    const FunctionDecl *FD) const {
++  if (!FD || !FD->getBody())
++    return false;
++
++  ContextUseVisitor Visitor;
++  Visitor.TraverseStmt(const_cast<Stmt *>(FD->getBody()));
++  return !Visitor.Contexts.empty();
++}
++
++bool SAGenTestChecker::workerHasMatchingCompletionDone(
++    const FunctionDecl *FD) const {
++  if (!FD || !FD->getBody())
++    return false;
++
++  ContextUseVisitor Uses;
++  Uses.TraverseStmt(const_cast<Stmt *>(FD->getBody()));
++  if (Uses.Contexts.empty())
++    return false;
++
++  CompletionDoneVisitor DoneCalls;
++  DoneCalls.TraverseStmt(const_cast<Stmt *>(FD->getBody()));
++
++  for (const VarDecl *Context : Uses.Contexts) {
++    if (DoneCalls.Contexts.contains(Context))
++      return true;
++  }
++
++  return false;
++}
++
++void SAGenTestChecker::checkPostCall(const CallEvent &Call,
++                                     CheckerContext &C) const {
++  if (callIs(Call, "wait_for_completion_timeout"))
+     SawTimedWaitInTU = true;
+-    // No per-region state needed here.
+-    return;
+-  }
+-
+-  // Track complete(&ctx->compl)
+-  if (callIs(Call, "complete", C)) {
+-    const Expr *Arg0 = Call.getArgExpr(0);
+-    const MemRegion *B = getContextBaseFromCompletionArg(Arg0, C);
+-    if (B) {
+-      State = setFlag(State, B, SEEN_COMPLETE);
+-      State = setLastUse(State, B, Call.getOriginExpr());
+-      C.addTransition(State);
+-    }
+-    return;
+-  }
+-
+-  // Track completion_done(&ctx->compl)
+-  if (callIs(Call, "completion_done", C)) {
+-    const Expr *Arg0 = Call.getArgExpr(0);
+-    const MemRegion *B = getContextBaseFromCompletionArg(Arg0, C);
+-    if (B) {
+-      State = setFlag(State, B, SEEN_DONE);
+-      C.addTransition(State);
+-    }
+-    return;
+-  }
+-
+-  // Track kfree(ctx)
+-  if (callIs(Call, "kfree", C)) {
+-    const Expr *Arg0 = Call.getArgExpr(0);
+-    const MemRegion *B = getBaseRegionFromExpr(Arg0, C);
+-    if (B) {
+-      State = setFlag(State, B, SEEN_KFREE);
+-      State = setLastUse(State, B, Call.getOriginExpr());
+-      C.addTransition(State);
+-    }
+-    return;
+-  }
+-}
+-
+-void SAGenTestChecker::reportMissingGuard(const MemRegion *B, const Stmt *S, CheckerContext &C) const {
+-  if (!BT)
+-    return;
++}
++
++void SAGenTestChecker::reportMissingGuard(const Stmt *S,
++                                          CheckerContext &C) const {
+   ExplodedNode *N = C.generateNonFatalErrorNode();
+   if (!N)
+     return;
+ 
+   auto R = std::make_unique<PathSensitiveBugReport>(
+-      *BT, "Missing completion_done() guard in worker; submitter with timed wait may free the context", N);
++      *BT,
++      "Missing completion_done() guard in worker; submitter with timed wait "
++      "may free the context",
++      N);
++
+   if (S)
+     R->addRange(S->getSourceRange());
++
+   C.emitReport(std::move(R));
+ }
+ 
+-void SAGenTestChecker::checkEndFunction(const ReturnStmt *RS, CheckerContext &C) const {
++void SAGenTestChecker::checkEndFunction(const ReturnStmt *RS,
++                                        CheckerContext &C) const {
+   const LocationContext *LCtx = C.getLocationContext();
+-  const FunctionDecl *FD = dyn_cast_or_null<FunctionDecl>(LCtx ? LCtx->getDecl() : nullptr);
+-  if (!FD)
+-    return;
+-
+-  // Focus on worker functions
+-  if (!isWorkerFunction(FD))
+-    return;
+-
+-  // Heuristic: only warn if the TU uses a timed wait
+-  if (!SawTimedWaitInTU)
+-    return;
+-
+-  ProgramStateRef State = C.getState();
+-
+-  bool Reported = false;
+-  CompUseMapTy Map = State->get<CompUseMap>();
+-  for (CompUseMapTy::iterator I = Map.begin(), E = Map.end(); I != E; ++I) {
+-    const MemRegion *B = I->first;
+-    unsigned Flags = I->second;
+-
+-    if ((Flags & (SEEN_COMPLETE | SEEN_KFREE)) != 0 && (Flags & SEEN_DONE) == 0) {
+-      const Stmt *const *LastPtr = State->get<CompLastUseStmt>(B);
+-      const Stmt *Last = LastPtr ? *LastPtr : nullptr;
+-      reportMissingGuard(B, Last, C);
+-      Reported = true;
+-    }
+-  }
+-
+-  // If we reported, we are done. No need to mutate state here for now.
+-  (void)Reported;
+-}
+-
+-} // end anonymous namespace
++  const FunctionDecl *FD =
++      dyn_cast_or_null<FunctionDecl>(LCtx ? LCtx->getDecl() : nullptr);
++
++  if (!isWorkerFunction(FD) || !SawTimedWaitInTU)
++    return;
++
++  if (!workerHasRelevantContextUse(FD))
++    return;
++
++  // A completion_done() on the same context is evidence that the worker
++  // coordinates its ownership with the timed-wait submitter. Do not let an
++  // unrelated completion_done() call suppress this warning.
++  if (workerHasMatchingCompletionDone(FD))
++    return;
++
++  reportMissingGuard(RS ? static_cast<const Stmt *>(RS) : FD->getBody(), C);
++}
++
++} // namespace
+ 
+ extern "C" void clang_registerCheckers(CheckerRegistry &registry) {
+   registry.addChecker<SAGenTestChecker>(
+       "custom.SAGenTestChecker",
+-      "Detects missing completion_done() guard in workqueue worker that may race with submitter timeout and free",
++      "Detects missing completion_done() guard in workqueue worker that may "
++      "race with submitter timeout and free",
+       "");
+ }
+ 

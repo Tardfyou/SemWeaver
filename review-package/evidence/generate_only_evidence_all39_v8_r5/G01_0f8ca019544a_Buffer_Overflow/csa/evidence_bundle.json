@@ -1,0 +1,730 @@
+{
+  "records": [
+    {
+      "evidence_id": "csa_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/dc/dml2/dml2_wrapper.c",
+        "function": "map_hw_resources"
+      },
+      "location": {
+        "line": 76,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "map_hw_resources adds patch barrier `i >= __DML2_WRAPPER_MAX_STREAMS_PLANES__` around initialize_dml2_soc_bbox, dml2_init_socbb_params.",
+        "contract_type": "patch_barrier",
+        "same_call_binding": "tie the guard to the current downstream sink or protected state transition instead of any unrelated if-statement",
+        "trigger_contract": "report when a risky write proceeds without the patch-style barrier",
+        "silence_contract": "stay silent when the nearby guard proves the current write is blocked or bounded",
+        "guard_exprs": [
+          "i >= __DML2_WRAPPER_MAX_STREAMS_PLANES__"
+        ],
+        "removed_calls": [],
+        "added_calls": [
+          "dml_print"
+        ],
+        "tracked_symbols": [
+          "i",
+          "__DML2_WRAPPER_MAX_STREAMS_PLANES__",
+          "dml_print",
+          "DML",
+          "s",
+          "Index",
+          "out",
+          "of"
+        ],
+        "widened_variables": [],
+        "state_resets": [],
+        "old_numeric_type": "",
+        "new_numeric_type": "",
+        "numeric_domain_change": "",
+        "arithmetic_operations": [],
+        "sink_calls": [
+          "initialize_dml2_soc_bbox",
+          "dml2_init_socbb_params",
+          "dml2_translate_socbb_params",
+          "dml2_init_soc_states"
+        ],
+        "buffer_fields": [],
+        "source_file": "drivers/gpu/drm/amd/display/dc/dml2/dml2_wrapper.c",
+        "function": "map_hw_resources",
+        "source_excerpt": "44: static void initialize_dml2_soc_bbox(struct dml2_context *dml2, const struct dc *in_dc, struct soc_bounding_box_st *out)\n45: {\n46: \tif (dml2->config.use_native_soc_bb_construction)\n47: \t\tdml2_init_socbb_params(dml2, in_dc, out);\n48: \telse\n49: \t\tdml2_translate_socbb_params(in_dc, out);\n50: }\n51: \n52: static void initialize_dml2_soc_states(struct dml2_context *dml2,\n53: \tconst struct dc *in_dc, const struct soc_bounding_box_st *in_bbox, struct soc_states_st *out)\n54: {\n55: \tif (dml2->config.use_native_soc_bb_construction)\n56: \t\tdml2_init_soc_states(dml2, in_dc, in_bbox, out);\n57: \telse\n58: \t\tdml2_translate_soc_states(in_dc, out, in_dc->dml.soc.num_states);\n59: }\n60: \n61: static void map_hw_resources(struct dml2_context *dml2,\n62: \t\tstruct dml_display_cfg_st *in_out_display_cfg, struct dml_mode_support_info_st *mode_support_info)\n63: {\n64: \tunsigned int num_pipes = 0;\n65: \tint i, j;\n66: \n67: \tfor (i = 0; i < __DML_NUM_PLANES__; i++) {\n68: \t\tin_out_display_cfg->hw.ODMMode[i] = mode_support_info->ODMMode[i];\n69: \t\tin_out_display_cfg->hw.DPPPerSurface[i] = mode_support_info->DPPPerSurface[i];\n70: \t\tin_out_display_cfg->hw.DSCEnabled[i] = mode_support_info->DSCEnabled[i];\n71: \t\tin_out_display_cfg->hw.NumberOfDSCSlices[i] = mode_support_info->NumberOfDSCSlices[i];\n72: \t\tin_out_display_cfg->hw.DLGRefClkFreqMHz = 24;\n73: \t\tif (dml2->v20.dml_core_ctx.project != dml_project_dcn35 &&\n74: \t\t\tdml2->v20.dml_core_ctx.project != dml_project_dcn351) {\n75: \t\t\t/*dGPU default as 50Mhz*/\n76: \t\t\tin_out_display_cfg->hw.DLGRefClkFreqMHz = 50;\n77: \t\t}\n78: \t\tfor (j = 0; j < mode_support_info->DPPPerSurface[i]; j++) {\n79: \t\t\tdml2->v20.scratch.dml_to_dc_pipe_mapping.dml_pipe_idx_to_stream_id[num_pipes] = dml2->v20.scratch.dml_to_dc_pipe_mapping.disp_cfg_to_stream_id[i];\n80: \t\t\tdml2->v20.scratch.dml_to_dc_pipe_mapping.dml_pipe_idx_to_stream_id_valid[num_pipes] = true;\n81: \t\t\tdml2->v20.scratch.dml_to_dc_pipe_mapping.dml_pipe_idx_to_plane_id[num_pipes] = dml2->v20.scratch.dml_to_dc_pipe_mapping.disp_cfg_to_plane_id[i];\n82: \t\t\tdml2->v20.scratch.dml_to_dc_pipe_mapping.dml_pipe_idx_to_plane_id_valid[num_pipes] = true;\n83: \t\t\tnum_pipes++;\n84: \t\t}\n85: \t}\n86: }\n87: \n88: static unsigned int pack_and_call_dml_mode_support_ex(struct dml2_context *dml2,\n89: \tconst struct dml_display_cfg_st *display_cfg,\n90: \tstruct dml_mode_support_info_st *evaluation_info)\n91: {\n92: \tstruct dml2_wrapper_scratch *s = &dml2->v20.scratch;\n93: \n94: \ts->mode_support_params.mode_lib = &dml2->v20.dml_core_ctx;\n95: \ts->mode_support_params.in_display_cfg = display_cfg;\n96: \ts->mode_support_params.out_evaluation_info = evaluation_info;\n97: \n98: \tmemset(evaluation_info, 0, sizeof(struct dml_mode_support_info_st));\n99: \ts->mode_support_params.out_lowest_state_idx = 0;\n100: \n101: \treturn dml_mode_support_ex(&s->mode_support_params);\n102: }\n103: \n104: static bool optimize_configuration(struct dml2_context *dml2, struct dml2_wrapper_optimize_configuration_params *p)\n105: {\n106: \tint unused_dpps = p->ip_params->max_num_dpp;\n107: \tint i, j;\n108: \tint odms_needed, refresh_rate_hz, dpps_needed, subvp_height, pstate_width_fw_delay_lines, surface_count;",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:semantic-contract",
+        "confidence": 0.92,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/amd/display/dc/dml2/dml2_wrapper.c",
+          "hunk_index": 0,
+          "source_line": 76
+        },
+        "summary": "map_hw_resources adds patch barrier `i >= __DML2_WRAPPER_MAX_STREAMS_PLANES__` around initialize_dml2_soc_bbox, dml2_init_socbb_params.",
+        "statements": [
+          "if (i >= __DML2_WRAPPER_MAX_STREAMS_PLANES__) {",
+          "dml_print(\"DML::%s: Index out of bounds: i=%d, __DML2_WRAPPER_MAX_STREAMS_PLANES__=%d\\n\",",
+          "__func__, i, __DML2_WRAPPER_MAX_STREAMS_PLANES__);",
+          "break;",
+          "}"
+        ],
+        "guards": [
+          "i >= __DML2_WRAPPER_MAX_STREAMS_PLANES__"
+        ],
+        "call_boundary": [
+          "initialize_dml2_soc_bbox",
+          "dml2_init_socbb_params",
+          "dml2_translate_socbb_params",
+          "dml2_init_soc_states"
+        ],
+        "call_edges": [
+          "map_hw_resources -> initialize_dml2_soc_bbox",
+          "map_hw_resources -> dml2_init_socbb_params",
+          "map_hw_resources -> dml2_translate_socbb_params"
+        ],
+        "state_transitions": [
+          "",
+          "report when a risky write proceeds without the patch-style barrier",
+          "stay silent when the nearby guard proves the current write is blocked or bounded"
+        ],
+        "api_terms": [
+          "initialize_dml2_soc_bbox",
+          "dml2_init_socbb_params",
+          "dml2_translate_socbb_params",
+          "dml_print"
+        ],
+        "related_symbols": [
+          "i",
+          "__DML2_WRAPPER_MAX_STREAMS_PLANES__",
+          "dml_print",
+          "DML",
+          "s",
+          "Index"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/dc/dml2/dml2_wrapper.c",
+        "function": "map_hw_resources"
+      },
+      "location": {
+        "line": 76,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "i >= __DML2_WRAPPER_MAX_STREAMS_PLANES__",
+        "summary": "map_hw_resources introduces patch guard `i >= __DML2_WRAPPER_MAX_STREAMS_PLANES__` before initialize_dml2_soc_bbox, dml2_init_socbb_params.",
+        "state_before": [
+          "input(i)",
+          "input(__DML2_WRAPPER_MAX_STREAMS_PLANES__)"
+        ],
+        "state_after": [
+          "guard(i >= __DML2_WRAPPER_MAX_STREAMS_PLANES__)",
+          "current_call(initialize_dml2_soc_bbox)",
+          "current_call(dml2_init_socbb_params)"
+        ],
+        "functions": [
+          "map_hw_resources"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "i",
+          "__DML2_WRAPPER_MAX_STREAMS_PLANES__",
+          "dml_print",
+          "DML",
+          "s",
+          "Index"
+        ],
+        "buffer_fields": [],
+        "call_targets": [
+          "initialize_dml2_soc_bbox",
+          "dml2_init_socbb_params",
+          "dml2_translate_socbb_params",
+          "dml2_init_soc_states"
+        ],
+        "call_edges": [
+          "map_hw_resources -> initialize_dml2_soc_bbox",
+          "map_hw_resources -> dml2_init_socbb_params",
+          "map_hw_resources -> dml2_translate_socbb_params"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "i >= __DML2_WRAPPER_MAX_STREAMS_PLANES__"
+        ],
+        "state_statements": [
+          "if (i >= __DML2_WRAPPER_MAX_STREAMS_PLANES__) {",
+          "dml_print(\"DML::%s: Index out of bounds: i=%d, __DML2_WRAPPER_MAX_STREAMS_PLANES__=%d\\n\",",
+          "__func__, i, __DML2_WRAPPER_MAX_STREAMS_PLANES__);",
+          "break;",
+          "}"
+        ],
+        "compile_command_preview": "",
+        "source_file": "drivers/gpu/drm/amd/display/dc/dml2/dml2_wrapper.c",
+        "source_excerpt": "44: static void initialize_dml2_soc_bbox(struct dml2_context *dml2, const struct dc *in_dc, struct soc_bounding_box_st *out)\n45: {\n46: \tif (dml2->config.use_native_soc_bb_construction)\n47: \t\tdml2_init_socbb_params(dml2, in_dc, out);\n48: \telse\n49: \t\tdml2_translate_socbb_params(in_dc, out);\n50: }\n51: \n52: static void initialize_dml2_soc_states(struct dml2_context *dml2,\n53: \tconst struct dc *in_dc, const struct soc_bounding_box_st *in_bbox, struct soc_states_st *out)\n54: {\n55: \tif (dml2->config.use_native_soc_bb_construction)\n56: \t\tdml2_init_soc_states(dml2, in_dc, in_bbox, out);\n57: \telse\n58: \t\tdml2_translate_soc_states(in_dc, out, in_dc->dml.soc.num_states);\n59: }\n60: \n61: static void map_hw_resources(struct dml2_context *dml2,\n62: \t\tstruct dml_display_cfg_st *in_out_display_cfg, struct dml_mode_support_info_st *mode_support_info)\n63: {\n64: \tunsigned int num_pipes = 0;\n65: \tint i, j;\n66: \n67: \tfor (i = 0; i < __DML_NUM_PLANES__; i++) {\n68: \t\tin_out_display_cfg->hw.ODMMode[i] = mode_support_info->ODMMode[i];\n69: \t\tin_out_display_cfg->hw.DPPPerSurface[i] = mode_support_info->DPPPerSurface[i];\n70: \t\tin_out_display_cfg->hw.DSCEnabled[i] = mode_support_info->DSCEnabled[i];\n71: \t\tin_out_display_cfg->hw.NumberOfDSCSlices[i] = mode_support_info->NumberOfDSCSlices[i];\n72: \t\tin_out_display_cfg->hw.DLGRefClkFreqMHz = 24;\n73: \t\tif (dml2->v20.dml_core_ctx.project != dml_project_dcn35 &&\n74: \t\t\tdml2->v20.dml_core_ctx.project != dml_project_dcn351) {\n75: \t\t\t/*dGPU default as 50Mhz*/\n76: \t\t\tin_out_display_cfg->hw.DLGRefClkFreqMHz = 50;\n77: \t\t}\n78: \t\tfor (j = 0; j < mode_support_info->DPPPerSurface[i]; j++) {\n79: \t\t\tdml2->v20.scratch.dml_to_dc_pipe_mapping.dml_pipe_idx_to_stream_id[num_pipes] = dml2->v20.scratch.dml_to_dc_pipe_mapping.disp_cfg_to_stream_id[i];\n80: \t\t\tdml2->v20.scratch.dml_to_dc_pipe_mapping.dml_pipe_idx_to_stream_id_valid[num_pipes] = true;\n81: \t\t\tdml2->v20.scratch.dml_to_dc_pipe_mapping.dml_pipe_idx_to_plane_id[num_pipes] = dml2->v20.scratch.dml_to_dc_pipe_mapping.disp_cfg_to_plane_id[i];\n82: \t\t\tdml2->v20.scratch.dml_to_dc_pipe_mapping.dml_pipe_idx_to_plane_id_valid[num_pipes] = true;\n83: \t\t\tnum_pipes++;\n84: \t\t}\n85: \t}\n86: }\n87: \n88: static unsigned int pack_and_call_dml_mode_support_ex(struct dml2_context *dml2,\n89: \tconst struct dml_display_cfg_st *display_cfg,\n90: \tstruct dml_mode_support_info_st *evaluation_info)\n91: {\n92: \tstruct dml2_wrapper_scratch *s = &dml2->v20.scratch;\n93: \n94: \ts->mode_support_params.mode_lib = &dml2->v20.dml_core_ctx;\n95: \ts->mode_support_params.in_display_cfg = display_cfg;\n96: \ts->mode_support_params.out_evaluation_info = evaluation_info;\n97: \n98: \tmemset(evaluation_info, 0, sizeof(struct dml_mode_support_info_st));\n99: \ts->mode_support_params.out_lowest_state_idx = 0;\n100: \n101: \treturn dml_mode_support_ex(&s->mode_support_params);\n102: }\n103: \n104: static bool optimize_configuration(struct dml2_context *dml2, struct dml2_wrapper_optimize_configuration_params *p)\n105: {\n106: \tint unused_dpps = p->ip_params->max_num_dpp;\n107: \tint i, j;\n108: \tint odms_needed, refresh_rate_hz, dpps_needed, subvp_height, pstate_width_fw_delay_lines, surface_count;",
+        "summary_line": 76,
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:path-guard",
+        "confidence": 0.92,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/amd/display/dc/dml2/dml2_wrapper.c",
+          "hunk_index": 0,
+          "source_line": 76
+        },
+        "summary": "map_hw_resources introduces patch guard `i >= __DML2_WRAPPER_MAX_STREAMS_PLANES__` before initialize_dml2_soc_bbox, dml2_init_socbb_params.",
+        "statements": [
+          "if (i >= __DML2_WRAPPER_MAX_STREAMS_PLANES__) {",
+          "dml_print(\"DML::%s: Index out of bounds: i=%d, __DML2_WRAPPER_MAX_STREAMS_PLANES__=%d\\n\",",
+          "__func__, i, __DML2_WRAPPER_MAX_STREAMS_PLANES__);",
+          "break;",
+          "}"
+        ],
+        "guards": [
+          "i >= __DML2_WRAPPER_MAX_STREAMS_PLANES__"
+        ],
+        "call_boundary": [
+          "initialize_dml2_soc_bbox",
+          "dml2_init_socbb_params",
+          "dml2_translate_socbb_params",
+          "dml2_init_soc_states"
+        ],
+        "call_edges": [
+          "map_hw_resources -> initialize_dml2_soc_bbox",
+          "map_hw_resources -> dml2_init_socbb_params",
+          "map_hw_resources -> dml2_translate_socbb_params"
+        ],
+        "state_transitions": [
+          "guard(i >= __DML2_WRAPPER_MAX_STREAMS_PLANES__)",
+          "current_call(initialize_dml2_soc_bbox)",
+          "current_call(dml2_init_socbb_params)"
+        ],
+        "api_terms": [
+          "initialize_dml2_soc_bbox",
+          "dml2_init_socbb_params",
+          "dml2_translate_socbb_params"
+        ],
+        "related_symbols": [
+          "i",
+          "__DML2_WRAPPER_MAX_STREAMS_PLANES__",
+          "dml_print",
+          "DML",
+          "s",
+          "Index"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_guard_1",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/dc/dml2/dml2_wrapper.c",
+        "function": "map_hw_resources"
+      },
+      "location": {
+        "line": 76,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "if dml2 (ImplicitCastExpr, LValueToRValue, struct dml2_context *)->v20.dml_core_ctx.project (ImplicitCastExpr, LValueToRValue, dml_uint_t) != dml_project_dcn35 (ImplicitCastExpr, IntegralCast, dml_uint_t) && dml2 (ImplicitCastExpr, LValueToRValue, struct dml2_context *)->v20.dml_core_ctx.project (ImplicitCastExpr, LValueToRValue, dml_uint_t) != dml_project_dcn351 (ImplicitCastExpr, IntegralCast, dml_uint_t)",
+        "summary": "Analyzer CFG for map_hw_resources in drivers/gpu/drm/amd/display/dc/dml2/dml2_wrapper.c: bindings: dml2 (ImplicitCastExpr, LValueToRValue, struct dml2_context *)->v20.dml_core_ctx.project (ImplicitCastExpr, LValueToRValue, dml_uint_t) != dml_project_dcn35 (ImplicitCastExpr, IntegralCast, dml_uint_t); dml2 (ImplicitCastExpr, LValueToRValue, struct dml2_context *)->v20.dml_core_ctx.project (ImplicitCastExpr, LValueToRValue, dml_uint_t) != dml_project_dcn351 (ImplicitCastExpr, IntegralCast, dml_uint_t) | branches: if dml2 (ImplicitCastExpr, LValueToRValue, struct dml2_context *)->v20.dml_core_ctx.project (ImplicitCastExpr, LValueToRValue, dml_uint_t) != dml_project_dcn35 (ImplicitCastExpr, IntegralCast, dml_uint_t) && dml2 (ImplicitCastExpr, LValueToRValue, struct dml2_context *)->v20.dml_core_ctx.project (ImplicitCastExpr, LValueToRValue, dml_uint_t) != dml_project_dcn351 (ImplicitCastExpr, IntegralCast, dml_uint_t); dml2 (ImplicitCastExpr, LValueToRValue, struct dml2_context *)->v20.dml_core_ctx.project (ImplicitCastExpr, LValueToRValue, dml_uint_t) != dml_project_dcn35 (ImplicitCastExpr, IntegralCast, dml_uint_t) && ... | calls: dml2_create_copy -> dml2_allocate_memory; dml2_create_copy -> dml2_copy",
+        "state_before": [
+          "buffer(dml2->config)",
+          "buffer(in_dc->dml)",
+          "sinks(dml2_init_socbb_params, dml2_translate_socbb_params)"
+        ],
+        "state_after": [
+          "cfg_binding(dml2 (ImplicitCastExpr, LValueToRValue, struct dml2_context *)->v20.dml_core_ctx.project (ImplicitCastExpr, LValueToRValue, dml_uint_t) != dml_project_dcn35 (ImplicitCastExpr, IntegralCast, dml_uint_t))",
+          "cfg_binding(dml2 (ImplicitCastExpr, LValueToRValue, struct dml2_context *)->v20.dml_core_ctx.project (ImplicitCastExpr, LValueToRValue, dml_uint_t) != dml_project_dcn351 (ImplicitCastExpr, IntegralCast, dml_uint_t))",
+          "cfg_branch(if dml2 (ImplicitCastExpr, LValueToRValue, struct dml2_context *)->v20.dml_core_ctx.project (ImplicitCastExpr, LValueToRValue, dml_uint_t) != dml_project_dcn35 (ImplicitCastExpr, IntegralCast, dml_uint_t) && dml2 (ImplicitCastExpr, LValueToRValue, struct dml2_context *)->v20.dml_core_ctx.project (ImplicitCastExpr, LValueToRValue, dml_uint_t) != dml_project_dcn351 (ImplicitCastExpr, IntegralCast, dml_uint_t))",
+          "cfg_branch(dml2 (ImplicitCastExpr, LValueToRValue, struct dml2_context *)->v20.dml_core_ctx.project (ImplicitCastExpr, LValueToRValue, dml_uint_t) != dml_project_dcn35 (ImplicitCastExpr, IntegralCast, dml_uint_t) && ...)"
+        ],
+        "functions": [
+          "map_hw_resources"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "dml2->config",
+          "in_dc->dml",
+          "in_out_display_cfg->hw",
+          "mode_support_info->ODMMode",
+          "mode_support_info->DPPPerSurface",
+          "mode_support_info->DSCEnabled"
+        ],
+        "buffer_fields": [
+          "dml2->config",
+          "in_dc->dml",
+          "in_out_display_cfg->hw",
+          "mode_support_info->ODMMode",
+          "mode_support_info->DPPPerSurface",
+          "mode_support_info->DSCEnabled"
+        ],
+        "call_targets": [
+          "dml2_init_socbb_params",
+          "dml2_translate_socbb_params",
+          "initialize_dml2_soc_states",
+          "dml2_init_soc_states",
+          "dml2_translate_soc_states",
+          "map_hw_resources",
+          "pack_and_call_dml_mode_support_ex",
+          "memset"
+        ],
+        "call_edges": [
+          "dml2_create_copy -> dml2_allocate_memory",
+          "dml2_create_copy -> dml2_copy",
+          "dml2_copy -> __builtin_dynamic_object_size",
+          "dml2_copy -> fortify_memcpy_chk",
+          "dml2_copy -> __builtin_expect",
+          "dml2_copy -> __warn_printk"
+        ],
+        "cfg_branch_kinds": [
+          "for",
+          "if"
+        ],
+        "branch_conditions": [
+          "for (...; [B4.12]; ...)",
+          "if [B8.85] && [B7.10]",
+          "[B8.85] && ...",
+          "for (...; [B9.4]; ...)"
+        ],
+        "resolved_branch_conditions": [
+          "if dml2 (ImplicitCastExpr, LValueToRValue, struct dml2_context *)->v20.dml_core_ctx.project (ImplicitCastExpr, LValueToRValue, dml_uint_t) != dml_project_dcn35 (ImplicitCastExpr, IntegralCast, dml_uint_t) && dml2 (ImplicitCastExpr, LValueToRValue, struct dml2_context *)->v20.dml_core_ctx.project (ImplicitCastExpr, LValueToRValue, dml_uint_t) != dml_project_dcn351 (ImplicitCastExpr, IntegralCast, dml_uint_t)",
+          "dml2 (ImplicitCastExpr, LValueToRValue, struct dml2_context *)->v20.dml_core_ctx.project (ImplicitCastExpr, LValueToRValue, dml_uint_t) != dml_project_dcn35 (ImplicitCastExpr, IntegralCast, dml_uint_t) && ...",
+          "for (...; j (ImplicitCastExpr, LValueToRValue, int) (ImplicitCastExpr, IntegralCast, dml_uint_t) < mode_support_info (ImplicitCastExpr, LValueToRValue, struct dml_mode_support_info_st *)->DPPPerSurface (ImplicitCastExpr, ArrayToPointerDecay, dml_uint_t *)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, dml_uint_t); ...)",
+          "for (...; i (ImplicitCastExpr, LValueToRValue, int) < 8; ...)"
+        ],
+        "cfg_value_bindings": [
+          "dml2 (ImplicitCastExpr, LValueToRValue, struct dml2_context *)->v20.dml_core_ctx.project (ImplicitCastExpr, LValueToRValue, dml_uint_t) != dml_project_dcn35 (ImplicitCastExpr, IntegralCast, dml_uint_t)",
+          "dml2 (ImplicitCastExpr, LValueToRValue, struct dml2_context *)->v20.dml_core_ctx.project (ImplicitCastExpr, LValueToRValue, dml_uint_t) != dml_project_dcn351 (ImplicitCastExpr, IntegralCast, dml_uint_t)",
+          "j = 0",
+          "i = 0",
+          "unsigned int num_pipes = 0;",
+          "in_out_display_cfg (ImplicitCastExpr, LValueToRValue, struct dml_display_cfg_st *)->hw.DLGRefClkFreqMHz = 50 (ImplicitCastExpr, IntegralToFloating, dml_float_t)"
+        ],
+        "state_statements": [
+          "[B1.1]++",
+          "[B2.1]++",
+          "[B3.2]->",
+          "[B3.14]->",
+          "[B3.23] = [B3.12]",
+          "[B3.28]->"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,drivers/gpu/drm/amd/amdgpu/../display/dc/dml2/.dml2_wrapper.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I....",
+        "source_file": "drivers/gpu/drm/amd/display/dc/dml2/dml2_wrapper.c",
+        "source_excerpt": "44: static void initialize_dml2_soc_bbox(struct dml2_context *dml2, const struct dc *in_dc, struct soc_bounding_box_st *out)\n45: {\n46: \tif (dml2->config.use_native_soc_bb_construction)\n47: \t\tdml2_init_socbb_params(dml2, in_dc, out);\n48: \telse\n49: \t\tdml2_translate_socbb_params(in_dc, out);\n50: }\n51: \n52: static void initialize_dml2_soc_states(struct dml2_context *dml2,\n53: \tconst struct dc *in_dc, const struct soc_bounding_box_st *in_bbox, struct soc_states_st *out)\n54: {\n55: \tif (dml2->config.use_native_soc_bb_construction)\n56: \t\tdml2_init_soc_states(dml2, in_dc, in_bbox, out);\n57: \telse\n58: \t\tdml2_translate_soc_states(in_dc, out, in_dc->dml.soc.num_states);\n59: }\n60: \n61: static void map_hw_resources(struct dml2_context *dml2,\n62: \t\tstruct dml_display_cfg_st *in_out_display_cfg, struct dml_mode_support_info_st *mode_support_info)\n63: {\n64: \tunsigned int num_pipes = 0;\n65: \tint i, j;\n66: \n67: \tfor (i = 0; i < __DML_NUM_PLANES__; i++) {\n68: \t\tin_out_display_cfg->hw.ODMMode[i] = mode_support_info->ODMMode[i];\n69: \t\tin_out_display_cfg->hw.DPPPerSurface[i] = mode_support_info->DPPPerSurface[i];\n70: \t\tin_out_display_cfg->hw.DSCEnabled[i] = mode_support_info->DSCEnabled[i];\n71: \t\tin_out_display_cfg->hw.NumberOfDSCSlices[i] = mode_support_info->NumberOfDSCSlices[i];\n72: \t\tin_out_display_cfg->hw.DLGRefClkFreqMHz = 24;\n73: \t\tif (dml2->v20.dml_core_ctx.project != dml_project_dcn35 &&\n74: \t\t\tdml2->v20.dml_core_ctx.project != dml_project_dcn351) {\n75: \t\t\t/*dGPU default as 50Mhz*/\n76: \t\t\tin_out_display_cfg->hw.DLGRefClkFreqMHz = 50;\n77: \t\t}\n78: \t\tfor (j = 0; j < mode_support_info->DPPPerSurface[i]; j++) {\n79: \t\t\tdml2->v20.scratch.dml_to_dc_pipe_mapping.dml_pipe_idx_to_stream_id[num_pipes] = dml2->v20.scratch.dml_to_dc_pipe_mapping.disp_cfg_to_stream_id[i];\n80: \t\t\tdml2->v20.scratch.dml_to_dc_pipe_mapping.dml_pipe_idx_to_stream_id_valid[num_pipes] = true;\n81: \t\t\tdml2->v20.scratch.dml_to_dc_pipe_mapping.dml_pipe_idx_to_plane_id[num_pipes] = dml2->v20.scratch.dml_to_dc_pipe_mapping.disp_cfg_to_plane_id[i];\n82: \t\t\tdml2->v20.scratch.dml_to_dc_pipe_mapping.dml_pipe_idx_to_plane_id_valid[num_pipes] = true;\n83: \t\t\tnum_pipes++;\n84: \t\t}\n85: \t}\n86: }\n87: \n88: static unsigned int pack_and_call_dml_mode_support_ex(struct dml2_context *dml2,\n89: \tconst struct dml_display_cfg_st *display_cfg,\n90: \tstruct dml_mode_support_info_st *evaluation_info)\n91: {\n92: \tstruct dml2_wrapper_scratch *s = &dml2->v20.scratch;\n93: \n94: \ts->mode_support_params.mode_lib = &dml2->v20.dml_core_ctx;\n95: \ts->mode_support_params.in_display_cfg = display_cfg;\n96: \ts->mode_support_params.out_evaluation_info = evaluation_info;\n97: \n98: \tmemset(evaluation_info, 0, sizeof(struct dml_mode_support_info_st));\n99: \ts->mode_support_params.out_lowest_state_idx = 0;\n100: \n101: \treturn dml_mode_support_ex(&s->mode_support_params);\n102: }\n103: \n104: static bool optimize_configuration(struct dml2_context *dml2, struct dml2_wrapper_optimize_configuration_params *p)\n105: {\n106: \tint unused_dpps = p->ip_params->max_num_dpp;\n107: \tint i, j;\n108: \tint odms_needed, refresh_rate_hz, dpps_needed, subvp_height, pstate_width_fw_delay_lines, surface_count;",
+        "summary_line": 76,
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/generate_only_evidence_all39_v8_r5/G01_0f8ca019544a_Buffer_Overflow/csa/patchweaver_runtime/csa_raw/drivers-gpu-drm-amd-display-dc-dml2-dml2_wrapper.c-map_hw_resources.txt",
+        "raw_output_sha256": "1d5a7703ed014a5d16c0258571f90d0b6a3a4c43de49d59ee0416503a7f7c5bb",
+        "command_sha256": "a61d895fc508ecd308fbf8b66a0caccace732bf8f5db075b150d695fe69b916f"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:debug-cfg",
+        "confidence": 0.92,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/amd/display/dc/dml2/dml2_wrapper.c",
+          "hunk_index": 0,
+          "source_line": 76
+        },
+        "summary": "Analyzer CFG for map_hw_resources in drivers/gpu/drm/amd/display/dc/dml2/dml2_wrapper.c: bindings: dml2 (ImplicitCastExpr, LValueToRValue, struct dml2_context *)->v20.dml_core_ctx.project (ImplicitCastExpr, LValueToRValue, dml_uint_t) != dml_project_dcn35 (ImplicitCastExpr, IntegralCast, dml_uint_t); dml2 (ImplicitCastExpr, LValueToRValue, struct dml2_context *)->v20.dml_core_ctx.project (ImplicitCastExpr, LValueToRValue, dml_uint_t) != dml_project_dcn351 (ImplicitCastExpr, IntegralCast, dml_uint_t) | branches: if dml2 (ImplicitCastExpr, LValueToRValue, struct dml2_context *)->v20.dml_core_ctx.project (ImplicitCastExpr, LValueToRValue, dml_uint_t) != dml_project_dcn35 (ImplicitCastExpr, IntegralCast, dml_uint_t) && dml2 (ImplicitCastExpr, LValueToRValue, struct dml2_context *)->v20.dml_core_ctx.project (ImplicitCastExpr, LValueToRValue, dml_uint_t) != dml_project_dcn351 (ImplicitCastExpr, IntegralCast, dml_uint_t); dml2 (ImplicitCastExpr, LValueToRValue, struct dml2_context *)->v20.dml_core_ctx.project (ImplicitCastExpr, LValueToRValue, dml_uint_t) != dml_project_dcn35 (ImplicitCastExpr, IntegralCast, dml_uint_t) && ... | calls: dml2_create_copy -> dml2_allocate_memory; dml2_create_copy -> dml2_copy",
+        "statements": [
+          "44: static void initialize_dml2_soc_bbox(struct dml2_context *dml2, const struct dc *in_dc, struct soc_bounding_box_st *out)",
+          "45: {",
+          "46: \tif (dml2->config.use_native_soc_bb_construction)",
+          "47: \t\tdml2_init_socbb_params(dml2, in_dc, out);",
+          "48: \telse",
+          "49: \t\tdml2_translate_socbb_params(in_dc, out);"
+        ],
+        "guards": [
+          "if dml2 (ImplicitCastExpr, LValueToRValue, struct dml2_context *)->v20.dml_core_ctx.project (ImplicitCastExpr, LValueToRValue, dml_uint_t) != dml_project_dcn35 (ImplicitCastExpr, IntegralCast, dml_uint_t) && dml2 (ImplicitCastExpr, LValueToRValue, struct dml2_context *)->v20.dml_core_ctx.project (ImplicitCastExpr, LValueToRValue, dml_uint_t) != dml_project_dcn351 (ImplicitCastExpr, IntegralCast, dml_uint_t)",
+          "dml2 (ImplicitCastExpr, LValueToRValue, struct dml2_context *)->v20.dml_core_ctx.project (ImplicitCastExpr, LValueToRValue, dml_uint_t) != dml_project_dcn35 (ImplicitCastExpr, IntegralCast, dml_uint_t) && ...",
+          "for (...; j (ImplicitCastExpr, LValueToRValue, int) (ImplicitCastExpr, IntegralCast, dml_uint_t) < mode_support_info (ImplicitCastExpr, LValueToRValue, struct dml_mode_support_info_st *)->DPPPerSurface (ImplicitCastExpr, ArrayToPointerDecay, dml_uint_t *)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, dml_uint_t); ...)",
+          "for (...; i (ImplicitCastExpr, LValueToRValue, int) < 8; ...)"
+        ],
+        "call_boundary": [
+          "dml2_init_socbb_params",
+          "dml2_translate_socbb_params",
+          "initialize_dml2_soc_states",
+          "dml2_init_soc_states",
+          "dml2_translate_soc_states",
+          "map_hw_resources"
+        ],
+        "call_edges": [
+          "dml2_create_copy -> dml2_allocate_memory",
+          "dml2_create_copy -> dml2_copy",
+          "dml2_copy -> __builtin_dynamic_object_size",
+          "dml2_copy -> fortify_memcpy_chk",
+          "dml2_copy -> __builtin_expect",
+          "dml2_copy -> __warn_printk"
+        ],
+        "state_transitions": [
+          "cfg_binding(dml2 (ImplicitCastExpr, LValueToRValue, struct dml2_context *)->v20.dml_core_ctx.project (ImplicitCastExpr, LValueToRValue, dml_uint_t) != dml_project_dcn35 (ImplicitCastExpr, IntegralCast, dml_uint_t))",
+          "cfg_binding(dml2 (ImplicitCastExpr, LValueToRValue, struct dml2_context *)->v20.dml_core_ctx.project (ImplicitCastExpr, LValueToRValue, dml_uint_t) != dml_project_dcn351 (ImplicitCastExpr, IntegralCast, dml_uint_t))",
+          "cfg_branch(if dml2 (ImplicitCastExpr, LValueToRValue, struct dml2_context *)->v20.dml_core_ctx.project (ImplicitCastExpr, LValueToRValue, dml_uint_t) != dml_project_dcn35 (ImplicitCastExpr, IntegralCast, dml_uint_t) && dml2 (ImplicitCastExpr, LValueToRValue, struct dml2_context *)->v20.dml_core_ctx.project (ImplicitCastExpr, LValueToRValue, dml_uint_t) != dml_project_dcn351 (ImplicitCastExpr, IntegralCast, dml_uint_t))",
+          "cfg_branch(dml2 (ImplicitCastExpr, LValueToRValue, struct dml2_context *)->v20.dml_core_ctx.project (ImplicitCastExpr, LValueToRValue, dml_uint_t) != dml_project_dcn35 (ImplicitCastExpr, IntegralCast, dml_uint_t) && ...)",
+          "[B1.1]++",
+          "[B2.1]++"
+        ],
+        "api_terms": [
+          "dml2_allocate_memory",
+          "dml2_copy",
+          "__builtin_dynamic_object_size",
+          "fortify_memcpy_chk",
+          "__builtin_expect",
+          "__warn_printk"
+        ],
+        "related_symbols": [
+          "dml2->config",
+          "in_dc->dml",
+          "in_out_display_cfg->hw",
+          "mode_support_info->ODMMode",
+          "mode_support_info->DPPPerSurface",
+          "mode_support_info->DSCEnabled"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/dc/dml2/dml2_wrapper.c",
+        "function": "map_hw_resources"
+      },
+      "location": {
+        "line": 76,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "map_hw_resources adds patch barrier `i >= __DML2_WRAPPER_MAX_STREAMS_PLANES__` around initialize_dml2_soc_bbox, dml2_init_socbb_params.",
+        "state_before": [
+          "input(i)",
+          "input(__DML2_WRAPPER_MAX_STREAMS_PLANES__)"
+        ],
+        "state_after": [
+          "guard(i >= __DML2_WRAPPER_MAX_STREAMS_PLANES__)",
+          "sink(initialize_dml2_soc_bbox)",
+          "sink(dml2_init_socbb_params)"
+        ],
+        "functions": [
+          "map_hw_resources"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "i",
+          "__DML2_WRAPPER_MAX_STREAMS_PLANES__",
+          "dml_print",
+          "DML",
+          "s",
+          "Index"
+        ],
+        "buffer_fields": [],
+        "call_targets": [
+          "initialize_dml2_soc_bbox",
+          "dml2_init_socbb_params",
+          "dml2_translate_socbb_params",
+          "dml2_init_soc_states"
+        ],
+        "call_edges": [
+          "map_hw_resources -> initialize_dml2_soc_bbox",
+          "map_hw_resources -> dml2_init_socbb_params",
+          "map_hw_resources -> dml2_translate_socbb_params"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "i >= __DML2_WRAPPER_MAX_STREAMS_PLANES__"
+        ],
+        "state_statements": [
+          "if (i >= __DML2_WRAPPER_MAX_STREAMS_PLANES__) {",
+          "dml_print(\"DML::%s: Index out of bounds: i=%d, __DML2_WRAPPER_MAX_STREAMS_PLANES__=%d\\n\",",
+          "__func__, i, __DML2_WRAPPER_MAX_STREAMS_PLANES__);",
+          "break;",
+          "}"
+        ],
+        "return_statements": [],
+        "source_file": "drivers/gpu/drm/amd/display/dc/dml2/dml2_wrapper.c",
+        "source_excerpt": "44: static void initialize_dml2_soc_bbox(struct dml2_context *dml2, const struct dc *in_dc, struct soc_bounding_box_st *out)\n45: {\n46: \tif (dml2->config.use_native_soc_bb_construction)\n47: \t\tdml2_init_socbb_params(dml2, in_dc, out);\n48: \telse\n49: \t\tdml2_translate_socbb_params(in_dc, out);\n50: }\n51: \n52: static void initialize_dml2_soc_states(struct dml2_context *dml2,\n53: \tconst struct dc *in_dc, const struct soc_bounding_box_st *in_bbox, struct soc_states_st *out)\n54: {\n55: \tif (dml2->config.use_native_soc_bb_construction)\n56: \t\tdml2_init_soc_states(dml2, in_dc, in_bbox, out);\n57: \telse\n58: \t\tdml2_translate_soc_states(in_dc, out, in_dc->dml.soc.num_states);\n59: }\n60: \n61: static void map_hw_resources(struct dml2_context *dml2,\n62: \t\tstruct dml_display_cfg_st *in_out_display_cfg, struct dml_mode_support_info_st *mode_support_info)\n63: {\n64: \tunsigned int num_pipes = 0;\n65: \tint i, j;\n66: \n67: \tfor (i = 0; i < __DML_NUM_PLANES__; i++) {\n68: \t\tin_out_display_cfg->hw.ODMMode[i] = mode_support_info->ODMMode[i];\n69: \t\tin_out_display_cfg->hw.DPPPerSurface[i] = mode_support_info->DPPPerSurface[i];\n70: \t\tin_out_display_cfg->hw.DSCEnabled[i] = mode_support_info->DSCEnabled[i];\n71: \t\tin_out_display_cfg->hw.NumberOfDSCSlices[i] = mode_support_info->NumberOfDSCSlices[i];\n72: \t\tin_out_display_cfg->hw.DLGRefClkFreqMHz = 24;\n73: \t\tif (dml2->v20.dml_core_ctx.project != dml_project_dcn35 &&\n74: \t\t\tdml2->v20.dml_core_ctx.project != dml_project_dcn351) {\n75: \t\t\t/*dGPU default as 50Mhz*/\n76: \t\t\tin_out_display_cfg->hw.DLGRefClkFreqMHz = 50;\n77: \t\t}\n78: \t\tfor (j = 0; j < mode_support_info->DPPPerSurface[i]; j++) {\n79: \t\t\tdml2->v20.scratch.dml_to_dc_pipe_mapping.dml_pipe_idx_to_stream_id[num_pipes] = dml2->v20.scratch.dml_to_dc_pipe_mapping.disp_cfg_to_stream_id[i];\n80: \t\t\tdml2->v20.scratch.dml_to_dc_pipe_mapping.dml_pipe_idx_to_stream_id_valid[num_pipes] = true;\n81: \t\t\tdml2->v20.scratch.dml_to_dc_pipe_mapping.dml_pipe_idx_to_plane_id[num_pipes] = dml2->v20.scratch.dml_to_dc_pipe_mapping.disp_cfg_to_plane_id[i];\n82: \t\t\tdml2->v20.scratch.dml_to_dc_pipe_mapping.dml_pipe_idx_to_plane_id_valid[num_pipes] = true;\n83: \t\t\tnum_pipes++;\n84: \t\t}\n85: \t}\n86: }\n87: \n88: static unsigned int pack_and_call_dml_mode_support_ex(struct dml2_context *dml2,\n89: \tconst struct dml_display_cfg_st *display_cfg,\n90: \tstruct dml_mode_support_info_st *evaluation_info)\n91: {\n92: \tstruct dml2_wrapper_scratch *s = &dml2->v20.scratch;\n93: \n94: \ts->mode_support_params.mode_lib = &dml2->v20.dml_core_ctx;\n95: \ts->mode_support_params.in_display_cfg = display_cfg;\n96: \ts->mode_support_params.out_evaluation_info = evaluation_info;\n97: \n98: \tmemset(evaluation_info, 0, sizeof(struct dml_mode_support_info_st));\n99: \ts->mode_support_params.out_lowest_state_idx = 0;\n100: \n101: \treturn dml_mode_support_ex(&s->mode_support_params);\n102: }\n103: \n104: static bool optimize_configuration(struct dml2_context *dml2, struct dml2_wrapper_optimize_configuration_params *p)\n105: {\n106: \tint unused_dpps = p->ip_params->max_num_dpp;\n107: \tint i, j;\n108: \tint odms_needed, refresh_rate_hz, dpps_needed, subvp_height, pstate_width_fw_delay_lines, surface_count;",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:guarded-state",
+        "confidence": 0.9,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/amd/display/dc/dml2/dml2_wrapper.c",
+          "hunk_index": 0,
+          "source_line": 76
+        },
+        "summary": "map_hw_resources adds patch barrier `i >= __DML2_WRAPPER_MAX_STREAMS_PLANES__` around initialize_dml2_soc_bbox, dml2_init_socbb_params.",
+        "statements": [
+          "if (i >= __DML2_WRAPPER_MAX_STREAMS_PLANES__) {",
+          "dml_print(\"DML::%s: Index out of bounds: i=%d, __DML2_WRAPPER_MAX_STREAMS_PLANES__=%d\\n\",",
+          "__func__, i, __DML2_WRAPPER_MAX_STREAMS_PLANES__);",
+          "break;",
+          "}"
+        ],
+        "guards": [
+          "i >= __DML2_WRAPPER_MAX_STREAMS_PLANES__"
+        ],
+        "call_boundary": [
+          "initialize_dml2_soc_bbox",
+          "dml2_init_socbb_params",
+          "dml2_translate_socbb_params",
+          "dml2_init_soc_states"
+        ],
+        "call_edges": [
+          "map_hw_resources -> initialize_dml2_soc_bbox",
+          "map_hw_resources -> dml2_init_socbb_params",
+          "map_hw_resources -> dml2_translate_socbb_params"
+        ],
+        "state_transitions": [
+          "guard(i >= __DML2_WRAPPER_MAX_STREAMS_PLANES__)",
+          "sink(initialize_dml2_soc_bbox)",
+          "sink(dml2_init_socbb_params)"
+        ],
+        "api_terms": [
+          "initialize_dml2_soc_bbox",
+          "dml2_init_socbb_params",
+          "dml2_translate_socbb_params"
+        ],
+        "related_symbols": [
+          "i",
+          "__DML2_WRAPPER_MAX_STREAMS_PLANES__",
+          "dml_print",
+          "DML",
+          "s",
+          "Index"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_0",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/dc/dml2/dml2_wrapper.c",
+        "function": "map_hw_resources"
+      },
+      "location": {
+        "line": 76,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "map_hw_resources in drivers/gpu/drm/amd/display/dc/dml2/dml2_wrapper.c provides CSA-backed pointer/resource lifecycle context near line 76",
+        "diagnostic_message": "",
+        "diagnostic_checker": "",
+        "state_before": [
+          "buffer(dml2->config)",
+          "buffer(in_dc->dml)",
+          "sinks(dml2_init_socbb_params, dml2_translate_socbb_params)"
+        ],
+        "state_after": [
+          "operation(initialize_dml2_soc_states)",
+          "operation(for (i = 0; i < __DML_NUM_PLANES__; i++) {)",
+          "operation(for (j = 0; j < mode_support_info->DPPPerSurface[i]; j++) {)",
+          "operation(num_pipes++;)"
+        ],
+        "functions": [
+          "map_hw_resources"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "i",
+          "__DML2_WRAPPER_MAX_STREAMS_PLANES__",
+          "dml_print",
+          "DML",
+          "s",
+          "Index"
+        ],
+        "buffer_fields": [
+          "dml2->config",
+          "in_dc->dml",
+          "in_out_display_cfg->hw",
+          "mode_support_info->ODMMode",
+          "mode_support_info->DPPPerSurface",
+          "mode_support_info->DSCEnabled"
+        ],
+        "call_targets": [
+          "dml2_init_socbb_params",
+          "dml2_translate_socbb_params",
+          "initialize_dml2_soc_states",
+          "dml2_init_soc_states",
+          "dml2_translate_soc_states",
+          "map_hw_resources"
+        ],
+        "call_edges": [
+          "dml2_create_copy -> dml2_allocate_memory",
+          "dml2_create_copy -> dml2_copy",
+          "dml2_copy -> __builtin_dynamic_object_size",
+          "dml2_copy -> fortify_memcpy_chk",
+          "dml2_copy -> __builtin_expect",
+          "dml2_copy -> __warn_printk"
+        ],
+        "state_statements": [
+          "for (i = 0; i < __DML_NUM_PLANES__; i++) {",
+          "for (j = 0; j < mode_support_info->DPPPerSurface[i]; j++) {",
+          "num_pipes++;",
+          "[B1.1]++",
+          "[B2.1]++",
+          "[B3.2]->"
+        ],
+        "source_file": "drivers/gpu/drm/amd/display/dc/dml2/dml2_wrapper.c",
+        "source_excerpt": "44: static void initialize_dml2_soc_bbox(struct dml2_context *dml2, const struct dc *in_dc, struct soc_bounding_box_st *out)\n45: {\n46: \tif (dml2->config.use_native_soc_bb_construction)\n47: \t\tdml2_init_socbb_params(dml2, in_dc, out);\n48: \telse\n49: \t\tdml2_translate_socbb_params(in_dc, out);\n50: }\n51: \n52: static void initialize_dml2_soc_states(struct dml2_context *dml2,\n53: \tconst struct dc *in_dc, const struct soc_bounding_box_st *in_bbox, struct soc_states_st *out)\n54: {\n55: \tif (dml2->config.use_native_soc_bb_construction)\n56: \t\tdml2_init_soc_states(dml2, in_dc, in_bbox, out);\n57: \telse\n58: \t\tdml2_translate_soc_states(in_dc, out, in_dc->dml.soc.num_states);\n59: }\n60: \n61: static void map_hw_resources(struct dml2_context *dml2,\n62: \t\tstruct dml_display_cfg_st *in_out_display_cfg, struct dml_mode_support_info_st *mode_support_info)\n63: {\n64: \tunsigned int num_pipes = 0;\n65: \tint i, j;\n66: \n67: \tfor (i = 0; i < __DML_NUM_PLANES__; i++) {\n68: \t\tin_out_display_cfg->hw.ODMMode[i] = mode_support_info->ODMMode[i];\n69: \t\tin_out_display_cfg->hw.DPPPerSurface[i] = mode_support_info->DPPPerSurface[i];\n70: \t\tin_out_display_cfg->hw.DSCEnabled[i] = mode_support_info->DSCEnabled[i];\n71: \t\tin_out_display_cfg->hw.NumberOfDSCSlices[i] = mode_support_info->NumberOfDSCSlices[i];\n72: \t\tin_out_display_cfg->hw.DLGRefClkFreqMHz = 24;\n73: \t\tif (dml2->v20.dml_core_ctx.project != dml_project_dcn35 &&\n74: \t\t\tdml2->v20.dml_core_ctx.project != dml_project_dcn351) {\n75: \t\t\t/*dGPU default as 50Mhz*/\n76: \t\t\tin_out_display_cfg->hw.DLGRefClkFreqMHz = 50;\n77: \t\t}\n78: \t\tfor (j = 0; j < mode_support_info->DPPPerSurface[i]; j++) {\n79: \t\t\tdml2->v20.scratch.dml_to_dc_pipe_mapping.dml_pipe_idx_to_stream_id[num_pipes] = dml2->v20.scratch.dml_to_dc_pipe_mapping.disp_cfg_to_stream_id[i];\n80: \t\t\tdml2->v20.scratch.dml_to_dc_pipe_mapping.dml_pipe_idx_to_stream_id_valid[num_pipes] = true;\n81: \t\t\tdml2->v20.scratch.dml_to_dc_pipe_mapping.dml_pipe_idx_to_plane_id[num_pipes] = dml2->v20.scratch.dml_to_dc_pipe_mapping.disp_cfg_to_plane_id[i];\n82: \t\t\tdml2->v20.scratch.dml_to_dc_pipe_mapping.dml_pipe_idx_to_plane_id_valid[num_pipes] = true;\n83: \t\t\tnum_pipes++;\n84: \t\t}\n85: \t}\n86: }\n87: \n88: static unsigned int pack_and_call_dml_mode_support_ex(struct dml2_context *dml2,\n89: \tconst struct dml_display_cfg_st *display_cfg,\n90: \tstruct dml_mode_support_info_st *evaluation_info)\n91: {\n92: \tstruct dml2_wrapper_scratch *s = &dml2->v20.scratch;\n93: \n94: \ts->mode_support_params.mode_lib = &dml2->v20.dml_core_ctx;\n95: \ts->mode_support_params.in_display_cfg = display_cfg;\n96: \ts->mode_support_params.out_evaluation_info = evaluation_info;\n97: \n98: \tmemset(evaluation_info, 0, sizeof(struct dml_mode_support_info_st));\n99: \ts->mode_support_params.out_lowest_state_idx = 0;\n100: \n101: \treturn dml_mode_support_ex(&s->mode_support_params);\n102: }\n103: \n104: static bool optimize_configuration(struct dml2_context *dml2, struct dml2_wrapper_optimize_configuration_params *p)\n105: {\n106: \tint unused_dpps = p->ip_params->max_num_dpp;\n107: \tint i, j;\n108: \tint odms_needed, refresh_rate_hz, dpps_needed, subvp_height, pstate_width_fw_delay_lines, surface_count;",
+        "coverage_status": "partial",
+        "operations": [
+          "initialize_dml2_soc_states",
+          "for (i = 0; i < __DML_NUM_PLANES__; i++) {",
+          "for (j = 0; j < mode_support_info->DPPPerSurface[i]; j++) {",
+          "num_pipes++;",
+          "[B1.1]++",
+          "[B2.1]++"
+        ],
+        "acquisition_ops": [
+          "initialize_dml2_soc_states"
+        ],
+        "release_ops": []
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.72,
+        "origin": "analyzer_output"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/amd/display/dc/dml2/dml2_wrapper.c",
+          "hunk_index": 0,
+          "source_line": 76
+        },
+        "summary": "map_hw_resources in drivers/gpu/drm/amd/display/dc/dml2/dml2_wrapper.c provides CSA-backed pointer/resource lifecycle context near line 76",
+        "statements": [
+          "44: static void initialize_dml2_soc_bbox(struct dml2_context *dml2, const struct dc *in_dc, struct soc_bounding_box_st *out)",
+          "45: {",
+          "46: \tif (dml2->config.use_native_soc_bb_construction)",
+          "47: \t\tdml2_init_socbb_params(dml2, in_dc, out);",
+          "48: \telse",
+          "49: \t\tdml2_translate_socbb_params(in_dc, out);"
+        ],
+        "guards": [
+          "dml2->config.use_native_soc_bb_construction",
+          "i = 0; i < __DML_NUM_PLANES__; i++",
+          "j = 0; j < mode_support_info->DPPPerSurface[i]; j++",
+          "i >= __DML2_WRAPPER_MAX_STREAMS_PLANES__"
+        ],
+        "call_boundary": [
+          "dml2_init_socbb_params",
+          "dml2_translate_socbb_params",
+          "initialize_dml2_soc_states",
+          "dml2_init_soc_states",
+          "dml2_translate_soc_states",
+          "map_hw_resources"
+        ],
+        "call_edges": [
+          "dml2_create_copy -> dml2_allocate_memory",
+          "dml2_create_copy -> dml2_copy",
+          "dml2_copy -> __builtin_dynamic_object_size",
+          "dml2_copy -> fortify_memcpy_chk",
+          "dml2_copy -> __builtin_expect",
+          "dml2_copy -> __warn_printk"
+        ],
+        "state_transitions": [
+          "operation(initialize_dml2_soc_states)",
+          "operation(for (i = 0; i < __DML_NUM_PLANES__; i++) {)",
+          "operation(for (j = 0; j < mode_support_info->DPPPerSurface[i]; j++) {)",
+          "operation(num_pipes++;)"
+        ],
+        "api_terms": [
+          "initialize_dml2_soc_states",
+          "for (i = 0; i < __DML_NUM_PLANES__; i++) {",
+          "for (j = 0; j < mode_support_info->DPPPerSurface[i]; j++) {",
+          "num_pipes++;",
+          "[B1.1]++",
+          "[B2.1]++"
+        ],
+        "related_symbols": [
+          "i",
+          "__DML2_WRAPPER_MAX_STREAMS_PLANES__",
+          "dml_print",
+          "DML",
+          "s",
+          "Index"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "collected_analyzers": [
+    "csa"
+  ],
+  "provenance_summary": {
+    "total_records": 5,
+    "origin_counts": {
+      "analyzer_internal": 1,
+      "analyzer_output": 1,
+      "source_derived": 3
+    },
+    "analyzer_internal_records": 1,
+    "analyzer_internal_fraction": 0.2,
+    "analyzer_backed_records": 2,
+    "analyzer_backed_fraction": 0.4,
+    "source_derived_records": 3,
+    "source_derived_fraction": 0.6
+  }
+}

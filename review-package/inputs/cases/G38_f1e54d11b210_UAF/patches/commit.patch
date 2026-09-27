@@ -1,0 +1,14 @@
+diff --git a/drivers/net/macsec.c b/drivers/net/macsec.c
+index 26034f80d4a4c..ee21592825738 100644
+--- a/drivers/net/macsec.c
++++ b/drivers/net/macsec.c
+@@ -3798,8 +3798,7 @@ static void macsec_free_netdev(struct net_device *dev)
+ {
+ 	struct macsec_dev *macsec = macsec_priv(dev);
+ 
+-	if (macsec->secy.tx_sc.md_dst)
+-		metadata_dst_free(macsec->secy.tx_sc.md_dst);
++	dst_release(&macsec->secy.tx_sc.md_dst->dst);
+ 	free_percpu(macsec->stats);
+ 	free_percpu(macsec->secy.tx_sc.stats);
+ 

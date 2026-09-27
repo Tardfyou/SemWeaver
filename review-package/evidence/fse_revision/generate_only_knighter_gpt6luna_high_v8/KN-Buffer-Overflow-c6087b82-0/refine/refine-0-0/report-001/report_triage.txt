@@ -1,0 +1,2 @@
+- Decision: NotABug
+- Reason: The reported `lpfc_debugfs_hdwqstat_write()` function clamps `nbytes` to `sizeof(mybuf) - 1` before calling `copy_from_user()`. Thus the copy length is at most 63 bytes for the 64-byte buffer, so the reported overflow is not reachable. The target bug was in `lpfc_debugfs_lockstat_write()`, which passed the unbounded `nbytes` directly to `copy_from_user()`; the patch adds the clamp that the reported function already has.

@@ -1,0 +1,1369 @@
+{
+  "analyzer_id": "csa",
+  "detector_artifact": "checker_plugin",
+  "primary_pattern": "null_dereference",
+  "objective": "Synthesize a path-sensitive null_dereference detector that encodes the same local state, guards, and lifecycle mechanism evidenced by the patch, while still generalizing to semantically equivalent sites.",
+  "mechanism_contract": {
+    "mechanism_family": "nullability_contract_violation",
+    "semantic_dimensions": [
+      "pointer-like value",
+      "dereference or call sink",
+      "nonnull proof or dominating guard"
+    ],
+    "trigger_invariants": [
+      "a pointer-like value reaches dereference, field access, or indirect call",
+      "the active path does not prove the value is non-null",
+      "Patch-backed trigger clue: added guard: if (!spi_bus->spi_int[iter])"
+    ],
+    "silence_invariants": [
+      "a dominating non-null check or successful initializer proves the value is safe",
+      "patch-added early return or validation guard blocks the null path",
+      "length/capacity guard present: if (!spi_bus->spi_int[iter])"
+    ],
+    "transfer_axes": [
+      "equivalent nullability guards before sibling dereference sites",
+      "equivalent initialization or validation patterns for the same pointer role",
+      "equivalent guard or barrier predicates on sibling paths",
+      "equivalent local state transitions around the same sink or dereference",
+      "equivalent ownership or release/reinit lifecycle on the same symbolic resource"
+    ],
+    "forbidden_shortcuts": [
+      "bind the detector to fixed file paths, line numbers, or exact patch strings",
+      "broaden into unrelated bug families just to improve hit count",
+      "report every pointer dereference regardless of path proof",
+      "confuse null checks with unrelated branch conditions",
+      "placeholder helper logic or empty ProgramState modeling"
+    ],
+    "evidence_backed_axes": [
+      "path guards and barrier conditions",
+      "semantic trigger slice",
+      "state transitions",
+      "resource lifecycle"
+    ]
+  },
+  "detector_name_hint": "",
+  "focus_files": [],
+  "focus_functions": [],
+  "hypotheses": [
+    "The fix strengthens a guard or bound that should be captured as a reusable precondition."
+  ],
+  "required_evidence_types": [
+    "patch_fact",
+    "path_guard"
+  ],
+  "missing_evidence_types": [],
+  "evidence_degraded": false,
+  "patch_mechanism_signals": [
+    "added guard: if (!spi_bus->spi_int[iter])"
+  ],
+  "silencing_conditions": [
+    "length/capacity guard present: if (!spi_bus->spi_int[iter])"
+  ],
+  "retry_guidance": [],
+  "selected_evidence_ids": [
+    "csa_guard_0",
+    "csa_guard_1",
+    "csa_semantic_slice_0",
+    "csa_state_0",
+    "csa_validation_allocation_lifecycle_0"
+  ],
+  "selected_evidence": [
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/spi/spi-pci1xxxx.c",
+        "function": "pci1xxxx_spi_probe"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "!spi_bus->spi_int[iter]",
+        "summary": "pci1xxxx_spi_probe introduces patch guard `!spi_bus->spi_int[iter]` before struct_size, spi_sub_ptr->parent = spi_bus.",
+        "summary_line": 725,
+        "state_before": [
+          "input(spi_bus)",
+          "input(spi_int)",
+          "buffer(spi_bus->spi_int)",
+          "buffer(spi_sub_ptr->parent)"
+        ],
+        "state_after": [
+          "guard(!spi_bus->spi_int[iter])",
+          "current_call(struct_size)",
+          "current_call(spi_sub_ptr->parent = spi_bus)"
+        ],
+        "tracked_symbols": [
+          "spi_bus",
+          "spi_int",
+          "iter",
+          "ENOMEM"
+        ],
+        "buffer_fields": [
+          "spi_bus->spi_int",
+          "spi_sub_ptr->parent"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "pci1xxxx_spi_probe"
+        ],
+        "call_targets": [
+          "struct_size",
+          "spi_sub_ptr->parent = spi_bus"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "!spi_bus->spi_int[iter]"
+        ],
+        "call_edges": [
+          "pci1xxxx_spi_probe -> struct_size",
+          "pci1xxxx_spi_probe -> spi_sub_ptr->parent = spi_bus"
+        ],
+        "state_statements": [
+          "if (!spi_bus->spi_int[iter])",
+          "return -ENOMEM;"
+        ],
+        "source_file": "drivers/spi/spi-pci1xxxx.c"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/spi/spi-pci1xxxx.c",
+          "hunk_index": 0,
+          "source_line": 725
+        },
+        "summary": "pci1xxxx_spi_probe introduces patch guard `!spi_bus->spi_int[iter]` before struct_size, spi_sub_ptr->parent = spi_bus.",
+        "statements": [
+          "if (!spi_bus->spi_int[iter])",
+          "return -ENOMEM;"
+        ],
+        "guards": [
+          "!spi_bus->spi_int[iter]"
+        ],
+        "call_boundary": [
+          "struct_size",
+          "spi_sub_ptr->parent = spi_bus"
+        ],
+        "call_edges": [
+          "pci1xxxx_spi_probe -> struct_size",
+          "pci1xxxx_spi_probe -> spi_sub_ptr->parent = spi_bus"
+        ],
+        "state_transitions": [
+          "guard(!spi_bus->spi_int[iter])",
+          "current_call(struct_size)",
+          "current_call(spi_sub_ptr->parent = spi_bus)"
+        ],
+        "api_terms": [
+          "struct_size",
+          "spi_sub_ptr->parent = spi_bus"
+        ],
+        "related_symbols": [
+          "spi_bus",
+          "spi_int",
+          "iter",
+          "ENOMEM"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_guard_1",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/spi/spi-pci1xxxx.c",
+        "function": "pci1xxxx_spi_probe"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "if start (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int) == 1",
+        "summary": "Analyzer CFG for pci1xxxx_spi_probe in drivers/spi/spi-pci1xxxx.c: bindings: start (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int) == 1; spi_sub_ptr (ImplicitCastExpr, LValueToRValue, struct pci1xxxx_spi_internal *)->hw_inst = start++ | branches: if start (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int) == 1; goto error; | calls: pci1xxxx_spi_probe -> devm_kzalloc; pci1xxxx_spi_probe -> size_mul",
+        "summary_line": 725,
+        "state_before": [
+          "input(pdev)",
+          "input(ent)",
+          "buffer(pdev->dev)",
+          "buffer(ent->driver_data)",
+          "sinks(devm_kzalloc, struct_size)"
+        ],
+        "state_after": [
+          "cfg_binding(start (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int) == 1)",
+          "cfg_binding(spi_sub_ptr (ImplicitCastExpr, LValueToRValue, struct pci1xxxx_spi_internal *)->hw_inst = start++)",
+          "cfg_branch(if start (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int) == 1)",
+          "cfg_branch(goto error;)"
+        ],
+        "tracked_symbols": [
+          "pdev",
+          "ent",
+          "pdev->dev",
+          "ent->driver_data",
+          "spi_bus->dev",
+          "spi_bus->total_hw_instances",
+          "spi_bus->spi_int",
+          "spi_sub_ptr->spi_host"
+        ],
+        "buffer_fields": [
+          "pdev->dev",
+          "ent->driver_data",
+          "spi_bus->dev",
+          "spi_bus->total_hw_instances",
+          "spi_bus->spi_int",
+          "spi_sub_ptr->spi_host"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "pci1xxxx_spi_probe"
+        ],
+        "call_targets": [
+          "devm_kzalloc",
+          "struct_size",
+          "pci_set_master",
+          "devm_spi_alloc_host",
+          "pcim_enable_device",
+          "pci_request_regions",
+          "pcim_iomap",
+          "pci_resource_len"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,drivers/spi/.spi-pci1xxxx.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/uapi -I./arch/x8...",
+        "cfg_branch_kinds": [
+          "if",
+          "for"
+        ],
+        "branch_conditions": [
+          "goto error;",
+          "if [B5.108]",
+          "do ... while [B7.1]",
+          "static init _entry_ptr",
+          "[B13.15] ? ... : ...",
+          "[B16.5] ? ... : ..."
+        ],
+        "call_edges": [
+          "pci1xxxx_spi_probe -> devm_kzalloc",
+          "pci1xxxx_spi_probe -> size_mul",
+          "pci1xxxx_spi_probe -> size_add",
+          "pci1xxxx_spi_probe -> pci_set_master",
+          "pci1xxxx_spi_probe -> devm_spi_alloc_host",
+          "pci1xxxx_spi_probe -> pcim_enable_device"
+        ],
+        "state_statements": [
+          "return [B1.7];",
+          "return [B2.9];",
+          "[B3.1]++",
+          "[B5.2]->spi_host",
+          "[B5.5] = [B5.4]",
+          "[B5.10]->num_chipselect"
+        ],
+        "source_file": "drivers/spi/spi-pci1xxxx.c"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/spi/spi-pci1xxxx.c",
+          "hunk_index": 0,
+          "source_line": 725
+        },
+        "summary": "Analyzer CFG for pci1xxxx_spi_probe in drivers/spi/spi-pci1xxxx.c: bindings: start (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int) == 1; spi_sub_ptr (ImplicitCastExpr, LValueToRValue, struct pci1xxxx_spi_internal *)->hw_inst = start++ | branches: if start (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int) == 1; goto error; | calls: pci1xxxx_spi_probe -> devm_kzalloc; pci1xxxx_spi_probe -> size_mul",
+        "statements": [
+          "697: static int pci1xxxx_spi_probe(struct pci_dev *pdev, const struct pci_device_id *ent)",
+          "698: {",
+          "699: \tu8 hw_inst_cnt, iter, start, only_sec_inst;",
+          "700: \tstruct pci1xxxx_spi_internal *spi_sub_ptr;",
+          "701: \tstruct device *dev = &pdev->dev;",
+          "702: \tstruct pci1xxxx_spi *spi_bus;"
+        ],
+        "guards": [
+          "if start (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int) == 1",
+          "goto error;",
+          "if ret (ImplicitCastExpr, LValueToRValue, int)",
+          "do ... while 0"
+        ],
+        "call_boundary": [
+          "devm_kzalloc",
+          "struct_size",
+          "pci_set_master",
+          "devm_spi_alloc_host",
+          "pcim_enable_device",
+          "pci_request_regions"
+        ],
+        "call_edges": [
+          "pci1xxxx_spi_probe -> devm_kzalloc",
+          "pci1xxxx_spi_probe -> size_mul",
+          "pci1xxxx_spi_probe -> size_add",
+          "pci1xxxx_spi_probe -> pci_set_master",
+          "pci1xxxx_spi_probe -> devm_spi_alloc_host",
+          "pci1xxxx_spi_probe -> pcim_enable_device",
+          "pci1xxxx_spi_probe -> pci_request_regions",
+          "pci1xxxx_spi_probe -> pcim_iomap"
+        ],
+        "state_transitions": [
+          "cfg_binding(start (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int) == 1)",
+          "cfg_binding(spi_sub_ptr (ImplicitCastExpr, LValueToRValue, struct pci1xxxx_spi_internal *)->hw_inst = start++)",
+          "cfg_branch(if start (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int) == 1)",
+          "cfg_branch(goto error;)",
+          "return [B1.7];",
+          "return [B2.9];"
+        ],
+        "api_terms": [
+          "devm_kzalloc",
+          "size_mul",
+          "size_add",
+          "pci_set_master",
+          "devm_spi_alloc_host",
+          "pcim_enable_device"
+        ],
+        "related_symbols": [
+          "pdev",
+          "ent",
+          "pdev->dev",
+          "ent->driver_data",
+          "spi_bus->dev",
+          "spi_bus->total_hw_instances"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/spi/spi-pci1xxxx.c",
+        "function": "pci1xxxx_spi_probe"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "pci1xxxx_spi_probe adds patch barrier `!spi_bus->spi_int[iter]` around struct_size, spi_sub_ptr->parent = spi_bus.",
+        "tracked_symbols": [
+          "spi_bus",
+          "spi_int",
+          "iter",
+          "ENOMEM"
+        ],
+        "buffer_fields": [
+          "spi_bus->spi_int",
+          "spi_sub_ptr->parent"
+        ],
+        "coverage_status": "full",
+        "source_file": "drivers/spi/spi-pci1xxxx.c"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "drivers/spi/spi-pci1xxxx.c",
+          "hunk_index": 0,
+          "source_line": 725
+        },
+        "summary": "pci1xxxx_spi_probe adds patch barrier `!spi_bus->spi_int[iter]` around struct_size, spi_sub_ptr->parent = spi_bus.",
+        "statements": [
+          "if (!spi_bus->spi_int[iter])",
+          "return -ENOMEM;"
+        ],
+        "guards": [
+          "!spi_bus->spi_int[iter]"
+        ],
+        "call_boundary": [
+          "struct_size",
+          "spi_sub_ptr->parent = spi_bus"
+        ],
+        "call_edges": [
+          "pci1xxxx_spi_probe -> struct_size",
+          "pci1xxxx_spi_probe -> spi_sub_ptr->parent = spi_bus"
+        ],
+        "state_transitions": [
+          "",
+          "report when a risky write proceeds without the patch-style barrier",
+          "stay silent when the nearby guard proves the current write is blocked or bounded"
+        ],
+        "api_terms": [
+          "struct_size",
+          "spi_sub_ptr->parent = spi_bus"
+        ],
+        "related_symbols": [
+          "spi_bus",
+          "spi_int",
+          "iter",
+          "ENOMEM"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/spi/spi-pci1xxxx.c",
+        "function": "pci1xxxx_spi_probe"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "pci1xxxx_spi_probe adds patch barrier `!spi_bus->spi_int[iter]` around struct_size, spi_sub_ptr->parent = spi_bus.",
+        "state_before": [
+          "input(spi_bus)",
+          "input(spi_int)",
+          "buffer(spi_bus->spi_int)",
+          "buffer(spi_sub_ptr->parent)"
+        ],
+        "state_after": [
+          "guard(!spi_bus->spi_int[iter])",
+          "sink(struct_size)",
+          "sink(spi_sub_ptr->parent = spi_bus)"
+        ],
+        "tracked_symbols": [
+          "spi_bus",
+          "spi_int",
+          "iter",
+          "ENOMEM"
+        ],
+        "buffer_fields": [
+          "spi_bus->spi_int",
+          "spi_sub_ptr->parent"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "pci1xxxx_spi_probe"
+        ],
+        "call_targets": [
+          "struct_size",
+          "spi_sub_ptr->parent = spi_bus"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "!spi_bus->spi_int[iter]"
+        ],
+        "call_edges": [
+          "pci1xxxx_spi_probe -> struct_size",
+          "pci1xxxx_spi_probe -> spi_sub_ptr->parent = spi_bus"
+        ],
+        "state_statements": [
+          "if (!spi_bus->spi_int[iter])",
+          "return -ENOMEM;"
+        ],
+        "source_file": "drivers/spi/spi-pci1xxxx.c"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "drivers/spi/spi-pci1xxxx.c",
+          "hunk_index": 0,
+          "source_line": 725
+        },
+        "summary": "pci1xxxx_spi_probe adds patch barrier `!spi_bus->spi_int[iter]` around struct_size, spi_sub_ptr->parent = spi_bus.",
+        "statements": [
+          "if (!spi_bus->spi_int[iter])",
+          "return -ENOMEM;"
+        ],
+        "guards": [
+          "!spi_bus->spi_int[iter]"
+        ],
+        "call_boundary": [
+          "struct_size",
+          "spi_sub_ptr->parent = spi_bus"
+        ],
+        "call_edges": [
+          "pci1xxxx_spi_probe -> struct_size",
+          "pci1xxxx_spi_probe -> spi_sub_ptr->parent = spi_bus"
+        ],
+        "state_transitions": [
+          "guard(!spi_bus->spi_int[iter])",
+          "sink(struct_size)",
+          "sink(spi_sub_ptr->parent = spi_bus)"
+        ],
+        "api_terms": [
+          "struct_size",
+          "spi_sub_ptr->parent = spi_bus"
+        ],
+        "related_symbols": [
+          "spi_bus",
+          "spi_int",
+          "iter",
+          "ENOMEM"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      },
+      "confidence": 0.9
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_0",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/spi/spi-pci1xxxx.c",
+        "function": "pci1xxxx_spi_probe"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "pci1xxxx_spi_probe in drivers/spi/spi-pci1xxxx.c provides CSA-backed pointer/resource lifecycle context near line 725",
+        "state_before": [
+          "input(pdev)",
+          "input(ent)",
+          "buffer(pdev->dev)",
+          "buffer(ent->driver_data)",
+          "sinks(devm_kzalloc, struct_size)"
+        ],
+        "state_after": [
+          "operation(for (iter = 0; iter < hw_inst_cnt; iter++) {)",
+          "operation(return [B1.7];)",
+          "operation(return [B2.9];)",
+          "operation([B3.1]++)"
+        ],
+        "tracked_symbols": [
+          "pdev",
+          "ent",
+          "spi_bus",
+          "spi_int",
+          "iter",
+          "ENOMEM"
+        ],
+        "buffer_fields": [
+          "pdev->dev",
+          "ent->driver_data",
+          "spi_bus->dev",
+          "spi_bus->total_hw_instances",
+          "spi_bus->spi_int",
+          "spi_sub_ptr->spi_host"
+        ],
+        "coverage_status": "partial",
+        "operations": [
+          "for (iter = 0; iter < hw_inst_cnt; iter++) {",
+          "return [B1.7];",
+          "return [B2.9];",
+          "[B3.1]++",
+          "[B5.2]->spi_host",
+          "[B5.5] = [B5.4]"
+        ],
+        "functions": [
+          "pci1xxxx_spi_probe"
+        ],
+        "call_targets": [
+          "devm_kzalloc",
+          "struct_size",
+          "pci_set_master",
+          "devm_spi_alloc_host",
+          "pcim_enable_device",
+          "pci_request_regions"
+        ],
+        "call_edges": [
+          "pci1xxxx_spi_probe -> devm_kzalloc",
+          "pci1xxxx_spi_probe -> size_mul",
+          "pci1xxxx_spi_probe -> size_add",
+          "pci1xxxx_spi_probe -> pci_set_master",
+          "pci1xxxx_spi_probe -> devm_spi_alloc_host",
+          "pci1xxxx_spi_probe -> pcim_enable_device"
+        ],
+        "state_statements": [
+          "for (iter = 0; iter < hw_inst_cnt; iter++) {",
+          "return [B1.7];",
+          "return [B2.9];",
+          "[B3.1]++",
+          "[B5.2]->spi_host",
+          "[B5.5] = [B5.4]"
+        ],
+        "source_file": "drivers/spi/spi-pci1xxxx.c"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "drivers/spi/spi-pci1xxxx.c",
+          "hunk_index": 0,
+          "source_line": 725
+        },
+        "summary": "pci1xxxx_spi_probe in drivers/spi/spi-pci1xxxx.c provides CSA-backed pointer/resource lifecycle context near line 725",
+        "statements": [
+          "697: static int pci1xxxx_spi_probe(struct pci_dev *pdev, const struct pci_device_id *ent)",
+          "698: {",
+          "699: \tu8 hw_inst_cnt, iter, start, only_sec_inst;",
+          "700: \tstruct pci1xxxx_spi_internal *spi_sub_ptr;",
+          "701: \tstruct device *dev = &pdev->dev;",
+          "702: \tstruct pci1xxxx_spi *spi_bus;"
+        ],
+        "guards": [
+          "start == 1",
+          "!spi_bus",
+          "iter = 0; iter < hw_inst_cnt; iter++",
+          "!spi_sub_ptr->spi_host"
+        ],
+        "call_boundary": [
+          "devm_kzalloc",
+          "struct_size",
+          "pci_set_master",
+          "devm_spi_alloc_host",
+          "pcim_enable_device",
+          "pci_request_regions"
+        ],
+        "call_edges": [
+          "pci1xxxx_spi_probe -> devm_kzalloc",
+          "pci1xxxx_spi_probe -> size_mul",
+          "pci1xxxx_spi_probe -> size_add",
+          "pci1xxxx_spi_probe -> pci_set_master",
+          "pci1xxxx_spi_probe -> devm_spi_alloc_host",
+          "pci1xxxx_spi_probe -> pcim_enable_device"
+        ],
+        "state_transitions": [
+          "operation(for (iter = 0; iter < hw_inst_cnt; iter++) {)",
+          "operation(return [B1.7];)",
+          "operation(return [B2.9];)",
+          "operation([B3.1]++)"
+        ],
+        "api_terms": [
+          "for (iter = 0; iter < hw_inst_cnt; iter++) {",
+          "return [B1.7];",
+          "return [B2.9];",
+          "[B3.1]++",
+          "[B5.2]->spi_host",
+          "[B5.5] = [B5.4]"
+        ],
+        "related_symbols": [
+          "pdev",
+          "ent",
+          "spi_bus",
+          "spi_int",
+          "iter",
+          "ENOMEM"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      },
+      "confidence": 0.72
+    }
+  ],
+  "semantic_slice_count": 5,
+  "context_summary_count": 0,
+  "semantic_slice_coverage": "partial",
+  "selected_semantic_slice_ids": [
+    "csa_guard_0",
+    "csa_guard_1",
+    "csa_semantic_slice_0",
+    "csa_state_0",
+    "csa_validation_allocation_lifecycle_0"
+  ],
+  "selected_context_summary_ids": [],
+  "selected_semantic_slices": [
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/spi/spi-pci1xxxx.c",
+        "function": "pci1xxxx_spi_probe"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "!spi_bus->spi_int[iter]",
+        "summary": "pci1xxxx_spi_probe introduces patch guard `!spi_bus->spi_int[iter]` before struct_size, spi_sub_ptr->parent = spi_bus.",
+        "summary_line": 725,
+        "state_before": [
+          "input(spi_bus)",
+          "input(spi_int)",
+          "buffer(spi_bus->spi_int)",
+          "buffer(spi_sub_ptr->parent)"
+        ],
+        "state_after": [
+          "guard(!spi_bus->spi_int[iter])",
+          "current_call(struct_size)",
+          "current_call(spi_sub_ptr->parent = spi_bus)"
+        ],
+        "tracked_symbols": [
+          "spi_bus",
+          "spi_int",
+          "iter",
+          "ENOMEM"
+        ],
+        "buffer_fields": [
+          "spi_bus->spi_int",
+          "spi_sub_ptr->parent"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "pci1xxxx_spi_probe"
+        ],
+        "call_targets": [
+          "struct_size",
+          "spi_sub_ptr->parent = spi_bus"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "!spi_bus->spi_int[iter]"
+        ],
+        "call_edges": [
+          "pci1xxxx_spi_probe -> struct_size",
+          "pci1xxxx_spi_probe -> spi_sub_ptr->parent = spi_bus"
+        ],
+        "state_statements": [
+          "if (!spi_bus->spi_int[iter])",
+          "return -ENOMEM;"
+        ],
+        "source_file": "drivers/spi/spi-pci1xxxx.c"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/spi/spi-pci1xxxx.c",
+          "hunk_index": 0,
+          "source_line": 725
+        },
+        "summary": "pci1xxxx_spi_probe introduces patch guard `!spi_bus->spi_int[iter]` before struct_size, spi_sub_ptr->parent = spi_bus.",
+        "statements": [
+          "if (!spi_bus->spi_int[iter])",
+          "return -ENOMEM;"
+        ],
+        "guards": [
+          "!spi_bus->spi_int[iter]"
+        ],
+        "call_boundary": [
+          "struct_size",
+          "spi_sub_ptr->parent = spi_bus"
+        ],
+        "call_edges": [
+          "pci1xxxx_spi_probe -> struct_size",
+          "pci1xxxx_spi_probe -> spi_sub_ptr->parent = spi_bus"
+        ],
+        "state_transitions": [
+          "guard(!spi_bus->spi_int[iter])",
+          "current_call(struct_size)",
+          "current_call(spi_sub_ptr->parent = spi_bus)"
+        ],
+        "api_terms": [
+          "struct_size",
+          "spi_sub_ptr->parent = spi_bus"
+        ],
+        "related_symbols": [
+          "spi_bus",
+          "spi_int",
+          "iter",
+          "ENOMEM"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_guard_1",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/spi/spi-pci1xxxx.c",
+        "function": "pci1xxxx_spi_probe"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "if start (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int) == 1",
+        "summary": "Analyzer CFG for pci1xxxx_spi_probe in drivers/spi/spi-pci1xxxx.c: bindings: start (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int) == 1; spi_sub_ptr (ImplicitCastExpr, LValueToRValue, struct pci1xxxx_spi_internal *)->hw_inst = start++ | branches: if start (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int) == 1; goto error; | calls: pci1xxxx_spi_probe -> devm_kzalloc; pci1xxxx_spi_probe -> size_mul",
+        "summary_line": 725,
+        "state_before": [
+          "input(pdev)",
+          "input(ent)",
+          "buffer(pdev->dev)",
+          "buffer(ent->driver_data)",
+          "sinks(devm_kzalloc, struct_size)"
+        ],
+        "state_after": [
+          "cfg_binding(start (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int) == 1)",
+          "cfg_binding(spi_sub_ptr (ImplicitCastExpr, LValueToRValue, struct pci1xxxx_spi_internal *)->hw_inst = start++)",
+          "cfg_branch(if start (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int) == 1)",
+          "cfg_branch(goto error;)"
+        ],
+        "tracked_symbols": [
+          "pdev",
+          "ent",
+          "pdev->dev",
+          "ent->driver_data",
+          "spi_bus->dev",
+          "spi_bus->total_hw_instances",
+          "spi_bus->spi_int",
+          "spi_sub_ptr->spi_host"
+        ],
+        "buffer_fields": [
+          "pdev->dev",
+          "ent->driver_data",
+          "spi_bus->dev",
+          "spi_bus->total_hw_instances",
+          "spi_bus->spi_int",
+          "spi_sub_ptr->spi_host"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "pci1xxxx_spi_probe"
+        ],
+        "call_targets": [
+          "devm_kzalloc",
+          "struct_size",
+          "pci_set_master",
+          "devm_spi_alloc_host",
+          "pcim_enable_device",
+          "pci_request_regions",
+          "pcim_iomap",
+          "pci_resource_len"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,drivers/spi/.spi-pci1xxxx.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/uapi -I./arch/x8...",
+        "cfg_branch_kinds": [
+          "if",
+          "for"
+        ],
+        "branch_conditions": [
+          "goto error;",
+          "if [B5.108]",
+          "do ... while [B7.1]",
+          "static init _entry_ptr",
+          "[B13.15] ? ... : ...",
+          "[B16.5] ? ... : ..."
+        ],
+        "call_edges": [
+          "pci1xxxx_spi_probe -> devm_kzalloc",
+          "pci1xxxx_spi_probe -> size_mul",
+          "pci1xxxx_spi_probe -> size_add",
+          "pci1xxxx_spi_probe -> pci_set_master",
+          "pci1xxxx_spi_probe -> devm_spi_alloc_host",
+          "pci1xxxx_spi_probe -> pcim_enable_device"
+        ],
+        "state_statements": [
+          "return [B1.7];",
+          "return [B2.9];",
+          "[B3.1]++",
+          "[B5.2]->spi_host",
+          "[B5.5] = [B5.4]",
+          "[B5.10]->num_chipselect"
+        ],
+        "source_file": "drivers/spi/spi-pci1xxxx.c"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/spi/spi-pci1xxxx.c",
+          "hunk_index": 0,
+          "source_line": 725
+        },
+        "summary": "Analyzer CFG for pci1xxxx_spi_probe in drivers/spi/spi-pci1xxxx.c: bindings: start (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int) == 1; spi_sub_ptr (ImplicitCastExpr, LValueToRValue, struct pci1xxxx_spi_internal *)->hw_inst = start++ | branches: if start (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int) == 1; goto error; | calls: pci1xxxx_spi_probe -> devm_kzalloc; pci1xxxx_spi_probe -> size_mul",
+        "statements": [
+          "697: static int pci1xxxx_spi_probe(struct pci_dev *pdev, const struct pci_device_id *ent)",
+          "698: {",
+          "699: \tu8 hw_inst_cnt, iter, start, only_sec_inst;",
+          "700: \tstruct pci1xxxx_spi_internal *spi_sub_ptr;",
+          "701: \tstruct device *dev = &pdev->dev;",
+          "702: \tstruct pci1xxxx_spi *spi_bus;"
+        ],
+        "guards": [
+          "if start (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int) == 1",
+          "goto error;",
+          "if ret (ImplicitCastExpr, LValueToRValue, int)",
+          "do ... while 0"
+        ],
+        "call_boundary": [
+          "devm_kzalloc",
+          "struct_size",
+          "pci_set_master",
+          "devm_spi_alloc_host",
+          "pcim_enable_device",
+          "pci_request_regions"
+        ],
+        "call_edges": [
+          "pci1xxxx_spi_probe -> devm_kzalloc",
+          "pci1xxxx_spi_probe -> size_mul",
+          "pci1xxxx_spi_probe -> size_add",
+          "pci1xxxx_spi_probe -> pci_set_master",
+          "pci1xxxx_spi_probe -> devm_spi_alloc_host",
+          "pci1xxxx_spi_probe -> pcim_enable_device",
+          "pci1xxxx_spi_probe -> pci_request_regions",
+          "pci1xxxx_spi_probe -> pcim_iomap"
+        ],
+        "state_transitions": [
+          "cfg_binding(start (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int) == 1)",
+          "cfg_binding(spi_sub_ptr (ImplicitCastExpr, LValueToRValue, struct pci1xxxx_spi_internal *)->hw_inst = start++)",
+          "cfg_branch(if start (ImplicitCastExpr, LValueToRValue, u8) (ImplicitCastExpr, IntegralCast, int) == 1)",
+          "cfg_branch(goto error;)",
+          "return [B1.7];",
+          "return [B2.9];"
+        ],
+        "api_terms": [
+          "devm_kzalloc",
+          "size_mul",
+          "size_add",
+          "pci_set_master",
+          "devm_spi_alloc_host",
+          "pcim_enable_device"
+        ],
+        "related_symbols": [
+          "pdev",
+          "ent",
+          "pdev->dev",
+          "ent->driver_data",
+          "spi_bus->dev",
+          "spi_bus->total_hw_instances"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/spi/spi-pci1xxxx.c",
+        "function": "pci1xxxx_spi_probe"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "pci1xxxx_spi_probe adds patch barrier `!spi_bus->spi_int[iter]` around struct_size, spi_sub_ptr->parent = spi_bus.",
+        "tracked_symbols": [
+          "spi_bus",
+          "spi_int",
+          "iter",
+          "ENOMEM"
+        ],
+        "buffer_fields": [
+          "spi_bus->spi_int",
+          "spi_sub_ptr->parent"
+        ],
+        "coverage_status": "full",
+        "source_file": "drivers/spi/spi-pci1xxxx.c"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "drivers/spi/spi-pci1xxxx.c",
+          "hunk_index": 0,
+          "source_line": 725
+        },
+        "summary": "pci1xxxx_spi_probe adds patch barrier `!spi_bus->spi_int[iter]` around struct_size, spi_sub_ptr->parent = spi_bus.",
+        "statements": [
+          "if (!spi_bus->spi_int[iter])",
+          "return -ENOMEM;"
+        ],
+        "guards": [
+          "!spi_bus->spi_int[iter]"
+        ],
+        "call_boundary": [
+          "struct_size",
+          "spi_sub_ptr->parent = spi_bus"
+        ],
+        "call_edges": [
+          "pci1xxxx_spi_probe -> struct_size",
+          "pci1xxxx_spi_probe -> spi_sub_ptr->parent = spi_bus"
+        ],
+        "state_transitions": [
+          "",
+          "report when a risky write proceeds without the patch-style barrier",
+          "stay silent when the nearby guard proves the current write is blocked or bounded"
+        ],
+        "api_terms": [
+          "struct_size",
+          "spi_sub_ptr->parent = spi_bus"
+        ],
+        "related_symbols": [
+          "spi_bus",
+          "spi_int",
+          "iter",
+          "ENOMEM"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/spi/spi-pci1xxxx.c",
+        "function": "pci1xxxx_spi_probe"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "pci1xxxx_spi_probe adds patch barrier `!spi_bus->spi_int[iter]` around struct_size, spi_sub_ptr->parent = spi_bus.",
+        "state_before": [
+          "input(spi_bus)",
+          "input(spi_int)",
+          "buffer(spi_bus->spi_int)",
+          "buffer(spi_sub_ptr->parent)"
+        ],
+        "state_after": [
+          "guard(!spi_bus->spi_int[iter])",
+          "sink(struct_size)",
+          "sink(spi_sub_ptr->parent = spi_bus)"
+        ],
+        "tracked_symbols": [
+          "spi_bus",
+          "spi_int",
+          "iter",
+          "ENOMEM"
+        ],
+        "buffer_fields": [
+          "spi_bus->spi_int",
+          "spi_sub_ptr->parent"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "pci1xxxx_spi_probe"
+        ],
+        "call_targets": [
+          "struct_size",
+          "spi_sub_ptr->parent = spi_bus"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "!spi_bus->spi_int[iter]"
+        ],
+        "call_edges": [
+          "pci1xxxx_spi_probe -> struct_size",
+          "pci1xxxx_spi_probe -> spi_sub_ptr->parent = spi_bus"
+        ],
+        "state_statements": [
+          "if (!spi_bus->spi_int[iter])",
+          "return -ENOMEM;"
+        ],
+        "source_file": "drivers/spi/spi-pci1xxxx.c"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "drivers/spi/spi-pci1xxxx.c",
+          "hunk_index": 0,
+          "source_line": 725
+        },
+        "summary": "pci1xxxx_spi_probe adds patch barrier `!spi_bus->spi_int[iter]` around struct_size, spi_sub_ptr->parent = spi_bus.",
+        "statements": [
+          "if (!spi_bus->spi_int[iter])",
+          "return -ENOMEM;"
+        ],
+        "guards": [
+          "!spi_bus->spi_int[iter]"
+        ],
+        "call_boundary": [
+          "struct_size",
+          "spi_sub_ptr->parent = spi_bus"
+        ],
+        "call_edges": [
+          "pci1xxxx_spi_probe -> struct_size",
+          "pci1xxxx_spi_probe -> spi_sub_ptr->parent = spi_bus"
+        ],
+        "state_transitions": [
+          "guard(!spi_bus->spi_int[iter])",
+          "sink(struct_size)",
+          "sink(spi_sub_ptr->parent = spi_bus)"
+        ],
+        "api_terms": [
+          "struct_size",
+          "spi_sub_ptr->parent = spi_bus"
+        ],
+        "related_symbols": [
+          "spi_bus",
+          "spi_int",
+          "iter",
+          "ENOMEM"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      },
+      "confidence": 0.9
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_0",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/spi/spi-pci1xxxx.c",
+        "function": "pci1xxxx_spi_probe"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "pci1xxxx_spi_probe in drivers/spi/spi-pci1xxxx.c provides CSA-backed pointer/resource lifecycle context near line 725",
+        "state_before": [
+          "input(pdev)",
+          "input(ent)",
+          "buffer(pdev->dev)",
+          "buffer(ent->driver_data)",
+          "sinks(devm_kzalloc, struct_size)"
+        ],
+        "state_after": [
+          "operation(for (iter = 0; iter < hw_inst_cnt; iter++) {)",
+          "operation(return [B1.7];)",
+          "operation(return [B2.9];)",
+          "operation([B3.1]++)"
+        ],
+        "tracked_symbols": [
+          "pdev",
+          "ent",
+          "spi_bus",
+          "spi_int",
+          "iter",
+          "ENOMEM"
+        ],
+        "buffer_fields": [
+          "pdev->dev",
+          "ent->driver_data",
+          "spi_bus->dev",
+          "spi_bus->total_hw_instances",
+          "spi_bus->spi_int",
+          "spi_sub_ptr->spi_host"
+        ],
+        "coverage_status": "partial",
+        "operations": [
+          "for (iter = 0; iter < hw_inst_cnt; iter++) {",
+          "return [B1.7];",
+          "return [B2.9];",
+          "[B3.1]++",
+          "[B5.2]->spi_host",
+          "[B5.5] = [B5.4]"
+        ],
+        "functions": [
+          "pci1xxxx_spi_probe"
+        ],
+        "call_targets": [
+          "devm_kzalloc",
+          "struct_size",
+          "pci_set_master",
+          "devm_spi_alloc_host",
+          "pcim_enable_device",
+          "pci_request_regions"
+        ],
+        "call_edges": [
+          "pci1xxxx_spi_probe -> devm_kzalloc",
+          "pci1xxxx_spi_probe -> size_mul",
+          "pci1xxxx_spi_probe -> size_add",
+          "pci1xxxx_spi_probe -> pci_set_master",
+          "pci1xxxx_spi_probe -> devm_spi_alloc_host",
+          "pci1xxxx_spi_probe -> pcim_enable_device"
+        ],
+        "state_statements": [
+          "for (iter = 0; iter < hw_inst_cnt; iter++) {",
+          "return [B1.7];",
+          "return [B2.9];",
+          "[B3.1]++",
+          "[B5.2]->spi_host",
+          "[B5.5] = [B5.4]"
+        ],
+        "source_file": "drivers/spi/spi-pci1xxxx.c"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "drivers/spi/spi-pci1xxxx.c",
+          "hunk_index": 0,
+          "source_line": 725
+        },
+        "summary": "pci1xxxx_spi_probe in drivers/spi/spi-pci1xxxx.c provides CSA-backed pointer/resource lifecycle context near line 725",
+        "statements": [
+          "697: static int pci1xxxx_spi_probe(struct pci_dev *pdev, const struct pci_device_id *ent)",
+          "698: {",
+          "699: \tu8 hw_inst_cnt, iter, start, only_sec_inst;",
+          "700: \tstruct pci1xxxx_spi_internal *spi_sub_ptr;",
+          "701: \tstruct device *dev = &pdev->dev;",
+          "702: \tstruct pci1xxxx_spi *spi_bus;"
+        ],
+        "guards": [
+          "start == 1",
+          "!spi_bus",
+          "iter = 0; iter < hw_inst_cnt; iter++",
+          "!spi_sub_ptr->spi_host"
+        ],
+        "call_boundary": [
+          "devm_kzalloc",
+          "struct_size",
+          "pci_set_master",
+          "devm_spi_alloc_host",
+          "pcim_enable_device",
+          "pci_request_regions"
+        ],
+        "call_edges": [
+          "pci1xxxx_spi_probe -> devm_kzalloc",
+          "pci1xxxx_spi_probe -> size_mul",
+          "pci1xxxx_spi_probe -> size_add",
+          "pci1xxxx_spi_probe -> pci_set_master",
+          "pci1xxxx_spi_probe -> devm_spi_alloc_host",
+          "pci1xxxx_spi_probe -> pcim_enable_device"
+        ],
+        "state_transitions": [
+          "operation(for (iter = 0; iter < hw_inst_cnt; iter++) {)",
+          "operation(return [B1.7];)",
+          "operation(return [B2.9];)",
+          "operation([B3.1]++)"
+        ],
+        "api_terms": [
+          "for (iter = 0; iter < hw_inst_cnt; iter++) {",
+          "return [B1.7];",
+          "return [B2.9];",
+          "[B3.1]++",
+          "[B5.2]->spi_host",
+          "[B5.5] = [B5.4]"
+        ],
+        "related_symbols": [
+          "pdev",
+          "ent",
+          "spi_bus",
+          "spi_int",
+          "iter",
+          "ENOMEM"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      },
+      "confidence": 0.72
+    }
+  ],
+  "selected_context_summaries": [],
+  "semantic_clause_plan": [
+    {
+      "clause_id": "vulnerable_trigger_clause",
+      "intent": "Trigger on the vulnerable null_dereference mechanism using evidence-backed path/flow semantics.",
+      "supporting_evidence_ids": [
+        "csa_guard_0",
+        "csa_guard_1",
+        "csa_semantic_slice_0",
+        "csa_state_0",
+        "csa_validation_allocation_lifecycle_0"
+      ],
+      "repair_when": [
+        "semantic_no_hits"
+      ],
+      "focus_functions": []
+    },
+    {
+      "clause_id": "patched_silence_clause",
+      "intent": "Stay silent on patched code when patch-added guards, barriers, or safe APIs prove the mechanism is blocked.",
+      "supporting_evidence_ids": [
+        "csa_guard_0",
+        "csa_guard_1",
+        "csa_semantic_slice_0",
+        "csa_state_0"
+      ],
+      "repair_when": [],
+      "silencing_conditions": [
+        "length/capacity guard present: if (!spi_bus->spi_int[iter])"
+      ]
+    },
+    {
+      "clause_id": "semantic_transfer_clause",
+      "intent": "Generalize along semantic slices and call-chain evidence rather than patch-local syntax.",
+      "supporting_evidence_ids": [
+        "csa_semantic_slice_0"
+      ],
+      "repair_when": [],
+      "analyzer_id": "csa"
+    },
+    {
+      "clause_id": "analyzer_interface_clause",
+      "intent": "Preserve valid analyzer-facing syntax and interfaces while keeping semantics unchanged.",
+      "supporting_evidence_ids": [],
+      "repair_when": [
+        "semantic_execution_error"
+      ],
+      "analyzer_id": "csa"
+    }
+  ],
+  "repair_directives": [],
+  "constraints": [
+    {
+      "title": "Generalize beyond patch site",
+      "description": "Do not bind the detector to fixed file paths, line numbers, or exact patch strings.",
+      "priority": "high"
+    },
+    {
+      "title": "Preserve vulnerability semantics",
+      "description": "Keep the detector focused on the vulnerability family implied by the patch and evidence.",
+      "priority": "high"
+    },
+    {
+      "title": "Respect analyzer-native form",
+      "description": "Output must be a valid checker_plugin for csa.",
+      "priority": "high"
+    },
+    {
+      "title": "Stay within proven mechanism scope",
+      "description": "Generalize only along evidence-supported semantic dimensions. Do not broaden the detector into unrelated globals, APIs, or bug families.",
+      "priority": "high"
+    },
+    {
+      "title": "Honor mechanism contract",
+      "description": "Preserve the mechanism family `nullability_contract_violation` by keeping trigger invariants a pointer-like value reaches dereference, field access, or indirect call; the active path does not prove the value is non-null; Patch-backed trigger clue: added guard: if (!spi_bus->spi_int[iter]).",
+      "priority": "high"
+    },
+    {
+      "title": "Generalize only on contract axes",
+      "description": "Reuse semantics only along these transfer axes: equivalent nullability guards before sibling dereference sites; equivalent initialization or validation patterns for the same pointer role; equivalent guard or barrier predicates on sibling paths.",
+      "priority": "high"
+    },
+    {
+      "title": "Encode the patch-added barrier",
+      "description": "treat guards such as if (!spi_bus->spi_int[iter]) as semantic barriers.",
+      "priority": "high"
+    },
+    {
+      "title": "Respect patched silence",
+      "description": "Use these no-report conditions when they are semantically proven: length/capacity guard present: if (!spi_bus->spi_int[iter]).",
+      "priority": "high"
+    },
+    {
+      "title": "Require missing non-null proof",
+      "description": "Only report dereference-like sinks when the active path lacks a non-null proof; patched null checks and early returns must stay silent.",
+      "priority": "high"
+    },
+    {
+      "title": "Use path-sensitive evidence",
+      "description": "Prefer guards, state transitions, and lifecycle facts over broad textual matching.",
+      "priority": "high"
+    },
+    {
+      "title": "No placeholder helper logic",
+      "description": "Helper predicates must inspect AST/program state and must not be unconditional return-true/return-false stubs.",
+      "priority": "high"
+    }
+  ],
+  "implementation_hints": [
+    "Mechanism family: nullability_contract_violation",
+    "Mechanism dimensions: pointer-like value, dereference or call sink, nonnull proof or dominating guard",
+    "Trigger invariants: a pointer-like value reaches dereference, field access, or indirect call, the active path does not prove the value is non-null, Patch-backed trigger clue: added guard: if (!spi_bus->spi_int[iter])",
+    "Silence invariants: a dominating non-null check or successful initializer proves the value is safe, patch-added early return or validation guard blocks the null path, length/capacity guard present: if (!spi_bus->spi_int[iter])",
+    "Transfer axes: equivalent nullability guards before sibling dereference sites, equivalent initialization or validation patterns for the same pointer role, equivalent guard or barrier predicates on sibling paths",
+    "Silence condition: length/capacity guard present: if (!spi_bus->spi_int[iter])",
+    "Patch mechanism: added guard: if (!spi_bus->spi_int[iter])",
+    "Report only when dereference-like sinks are reachable without a non-null proof on the active path."
+  ],
+  "validation_expectations": [
+    "Vulnerable version should trigger a null_dereference finding.",
+    "Patched version should stay silent for the same mechanism.",
+    "Semantic validation that executes but returns zero hits is not acceptable; recover coverage with evidence-backed semantics.",
+    "Repair phase may fix syntax/interfaces only; it must not simplify away the core detection logic.",
+    "Generalization must stay inside the mechanism contract transfer axes instead of widening to adjacent bug families.",
+    "Trigger invariant: a pointer-like value reaches dereference, field access, or indirect call.",
+    "Trigger invariant: the active path does not prove the value is non-null.",
+    "Patched silence depends on: length/capacity guard present: if (!spi_bus->spi_int[iter])."
+  ]
+}

@@ -1,0 +1,95 @@
+BuildSource:| drivers/gpu/drm/amd/display/dc/clk_mgr/dcn301/vg_clk_mgr.c
+### Report Summary
+
+File:|
+/work/SemWeaver/artifacts/external/linux/drivers/gpu/drm/amd/amdgpu/../display/dc/clk_mgr/dcn301/vg_clk_mgr.c  
+---|---  
+Warning:| line 552, column 11  
+Loop bound 8 exceeds array 'DcfClocks' size 7; DcfClocks[i] may be out of
+bounds  
+  
+### Annotated Source Code
+
+
+502   | 			{
+503   | 				.voltage = 0,
+504   | 				.dcfclk_mhz = 483,
+505   | 				.fclk_mhz = 800,
+506   | 				.memclk_mhz = 1600,
+507   | 				.socclk_mhz = 0,
+508   | 			},
+509   | 			{
+510   | 				.voltage = 0,
+511   | 				.dcfclk_mhz = 602,
+512   | 				.fclk_mhz = 1067,
+513   | 				.memclk_mhz = 1067,
+514   | 				.socclk_mhz = 0,
+515   | 			},
+516   | 			{
+517   | 				.voltage = 0,
+518   | 				.dcfclk_mhz = 738,
+519   | 				.fclk_mhz = 1333,
+520   | 				.memclk_mhz = 1600,
+521   | 				.socclk_mhz = 0,
+522   | 			},
+523   | 		},
+524   |  
+525   | 		.num_entries = 4,
+526   | 	},
+527   |  
+528   | };
+529   |  
+530   | static uint32_t find_max_clk_value(const uint32_t clocks[], uint32_t num_clocks)
+531   | {
+532   | 	uint32_t max = 0;
+533   |  int i;
+534   |  
+535   |  for (i = 0; i < num_clocks; ++i) {
+536   |  if (clocks[i] > max)
+537   | 			max = clocks[i];
+538   | 	}
+539   |  
+540   |  return max;
+541   | }
+542   |  
+543   | static unsigned int find_dcfclk_for_voltage(const struct vg_dpm_clocks *clock_table,
+544   |  unsigned int voltage)
+545   | {
+546   |  int i;
+547   |  
+548   |  for (i = 0; i < VG_NUM_SOC_VOLTAGE_LEVELS; i++) {
+549   |  if (i >= VG_NUM_DCFCLK_DPM_LEVELS)
+550   |  break;
+551   |  if (clock_table->SocVoltage[i] == voltage)
+552   |  return clock_table->DcfClocks[i];
+    Loop bound 8 exceeds array 'DcfClocks' size 7; DcfClocks[i] may be out of bounds
+553   | 	}
+554   |  
+555   |  ASSERT(0);
+556   |  return 0;
+557   | }
+558   |  
+559   | static void vg_clk_mgr_helper_populate_bw_params(
+560   |  struct clk_mgr_internal *clk_mgr,
+561   |  struct integrated_info *bios_info,
+562   |  const struct vg_dpm_clocks *clock_table)
+563   | {
+564   |  int i, j;
+565   |  struct clk_bw_params *bw_params = clk_mgr->base.bw_params;
+566   |  
+567   | 	j = -1;
+568   |  
+569   |  ASSERT(VG_NUM_FCLK_DPM_LEVELS <= MAX_NUM_DPM_LVL);
+570   |  
+571   |  /* Find lowest DPM, FCLK is filled in reverse order*/
+572   |  
+573   |  for (i = VG_NUM_FCLK_DPM_LEVELS - 1; i >= 0; i--) {
+574   |  if (clock_table->DfPstateTable[i].fclk != 0) {
+575   | 			j = i;
+576   |  break;
+577   | 		}
+578   | 	}
+579   |  
+580   |  if (j == -1) {
+581   |  /* clock table is all 0s, just use our own hardcode */
+582   |  ASSERT(0);

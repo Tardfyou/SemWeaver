@@ -1,0 +1,2 @@
+- Decision: NotABug
+- Reason: The warning points to `__list_del_entry()` in `include/linux/list.h`, not to the target bug pattern involving `device->bdev_file`. `__list_del_entry()` intentionally unlinks list pointers without clearing them; its caller, `list_del_init()`, then reinitializes the entry. In the cited Btrfs path, `btrfs_rm_dev_replace_free_srcdev()` closes the block device and then frees the device, so the `bdev_file` field is not retained for a later validity check and reuse. This does not match the target bug’s stale `bdev_file` followed by a second `fput()`.

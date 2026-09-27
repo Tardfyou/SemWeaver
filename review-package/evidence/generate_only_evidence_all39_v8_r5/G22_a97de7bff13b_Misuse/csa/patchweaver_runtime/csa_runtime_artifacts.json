@@ -1,0 +1,228 @@
+{
+  "cache_key": {
+    "cache_version": 16,
+    "patch_path": "/work/artifacts/fse_revision/generate_only_materialized_v1/cases/G22_a97de7bff13b_Misuse/patches/commit.patch",
+    "evidence_dir": "/work/SemWeaver/artifacts/external/linux-evidence-clone-v8b",
+    "validate_path": "",
+    "source_files": [
+      "net/bluetooth/rfcomm/sock.c"
+    ],
+    "compile_commands_sha256": "c093a00bf3acdb48c0ce76cc87efd5af464d1b6f47ec1e3a1b5ac98cb2633e1e"
+  },
+  "data": {
+    "available": true,
+    "clang_path": "/usr/lib/llvm-18/bin/clang",
+    "cfg_snapshots": [
+      {
+        "source_file": "net/bluetooth/rfcomm/sock.c",
+        "function_name": "rfcomm_sock_setsockopt",
+        "anchor_line": 689,
+        "branch_kinds": [
+          "switch",
+          "if"
+        ],
+        "branch_conditions": [
+          "switch [B2.7]",
+          "break;",
+          "if [B7.2]",
+          "if [B9.9]",
+          "if [B12.8] && [B11.8]",
+          "[B12.8] && ...",
+          "if [B15.6]",
+          "if [B17.15]"
+        ],
+        "resolved_branch_conditions": [
+          "if sec.level (ImplicitCastExpr, LValueToRValue, __u8) (ImplicitCastExpr, IntegralCast, int) > 3",
+          "if level (ImplicitCastExpr, LValueToRValue, int) != 274",
+          "if level (ImplicitCastExpr, LValueToRValue, int) == 18",
+          "switch optname (ImplicitCastExpr, LValueToRValue, int)",
+          "break;",
+          "if opt (ImplicitCastExpr, LValueToRValue, u32)",
+          "if copy_from_sockptr (ImplicitCastExpr, FunctionToPointerDecay, int (*)(void *, sockptr_t, size_t))(&opt (ImplicitCastExpr, BitCast, void *), optval (ImplicitCastExpr, LValueToRValue, sockptr_t), sizeof(u32))",
+          "if sk (ImplicitCastExpr, LValueToRValue, struct sock *)->__sk_common.skc_state (ImplicitCastExpr, LValueToRValue, unsigned char) (ImplicitCastExpr, IntegralCast, int) != BT_BOUND && sk (ImplicitCastExpr, LValueToRValue, struct sock *)->__sk_common.skc_state (ImplicitCastExpr, LValueToRValue, unsigned char) (ImplicitCastExpr, IntegralCast, int) != BT_LISTEN"
+        ],
+        "cfg_value_bindings": [
+          "((struct rfcomm_pinfo *)sk (ImplicitCastExpr, LValueToRValue, struct sock *) (CStyleCastExpr, BitCast, struct rfcomm_pinfo *))->sec_level = sec.level (ImplicitCastExpr, LValueToRValue, __u8)",
+          "level (ImplicitCastExpr, LValueToRValue, int) == 18",
+          "sec.level = 1 (ImplicitCastExpr, IntegralCast, __u8)",
+          "level (ImplicitCastExpr, LValueToRValue, int) != 274",
+          "err = -92",
+          "err = -14",
+          "err = -22",
+          "int err = 0;"
+        ],
+        "call_edges": [
+          "rfcomm_sock_setsockopt -> __compiletime_assert_1674",
+          "rfcomm_sock_setsockopt -> arch_static_branch_jump",
+          "rfcomm_sock_setsockopt -> arch_static_branch",
+          "rfcomm_sock_setsockopt -> ____wrong_branch_error",
+          "rfcomm_sock_setsockopt -> __builtin_expect",
+          "rfcomm_sock_setsockopt -> __dynamic_pr_debug",
+          "rfcomm_sock_setsockopt -> rfcomm_sock_setsockopt_old",
+          "rfcomm_sock_setsockopt -> lock_sock",
+          "rfcomm_sock_setsockopt -> copy_from_sockptr",
+          "rfcomm_sock_setsockopt -> set_bit",
+          "rfcomm_sock_setsockopt -> clear_bit",
+          "rfcomm_sock_setsockopt -> release_sock"
+        ],
+        "call_targets": [
+          "__compiletime_assert_1674",
+          "arch_static_branch_jump",
+          "arch_static_branch",
+          "____wrong_branch_error",
+          "__builtin_expect",
+          "__dynamic_pr_debug",
+          "rfcomm_sock_setsockopt_old",
+          "lock_sock",
+          "copy_from_sockptr",
+          "set_bit"
+        ],
+        "state_statements": [
+          "return [B1.7];",
+          "[B3.3] = [B3.2]",
+          "([B5.7])->flags",
+          "([B6.7])->flags",
+          "[B8.3] = [B8.2]",
+          "sizeof(u32)",
+          "[B10.3] = [B10.2]",
+          "[B11.2]->__sk_common",
+          "[B11.6] != [B11.7]",
+          "[B12.2]->__sk_common",
+          "[B12.6] != [B12.7]",
+          "([B13.6])->sec_level"
+        ],
+        "field_accesses": [
+          "sock->sk"
+        ],
+        "return_statements": [
+          "return [B1.7];",
+          "return [B23.2];",
+          "return [B25.11];"
+        ],
+        "dump_excerpt": " --- Call graph Dump --- \n  Function: < root > calls: offset_to_ptr __kasan_check_read __kasan_check_write kasan_check_read kasan_check_write __read_once_word_nocheck read_word_at_a_time gen_endbr gen_endbr_poison is_endbr mul_u64_u64_div_u64 mul_u64_u32_div reciprocal_scale int_sqrt64 int_sqrt __iter_div_u64_rem div_u64_rem div_s64_rem div64_u64_rem div64_u64 div64_s64 div_u64 div_s64 mul_u32_u32 mul_u64_u32_shr mul_u64_u64_shr mul_s64_u64_shr timespec64_equal timespec64_compare timespec64_add set_normalized_timespec64 timespec64_sub timespec64_valid timespec64_valid_strict timespec64_valid_settod timespec64_to_ns timespec64_add_ns initcall_from_entry rip_rel_ptr sme_get_me_mask vdso_encode_cpunode vdso_read_cpunode __loadsegment_fs get_max_mapped gate_offset gate_segment pgprot_nx native_make_pgd native_pgd_val pgd_flags native_make_p4d native_p4d_val native_make_pud native_pud_val native_make_pmd native_pmd_val p4d_pfn_mask p4d_flags_mask p4d_flags pud_pfn_mask pud_flags_mask pud_flags pmd_pfn_mask pmd_flags_mask pmd_flags native_make_pte native_pte_val pte_flags protval_4k_2_large pgprot_4k_2_large protval_large_2_4k pgprot_large_2_4k arch_static_branch arch_static_branch_jump jump_entry_code jump_entry_target jump_entry_key jump_entry_is_branch jump_entry_is_init jump_entry_set_init jump_entry_size arch_jump_entry_size static_key_false static_key_true __arch_swab32 __arch_swab64 __fswab16 __fswab32 __fswab64 __fswahw32 __fswahb32 __swab __builtin_bswap64 __swab16p __builtin_bswap16 __swab32p __builtin_bswap32 __swab64p __swahw32p __builtin_constant_p __swahb32p __swab16s __swab32s __swab64s __swahw32s __swahb32s swab16_array swab32_array swab64_array __cpu_to_le64p __le64_to_cpup __cpu_to_le32p __le32_to_cpup __cpu_to_le16p __le16_to_cpup __cpu_to_be64p __be64_to_cpup __cpu_to_be32p __be32_to_cpup __cpu_to_be16p __be16_to_cpup le16_add_cpu le32_add_cpu le64_add_cpu le32_to_cpu_array cpu_to_le32_array be16_add_cpu be32_add_cpu be64_add_cpu cpu_to_be32_array be32_to_cpu_array x86_this_cpu_constant_test_bit x86_this_cpu_variable_test_bit get_current __compiletime_assert_0 __bad_size_call_parameter alternative_msr_write indirect_branch_prediction_barrier mds_clear_cpu_buffers mds_idle_clear_cpu_buffers ____wrong_branch_error __builtin_expect regs_return_value regs_set_return_value user_mode v8086_mode user_64bit_mode any_64bit_mode ip_within_syscall_gap kernel_stack_pointer instruction_pointer instruction_pointer_set frame_pointer user_stack_pointer user_stack_pointer_set regs_irqs_disabled regs_get_register regs_within_kernel_stack regs_get_kernel_stack_nth_addr regs_get_kernel_stack_nth copy_from_kernel_nofault regs_get_kernel_argument memset16 memset32 memset64 memcpy_flushcache __memcpy_flushcache have_cpuid_p native_cpuid native_cpuid_eax native_cpuid_ebx native_cpuid_ecx native_cpuid_edx set_arch_panic_timeout printk_get_level printk_skip_level printk_skip_headers is_warning_bug check_data_corruption __must_check_fn array_index_mask_nospec generic___set_bit generic___clear_bit generic___change_bit generic___test_and_set_bit generic___test_and_clear_bit generic___test_and_change_bit generic_test_bit generic_test_bit_acquire __compiletime_assert_1 __compiletime_assert_2 const_test_bit arch_set_bit arch___set_bit arch_clear_bit arch_clear_bit_unlock arch___clear_bit arch_xor_unlock_is_negative_byte arch___clear_bit_unlock arch___change_bit arch_change_bit arch_test_and_set_bit arch_test_and_set_bit_lock arch___test_and_set_bit arch_test_and_clear_bit arch___test_and_clear_bit arch___test_and_change_bit arch_test_and_change_bit constant_test_bit constant_test_bit_acquire variable_test_bit arch_test_bit arch_test_bit_acquire variable__ffs variable_ffz __fls __builtin_clzl variable_ffs fls __builtin_clz fls64 __builtin_clzll sched_find_first_bit __builtin_ctzl __arch_hweight32 __arch_hweight16 __arch_hweight8 __arch_hweight64 kmsan_poison_memory kmsan_unpoison_memory kmsan_check_memory kmsan_copy_to_user instrument_read __kcs",
+        "error": "",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/generate_only_evidence_all39_v8_r5/G22_a97de7bff13b_Misuse/csa/patchweaver_runtime/csa_raw/net-bluetooth-rfcomm-sock.c-rfcomm_sock_setsockopt.txt",
+        "raw_output_sha256": "6a45626390f642abdc357e948480ffe45dd9c14057b011906ec196f87bfaee52",
+        "command_sha256": "1341b834501a71ed4c96982118a9ebdcd76a90851849d9b33006ae2889f48ae0",
+        "clang_command_preview": "/usr/lib/llvm-18/bin/clang --analyze -nostdinc -I./arch/x86/include -I./arch/x86/include/generated -I./include -I./arch/x86/include/uapi -I./arch/x86/include/generated/uapi -I./...",
+        "return_code": 0
+      },
+      {
+        "source_file": "net/bluetooth/rfcomm/sock.c",
+        "function_name": "rfcomm_sock_setsockopt_old",
+        "anchor_line": 629,
+        "branch_kinds": [
+          "switch",
+          "if"
+        ],
+        "branch_conditions": [
+          "switch [B2.7]",
+          "break;",
+          "if [B6.5]",
+          "if [B8.5]",
+          "if [B10.5]",
+          "if [B12.5]",
+          "if [B14.9]",
+          "do ... while [B15.1]"
+        ],
+        "resolved_branch_conditions": [
+          "switch optname (ImplicitCastExpr, LValueToRValue, int)",
+          "break;",
+          "if opt (ImplicitCastExpr, LValueToRValue, u32) & 32 (ImplicitCastExpr, IntegralCast, u32)",
+          "if opt (ImplicitCastExpr, LValueToRValue, u32) & 4 (ImplicitCastExpr, IntegralCast, u32)",
+          "if opt (ImplicitCastExpr, LValueToRValue, u32) & 2 (ImplicitCastExpr, IntegralCast, u32)",
+          "if opt (ImplicitCastExpr, LValueToRValue, u32) & 64 (ImplicitCastExpr, IntegralCast, u32)",
+          "if copy_from_sockptr (ImplicitCastExpr, FunctionToPointerDecay, int (*)(void *, sockptr_t, size_t))(&opt (ImplicitCastExpr, BitCast, void *), optval (ImplicitCastExpr, LValueToRValue, sockptr_t), sizeof(u32))",
+          "do ... while 0"
+        ],
+        "cfg_value_bindings": [
+          "static struct _ddebug __UNIQUE_ID_ddebug1671 __attribute__((aligned(8))) __attribute__((section(\"__dyndbg\"))) = {.modname = \"rfcomm\", .function = __func__, .filename = \"/work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/net/bluetooth/rfcomm/sock.c\", .format = (\"sk %p\\n\"), .lineno = 626, .flags = 0, .class_id = ((1 << 6) - 1), .key.dd_key_false = ((struct static_key_false){.key = {.enabled = {0}, {.type = 0UL}}})};",
+          "{.modname = \"rfcomm\" (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *), .function = __func__ (ImplicitCastExpr, ArrayToPointerDecay, const char *), .filename = \"/work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/net/bluetooth/rfcomm/sock.c\" (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *), .format = (\"sk %p\\n\") (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *), .lineno = 626 (ImplicitCastExpr, IntegralCast, unsigned int), .flags = 0 (ImplicitCastExpr, IntegralCast, unsigned int), .class_id = ((1 << 6) - 1) (ImplicitCastExpr, IntegralCast, unsigned int), .key.dd_key_false = ((struct static_key_false){.key = {.enabled = {0}, {.type = 0UL}}})}",
+          "((struct rfcomm_pinfo *)sk (ImplicitCastExpr, LValueToRValue, struct sock *) (CStyleCastExpr, BitCast, struct rfcomm_pinfo *))->sec_level = 3 (ImplicitCastExpr, IntegralCast, u8)",
+          "((struct rfcomm_pinfo *)sk (ImplicitCastExpr, LValueToRValue, struct sock *) (CStyleCastExpr, BitCast, struct rfcomm_pinfo *))->sec_level = 2 (ImplicitCastExpr, IntegralCast, u8)",
+          "((struct rfcomm_pinfo *)sk (ImplicitCastExpr, LValueToRValue, struct sock *) (CStyleCastExpr, BitCast, struct rfcomm_pinfo *))->sec_level = 1 (ImplicitCastExpr, IntegralCast, u8)",
+          "((struct rfcomm_pinfo *)sk (ImplicitCastExpr, LValueToRValue, struct sock *) (CStyleCastExpr, BitCast, struct rfcomm_pinfo *))->role_switch = (opt (ImplicitCastExpr, LValueToRValue, u32) & 1 (ImplicitCastExpr, IntegralCast, u32)) (ImplicitCastExpr, IntegralCast, u8)",
+          "err = -92",
+          "err = -22"
+        ],
+        "call_edges": [
+          "rfcomm_sock_setsockopt_old -> __compiletime_assert_1672",
+          "rfcomm_sock_setsockopt_old -> arch_static_branch_jump",
+          "rfcomm_sock_setsockopt_old -> arch_static_branch",
+          "rfcomm_sock_setsockopt_old -> ____wrong_branch_error",
+          "rfcomm_sock_setsockopt_old -> __builtin_expect",
+          "rfcomm_sock_setsockopt_old -> __dynamic_pr_debug",
+          "rfcomm_sock_setsockopt_old -> lock_sock",
+          "rfcomm_sock_setsockopt_old -> copy_from_sockptr",
+          "rfcomm_sock_setsockopt_old -> release_sock"
+        ],
+        "call_targets": [
+          "__compiletime_assert_1672",
+          "arch_static_branch_jump",
+          "arch_static_branch",
+          "____wrong_branch_error",
+          "__builtin_expect",
+          "__dynamic_pr_debug",
+          "lock_sock",
+          "copy_from_sockptr",
+          "release_sock"
+        ],
+        "state_statements": [
+          "return [B1.7];",
+          "[B3.3] = [B3.2]",
+          "([B4.9])->role_switch",
+          "[B4.10] = [B4.6]",
+          "([B5.5])->sec_level",
+          "[B5.6] = [B5.2]",
+          "([B7.5])->sec_level",
+          "[B7.6] = [B7.2]",
+          "([B9.5])->sec_level",
+          "[B9.6] = [B9.2]",
+          "[B11.3] = [B11.2]",
+          "[B13.3] = [B13.2]"
+        ],
+        "field_accesses": [
+          "sock->sk"
+        ],
+        "return_statements": [
+          "return [B1.7];"
+        ],
+        "dump_excerpt": " --- Call graph Dump --- \n  Function: < root > calls: offset_to_ptr __kasan_check_read __kasan_check_write kasan_check_read kasan_check_write __read_once_word_nocheck read_word_at_a_time gen_endbr gen_endbr_poison is_endbr mul_u64_u64_div_u64 mul_u64_u32_div reciprocal_scale int_sqrt64 int_sqrt __iter_div_u64_rem div_u64_rem div_s64_rem div64_u64_rem div64_u64 div64_s64 div_u64 div_s64 mul_u32_u32 mul_u64_u32_shr mul_u64_u64_shr mul_s64_u64_shr timespec64_equal timespec64_compare timespec64_add set_normalized_timespec64 timespec64_sub timespec64_valid timespec64_valid_strict timespec64_valid_settod timespec64_to_ns timespec64_add_ns initcall_from_entry rip_rel_ptr sme_get_me_mask vdso_encode_cpunode vdso_read_cpunode __loadsegment_fs get_max_mapped gate_offset gate_segment pgprot_nx native_make_pgd native_pgd_val pgd_flags native_make_p4d native_p4d_val native_make_pud native_pud_val native_make_pmd native_pmd_val p4d_pfn_mask p4d_flags_mask p4d_flags pud_pfn_mask pud_flags_mask pud_flags pmd_pfn_mask pmd_flags_mask pmd_flags native_make_pte native_pte_val pte_flags protval_4k_2_large pgprot_4k_2_large protval_large_2_4k pgprot_large_2_4k arch_static_branch arch_static_branch_jump jump_entry_code jump_entry_target jump_entry_key jump_entry_is_branch jump_entry_is_init jump_entry_set_init jump_entry_size arch_jump_entry_size static_key_false static_key_true __arch_swab32 __arch_swab64 __fswab16 __fswab32 __fswab64 __fswahw32 __fswahb32 __swab __builtin_bswap64 __swab16p __builtin_bswap16 __swab32p __builtin_bswap32 __swab64p __swahw32p __builtin_constant_p __swahb32p __swab16s __swab32s __swab64s __swahw32s __swahb32s swab16_array swab32_array swab64_array __cpu_to_le64p __le64_to_cpup __cpu_to_le32p __le32_to_cpup __cpu_to_le16p __le16_to_cpup __cpu_to_be64p __be64_to_cpup __cpu_to_be32p __be32_to_cpup __cpu_to_be16p __be16_to_cpup le16_add_cpu le32_add_cpu le64_add_cpu le32_to_cpu_array cpu_to_le32_array be16_add_cpu be32_add_cpu be64_add_cpu cpu_to_be32_array be32_to_cpu_array x86_this_cpu_constant_test_bit x86_this_cpu_variable_test_bit get_current __compiletime_assert_0 __bad_size_call_parameter alternative_msr_write indirect_branch_prediction_barrier mds_clear_cpu_buffers mds_idle_clear_cpu_buffers ____wrong_branch_error __builtin_expect regs_return_value regs_set_return_value user_mode v8086_mode user_64bit_mode any_64bit_mode ip_within_syscall_gap kernel_stack_pointer instruction_pointer instruction_pointer_set frame_pointer user_stack_pointer user_stack_pointer_set regs_irqs_disabled regs_get_register regs_within_kernel_stack regs_get_kernel_stack_nth_addr regs_get_kernel_stack_nth copy_from_kernel_nofault regs_get_kernel_argument memset16 memset32 memset64 memcpy_flushcache __memcpy_flushcache have_cpuid_p native_cpuid native_cpuid_eax native_cpuid_ebx native_cpuid_ecx native_cpuid_edx set_arch_panic_timeout printk_get_level printk_skip_level printk_skip_headers is_warning_bug check_data_corruption __must_check_fn array_index_mask_nospec generic___set_bit generic___clear_bit generic___change_bit generic___test_and_set_bit generic___test_and_clear_bit generic___test_and_change_bit generic_test_bit generic_test_bit_acquire __compiletime_assert_1 __compiletime_assert_2 const_test_bit arch_set_bit arch___set_bit arch_clear_bit arch_clear_bit_unlock arch___clear_bit arch_xor_unlock_is_negative_byte arch___clear_bit_unlock arch___change_bit arch_change_bit arch_test_and_set_bit arch_test_and_set_bit_lock arch___test_and_set_bit arch_test_and_clear_bit arch___test_and_clear_bit arch___test_and_change_bit arch_test_and_change_bit constant_test_bit constant_test_bit_acquire variable_test_bit arch_test_bit arch_test_bit_acquire variable__ffs variable_ffz __fls __builtin_clzl variable_ffs fls __builtin_clz fls64 __builtin_clzll sched_find_first_bit __builtin_ctzl __arch_hweight32 __arch_hweight16 __arch_hweight8 __arch_hweight64 kmsan_poison_memory kmsan_unpoison_memory kmsan_check_memory kmsan_copy_to_user instrument_read __kcs",
+        "error": "",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/generate_only_evidence_all39_v8_r5/G22_a97de7bff13b_Misuse/csa/patchweaver_runtime/csa_raw/net-bluetooth-rfcomm-sock.c-rfcomm_sock_setsockopt_old.txt",
+        "raw_output_sha256": "6a45626390f642abdc357e948480ffe45dd9c14057b011906ec196f87bfaee52",
+        "command_sha256": "1341b834501a71ed4c96982118a9ebdcd76a90851849d9b33006ae2889f48ae0",
+        "clang_command_preview": "/usr/lib/llvm-18/bin/clang --analyze -nostdinc -I./arch/x86/include -I./arch/x86/include/generated -I./include -I./arch/x86/include/uapi -I./arch/x86/include/generated/uapi -I./...",
+        "return_code": 0
+      }
+    ],
+    "call_edges": [
+      "rfcomm_sock_setsockopt -> __compiletime_assert_1674",
+      "rfcomm_sock_setsockopt -> arch_static_branch_jump",
+      "rfcomm_sock_setsockopt -> arch_static_branch",
+      "rfcomm_sock_setsockopt -> ____wrong_branch_error",
+      "rfcomm_sock_setsockopt -> __builtin_expect",
+      "rfcomm_sock_setsockopt -> __dynamic_pr_debug",
+      "rfcomm_sock_setsockopt -> rfcomm_sock_setsockopt_old",
+      "rfcomm_sock_setsockopt -> lock_sock",
+      "rfcomm_sock_setsockopt -> copy_from_sockptr",
+      "rfcomm_sock_setsockopt -> set_bit",
+      "rfcomm_sock_setsockopt -> clear_bit",
+      "rfcomm_sock_setsockopt -> release_sock",
+      "rfcomm_sock_setsockopt_old -> __compiletime_assert_1672",
+      "rfcomm_sock_setsockopt_old -> arch_static_branch_jump",
+      "rfcomm_sock_setsockopt_old -> arch_static_branch",
+      "rfcomm_sock_setsockopt_old -> ____wrong_branch_error",
+      "rfcomm_sock_setsockopt_old -> __builtin_expect",
+      "rfcomm_sock_setsockopt_old -> __dynamic_pr_debug",
+      "rfcomm_sock_setsockopt_old -> lock_sock",
+      "rfcomm_sock_setsockopt_old -> copy_from_sockptr",
+      "rfcomm_sock_setsockopt_old -> release_sock"
+    ],
+    "error": ""
+  }
+}

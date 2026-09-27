@@ -1,0 +1,2 @@
+- Decision: NotABug
+- Reason: The reported handler clamps `nbytes` to `sizeof(mybuf) - 1` before calling `copy_from_user()`. Since `mybuf` is 64 bytes, the copy is at most 63 bytes, so it cannot overflow the buffer. The preceding `memset()` also leaves a terminating zero byte. This differs from the target bug pattern, where the user-provided length is passed to `copy_from_user()` without a bounds check. The report’s path assumes the clamp condition is false, which means `nbytes` is already within bounds.

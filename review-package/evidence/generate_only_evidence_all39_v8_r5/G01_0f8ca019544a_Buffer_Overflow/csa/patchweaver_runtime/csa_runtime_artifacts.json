@@ -1,0 +1,99 @@
+{
+  "cache_key": {
+    "cache_version": 16,
+    "patch_path": "/work/artifacts/fse_revision/generate_only_materialized_v1/cases/G01_0f8ca019544a_Buffer_Overflow/patches/commit.patch",
+    "evidence_dir": "/work/SemWeaver/artifacts/external/linux-evidence-clone-v8b",
+    "validate_path": "",
+    "source_files": [
+      "drivers/gpu/drm/amd/display/dc/dml2/dml2_wrapper.c"
+    ],
+    "compile_commands_sha256": "f3c9017a053d7dc0de3ef28815fb41ff0fbb0b0be6462a18d81021ca6a5c22b2"
+  },
+  "data": {
+    "available": true,
+    "clang_path": "/usr/lib/llvm-18/bin/clang",
+    "cfg_snapshots": [
+      {
+        "source_file": "drivers/gpu/drm/amd/display/dc/dml2/dml2_wrapper.c",
+        "function_name": "map_hw_resources",
+        "anchor_line": 76,
+        "branch_kinds": [
+          "for",
+          "if"
+        ],
+        "branch_conditions": [
+          "for (...; [B4.12]; ...)",
+          "if [B8.85] && [B7.10]",
+          "[B8.85] && ...",
+          "for (...; [B9.4]; ...)"
+        ],
+        "resolved_branch_conditions": [
+          "if dml2 (ImplicitCastExpr, LValueToRValue, struct dml2_context *)->v20.dml_core_ctx.project (ImplicitCastExpr, LValueToRValue, dml_uint_t) != dml_project_dcn35 (ImplicitCastExpr, IntegralCast, dml_uint_t) && dml2 (ImplicitCastExpr, LValueToRValue, struct dml2_context *)->v20.dml_core_ctx.project (ImplicitCastExpr, LValueToRValue, dml_uint_t) != dml_project_dcn351 (ImplicitCastExpr, IntegralCast, dml_uint_t)",
+          "dml2 (ImplicitCastExpr, LValueToRValue, struct dml2_context *)->v20.dml_core_ctx.project (ImplicitCastExpr, LValueToRValue, dml_uint_t) != dml_project_dcn35 (ImplicitCastExpr, IntegralCast, dml_uint_t) && ...",
+          "for (...; j (ImplicitCastExpr, LValueToRValue, int) (ImplicitCastExpr, IntegralCast, dml_uint_t) < mode_support_info (ImplicitCastExpr, LValueToRValue, struct dml_mode_support_info_st *)->DPPPerSurface (ImplicitCastExpr, ArrayToPointerDecay, dml_uint_t *)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, dml_uint_t); ...)",
+          "for (...; i (ImplicitCastExpr, LValueToRValue, int) < 8; ...)"
+        ],
+        "cfg_value_bindings": [
+          "dml2 (ImplicitCastExpr, LValueToRValue, struct dml2_context *)->v20.dml_core_ctx.project (ImplicitCastExpr, LValueToRValue, dml_uint_t) != dml_project_dcn35 (ImplicitCastExpr, IntegralCast, dml_uint_t)",
+          "dml2 (ImplicitCastExpr, LValueToRValue, struct dml2_context *)->v20.dml_core_ctx.project (ImplicitCastExpr, LValueToRValue, dml_uint_t) != dml_project_dcn351 (ImplicitCastExpr, IntegralCast, dml_uint_t)",
+          "j = 0",
+          "i = 0",
+          "unsigned int num_pipes = 0;",
+          "in_out_display_cfg (ImplicitCastExpr, LValueToRValue, struct dml_display_cfg_st *)->hw.DLGRefClkFreqMHz = 50 (ImplicitCastExpr, IntegralToFloating, dml_float_t)",
+          "in_out_display_cfg (ImplicitCastExpr, LValueToRValue, struct dml_display_cfg_st *)->hw.DLGRefClkFreqMHz = 24 (ImplicitCastExpr, IntegralToFloating, dml_float_t)",
+          "[B3.65] (ImplicitCastExpr, LValueToRValue, struct dml2_context *)->v20.scratch.dml_to_dc_pipe_mapping.dml_pipe_idx_to_plane_id_valid (ImplicitCastExpr, ArrayToPointerDecay, bool *)[num_pipes (ImplicitCastExpr, LValueToRValue, unsigned int)] = true (ImplicitCastExpr, IntegralToBoolean, bool)"
+        ],
+        "call_edges": [
+          "dml2_create_copy -> dml2_allocate_memory",
+          "dml2_create_copy -> dml2_copy",
+          "dml2_copy -> __builtin_dynamic_object_size",
+          "dml2_copy -> fortify_memcpy_chk",
+          "dml2_copy -> __builtin_expect",
+          "dml2_copy -> __warn_printk"
+        ],
+        "call_targets": [
+          "dml2_allocate_memory",
+          "dml2_copy",
+          "__builtin_dynamic_object_size",
+          "fortify_memcpy_chk",
+          "__builtin_expect",
+          "__warn_printk"
+        ],
+        "state_statements": [
+          "[B1.1]++",
+          "[B2.1]++",
+          "[B3.2]->",
+          "[B3.14]->",
+          "[B3.23] = [B3.12]",
+          "[B3.28]->",
+          "[B3.37] = [B3.26]",
+          "[B3.40]->",
+          "[B3.52]->",
+          "[B3.61] = [B3.50]",
+          "[B3.66]->",
+          "[B3.75] = [B3.64]"
+        ],
+        "field_accesses": [],
+        "return_statements": [],
+        "dump_excerpt": " --- Call graph Dump --- \n  Function: < root > calls: offset_to_ptr __kasan_check_read __kasan_check_write kasan_check_read kasan_check_write __read_once_word_nocheck read_word_at_a_time gen_endbr gen_endbr_poison is_endbr __must_check_fn x86_this_cpu_constant_test_bit x86_this_cpu_variable_test_bit get_current __bad_size_call_parameter preempt_count preempt_count_set __builtin_expect set_preempt_need_resched clear_preempt_need_resched test_preempt_need_resched __preempt_count_add __builtin_constant_p __preempt_count_sub __preempt_count_dec_and_test should_resched interrupt_context_level preempt_notifier_init preempt_enable_nested preempt_count_sub class_preempt_destructor class_preempt_lock_ptr class_preempt_constructor preempt_count_add class_preempt_notrace_destructor class_preempt_notrace_lock_ptr class_preempt_notrace_constructor class_migrate_destructor migrate_enable class_migrate_lock_ptr class_migrate_constructor migrate_disable initcall_from_entry sme_get_me_mask arch_static_branch arch_static_branch_jump jump_entry_code jump_entry_target jump_entry_key jump_entry_is_branch jump_entry_is_init jump_entry_set_init jump_entry_size arch_jump_entry_size static_key_false static_key_true __arch_swab32 __arch_swab64 __fswab16 __fswab32 __fswab64 __fswahw32 __fswahb32 __swab __builtin_bswap64 __swab16p __builtin_bswap16 __swab32p __builtin_bswap32 __swab64p __swahw32p __swahb32p __swab16s __swab32s __swab64s __swahw32s __swahb32s swab16_array swab32_array swab64_array __cpu_to_le64p __le64_to_cpup __cpu_to_le32p __le32_to_cpup __cpu_to_le16p __le16_to_cpup __cpu_to_be64p __be64_to_cpup __cpu_to_be32p __be32_to_cpup __cpu_to_be16p __be16_to_cpup le16_add_cpu le32_add_cpu le64_add_cpu le32_to_cpu_array cpu_to_le32_array be16_add_cpu be32_add_cpu be64_add_cpu cpu_to_be32_array be32_to_cpu_array alternative_msr_write indirect_branch_prediction_barrier vdso_encode_cpunode vdso_read_cpunode __loadsegment_fs mds_clear_cpu_buffers mds_idle_clear_cpu_buffers ____wrong_branch_error native_save_fl native_irq_disable native_irq_enable native_safe_halt native_halt gate_offset gate_segment get_max_mapped pgprot_nx native_make_pgd native_pgd_val pgd_flags native_make_p4d native_p4d_val native_make_pud native_pud_val native_make_pmd native_pmd_val p4d_pfn_mask p4d_flags_mask p4d_flags pud_pfn_mask pud_flags_mask pud_flags pmd_pfn_mask pmd_flags_mask pmd_flags native_make_pte native_pte_val pte_flags protval_4k_2_large pgprot_4k_2_large protval_large_2_4k pgprot_large_2_4k set_arch_panic_timeout printk_get_level printk_skip_level printk_skip_headers is_warning_bug check_data_corruption array_index_mask_nospec generic___set_bit generic___clear_bit generic___change_bit generic___test_and_set_bit generic___test_and_clear_bit generic___test_and_change_bit generic_test_bit generic_test_bit_acquire __compiletime_assert_3 __compiletime_assert_4 const_test_bit arch_set_bit arch___set_bit arch_clear_bit arch_clear_bit_unlock arch___clear_bit arch_xor_unlock_is_negative_byte arch___clear_bit_unlock arch___change_bit arch_change_bit arch_test_and_set_bit arch_test_and_set_bit_lock arch___test_and_set_bit arch_test_and_clear_bit arch___test_and_clear_bit arch___test_and_change_bit arch_test_and_change_bit constant_test_bit constant_test_bit_acquire variable_test_bit arch_test_bit arch_test_bit_acquire variable__ffs variable_ffz __fls __builtin_clzl variable_ffs fls __builtin_clz fls64 __builtin_clzll sched_find_first_bit __builtin_ctzl __arch_hweight32 __arch_hweight16 __arch_hweight8 __arch_hweight64 kmsan_poison_memory kmsan_unpoison_memory kmsan_check_memory kmsan_copy_to_user instrument_read __kcsan_check_access instrument_write instrument_read_write instrument_atomic_read instrument_atomic_write instrument_atomic_read_write instrument_copy_to_user instrument_copy_from_user_before instrument_copy_from_user_after set_bit clear_bit change_bit test_and_set_bit __atomic_signal_fence test_and_clear_bit test_and_change_bit ___set_bit ___clear_bit ___change",
+        "error": "",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/generate_only_evidence_all39_v8_r5/G01_0f8ca019544a_Buffer_Overflow/csa/patchweaver_runtime/csa_raw/drivers-gpu-drm-amd-display-dc-dml2-dml2_wrapper.c-map_hw_resources.txt",
+        "raw_output_sha256": "1d5a7703ed014a5d16c0258571f90d0b6a3a4c43de49d59ee0416503a7f7c5bb",
+        "command_sha256": "a61d895fc508ecd308fbf8b66a0caccace732bf8f5db075b150d695fe69b916f",
+        "clang_command_preview": "/usr/lib/llvm-18/bin/clang --analyze -nostdinc -I./arch/x86/include -I./arch/x86/include/generated -I./include -I./arch/x86/include/uapi -I./arch/x86/include/generated/uapi -I./...",
+        "return_code": 0
+      }
+    ],
+    "call_edges": [
+      "dml2_create_copy -> dml2_allocate_memory",
+      "dml2_create_copy -> dml2_copy",
+      "dml2_copy -> __builtin_dynamic_object_size",
+      "dml2_copy -> fortify_memcpy_chk",
+      "dml2_copy -> __builtin_expect",
+      "dml2_copy -> __warn_printk"
+    ],
+    "error": ""
+  }
+}

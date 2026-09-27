@@ -1,0 +1,8 @@
+Refinment Plan:
+The checker currently treats a missing recognized allocation as if the pointer were not overwritten before cleanup. That produces the `utf16_path` warning: its assignment from `cifs_convert_path_to_utf16()` is not in the allocator table, even though it runs on each trip through the replay label before the cleanup path.
+
+I added tracking for non-NULL pointer assignments and suppress the warning for an early cleanup goto only when an unconditional assignment to that pointer occurs after the replay label and before that goto. Assignments inside conditional or loop constructs do not suppress a warning. The `ea` case remains detectable because its allocation is after an early goto to `sea_exit`, so it does not overwrite `ea` before that cleanup path.
+
+Refined Code:
+```cpp
+```

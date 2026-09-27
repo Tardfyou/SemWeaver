@@ -1,0 +1,13 @@
+diff --git a/net/bluetooth/hci_core.c b/net/bluetooth/hci_core.c
+index 6ca4c0df9f9c4..230d2bbb933b2 100644
+--- a/net/bluetooth/hci_core.c
++++ b/net/bluetooth/hci_core.c
+@@ -908,7 +908,7 @@ int hci_get_dev_info(void __user *arg)
+ 	else
+ 		flags = hdev->flags;
+ 
+-	strcpy(di.name, hdev->name);
++	strscpy(di.name, hdev->name, sizeof(di.name));
+ 	di.bdaddr   = hdev->bdaddr;
+ 	di.type     = (hdev->bus & 0x0f) | ((hdev->dev_type & 0x03) << 4);
+ 	di.flags    = flags;

@@ -1,0 +1,233 @@
+{
+  "vulnerability_patterns": [
+    {
+      "type": "integer_overflow",
+      "description": "## Bug Pattern\n\nUsing roundup_pow_of_two(x) on unbounded input and detecting overflow by testing the rounded result for zero:\n\n```\nn = roundup_pow_of_two(x);\nif (!n)\n    /* assume overflow */\n```\n\nOn 32-bit architectures, roundup_pow_of_two() can perform a 32-bit left shift by ≥ 32, invoking undefined behavior. This makes the post-rounding check (n == 0) unreliable. The correct approach is to validate x (e.g., x > 1UL << 31) before calling roundup_pow_of_two().\n",
+      "source": "upstream_generator_pattern_text"
+    }
+  ],
+  "detection_strategy": {
+    "primary_pattern": "integer_overflow"
+  },
+  "analysis_backend": "deterministic_projection_of_upstream_generation_metadata",
+  "analysis_confidence": 0,
+  "patchweaver": {
+    "summary": "Patch suggests integer_overflow semantics across 0 file(s); added guards=1, removed risky operations=0, fix patterns=1, metadata refs=0.",
+    "patch_facts": [
+      {
+        "fact_type": "patch_overview",
+        "label": "Patch overview",
+        "attributes": {
+          "patch_path": "/artifact/work/artifacts/fse_revision/generate_only_materialized_v1/cases/G13_7a4b21250bf7_Integer_Overflow/patches/commit.patch",
+          "changed_files": [],
+          "changed_file_count": 0,
+          "added_line_count": 6,
+          "deleted_line_count": 3
+        }
+      },
+      {
+        "fact_type": "vulnerability_patterns",
+        "label": "Vulnerability patterns inferred from patch",
+        "attributes": {
+          "patterns": [
+            "integer_overflow"
+          ],
+          "descriptions": [
+            "## Bug Pattern\n\nUsing roundup_pow_of_two(x) on unbounded input and detecting overflow by testing the rounded result for zero:\n\n```\nn = roundup_pow_of_two(x);\nif (!n)\n    /* assume overflow */\n```\n\nOn 32-bit architectures, roundup_pow_of_two() can perform a 32-bit left shift by ≥ 32, invoking undefined behavior. This makes the post-rounding check (n == 0) unreliable. The correct approach is to validate x (e.g., x > 1UL << 31) before calling roundup_pow_of_two().\n"
+          ]
+        }
+      },
+      {
+        "fact_type": "affected_functions",
+        "label": "Functions implicated by removed or fixed code",
+        "attributes": {
+          "functions": []
+        }
+      },
+      {
+        "fact_type": "detection_strategy",
+        "label": "Existing patch analysis detection strategy",
+        "attributes": {
+          "primary_pattern": "integer_overflow"
+        }
+      },
+      {
+        "fact_type": "added_guards",
+        "label": "Patch introduces or strengthens guards",
+        "attributes": {
+          "guards": [
+            "if (attr->max_entries > 1UL << 31)"
+          ]
+        }
+      },
+      {
+        "fact_type": "fix_patterns",
+        "label": "Patch introduces reusable fix patterns",
+        "attributes": {
+          "patterns": [
+            "overflow-safe accumulator"
+          ]
+        }
+      },
+      {
+        "fact_type": "added_api_calls",
+        "label": "Patch introduces or highlights API usage",
+        "attributes": {
+          "apis": [
+            "roundup_pow_of_two"
+          ]
+        }
+      }
+    ],
+    "mechanism_graph": {
+      "summary": "Patch suggests integer_overflow semantics across 0 file(s); added guards=1, removed risky operations=0, fix patterns=1, metadata refs=0.",
+      "primary_patterns": [
+        "integer_overflow"
+      ],
+      "nodes": [
+        {
+          "node_id": "patch",
+          "kind": "patch",
+          "label": "Security patch",
+          "attributes": {
+            "changed_files": []
+          }
+        },
+        {
+          "node_id": "pattern_0",
+          "kind": "pattern",
+          "label": "integer_overflow",
+          "attributes": {
+            "type": "integer_overflow",
+            "description": "## Bug Pattern\n\nUsing roundup_pow_of_two(x) on unbounded input and detecting overflow by testing the rounded result for zero:\n\n```\nn = roundup_pow_of_two(x);\nif (!n)\n    /* assume overflow */\n```\n\nOn 32-bit architectures, roundup_pow_of_two() can perform a 32-bit left shift by ≥ 32, invoking undefined behavior. This makes the post-rounding check (n == 0) unreliable. The correct approach is to validate x (e.g., x > 1UL << 31) before calling roundup_pow_of_two().\n",
+            "source": "upstream_generator_pattern_text"
+          }
+        },
+        {
+          "node_id": "strategy",
+          "kind": "strategy",
+          "label": "integer_overflow",
+          "attributes": {
+            "primary_pattern": "integer_overflow"
+          }
+        },
+        {
+          "node_id": "guard_1",
+          "kind": "guard",
+          "label": "if (attr->max_entries > 1UL << 31)",
+          "attributes": {
+            "condition": "if (attr->max_entries > 1UL << 31)",
+            "source": "patch_fact"
+          }
+        },
+        {
+          "node_id": "fix_1",
+          "kind": "fix",
+          "label": "overflow-safe accumulator",
+          "attributes": {
+            "kind": "fix_patterns",
+            "value": "overflow-safe accumulator"
+          }
+        },
+        {
+          "node_id": "fix_2",
+          "kind": "fix",
+          "label": "roundup_pow_of_two",
+          "attributes": {
+            "kind": "added_api_calls",
+            "value": "roundup_pow_of_two"
+          }
+        }
+      ],
+      "edges": [
+        {
+          "source": "patch",
+          "target": "pattern_0",
+          "relation": "indicates",
+          "confidence": 0.9
+        },
+        {
+          "source": "patch",
+          "target": "strategy",
+          "relation": "guides",
+          "confidence": 0.85
+        },
+        {
+          "source": "patch",
+          "target": "guard_1",
+          "relation": "adds_guard",
+          "confidence": 0.84
+        },
+        {
+          "source": "patch",
+          "target": "fix_1",
+          "relation": "introduces",
+          "confidence": 0.8
+        },
+        {
+          "source": "patch",
+          "target": "fix_2",
+          "relation": "introduces",
+          "confidence": 0.8
+        }
+      ]
+    },
+    "evidence_plan": {
+      "primary_pattern": "integer_overflow",
+      "hypotheses": [
+        "The fix widens arithmetic carriers or restores a wider numeric domain before a size-related sink."
+      ],
+      "requirements": [
+        {
+          "evidence_type": "patch_fact",
+          "reason": "Patch semantics must anchor all downstream synthesis decisions.",
+          "priority": 100,
+          "preferred_analyzers": [],
+          "confidence": 1.0,
+          "mechanism_refs": [
+            "patch"
+          ]
+        },
+        {
+          "evidence_type": "semantic_slice",
+          "reason": "Arithmetic-overflow fixes need the concrete accumulator/sink slice, not a patch headline.",
+          "priority": 90,
+          "preferred_analyzers": [],
+          "confidence": 0.9,
+          "mechanism_refs": [
+            "pattern_0"
+          ]
+        },
+        {
+          "evidence_type": "state_transition",
+          "reason": "Need local numeric-domain transitions such as int32 accumulator to i64 accumulator before the sink.",
+          "priority": 84,
+          "preferred_analyzers": [],
+          "confidence": 0.82,
+          "mechanism_refs": [
+            "pattern_0"
+          ]
+        },
+        {
+          "evidence_type": "dataflow_candidate",
+          "reason": "Need candidate flow from narrow counters/length carriers into the downstream allocation or formatting sink.",
+          "priority": 82,
+          "preferred_analyzers": [],
+          "confidence": 0.8,
+          "mechanism_refs": [
+            "pattern_0"
+          ]
+        }
+      ],
+      "recommended_analyzers": [],
+      "planner_notes": [
+        "Added guards detected in patch diff; path-sensitive evidence should stay near top priority."
+      ],
+      "coverage_gaps": [],
+      "uncertainty_budget": "medium",
+      "escalation_triggers": [
+        "no_anchor_function"
+      ]
+    }
+  }
+}

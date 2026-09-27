@@ -1,0 +1,16 @@
+diff --git a/src/tiny_copy.c b/src/tiny_copy.c
+index 2e8e1ab..5f6c7d8 100644
+--- a/src/tiny_copy.c
++++ b/src/tiny_copy.c
+@@ -8,6 +8,10 @@ int save_tag(Record *record, const char *input, size_t len) {
+     if (!record || !input) {
+         return -1;
+     }
++
++    if (len >= sizeof(record->tag)) {
++        return -1;
++    }
+ 
+     memcpy(record->tag, input, len);
+     record->tag[len] = '\0';
+

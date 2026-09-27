@@ -1,0 +1,1361 @@
+{
+  "analyzer_id": "csa",
+  "detector_artifact": "checker_plugin",
+  "primary_pattern": "out_of_bound",
+  "objective": "Synthesize a path-sensitive out_of_bound detector that encodes the same local state, guards, and lifecycle mechanism evidenced by the patch, while still generalizing to semantically equivalent sites.",
+  "mechanism_contract": {
+    "mechanism_family": "generic_vulnerability_mechanism",
+    "semantic_dimensions": [
+      "vulnerability trigger",
+      "patch-introduced barrier",
+      "local state or flow relation"
+    ],
+    "trigger_invariants": [
+      "the vulnerable mechanism is reachable on a feasible path",
+      "the path lacks the barrier introduced by the patch",
+      "Patch-backed trigger clue: added guard: if (i >= TRANSFER_FUNC_POINTS) {",
+      "Patch-backed trigger clue: added or highlighted APIs: DC_LOG_ERROR"
+    ],
+    "silence_invariants": [
+      "patch-introduced guards, barriers, or safe APIs must suppress findings",
+      "length/capacity guard present: if (i >= TRANSFER_FUNC_POINTS) {"
+    ],
+    "transfer_axes": [
+      "only generalize along evidence-backed state, guard, flow, or API-role equivalence",
+      "equivalent guard or barrier predicates on sibling paths",
+      "equivalent local state transitions around the same sink or dereference",
+      "equivalent ownership or release/reinit lifecycle on the same symbolic resource"
+    ],
+    "forbidden_shortcuts": [
+      "bind the detector to fixed file paths, line numbers, or exact patch strings",
+      "broaden into unrelated bug families just to improve hit count",
+      "use the patch text itself as the matching rule",
+      "widen to unrelated bug families without evidence",
+      "placeholder helper logic or empty ProgramState modeling"
+    ],
+    "evidence_backed_axes": [
+      "path guards and barrier conditions",
+      "semantic trigger slice",
+      "state transitions",
+      "resource lifecycle"
+    ]
+  },
+  "detector_name_hint": "",
+  "focus_files": [],
+  "focus_functions": [],
+  "hypotheses": [
+    "Patch likely encodes a reusable vulnerability mechanism but available metadata is weak; keep evidence collection broad."
+  ],
+  "required_evidence_types": [
+    "patch_fact"
+  ],
+  "missing_evidence_types": [],
+  "evidence_degraded": false,
+  "patch_mechanism_signals": [
+    "added guard: if (i >= TRANSFER_FUNC_POINTS) {",
+    "added or highlighted APIs: DC_LOG_ERROR"
+  ],
+  "silencing_conditions": [
+    "length/capacity guard present: if (i >= TRANSFER_FUNC_POINTS) {"
+  ],
+  "retry_guidance": [],
+  "selected_evidence_ids": [
+    "csa_guard_0",
+    "csa_guard_1",
+    "csa_semantic_slice_0",
+    "csa_state_0",
+    "csa_validation_allocation_lifecycle_0"
+  ],
+  "selected_evidence": [
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/dc/dcn10/dcn10_cm_common.c",
+        "function": "cm_helper_translate_curve_to_hw_format"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "i >= TRANSFER_FUNC_POINTS",
+        "summary": "cm_helper_translate_curve_to_hw_format introduces patch guard `i >= TRANSFER_FUNC_POINTS` before dc_fixpt_pow, dc_fixpt_from_int.",
+        "summary_line": 402,
+        "state_before": [
+          "input(i)",
+          "input(TRANSFER_FUNC_POINTS)"
+        ],
+        "state_after": [
+          "guard(i >= TRANSFER_FUNC_POINTS)",
+          "current_call(dc_fixpt_pow)",
+          "current_call(dc_fixpt_from_int)"
+        ],
+        "tracked_symbols": [
+          "i",
+          "TRANSFER_FUNC_POINTS",
+          "DC_LOG_ERROR",
+          "Index",
+          "out",
+          "of"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "cm_helper_translate_curve_to_hw_format"
+        ],
+        "call_targets": [
+          "dc_fixpt_pow",
+          "dc_fixpt_from_int"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "i >= TRANSFER_FUNC_POINTS"
+        ],
+        "call_edges": [
+          "cm_helper_translate_curve_to_hw_format -> dc_fixpt_pow",
+          "cm_helper_translate_curve_to_hw_format -> dc_fixpt_from_int"
+        ],
+        "state_statements": [
+          "if (i >= TRANSFER_FUNC_POINTS) {",
+          "DC_LOG_ERROR(\"Index out of bounds: i=%d, TRANSFER_FUNC_POINTS=%d\\n\",",
+          "i, TRANSFER_FUNC_POINTS);",
+          "return false;",
+          "}"
+        ],
+        "source_file": "drivers/gpu/drm/amd/display/dc/dcn10/dcn10_cm_common.c"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/amd/display/dc/dcn10/dcn10_cm_common.c",
+          "hunk_index": 0,
+          "source_line": 402
+        },
+        "summary": "cm_helper_translate_curve_to_hw_format introduces patch guard `i >= TRANSFER_FUNC_POINTS` before dc_fixpt_pow, dc_fixpt_from_int.",
+        "statements": [
+          "if (i >= TRANSFER_FUNC_POINTS) {",
+          "DC_LOG_ERROR(\"Index out of bounds: i=%d, TRANSFER_FUNC_POINTS=%d\\n\",",
+          "i, TRANSFER_FUNC_POINTS);",
+          "return false;",
+          "}"
+        ],
+        "guards": [
+          "i >= TRANSFER_FUNC_POINTS"
+        ],
+        "call_boundary": [
+          "dc_fixpt_pow",
+          "dc_fixpt_from_int"
+        ],
+        "call_edges": [
+          "cm_helper_translate_curve_to_hw_format -> dc_fixpt_pow",
+          "cm_helper_translate_curve_to_hw_format -> dc_fixpt_from_int"
+        ],
+        "state_transitions": [
+          "guard(i >= TRANSFER_FUNC_POINTS)",
+          "current_call(dc_fixpt_pow)",
+          "current_call(dc_fixpt_from_int)"
+        ],
+        "api_terms": [
+          "dc_fixpt_pow",
+          "dc_fixpt_from_int"
+        ],
+        "related_symbols": [
+          "i",
+          "TRANSFER_FUNC_POINTS",
+          "DC_LOG_ERROR",
+          "Index",
+          "out",
+          "of"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_guard_1",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/dc/dcn10/dcn10_cm_common.c",
+        "function": "cm_helper_translate_curve_to_hw_format"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "if i (ImplicitCastExpr, LValueToRValue, int32_t) (ImplicitCastExpr, IntegralCast, uint32_t) >= hw_points (ImplicitCastExpr, LValueToRValue, uint32_t) - 1 (ImplicitCastExpr, IntegralCast, uint32_t)",
+        "summary": "Analyzer CFG for cm_helper_translate_curve_to_hw_format in drivers/gpu/drm/amd/display/dc/dcn10/dcn10_cm_common.c: bindings: corner_points (ImplicitCastExpr, LValueToRValue, struct curve_points3 *)[1].red.x = dc_fixpt_pow (ImplicitCastExpr, FunctionToPointerDecay, struct fixed31_32 (*)(struct fixed31_32, struct fixed31_32))(dc_fixpt_from_int (ImplicitCastExpr, FunctionToPointerDecay, struct fixed31_32 (*)(int))(2), dc_fixpt_from_int (ImplicitCastExpr, FunctionToPointerDecay, struct fixed31_32 (*)(int))(region_end (ImplicitCastExpr, LValueToRValue, int32_t))); corner_points (ImplicitCastExpr, LValueToRValue, struct curve_points3 *)[0].red.x = dc_fixpt_pow (ImplicitCastExpr, FunctionToPointerDecay, struct fixed31_32 (*)(struct fixed31_32, struct fixed31_32))(dc_fixpt_from_int (ImplicitCastExpr, FunctionToPointerDecay, struct fixed31_32 (*)(int))(2), dc_fixpt_from_int (ImplicitCastExpr, FunctionToPointerDecay, struct fixed31_32 (*)(int))(region_start (ImplicitCastExpr, LValueToRValue, int32_t))) | branches: if i (ImplicitCastExpr, LValueToRValue, int32_t) (ImplicitCastExpr, IntegralCast, uint32_t) >= hw_points (ImplicitCastExpr, LValueToRValue, uint32_t) - 1 (ImplicitCastExpr, IntegralCast, uint32_t); while i (ImplicitCastExpr, LValueToRValue, int32_t) (ImplicitCastExpr, IntegralCast, uint32_t) != hw_points (ImplicitCastExpr, LValueToRValue, uint32_t) + 1 (ImplicitCastExpr, IntegralCast, uint32_t) | calls: cm_helper_translate_curve_to_hw_format -> fortify_memset_chk; cm_helper_translate_curve_to_hw_format -> __builtin_dynamic_object_size",
+        "summary_line": 402,
+        "state_before": [
+          "buffer(rgb->delta_red)",
+          "buffer(rgb->delta_green)",
+          "sinks(dc_fixpt_pow, dc_fixpt_from_int)"
+        ],
+        "state_after": [
+          "cfg_binding(corner_points (ImplicitCastExpr, LValueToRValue, struct curve_points3 *)[1].red.x = dc_fixpt_pow (ImplicitCastExpr, FunctionToPointerDecay, struct fixed31_32 (*)(struct fixed31_32, struct fixed31_32))(dc_fixpt_from_int (ImplicitCastExpr, FunctionToPointerDecay, struct fixed31_32 (*)(int))(2), dc_fixpt_from_int (ImplicitCastExpr, FunctionToPointerDecay, struct fixed31_32 (*)(int))(region_end (ImplicitCastExpr, LValueToRValue, int32_t))))",
+          "cfg_binding(corner_points (ImplicitCastExpr, LValueToRValue, struct curve_points3 *)[0].red.x = dc_fixpt_pow (ImplicitCastExpr, FunctionToPointerDecay, struct fixed31_32 (*)(struct fixed31_32, struct fixed31_32))(dc_fixpt_from_int (ImplicitCastExpr, FunctionToPointerDecay, struct fixed31_32 (*)(int))(2), dc_fixpt_from_int (ImplicitCastExpr, FunctionToPointerDecay, struct fixed31_32 (*)(int))(region_start (ImplicitCastExpr, LValueToRValue, int32_t))))",
+          "cfg_branch(if i (ImplicitCastExpr, LValueToRValue, int32_t) (ImplicitCastExpr, IntegralCast, uint32_t) >= hw_points (ImplicitCastExpr, LValueToRValue, uint32_t) - 1 (ImplicitCastExpr, IntegralCast, uint32_t))",
+          "cfg_branch(while i (ImplicitCastExpr, LValueToRValue, int32_t) (ImplicitCastExpr, IntegralCast, uint32_t) != hw_points (ImplicitCastExpr, LValueToRValue, uint32_t) + 1 (ImplicitCastExpr, IntegralCast, uint32_t))"
+        ],
+        "tracked_symbols": [
+          "rgb->delta_red",
+          "rgb->delta_green",
+          "rgb->delta_blue",
+          "output_tf->tf_pts"
+        ],
+        "buffer_fields": [
+          "rgb->delta_red",
+          "rgb->delta_green",
+          "rgb->delta_blue",
+          "output_tf->tf_pts"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "cm_helper_translate_curve_to_hw_format"
+        ],
+        "call_targets": [
+          "dc_fixpt_pow",
+          "dc_fixpt_from_int",
+          "fortify_memset_chk",
+          "__builtin_dynamic_object_size",
+          "__builtin_memset",
+          "dc_fixpt_div",
+          "dc_fixpt_sub"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,drivers/gpu/drm/amd/amdgpu/../display/dc/dcn10/.dcn10_cm_common.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include...",
+        "cfg_branch_kinds": [
+          "if",
+          "while",
+          "for"
+        ],
+        "branch_conditions": [
+          "[B8.8] ? ... : ...",
+          "do ... while [B9.1]",
+          "static init _entry_ptr",
+          "[B15.15] ? ... : ...",
+          "[B18.5] ? ... : ...",
+          "static init _entry"
+        ],
+        "call_edges": [
+          "cm_helper_translate_curve_to_hw_format -> fortify_memset_chk",
+          "cm_helper_translate_curve_to_hw_format -> __builtin_dynamic_object_size",
+          "cm_helper_translate_curve_to_hw_format -> __builtin_memset",
+          "cm_helper_translate_curve_to_hw_format -> dc_fixpt_pow",
+          "cm_helper_translate_curve_to_hw_format -> dc_fixpt_from_int",
+          "cm_helper_translate_curve_to_hw_format -> dc_fixpt_div"
+        ],
+        "state_statements": [
+          "[B1.6]->",
+          "return [B1.16];",
+          "++[B3.1]",
+          "[B3.5] = [B3.4]",
+          "++[B3.7]",
+          "++[B3.9]"
+        ],
+        "source_file": "drivers/gpu/drm/amd/display/dc/dcn10/dcn10_cm_common.c"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/amd/display/dc/dcn10/dcn10_cm_common.c",
+          "hunk_index": 0,
+          "source_line": 402
+        },
+        "summary": "Analyzer CFG for cm_helper_translate_curve_to_hw_format in drivers/gpu/drm/amd/display/dc/dcn10/dcn10_cm_common.c: bindings: corner_points (ImplicitCastExpr, LValueToRValue, struct curve_points3 *)[1].red.x = dc_fixpt_pow (ImplicitCastExpr, FunctionToPointerDecay, struct fixed31_32 (*)(struct fixed31_32, struct fixed31_32))(dc_fixpt_from_int (ImplicitCastExpr, FunctionToPointerDecay, struct fixed31_32 (*)(int))(2), dc_fixpt_from_int (ImplicitCastExpr, FunctionToPointerDecay, struct fixed31_32 (*)(int))(region_end (ImplicitCastExpr, LValueToRValue, int32_t))); corner_points (ImplicitCastExpr, LValueToRValue, struct curve_points3 *)[0].red.x = dc_fixpt_pow (ImplicitCastExpr, FunctionToPointerDecay, struct fixed31_32 (*)(struct fixed31_32, struct fixed31_32))(dc_fixpt_from_int (ImplicitCastExpr, FunctionToPointerDecay, struct fixed31_32 (*)(int))(2), dc_fixpt_from_int (ImplicitCastExpr, FunctionToPointerDecay, struct fixed31_32 (*)(int))(region_start (ImplicitCastExpr, LValueToRValue, int32_t))) | branches: if i (ImplicitCastExpr, LValueToRValue, int32_t) (ImplicitCastExpr, IntegralCast, uint32_t) >= hw_points (ImplicitCastExpr, LValueToRValue, uint32_t) - 1 (ImplicitCastExpr, IntegralCast, uint32_t); while i (ImplicitCastExpr, LValueToRValue, int32_t) (ImplicitCastExpr, IntegralCast, uint32_t) != hw_points (ImplicitCastExpr, LValueToRValue, uint32_t) + 1 (ImplicitCastExpr, IntegralCast, uint32_t) | calls: cm_helper_translate_curve_to_hw_format -> fortify_memset_chk; cm_helper_translate_curve_to_hw_format -> __builtin_dynamic_object_size",
+        "statements": [
+          "370: \t\t * There are less than 256 points, for optimization",
+          "371: \t\t */",
+          "372: \t\tseg_distr[0] = 3;",
+          "373: \t\tseg_distr[1] = 4;",
+          "374: \t\tseg_distr[2] = 4;",
+          "375: \t\tseg_distr[3] = 4;"
+        ],
+        "guards": [
+          "if i (ImplicitCastExpr, LValueToRValue, int32_t) (ImplicitCastExpr, IntegralCast, uint32_t) >= hw_points (ImplicitCastExpr, LValueToRValue, uint32_t) - 1 (ImplicitCastExpr, IntegralCast, uint32_t)",
+          "while i (ImplicitCastExpr, LValueToRValue, int32_t) (ImplicitCastExpr, IntegralCast, uint32_t) != hw_points (ImplicitCastExpr, LValueToRValue, uint32_t) + 1 (ImplicitCastExpr, IntegralCast, uint32_t)",
+          "for (...; i (ImplicitCastExpr, LValueToRValue, int32_t) < 34; ...)",
+          "for (...; i (ImplicitCastExpr, LValueToRValue, int32_t) (ImplicitCastExpr, IntegralCast, uint32_t) < start_index (ImplicitCastExpr, LValueToRValue, uint32_t) + 16 (ImplicitCastExpr, IntegralCast, uint32_t); ...)"
+        ],
+        "call_boundary": [
+          "dc_fixpt_pow",
+          "dc_fixpt_from_int",
+          "fortify_memset_chk",
+          "__builtin_dynamic_object_size",
+          "__builtin_memset",
+          "dc_fixpt_div"
+        ],
+        "call_edges": [
+          "cm_helper_translate_curve_to_hw_format -> fortify_memset_chk",
+          "cm_helper_translate_curve_to_hw_format -> __builtin_dynamic_object_size",
+          "cm_helper_translate_curve_to_hw_format -> __builtin_memset",
+          "cm_helper_translate_curve_to_hw_format -> dc_fixpt_pow",
+          "cm_helper_translate_curve_to_hw_format -> dc_fixpt_from_int",
+          "cm_helper_translate_curve_to_hw_format -> dc_fixpt_div",
+          "cm_helper_translate_curve_to_hw_format -> dc_fixpt_sub"
+        ],
+        "state_transitions": [
+          "cfg_binding(corner_points (ImplicitCastExpr, LValueToRValue, struct curve_points3 *)[1].red.x = dc_fixpt_pow (ImplicitCastExpr, FunctionToPointerDecay, struct fixed31_32 (*)(struct fixed31_32, struct fixed31_32))(dc_fixpt_from_int (ImplicitCastExpr, FunctionToPointerDecay, struct fixed31_32 (*)(int))(2), dc_fixpt_from_int (ImplicitCastExpr, FunctionToPointerDecay, struct fixed31_32 (*)(int))(region_end (ImplicitCastExpr, LValueToRValue, int32_t))))",
+          "cfg_binding(corner_points (ImplicitCastExpr, LValueToRValue, struct curve_points3 *)[0].red.x = dc_fixpt_pow (ImplicitCastExpr, FunctionToPointerDecay, struct fixed31_32 (*)(struct fixed31_32, struct fixed31_32))(dc_fixpt_from_int (ImplicitCastExpr, FunctionToPointerDecay, struct fixed31_32 (*)(int))(2), dc_fixpt_from_int (ImplicitCastExpr, FunctionToPointerDecay, struct fixed31_32 (*)(int))(region_start (ImplicitCastExpr, LValueToRValue, int32_t))))",
+          "cfg_branch(if i (ImplicitCastExpr, LValueToRValue, int32_t) (ImplicitCastExpr, IntegralCast, uint32_t) >= hw_points (ImplicitCastExpr, LValueToRValue, uint32_t) - 1 (ImplicitCastExpr, IntegralCast, uint32_t))",
+          "cfg_branch(while i (ImplicitCastExpr, LValueToRValue, int32_t) (ImplicitCastExpr, IntegralCast, uint32_t) != hw_points (ImplicitCastExpr, LValueToRValue, uint32_t) + 1 (ImplicitCastExpr, IntegralCast, uint32_t))",
+          "[B1.6]->",
+          "return [B1.16];"
+        ],
+        "api_terms": [
+          "fortify_memset_chk",
+          "__builtin_dynamic_object_size",
+          "__builtin_memset",
+          "dc_fixpt_pow",
+          "dc_fixpt_from_int",
+          "dc_fixpt_div"
+        ],
+        "related_symbols": [
+          "rgb->delta_red",
+          "rgb->delta_green",
+          "rgb->delta_blue",
+          "output_tf->tf_pts"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/dc/dcn10/dcn10_cm_common.c",
+        "function": "cm_helper_translate_curve_to_hw_format"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "cm_helper_translate_curve_to_hw_format adds patch barrier `i >= TRANSFER_FUNC_POINTS` around dc_fixpt_pow, dc_fixpt_from_int.",
+        "tracked_symbols": [
+          "i",
+          "TRANSFER_FUNC_POINTS",
+          "DC_LOG_ERROR",
+          "Index",
+          "out",
+          "of",
+          "bounds",
+          "d"
+        ],
+        "coverage_status": "full",
+        "source_file": "drivers/gpu/drm/amd/display/dc/dcn10/dcn10_cm_common.c"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/amd/display/dc/dcn10/dcn10_cm_common.c",
+          "hunk_index": 0,
+          "source_line": 402
+        },
+        "summary": "cm_helper_translate_curve_to_hw_format adds patch barrier `i >= TRANSFER_FUNC_POINTS` around dc_fixpt_pow, dc_fixpt_from_int.",
+        "statements": [
+          "if (i >= TRANSFER_FUNC_POINTS) {",
+          "DC_LOG_ERROR(\"Index out of bounds: i=%d, TRANSFER_FUNC_POINTS=%d\\n\",",
+          "i, TRANSFER_FUNC_POINTS);",
+          "return false;",
+          "}"
+        ],
+        "guards": [
+          "i >= TRANSFER_FUNC_POINTS"
+        ],
+        "call_boundary": [
+          "dc_fixpt_pow",
+          "dc_fixpt_from_int"
+        ],
+        "call_edges": [
+          "cm_helper_translate_curve_to_hw_format -> dc_fixpt_pow",
+          "cm_helper_translate_curve_to_hw_format -> dc_fixpt_from_int"
+        ],
+        "state_transitions": [
+          "",
+          "report when a risky write proceeds without the patch-style barrier",
+          "stay silent when the nearby guard proves the current write is blocked or bounded"
+        ],
+        "api_terms": [
+          "dc_fixpt_pow",
+          "dc_fixpt_from_int",
+          "DC_LOG_ERROR"
+        ],
+        "related_symbols": [
+          "i",
+          "TRANSFER_FUNC_POINTS",
+          "DC_LOG_ERROR",
+          "Index",
+          "out",
+          "of"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/dc/dcn10/dcn10_cm_common.c",
+        "function": "cm_helper_translate_curve_to_hw_format"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "cm_helper_translate_curve_to_hw_format adds patch barrier `i >= TRANSFER_FUNC_POINTS` around dc_fixpt_pow, dc_fixpt_from_int.",
+        "state_before": [
+          "input(i)",
+          "input(TRANSFER_FUNC_POINTS)"
+        ],
+        "state_after": [
+          "guard(i >= TRANSFER_FUNC_POINTS)",
+          "sink(dc_fixpt_pow)",
+          "sink(dc_fixpt_from_int)"
+        ],
+        "tracked_symbols": [
+          "i",
+          "TRANSFER_FUNC_POINTS",
+          "DC_LOG_ERROR",
+          "Index",
+          "out",
+          "of"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "cm_helper_translate_curve_to_hw_format"
+        ],
+        "call_targets": [
+          "dc_fixpt_pow",
+          "dc_fixpt_from_int"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "i >= TRANSFER_FUNC_POINTS"
+        ],
+        "call_edges": [
+          "cm_helper_translate_curve_to_hw_format -> dc_fixpt_pow",
+          "cm_helper_translate_curve_to_hw_format -> dc_fixpt_from_int"
+        ],
+        "state_statements": [
+          "if (i >= TRANSFER_FUNC_POINTS) {",
+          "DC_LOG_ERROR(\"Index out of bounds: i=%d, TRANSFER_FUNC_POINTS=%d\\n\",",
+          "i, TRANSFER_FUNC_POINTS);",
+          "return false;",
+          "}"
+        ],
+        "source_file": "drivers/gpu/drm/amd/display/dc/dcn10/dcn10_cm_common.c"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/amd/display/dc/dcn10/dcn10_cm_common.c",
+          "hunk_index": 0,
+          "source_line": 402
+        },
+        "summary": "cm_helper_translate_curve_to_hw_format adds patch barrier `i >= TRANSFER_FUNC_POINTS` around dc_fixpt_pow, dc_fixpt_from_int.",
+        "statements": [
+          "if (i >= TRANSFER_FUNC_POINTS) {",
+          "DC_LOG_ERROR(\"Index out of bounds: i=%d, TRANSFER_FUNC_POINTS=%d\\n\",",
+          "i, TRANSFER_FUNC_POINTS);",
+          "return false;",
+          "}"
+        ],
+        "guards": [
+          "i >= TRANSFER_FUNC_POINTS"
+        ],
+        "call_boundary": [
+          "dc_fixpt_pow",
+          "dc_fixpt_from_int"
+        ],
+        "call_edges": [
+          "cm_helper_translate_curve_to_hw_format -> dc_fixpt_pow",
+          "cm_helper_translate_curve_to_hw_format -> dc_fixpt_from_int"
+        ],
+        "state_transitions": [
+          "guard(i >= TRANSFER_FUNC_POINTS)",
+          "sink(dc_fixpt_pow)",
+          "sink(dc_fixpt_from_int)"
+        ],
+        "api_terms": [
+          "dc_fixpt_pow",
+          "dc_fixpt_from_int"
+        ],
+        "related_symbols": [
+          "i",
+          "TRANSFER_FUNC_POINTS",
+          "DC_LOG_ERROR",
+          "Index",
+          "out",
+          "of"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      },
+      "confidence": 0.9
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_0",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/dc/dcn10/dcn10_cm_common.c",
+        "function": "cm_helper_translate_curve_to_hw_format"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "cm_helper_translate_curve_to_hw_format in drivers/gpu/drm/amd/display/dc/dcn10/dcn10_cm_common.c provides CSA-backed pointer/resource lifecycle context near line 402",
+        "state_before": [
+          "buffer(rgb->delta_red)",
+          "buffer(rgb->delta_green)",
+          "sinks(dc_fixpt_pow, dc_fixpt_from_int)"
+        ],
+        "state_after": [
+          "operation(for (i = region_end - region_start; i < MAX_REGIONS_NUMBER ; i++))",
+          "operation(for (k = 0; k < MAX_REGIONS_NUMBER; k++) {)",
+          "operation(for (k = 0; k < (region_end - region_start); k++) {)",
+          "operation(j++;)"
+        ],
+        "tracked_symbols": [
+          "i",
+          "TRANSFER_FUNC_POINTS",
+          "DC_LOG_ERROR",
+          "Index",
+          "out",
+          "of"
+        ],
+        "buffer_fields": [
+          "rgb->delta_red",
+          "rgb->delta_green",
+          "rgb->delta_blue",
+          "output_tf->tf_pts"
+        ],
+        "coverage_status": "partial",
+        "operations": [
+          "for (i = region_end - region_start; i < MAX_REGIONS_NUMBER ; i++)",
+          "for (k = 0; k < MAX_REGIONS_NUMBER; k++) {",
+          "for (k = 0; k < (region_end - region_start); k++) {",
+          "j++;",
+          "[B1.6]->",
+          "return [B1.16];"
+        ],
+        "functions": [
+          "cm_helper_translate_curve_to_hw_format"
+        ],
+        "call_targets": [
+          "dc_fixpt_pow",
+          "dc_fixpt_from_int",
+          "DC_LOG_ERROR",
+          "fortify_memset_chk",
+          "__builtin_dynamic_object_size",
+          "__builtin_memset"
+        ],
+        "call_edges": [
+          "cm_helper_translate_curve_to_hw_format -> fortify_memset_chk",
+          "cm_helper_translate_curve_to_hw_format -> __builtin_dynamic_object_size",
+          "cm_helper_translate_curve_to_hw_format -> __builtin_memset",
+          "cm_helper_translate_curve_to_hw_format -> dc_fixpt_pow",
+          "cm_helper_translate_curve_to_hw_format -> dc_fixpt_from_int",
+          "cm_helper_translate_curve_to_hw_format -> dc_fixpt_div"
+        ],
+        "state_statements": [
+          "for (i = region_end - region_start; i < MAX_REGIONS_NUMBER ; i++)",
+          "for (k = 0; k < MAX_REGIONS_NUMBER; k++) {",
+          "for (k = 0; k < (region_end - region_start); k++) {",
+          "j++;",
+          "[B1.6]->",
+          "return [B1.16];"
+        ],
+        "source_file": "drivers/gpu/drm/amd/display/dc/dcn10/dcn10_cm_common.c"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/amd/display/dc/dcn10/dcn10_cm_common.c",
+          "hunk_index": 0,
+          "source_line": 402
+        },
+        "summary": "cm_helper_translate_curve_to_hw_format in drivers/gpu/drm/amd/display/dc/dcn10/dcn10_cm_common.c provides CSA-backed pointer/resource lifecycle context near line 402",
+        "statements": [
+          "370: \t\t * There are less than 256 points, for optimization",
+          "371: \t\t */",
+          "372: \t\tseg_distr[0] = 3;",
+          "373: \t\tseg_distr[1] = 4;",
+          "374: \t\tseg_distr[2] = 4;",
+          "375: \t\tseg_distr[3] = 4;"
+        ],
+        "guards": [
+          "i = region_end - region_start; i < MAX_REGIONS_NUMBER ; i++",
+          "k = 0; k < MAX_REGIONS_NUMBER; k++",
+          "seg_distr[k] != -1",
+          "k = 0; k < (region_end - region_start); k++"
+        ],
+        "call_boundary": [
+          "dc_fixpt_pow",
+          "dc_fixpt_from_int",
+          "DC_LOG_ERROR",
+          "fortify_memset_chk",
+          "__builtin_dynamic_object_size",
+          "__builtin_memset"
+        ],
+        "call_edges": [
+          "cm_helper_translate_curve_to_hw_format -> fortify_memset_chk",
+          "cm_helper_translate_curve_to_hw_format -> __builtin_dynamic_object_size",
+          "cm_helper_translate_curve_to_hw_format -> __builtin_memset",
+          "cm_helper_translate_curve_to_hw_format -> dc_fixpt_pow",
+          "cm_helper_translate_curve_to_hw_format -> dc_fixpt_from_int",
+          "cm_helper_translate_curve_to_hw_format -> dc_fixpt_div"
+        ],
+        "state_transitions": [
+          "operation(for (i = region_end - region_start; i < MAX_REGIONS_NUMBER ; i++))",
+          "operation(for (k = 0; k < MAX_REGIONS_NUMBER; k++) {)",
+          "operation(for (k = 0; k < (region_end - region_start); k++) {)",
+          "operation(j++;)"
+        ],
+        "api_terms": [
+          "for (i = region_end - region_start; i < MAX_REGIONS_NUMBER ; i++)",
+          "for (k = 0; k < MAX_REGIONS_NUMBER; k++) {",
+          "for (k = 0; k < (region_end - region_start); k++) {",
+          "j++;",
+          "[B1.6]->",
+          "return [B1.16];"
+        ],
+        "related_symbols": [
+          "i",
+          "TRANSFER_FUNC_POINTS",
+          "DC_LOG_ERROR",
+          "Index",
+          "out",
+          "of"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      },
+      "confidence": 0.72
+    }
+  ],
+  "semantic_slice_count": 5,
+  "context_summary_count": 0,
+  "semantic_slice_coverage": "partial",
+  "selected_semantic_slice_ids": [
+    "csa_guard_0",
+    "csa_guard_1",
+    "csa_semantic_slice_0",
+    "csa_state_0",
+    "csa_validation_allocation_lifecycle_0"
+  ],
+  "selected_context_summary_ids": [],
+  "selected_semantic_slices": [
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/dc/dcn10/dcn10_cm_common.c",
+        "function": "cm_helper_translate_curve_to_hw_format"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "i >= TRANSFER_FUNC_POINTS",
+        "summary": "cm_helper_translate_curve_to_hw_format introduces patch guard `i >= TRANSFER_FUNC_POINTS` before dc_fixpt_pow, dc_fixpt_from_int.",
+        "summary_line": 402,
+        "state_before": [
+          "input(i)",
+          "input(TRANSFER_FUNC_POINTS)"
+        ],
+        "state_after": [
+          "guard(i >= TRANSFER_FUNC_POINTS)",
+          "current_call(dc_fixpt_pow)",
+          "current_call(dc_fixpt_from_int)"
+        ],
+        "tracked_symbols": [
+          "i",
+          "TRANSFER_FUNC_POINTS",
+          "DC_LOG_ERROR",
+          "Index",
+          "out",
+          "of"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "cm_helper_translate_curve_to_hw_format"
+        ],
+        "call_targets": [
+          "dc_fixpt_pow",
+          "dc_fixpt_from_int"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "i >= TRANSFER_FUNC_POINTS"
+        ],
+        "call_edges": [
+          "cm_helper_translate_curve_to_hw_format -> dc_fixpt_pow",
+          "cm_helper_translate_curve_to_hw_format -> dc_fixpt_from_int"
+        ],
+        "state_statements": [
+          "if (i >= TRANSFER_FUNC_POINTS) {",
+          "DC_LOG_ERROR(\"Index out of bounds: i=%d, TRANSFER_FUNC_POINTS=%d\\n\",",
+          "i, TRANSFER_FUNC_POINTS);",
+          "return false;",
+          "}"
+        ],
+        "source_file": "drivers/gpu/drm/amd/display/dc/dcn10/dcn10_cm_common.c"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/amd/display/dc/dcn10/dcn10_cm_common.c",
+          "hunk_index": 0,
+          "source_line": 402
+        },
+        "summary": "cm_helper_translate_curve_to_hw_format introduces patch guard `i >= TRANSFER_FUNC_POINTS` before dc_fixpt_pow, dc_fixpt_from_int.",
+        "statements": [
+          "if (i >= TRANSFER_FUNC_POINTS) {",
+          "DC_LOG_ERROR(\"Index out of bounds: i=%d, TRANSFER_FUNC_POINTS=%d\\n\",",
+          "i, TRANSFER_FUNC_POINTS);",
+          "return false;",
+          "}"
+        ],
+        "guards": [
+          "i >= TRANSFER_FUNC_POINTS"
+        ],
+        "call_boundary": [
+          "dc_fixpt_pow",
+          "dc_fixpt_from_int"
+        ],
+        "call_edges": [
+          "cm_helper_translate_curve_to_hw_format -> dc_fixpt_pow",
+          "cm_helper_translate_curve_to_hw_format -> dc_fixpt_from_int"
+        ],
+        "state_transitions": [
+          "guard(i >= TRANSFER_FUNC_POINTS)",
+          "current_call(dc_fixpt_pow)",
+          "current_call(dc_fixpt_from_int)"
+        ],
+        "api_terms": [
+          "dc_fixpt_pow",
+          "dc_fixpt_from_int"
+        ],
+        "related_symbols": [
+          "i",
+          "TRANSFER_FUNC_POINTS",
+          "DC_LOG_ERROR",
+          "Index",
+          "out",
+          "of"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_guard_1",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/dc/dcn10/dcn10_cm_common.c",
+        "function": "cm_helper_translate_curve_to_hw_format"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "if i (ImplicitCastExpr, LValueToRValue, int32_t) (ImplicitCastExpr, IntegralCast, uint32_t) >= hw_points (ImplicitCastExpr, LValueToRValue, uint32_t) - 1 (ImplicitCastExpr, IntegralCast, uint32_t)",
+        "summary": "Analyzer CFG for cm_helper_translate_curve_to_hw_format in drivers/gpu/drm/amd/display/dc/dcn10/dcn10_cm_common.c: bindings: corner_points (ImplicitCastExpr, LValueToRValue, struct curve_points3 *)[1].red.x = dc_fixpt_pow (ImplicitCastExpr, FunctionToPointerDecay, struct fixed31_32 (*)(struct fixed31_32, struct fixed31_32))(dc_fixpt_from_int (ImplicitCastExpr, FunctionToPointerDecay, struct fixed31_32 (*)(int))(2), dc_fixpt_from_int (ImplicitCastExpr, FunctionToPointerDecay, struct fixed31_32 (*)(int))(region_end (ImplicitCastExpr, LValueToRValue, int32_t))); corner_points (ImplicitCastExpr, LValueToRValue, struct curve_points3 *)[0].red.x = dc_fixpt_pow (ImplicitCastExpr, FunctionToPointerDecay, struct fixed31_32 (*)(struct fixed31_32, struct fixed31_32))(dc_fixpt_from_int (ImplicitCastExpr, FunctionToPointerDecay, struct fixed31_32 (*)(int))(2), dc_fixpt_from_int (ImplicitCastExpr, FunctionToPointerDecay, struct fixed31_32 (*)(int))(region_start (ImplicitCastExpr, LValueToRValue, int32_t))) | branches: if i (ImplicitCastExpr, LValueToRValue, int32_t) (ImplicitCastExpr, IntegralCast, uint32_t) >= hw_points (ImplicitCastExpr, LValueToRValue, uint32_t) - 1 (ImplicitCastExpr, IntegralCast, uint32_t); while i (ImplicitCastExpr, LValueToRValue, int32_t) (ImplicitCastExpr, IntegralCast, uint32_t) != hw_points (ImplicitCastExpr, LValueToRValue, uint32_t) + 1 (ImplicitCastExpr, IntegralCast, uint32_t) | calls: cm_helper_translate_curve_to_hw_format -> fortify_memset_chk; cm_helper_translate_curve_to_hw_format -> __builtin_dynamic_object_size",
+        "summary_line": 402,
+        "state_before": [
+          "buffer(rgb->delta_red)",
+          "buffer(rgb->delta_green)",
+          "sinks(dc_fixpt_pow, dc_fixpt_from_int)"
+        ],
+        "state_after": [
+          "cfg_binding(corner_points (ImplicitCastExpr, LValueToRValue, struct curve_points3 *)[1].red.x = dc_fixpt_pow (ImplicitCastExpr, FunctionToPointerDecay, struct fixed31_32 (*)(struct fixed31_32, struct fixed31_32))(dc_fixpt_from_int (ImplicitCastExpr, FunctionToPointerDecay, struct fixed31_32 (*)(int))(2), dc_fixpt_from_int (ImplicitCastExpr, FunctionToPointerDecay, struct fixed31_32 (*)(int))(region_end (ImplicitCastExpr, LValueToRValue, int32_t))))",
+          "cfg_binding(corner_points (ImplicitCastExpr, LValueToRValue, struct curve_points3 *)[0].red.x = dc_fixpt_pow (ImplicitCastExpr, FunctionToPointerDecay, struct fixed31_32 (*)(struct fixed31_32, struct fixed31_32))(dc_fixpt_from_int (ImplicitCastExpr, FunctionToPointerDecay, struct fixed31_32 (*)(int))(2), dc_fixpt_from_int (ImplicitCastExpr, FunctionToPointerDecay, struct fixed31_32 (*)(int))(region_start (ImplicitCastExpr, LValueToRValue, int32_t))))",
+          "cfg_branch(if i (ImplicitCastExpr, LValueToRValue, int32_t) (ImplicitCastExpr, IntegralCast, uint32_t) >= hw_points (ImplicitCastExpr, LValueToRValue, uint32_t) - 1 (ImplicitCastExpr, IntegralCast, uint32_t))",
+          "cfg_branch(while i (ImplicitCastExpr, LValueToRValue, int32_t) (ImplicitCastExpr, IntegralCast, uint32_t) != hw_points (ImplicitCastExpr, LValueToRValue, uint32_t) + 1 (ImplicitCastExpr, IntegralCast, uint32_t))"
+        ],
+        "tracked_symbols": [
+          "rgb->delta_red",
+          "rgb->delta_green",
+          "rgb->delta_blue",
+          "output_tf->tf_pts"
+        ],
+        "buffer_fields": [
+          "rgb->delta_red",
+          "rgb->delta_green",
+          "rgb->delta_blue",
+          "output_tf->tf_pts"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "cm_helper_translate_curve_to_hw_format"
+        ],
+        "call_targets": [
+          "dc_fixpt_pow",
+          "dc_fixpt_from_int",
+          "fortify_memset_chk",
+          "__builtin_dynamic_object_size",
+          "__builtin_memset",
+          "dc_fixpt_div",
+          "dc_fixpt_sub"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,drivers/gpu/drm/amd/amdgpu/../display/dc/dcn10/.dcn10_cm_common.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include...",
+        "cfg_branch_kinds": [
+          "if",
+          "while",
+          "for"
+        ],
+        "branch_conditions": [
+          "[B8.8] ? ... : ...",
+          "do ... while [B9.1]",
+          "static init _entry_ptr",
+          "[B15.15] ? ... : ...",
+          "[B18.5] ? ... : ...",
+          "static init _entry"
+        ],
+        "call_edges": [
+          "cm_helper_translate_curve_to_hw_format -> fortify_memset_chk",
+          "cm_helper_translate_curve_to_hw_format -> __builtin_dynamic_object_size",
+          "cm_helper_translate_curve_to_hw_format -> __builtin_memset",
+          "cm_helper_translate_curve_to_hw_format -> dc_fixpt_pow",
+          "cm_helper_translate_curve_to_hw_format -> dc_fixpt_from_int",
+          "cm_helper_translate_curve_to_hw_format -> dc_fixpt_div"
+        ],
+        "state_statements": [
+          "[B1.6]->",
+          "return [B1.16];",
+          "++[B3.1]",
+          "[B3.5] = [B3.4]",
+          "++[B3.7]",
+          "++[B3.9]"
+        ],
+        "source_file": "drivers/gpu/drm/amd/display/dc/dcn10/dcn10_cm_common.c"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/amd/display/dc/dcn10/dcn10_cm_common.c",
+          "hunk_index": 0,
+          "source_line": 402
+        },
+        "summary": "Analyzer CFG for cm_helper_translate_curve_to_hw_format in drivers/gpu/drm/amd/display/dc/dcn10/dcn10_cm_common.c: bindings: corner_points (ImplicitCastExpr, LValueToRValue, struct curve_points3 *)[1].red.x = dc_fixpt_pow (ImplicitCastExpr, FunctionToPointerDecay, struct fixed31_32 (*)(struct fixed31_32, struct fixed31_32))(dc_fixpt_from_int (ImplicitCastExpr, FunctionToPointerDecay, struct fixed31_32 (*)(int))(2), dc_fixpt_from_int (ImplicitCastExpr, FunctionToPointerDecay, struct fixed31_32 (*)(int))(region_end (ImplicitCastExpr, LValueToRValue, int32_t))); corner_points (ImplicitCastExpr, LValueToRValue, struct curve_points3 *)[0].red.x = dc_fixpt_pow (ImplicitCastExpr, FunctionToPointerDecay, struct fixed31_32 (*)(struct fixed31_32, struct fixed31_32))(dc_fixpt_from_int (ImplicitCastExpr, FunctionToPointerDecay, struct fixed31_32 (*)(int))(2), dc_fixpt_from_int (ImplicitCastExpr, FunctionToPointerDecay, struct fixed31_32 (*)(int))(region_start (ImplicitCastExpr, LValueToRValue, int32_t))) | branches: if i (ImplicitCastExpr, LValueToRValue, int32_t) (ImplicitCastExpr, IntegralCast, uint32_t) >= hw_points (ImplicitCastExpr, LValueToRValue, uint32_t) - 1 (ImplicitCastExpr, IntegralCast, uint32_t); while i (ImplicitCastExpr, LValueToRValue, int32_t) (ImplicitCastExpr, IntegralCast, uint32_t) != hw_points (ImplicitCastExpr, LValueToRValue, uint32_t) + 1 (ImplicitCastExpr, IntegralCast, uint32_t) | calls: cm_helper_translate_curve_to_hw_format -> fortify_memset_chk; cm_helper_translate_curve_to_hw_format -> __builtin_dynamic_object_size",
+        "statements": [
+          "370: \t\t * There are less than 256 points, for optimization",
+          "371: \t\t */",
+          "372: \t\tseg_distr[0] = 3;",
+          "373: \t\tseg_distr[1] = 4;",
+          "374: \t\tseg_distr[2] = 4;",
+          "375: \t\tseg_distr[3] = 4;"
+        ],
+        "guards": [
+          "if i (ImplicitCastExpr, LValueToRValue, int32_t) (ImplicitCastExpr, IntegralCast, uint32_t) >= hw_points (ImplicitCastExpr, LValueToRValue, uint32_t) - 1 (ImplicitCastExpr, IntegralCast, uint32_t)",
+          "while i (ImplicitCastExpr, LValueToRValue, int32_t) (ImplicitCastExpr, IntegralCast, uint32_t) != hw_points (ImplicitCastExpr, LValueToRValue, uint32_t) + 1 (ImplicitCastExpr, IntegralCast, uint32_t)",
+          "for (...; i (ImplicitCastExpr, LValueToRValue, int32_t) < 34; ...)",
+          "for (...; i (ImplicitCastExpr, LValueToRValue, int32_t) (ImplicitCastExpr, IntegralCast, uint32_t) < start_index (ImplicitCastExpr, LValueToRValue, uint32_t) + 16 (ImplicitCastExpr, IntegralCast, uint32_t); ...)"
+        ],
+        "call_boundary": [
+          "dc_fixpt_pow",
+          "dc_fixpt_from_int",
+          "fortify_memset_chk",
+          "__builtin_dynamic_object_size",
+          "__builtin_memset",
+          "dc_fixpt_div"
+        ],
+        "call_edges": [
+          "cm_helper_translate_curve_to_hw_format -> fortify_memset_chk",
+          "cm_helper_translate_curve_to_hw_format -> __builtin_dynamic_object_size",
+          "cm_helper_translate_curve_to_hw_format -> __builtin_memset",
+          "cm_helper_translate_curve_to_hw_format -> dc_fixpt_pow",
+          "cm_helper_translate_curve_to_hw_format -> dc_fixpt_from_int",
+          "cm_helper_translate_curve_to_hw_format -> dc_fixpt_div",
+          "cm_helper_translate_curve_to_hw_format -> dc_fixpt_sub"
+        ],
+        "state_transitions": [
+          "cfg_binding(corner_points (ImplicitCastExpr, LValueToRValue, struct curve_points3 *)[1].red.x = dc_fixpt_pow (ImplicitCastExpr, FunctionToPointerDecay, struct fixed31_32 (*)(struct fixed31_32, struct fixed31_32))(dc_fixpt_from_int (ImplicitCastExpr, FunctionToPointerDecay, struct fixed31_32 (*)(int))(2), dc_fixpt_from_int (ImplicitCastExpr, FunctionToPointerDecay, struct fixed31_32 (*)(int))(region_end (ImplicitCastExpr, LValueToRValue, int32_t))))",
+          "cfg_binding(corner_points (ImplicitCastExpr, LValueToRValue, struct curve_points3 *)[0].red.x = dc_fixpt_pow (ImplicitCastExpr, FunctionToPointerDecay, struct fixed31_32 (*)(struct fixed31_32, struct fixed31_32))(dc_fixpt_from_int (ImplicitCastExpr, FunctionToPointerDecay, struct fixed31_32 (*)(int))(2), dc_fixpt_from_int (ImplicitCastExpr, FunctionToPointerDecay, struct fixed31_32 (*)(int))(region_start (ImplicitCastExpr, LValueToRValue, int32_t))))",
+          "cfg_branch(if i (ImplicitCastExpr, LValueToRValue, int32_t) (ImplicitCastExpr, IntegralCast, uint32_t) >= hw_points (ImplicitCastExpr, LValueToRValue, uint32_t) - 1 (ImplicitCastExpr, IntegralCast, uint32_t))",
+          "cfg_branch(while i (ImplicitCastExpr, LValueToRValue, int32_t) (ImplicitCastExpr, IntegralCast, uint32_t) != hw_points (ImplicitCastExpr, LValueToRValue, uint32_t) + 1 (ImplicitCastExpr, IntegralCast, uint32_t))",
+          "[B1.6]->",
+          "return [B1.16];"
+        ],
+        "api_terms": [
+          "fortify_memset_chk",
+          "__builtin_dynamic_object_size",
+          "__builtin_memset",
+          "dc_fixpt_pow",
+          "dc_fixpt_from_int",
+          "dc_fixpt_div"
+        ],
+        "related_symbols": [
+          "rgb->delta_red",
+          "rgb->delta_green",
+          "rgb->delta_blue",
+          "output_tf->tf_pts"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/dc/dcn10/dcn10_cm_common.c",
+        "function": "cm_helper_translate_curve_to_hw_format"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "cm_helper_translate_curve_to_hw_format adds patch barrier `i >= TRANSFER_FUNC_POINTS` around dc_fixpt_pow, dc_fixpt_from_int.",
+        "tracked_symbols": [
+          "i",
+          "TRANSFER_FUNC_POINTS",
+          "DC_LOG_ERROR",
+          "Index",
+          "out",
+          "of",
+          "bounds",
+          "d"
+        ],
+        "coverage_status": "full",
+        "source_file": "drivers/gpu/drm/amd/display/dc/dcn10/dcn10_cm_common.c"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/amd/display/dc/dcn10/dcn10_cm_common.c",
+          "hunk_index": 0,
+          "source_line": 402
+        },
+        "summary": "cm_helper_translate_curve_to_hw_format adds patch barrier `i >= TRANSFER_FUNC_POINTS` around dc_fixpt_pow, dc_fixpt_from_int.",
+        "statements": [
+          "if (i >= TRANSFER_FUNC_POINTS) {",
+          "DC_LOG_ERROR(\"Index out of bounds: i=%d, TRANSFER_FUNC_POINTS=%d\\n\",",
+          "i, TRANSFER_FUNC_POINTS);",
+          "return false;",
+          "}"
+        ],
+        "guards": [
+          "i >= TRANSFER_FUNC_POINTS"
+        ],
+        "call_boundary": [
+          "dc_fixpt_pow",
+          "dc_fixpt_from_int"
+        ],
+        "call_edges": [
+          "cm_helper_translate_curve_to_hw_format -> dc_fixpt_pow",
+          "cm_helper_translate_curve_to_hw_format -> dc_fixpt_from_int"
+        ],
+        "state_transitions": [
+          "",
+          "report when a risky write proceeds without the patch-style barrier",
+          "stay silent when the nearby guard proves the current write is blocked or bounded"
+        ],
+        "api_terms": [
+          "dc_fixpt_pow",
+          "dc_fixpt_from_int",
+          "DC_LOG_ERROR"
+        ],
+        "related_symbols": [
+          "i",
+          "TRANSFER_FUNC_POINTS",
+          "DC_LOG_ERROR",
+          "Index",
+          "out",
+          "of"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/dc/dcn10/dcn10_cm_common.c",
+        "function": "cm_helper_translate_curve_to_hw_format"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "cm_helper_translate_curve_to_hw_format adds patch barrier `i >= TRANSFER_FUNC_POINTS` around dc_fixpt_pow, dc_fixpt_from_int.",
+        "state_before": [
+          "input(i)",
+          "input(TRANSFER_FUNC_POINTS)"
+        ],
+        "state_after": [
+          "guard(i >= TRANSFER_FUNC_POINTS)",
+          "sink(dc_fixpt_pow)",
+          "sink(dc_fixpt_from_int)"
+        ],
+        "tracked_symbols": [
+          "i",
+          "TRANSFER_FUNC_POINTS",
+          "DC_LOG_ERROR",
+          "Index",
+          "out",
+          "of"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "cm_helper_translate_curve_to_hw_format"
+        ],
+        "call_targets": [
+          "dc_fixpt_pow",
+          "dc_fixpt_from_int"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "i >= TRANSFER_FUNC_POINTS"
+        ],
+        "call_edges": [
+          "cm_helper_translate_curve_to_hw_format -> dc_fixpt_pow",
+          "cm_helper_translate_curve_to_hw_format -> dc_fixpt_from_int"
+        ],
+        "state_statements": [
+          "if (i >= TRANSFER_FUNC_POINTS) {",
+          "DC_LOG_ERROR(\"Index out of bounds: i=%d, TRANSFER_FUNC_POINTS=%d\\n\",",
+          "i, TRANSFER_FUNC_POINTS);",
+          "return false;",
+          "}"
+        ],
+        "source_file": "drivers/gpu/drm/amd/display/dc/dcn10/dcn10_cm_common.c"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/amd/display/dc/dcn10/dcn10_cm_common.c",
+          "hunk_index": 0,
+          "source_line": 402
+        },
+        "summary": "cm_helper_translate_curve_to_hw_format adds patch barrier `i >= TRANSFER_FUNC_POINTS` around dc_fixpt_pow, dc_fixpt_from_int.",
+        "statements": [
+          "if (i >= TRANSFER_FUNC_POINTS) {",
+          "DC_LOG_ERROR(\"Index out of bounds: i=%d, TRANSFER_FUNC_POINTS=%d\\n\",",
+          "i, TRANSFER_FUNC_POINTS);",
+          "return false;",
+          "}"
+        ],
+        "guards": [
+          "i >= TRANSFER_FUNC_POINTS"
+        ],
+        "call_boundary": [
+          "dc_fixpt_pow",
+          "dc_fixpt_from_int"
+        ],
+        "call_edges": [
+          "cm_helper_translate_curve_to_hw_format -> dc_fixpt_pow",
+          "cm_helper_translate_curve_to_hw_format -> dc_fixpt_from_int"
+        ],
+        "state_transitions": [
+          "guard(i >= TRANSFER_FUNC_POINTS)",
+          "sink(dc_fixpt_pow)",
+          "sink(dc_fixpt_from_int)"
+        ],
+        "api_terms": [
+          "dc_fixpt_pow",
+          "dc_fixpt_from_int"
+        ],
+        "related_symbols": [
+          "i",
+          "TRANSFER_FUNC_POINTS",
+          "DC_LOG_ERROR",
+          "Index",
+          "out",
+          "of"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      },
+      "confidence": 0.9
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_0",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/amd/display/dc/dcn10/dcn10_cm_common.c",
+        "function": "cm_helper_translate_curve_to_hw_format"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "cm_helper_translate_curve_to_hw_format in drivers/gpu/drm/amd/display/dc/dcn10/dcn10_cm_common.c provides CSA-backed pointer/resource lifecycle context near line 402",
+        "state_before": [
+          "buffer(rgb->delta_red)",
+          "buffer(rgb->delta_green)",
+          "sinks(dc_fixpt_pow, dc_fixpt_from_int)"
+        ],
+        "state_after": [
+          "operation(for (i = region_end - region_start; i < MAX_REGIONS_NUMBER ; i++))",
+          "operation(for (k = 0; k < MAX_REGIONS_NUMBER; k++) {)",
+          "operation(for (k = 0; k < (region_end - region_start); k++) {)",
+          "operation(j++;)"
+        ],
+        "tracked_symbols": [
+          "i",
+          "TRANSFER_FUNC_POINTS",
+          "DC_LOG_ERROR",
+          "Index",
+          "out",
+          "of"
+        ],
+        "buffer_fields": [
+          "rgb->delta_red",
+          "rgb->delta_green",
+          "rgb->delta_blue",
+          "output_tf->tf_pts"
+        ],
+        "coverage_status": "partial",
+        "operations": [
+          "for (i = region_end - region_start; i < MAX_REGIONS_NUMBER ; i++)",
+          "for (k = 0; k < MAX_REGIONS_NUMBER; k++) {",
+          "for (k = 0; k < (region_end - region_start); k++) {",
+          "j++;",
+          "[B1.6]->",
+          "return [B1.16];"
+        ],
+        "functions": [
+          "cm_helper_translate_curve_to_hw_format"
+        ],
+        "call_targets": [
+          "dc_fixpt_pow",
+          "dc_fixpt_from_int",
+          "DC_LOG_ERROR",
+          "fortify_memset_chk",
+          "__builtin_dynamic_object_size",
+          "__builtin_memset"
+        ],
+        "call_edges": [
+          "cm_helper_translate_curve_to_hw_format -> fortify_memset_chk",
+          "cm_helper_translate_curve_to_hw_format -> __builtin_dynamic_object_size",
+          "cm_helper_translate_curve_to_hw_format -> __builtin_memset",
+          "cm_helper_translate_curve_to_hw_format -> dc_fixpt_pow",
+          "cm_helper_translate_curve_to_hw_format -> dc_fixpt_from_int",
+          "cm_helper_translate_curve_to_hw_format -> dc_fixpt_div"
+        ],
+        "state_statements": [
+          "for (i = region_end - region_start; i < MAX_REGIONS_NUMBER ; i++)",
+          "for (k = 0; k < MAX_REGIONS_NUMBER; k++) {",
+          "for (k = 0; k < (region_end - region_start); k++) {",
+          "j++;",
+          "[B1.6]->",
+          "return [B1.16];"
+        ],
+        "source_file": "drivers/gpu/drm/amd/display/dc/dcn10/dcn10_cm_common.c"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/amd/display/dc/dcn10/dcn10_cm_common.c",
+          "hunk_index": 0,
+          "source_line": 402
+        },
+        "summary": "cm_helper_translate_curve_to_hw_format in drivers/gpu/drm/amd/display/dc/dcn10/dcn10_cm_common.c provides CSA-backed pointer/resource lifecycle context near line 402",
+        "statements": [
+          "370: \t\t * There are less than 256 points, for optimization",
+          "371: \t\t */",
+          "372: \t\tseg_distr[0] = 3;",
+          "373: \t\tseg_distr[1] = 4;",
+          "374: \t\tseg_distr[2] = 4;",
+          "375: \t\tseg_distr[3] = 4;"
+        ],
+        "guards": [
+          "i = region_end - region_start; i < MAX_REGIONS_NUMBER ; i++",
+          "k = 0; k < MAX_REGIONS_NUMBER; k++",
+          "seg_distr[k] != -1",
+          "k = 0; k < (region_end - region_start); k++"
+        ],
+        "call_boundary": [
+          "dc_fixpt_pow",
+          "dc_fixpt_from_int",
+          "DC_LOG_ERROR",
+          "fortify_memset_chk",
+          "__builtin_dynamic_object_size",
+          "__builtin_memset"
+        ],
+        "call_edges": [
+          "cm_helper_translate_curve_to_hw_format -> fortify_memset_chk",
+          "cm_helper_translate_curve_to_hw_format -> __builtin_dynamic_object_size",
+          "cm_helper_translate_curve_to_hw_format -> __builtin_memset",
+          "cm_helper_translate_curve_to_hw_format -> dc_fixpt_pow",
+          "cm_helper_translate_curve_to_hw_format -> dc_fixpt_from_int",
+          "cm_helper_translate_curve_to_hw_format -> dc_fixpt_div"
+        ],
+        "state_transitions": [
+          "operation(for (i = region_end - region_start; i < MAX_REGIONS_NUMBER ; i++))",
+          "operation(for (k = 0; k < MAX_REGIONS_NUMBER; k++) {)",
+          "operation(for (k = 0; k < (region_end - region_start); k++) {)",
+          "operation(j++;)"
+        ],
+        "api_terms": [
+          "for (i = region_end - region_start; i < MAX_REGIONS_NUMBER ; i++)",
+          "for (k = 0; k < MAX_REGIONS_NUMBER; k++) {",
+          "for (k = 0; k < (region_end - region_start); k++) {",
+          "j++;",
+          "[B1.6]->",
+          "return [B1.16];"
+        ],
+        "related_symbols": [
+          "i",
+          "TRANSFER_FUNC_POINTS",
+          "DC_LOG_ERROR",
+          "Index",
+          "out",
+          "of"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      },
+      "confidence": 0.72
+    }
+  ],
+  "selected_context_summaries": [],
+  "semantic_clause_plan": [
+    {
+      "clause_id": "vulnerable_trigger_clause",
+      "intent": "Trigger on the vulnerable out_of_bound mechanism using evidence-backed path/flow semantics.",
+      "supporting_evidence_ids": [
+        "csa_guard_0",
+        "csa_guard_1",
+        "csa_semantic_slice_0",
+        "csa_state_0",
+        "csa_validation_allocation_lifecycle_0"
+      ],
+      "repair_when": [
+        "semantic_no_hits"
+      ],
+      "focus_functions": []
+    },
+    {
+      "clause_id": "patched_silence_clause",
+      "intent": "Stay silent on patched code when patch-added guards, barriers, or safe APIs prove the mechanism is blocked.",
+      "supporting_evidence_ids": [
+        "csa_guard_0",
+        "csa_guard_1",
+        "csa_semantic_slice_0",
+        "csa_state_0"
+      ],
+      "repair_when": [],
+      "silencing_conditions": [
+        "length/capacity guard present: if (i >= TRANSFER_FUNC_POINTS) {"
+      ]
+    },
+    {
+      "clause_id": "semantic_transfer_clause",
+      "intent": "Generalize along semantic slices and call-chain evidence rather than patch-local syntax.",
+      "supporting_evidence_ids": [
+        "csa_semantic_slice_0"
+      ],
+      "repair_when": [],
+      "analyzer_id": "csa"
+    },
+    {
+      "clause_id": "analyzer_interface_clause",
+      "intent": "Preserve valid analyzer-facing syntax and interfaces while keeping semantics unchanged.",
+      "supporting_evidence_ids": [],
+      "repair_when": [
+        "semantic_execution_error"
+      ],
+      "analyzer_id": "csa"
+    }
+  ],
+  "repair_directives": [],
+  "constraints": [
+    {
+      "title": "Generalize beyond patch site",
+      "description": "Do not bind the detector to fixed file paths, line numbers, or exact patch strings.",
+      "priority": "high"
+    },
+    {
+      "title": "Preserve vulnerability semantics",
+      "description": "Keep the detector focused on the vulnerability family implied by the patch and evidence.",
+      "priority": "high"
+    },
+    {
+      "title": "Respect analyzer-native form",
+      "description": "Output must be a valid checker_plugin for csa.",
+      "priority": "high"
+    },
+    {
+      "title": "Stay within proven mechanism scope",
+      "description": "Generalize only along evidence-supported semantic dimensions. Do not broaden the detector into unrelated globals, APIs, or bug families.",
+      "priority": "high"
+    },
+    {
+      "title": "Honor mechanism contract",
+      "description": "Preserve the mechanism family `generic_vulnerability_mechanism` by keeping trigger invariants the vulnerable mechanism is reachable on a feasible path; the path lacks the barrier introduced by the patch; Patch-backed trigger clue: added guard: if (i >= TRANSFER_FUNC_POINTS) {.",
+      "priority": "high"
+    },
+    {
+      "title": "Generalize only on contract axes",
+      "description": "Reuse semantics only along these transfer axes: only generalize along evidence-backed state, guard, flow, or API-role equivalence; equivalent guard or barrier predicates on sibling paths; equivalent local state transitions around the same sink or dereference.",
+      "priority": "high"
+    },
+    {
+      "title": "Encode the patch-added barrier",
+      "description": "treat guards such as if (i >= TRANSFER_FUNC_POINTS) { as semantic barriers; use APIs such as DC_LOG_ERROR as semantic clues, not string matches.",
+      "priority": "high"
+    },
+    {
+      "title": "Respect patched silence",
+      "description": "Use these no-report conditions when they are semantically proven: length/capacity guard present: if (i >= TRANSFER_FUNC_POINTS) {.",
+      "priority": "high"
+    },
+    {
+      "title": "Use path-sensitive evidence",
+      "description": "Prefer guards, state transitions, and lifecycle facts over broad textual matching.",
+      "priority": "high"
+    },
+    {
+      "title": "No placeholder helper logic",
+      "description": "Helper predicates must inspect AST/program state and must not be unconditional return-true/return-false stubs.",
+      "priority": "high"
+    }
+  ],
+  "implementation_hints": [
+    "Mechanism family: generic_vulnerability_mechanism",
+    "Mechanism dimensions: vulnerability trigger, patch-introduced barrier, local state or flow relation",
+    "Trigger invariants: the vulnerable mechanism is reachable on a feasible path, the path lacks the barrier introduced by the patch, Patch-backed trigger clue: added guard: if (i >= TRANSFER_FUNC_POINTS) {",
+    "Silence invariants: patch-introduced guards, barriers, or safe APIs must suppress findings, length/capacity guard present: if (i >= TRANSFER_FUNC_POINTS) {",
+    "Transfer axes: only generalize along evidence-backed state, guard, flow, or API-role equivalence, equivalent guard or barrier predicates on sibling paths, equivalent local state transitions around the same sink or dereference",
+    "Relevant APIs: DC_LOG_ERROR",
+    "Silence condition: length/capacity guard present: if (i >= TRANSFER_FUNC_POINTS) {",
+    "Patch mechanism: added guard: if (i >= TRANSFER_FUNC_POINTS) {"
+  ],
+  "validation_expectations": [
+    "Vulnerable version should trigger a out_of_bound finding.",
+    "Patched version should stay silent for the same mechanism.",
+    "Semantic validation that executes but returns zero hits is not acceptable; recover coverage with evidence-backed semantics.",
+    "Repair phase may fix syntax/interfaces only; it must not simplify away the core detection logic.",
+    "Generalization must stay inside the mechanism contract transfer axes instead of widening to adjacent bug families.",
+    "Trigger invariant: the vulnerable mechanism is reachable on a feasible path.",
+    "Trigger invariant: the path lacks the barrier introduced by the patch.",
+    "Patched silence depends on: length/capacity guard present: if (i >= TRANSFER_FUNC_POINTS) {."
+  ]
+}

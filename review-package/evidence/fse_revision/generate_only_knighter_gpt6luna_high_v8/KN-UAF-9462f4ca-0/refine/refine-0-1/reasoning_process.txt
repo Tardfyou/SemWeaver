@@ -1,0 +1,8 @@
+Refinment Plan:
+The false positive comes from two broad checks: the function-level fallback treats every free in a function containing a tx-list loop as a list free, and the checker reports whenever its lock set is empty without reliably recognizing the caller’s lock. The fix removes the function-level fallback, limits candidates to frees inside a loop over a target tx list, recognizes common spin-lock entry points, and tracks the exact lock region rather than the containing base region. This keeps `gsm_cleanup_mux()` detectable when it frees queue entries without acquiring `tx_lock`.
+
+Refined Code:
+```cpp
+```
+
+This relies on the analyzer seeing the caller’s lock and the inlined `gsm_data_kick()` call in the same path. It also preserves the target finding: `gsm_cleanup_mux()` traverses and frees the target queues without acquiring `tx_lock`. The lock-set check currently treats any tracked `tx_lock` as protection; if the checker needs to distinguish multiple muxes within one path, the list’s owning mux region should also be tracked and compared.

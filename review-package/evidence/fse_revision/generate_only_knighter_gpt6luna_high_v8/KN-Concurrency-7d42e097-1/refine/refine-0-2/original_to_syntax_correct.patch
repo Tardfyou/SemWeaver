@@ -1,0 +1,10 @@
+--- original_code.cpp+++ syntax_correct_refine_code.cpp@@ -221,7 +221,9 @@     const MemRegion *B = I->first;
+     unsigned Flags = I->second;
+ 
+-    if ((Flags & (SEEN_COMPLETE | SEEN_KFREE)) != 0 && (Flags & SEEN_DONE) == 0) {
++    // A completion signal alone does not imply that this worker frees the
++    // completion's context. Require evidence of a context free before warning.
++    if ((Flags & SEEN_KFREE) != 0 && (Flags & SEEN_DONE) == 0) {
+       const Stmt *const *LastPtr = State->get<CompLastUseStmt>(B);
+       const Stmt *Last = LastPtr ? *LastPtr : nullptr;
+       reportMissingGuard(B, Last, C);

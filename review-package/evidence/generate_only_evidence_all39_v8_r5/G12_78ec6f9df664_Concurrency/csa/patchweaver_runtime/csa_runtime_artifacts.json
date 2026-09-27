@@ -1,0 +1,205 @@
+{
+  "cache_key": {
+    "cache_version": 16,
+    "patch_path": "/work/artifacts/fse_revision/generate_only_materialized_v1/cases/G12_78ec6f9df664_Concurrency/patches/commit.patch",
+    "evidence_dir": "/work/SemWeaver/artifacts/external/linux-evidence-clone-v8b",
+    "validate_path": "",
+    "source_files": [
+      "mm/memcontrol.c"
+    ],
+    "compile_commands_sha256": "7a59d1301757cce43b087bfd1b5c8751c8aaaf768716a206afd8ba54d35f59fa"
+  },
+  "data": {
+    "available": true,
+    "clang_path": "/usr/lib/llvm-18/bin/clang",
+    "cfg_snapshots": [
+      {
+        "source_file": "mm/memcontrol.c",
+        "function_name": "mem_cgroup_css_rstat_flush",
+        "anchor_line": 5887,
+        "branch_kinds": [
+          "if",
+          "for"
+        ],
+        "branch_conditions": [
+          "if [B2.16]",
+          "if [B6.13]",
+          "if [B7.2]",
+          "if [B9.2]",
+          "if [B11.25]",
+          "do ... while [B12.1]",
+          "if [B14.2]",
+          "([B19.3] || [B18.3] || [B17.3] || [B16.3]) || ..."
+        ],
+        "resolved_branch_conditions": [
+          "if parent (ImplicitCastExpr, LValueToRValue, struct mem_cgroup *)",
+          "if atomic64_read (ImplicitCastExpr, FunctionToPointerDecay, s64 (*)(const atomic64_t *))(&memcg (ImplicitCastExpr, LValueToRValue, struct mem_cgroup *)->vmstats (ImplicitCastExpr, LValueToRValue, struct memcg_vmstats *)->stats_updates (ImplicitCastExpr, NoOp, const atomic64_t *))",
+          "if ppn (ImplicitCastExpr, LValueToRValue, struct mem_cgroup_per_node *)",
+          "if delta (ImplicitCastExpr, LValueToRValue, long)",
+          "if delta_cpu (ImplicitCastExpr, LValueToRValue, long)",
+          "if v (ImplicitCastExpr, LValueToRValue, long) != lstatc (ImplicitCastExpr, LValueToRValue, struct lruvec_stats_percpu *)->state_prev (ImplicitCastExpr, ArrayToPointerDecay, long *)[i (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, long)",
+          "do ... while 0",
+          "if !((sizeof (lstatc->state[i]) == sizeof(char) || sizeof (lstatc->state[i]) == sizeof(short) || sizeof (lstatc->state[i]) == sizeof(int) || sizeof (lstatc->state[i]) == sizeof(long)) || sizeof (lstatc->state[i]) == sizeof(long long))"
+        ],
+        "cfg_value_bindings": [
+          "struct mem_cgroup *parent = parent_mem_cgroup(memcg);",
+          "ppn = parent (ImplicitCastExpr, LValueToRValue, struct mem_cgroup *)->nodeinfo (ImplicitCastExpr, ArrayToPointerDecay, struct mem_cgroup_per_node **)[nid (ImplicitCastExpr, LValueToRValue, int)] (ImplicitCastExpr, LValueToRValue, struct mem_cgroup_per_node *)",
+          "parent (ImplicitCastExpr, LValueToRValue, struct mem_cgroup *)->vmstats (ImplicitCastExpr, LValueToRValue, struct memcg_vmstats *)->state_pending (ImplicitCastExpr, ArrayToPointerDecay, long *)[i (ImplicitCastExpr, LValueToRValue, int)] += delta (ImplicitCastExpr, LValueToRValue, long)",
+          "parent (ImplicitCastExpr, LValueToRValue, struct mem_cgroup *)->vmstats (ImplicitCastExpr, LValueToRValue, struct memcg_vmstats *)->events_pending (ImplicitCastExpr, ArrayToPointerDecay, unsigned long *)[i (ImplicitCastExpr, LValueToRValue, int)] += delta (ImplicitCastExpr, LValueToRValue, long) (ImplicitCastExpr, IntegralCast, unsigned long)",
+          "i = 0",
+          "sizeof (statc->state[i]) == sizeof(int)",
+          "sizeof (lstatc->state[i]) == sizeof(int)",
+          "sizeof (statc->events[i]) == sizeof(int)"
+        ],
+        "call_edges": [
+          "mem_cgroup_css_rstat_flush -> mem_cgroup_from_css",
+          "mem_cgroup_css_rstat_flush -> parent_mem_cgroup",
+          "mem_cgroup_css_rstat_flush -> __compiletime_assert_3036",
+          "mem_cgroup_css_rstat_flush -> __compiletime_assert_3037",
+          "mem_cgroup_css_rstat_flush -> __first_node",
+          "mem_cgroup_css_rstat_flush -> __next_node",
+          "mem_cgroup_css_rstat_flush -> __compiletime_assert_3038",
+          "mem_cgroup_css_rstat_flush -> atomic64_read",
+          "mem_cgroup_css_rstat_flush -> atomic64_set"
+        ],
+        "call_targets": [
+          "mem_cgroup_from_css",
+          "parent_mem_cgroup",
+          "__compiletime_assert_3036",
+          "__compiletime_assert_3037",
+          "__first_node",
+          "__next_node",
+          "__compiletime_assert_3038",
+          "atomic64_read",
+          "atomic64_set"
+        ],
+        "state_statements": [
+          "[B1.4]->vmstats",
+          "[B1.6]->stats_updates",
+          "[B2.4]->stats_updates",
+          "[B2.5] = [B2.2]",
+          "[B2.10]->vmstats",
+          "[B2.12]->stats_updates",
+          "(([B3.13])) = [B3.12]",
+          "[B4.1]++",
+          "[B5.2]->lruvec_stats",
+          "[B5.8] += [B5.10]",
+          "[B6.2]->lruvec_stats",
+          "[B6.8] += [B6.10]"
+        ],
+        "field_accesses": [
+          "lstatc->state",
+          "pn->lruvec_stats_percpu",
+          "memcg->nodeinfo",
+          "statc->events",
+          "statc->state",
+          "memcg->vmstats_percpu"
+        ],
+        "return_statements": [],
+        "dump_excerpt": " --- Call graph Dump --- \n  Function: < root > calls: offset_to_ptr __kasan_check_read __kasan_check_write kasan_check_read kasan_check_write __read_once_word_nocheck read_word_at_a_time rip_rel_ptr arch_cmpxchg128 arch_cmpxchg128_local arch_try_cmpxchg128 __builtin_expect arch_try_cmpxchg128_local array_index_mask_nospec arch_atomic_read arch_atomic_set arch_atomic_add arch_atomic_sub arch_atomic_sub_and_test arch_atomic_inc arch_atomic_dec arch_atomic_dec_and_test arch_atomic_inc_and_test arch_atomic_add_negative arch_atomic_add_return __xadd_wrong_size arch_atomic_sub_return arch_atomic_fetch_add arch_atomic_fetch_sub arch_atomic_cmpxchg __cmpxchg_wrong_size arch_atomic_try_cmpxchg arch_atomic_xchg __xchg_wrong_size arch_atomic_and arch_atomic_fetch_and arch_atomic_or arch_atomic_fetch_or arch_atomic_xor arch_atomic_fetch_xor arch_atomic64_read arch_atomic64_set arch_atomic64_add arch_atomic64_sub arch_atomic64_sub_and_test arch_atomic64_inc arch_atomic64_dec arch_atomic64_dec_and_test arch_atomic64_inc_and_test arch_atomic64_add_negative arch_atomic64_add_return arch_atomic64_sub_return arch_atomic64_fetch_add arch_atomic64_fetch_sub arch_atomic64_cmpxchg arch_atomic64_try_cmpxchg arch_atomic64_xchg arch_atomic64_and arch_atomic64_fetch_and arch_atomic64_or arch_atomic64_fetch_or arch_atomic64_xor arch_atomic64_fetch_xor raw_atomic_read raw_atomic_read_acquire __compiletime_assert_0 __compiletime_assert_1 __atomic_signal_fence raw_atomic_set raw_atomic_set_release __compiletime_assert_2 __compiletime_assert_3 raw_atomic_add raw_atomic_add_return raw_atomic_add_return_acquire raw_atomic_add_return_release raw_atomic_add_return_relaxed raw_atomic_fetch_add raw_atomic_fetch_add_acquire raw_atomic_fetch_add_release raw_atomic_fetch_add_relaxed raw_atomic_sub raw_atomic_sub_return raw_atomic_sub_return_acquire raw_atomic_sub_return_release raw_atomic_sub_return_relaxed raw_atomic_fetch_sub raw_atomic_fetch_sub_acquire raw_atomic_fetch_sub_release raw_atomic_fetch_sub_relaxed raw_atomic_inc raw_atomic_inc_return raw_atomic_inc_return_acquire raw_atomic_inc_return_release raw_atomic_inc_return_relaxed raw_atomic_fetch_inc raw_atomic_fetch_inc_acquire raw_atomic_fetch_inc_release raw_atomic_fetch_inc_relaxed raw_atomic_dec raw_atomic_dec_return raw_atomic_dec_return_acquire raw_atomic_dec_return_release raw_atomic_dec_return_relaxed raw_atomic_fetch_dec raw_atomic_fetch_dec_acquire raw_atomic_fetch_dec_release raw_atomic_fetch_dec_relaxed raw_atomic_and raw_atomic_fetch_and raw_atomic_fetch_and_acquire raw_atomic_fetch_and_release raw_atomic_fetch_and_relaxed raw_atomic_andnot raw_atomic_fetch_andnot raw_atomic_fetch_andnot_acquire raw_atomic_fetch_andnot_release raw_atomic_fetch_andnot_relaxed raw_atomic_or raw_atomic_fetch_or raw_atomic_fetch_or_acquire raw_atomic_fetch_or_release raw_atomic_fetch_or_relaxed raw_atomic_xor raw_atomic_fetch_xor raw_atomic_fetch_xor_acquire raw_atomic_fetch_xor_release raw_atomic_fetch_xor_relaxed raw_atomic_xchg raw_atomic_xchg_acquire raw_atomic_xchg_release raw_atomic_xchg_relaxed raw_atomic_cmpxchg raw_atomic_cmpxchg_acquire raw_atomic_cmpxchg_release raw_atomic_cmpxchg_relaxed raw_atomic_try_cmpxchg raw_atomic_try_cmpxchg_acquire raw_atomic_try_cmpxchg_release raw_atomic_try_cmpxchg_relaxed raw_atomic_sub_and_test raw_atomic_dec_and_test raw_atomic_inc_and_test raw_atomic_add_negative raw_atomic_add_negative_acquire raw_atomic_add_negative_release raw_atomic_add_negative_relaxed raw_atomic_fetch_add_unless raw_atomic_add_unless raw_atomic_inc_not_zero raw_atomic_inc_unless_negative raw_atomic_dec_unless_positive raw_atomic_dec_if_positive raw_atomic64_read raw_atomic64_read_acquire __compiletime_assert_4 __compiletime_assert_5 raw_atomic64_set raw_atomic64_set_release __compiletime_assert_6 __compiletime_assert_7 raw_atomic64_add raw_atomic64_add_return raw_atomic64_add_return_acquire raw_atomic64_add_return_release raw_atomic64_add_return_relaxed raw_atomic64_fetch_add raw_atomic64_fetch_add",
+        "error": "",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/generate_only_evidence_all39_v8_r5/G12_78ec6f9df664_Concurrency/csa/patchweaver_runtime/csa_raw/mm-memcontrol.c-mem_cgroup_css_rstat_flush.txt",
+        "raw_output_sha256": "45c0d8c747b2138ed566f94241eac00aa7d7441bcdc49dc4feef49b52dd2e042",
+        "command_sha256": "2ced3a2990ad4fc765284524539b1ffab17e08159c9365de554be3092117c432",
+        "clang_command_preview": "/usr/lib/llvm-18/bin/clang --analyze -nostdinc -I./arch/x86/include -I./arch/x86/include/generated -I./include -I./arch/x86/include/uapi -I./arch/x86/include/generated/uapi -I./...",
+        "return_code": 0
+      },
+      {
+        "source_file": "mm/memcontrol.c",
+        "function_name": "memcg_rstat_updated",
+        "anchor_line": 736,
+        "branch_kinds": [
+          "if",
+          "for"
+        ],
+        "branch_conditions": [
+          "if [B4.8]",
+          "continue;",
+          "if [B6.10]",
+          "[B9.10] ? ... : ...",
+          "for (; [B10.2]; ...)",
+          "do ... while [B12.1]",
+          "if [B17.9]"
+        ],
+        "resolved_branch_conditions": [
+          "if !val (ImplicitCastExpr, LValueToRValue, int)",
+          "if !memcg_vmstats_needs_flush (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(struct memcg_vmstats *))(statc (ImplicitCastExpr, LValueToRValue, struct memcg_vmstats_percpu *)->vmstats (ImplicitCastExpr, LValueToRValue, struct memcg_vmstats *))",
+          "continue;",
+          "if statc (ImplicitCastExpr, LValueToRValue, struct memcg_vmstats_percpu *)->stats_updates (ImplicitCastExpr, LValueToRValue, unsigned int) < 64U",
+          "__x (ImplicitCastExpr, LValueToRValue, int) < 0 ? ... : ...",
+          "for (; statc (ImplicitCastExpr, LValueToRValue, struct memcg_vmstats_percpu *); ...)",
+          "do ... while 0"
+        ],
+        "cfg_value_bindings": [
+          "int __x = (val);",
+          "statc (ImplicitCastExpr, LValueToRValue, struct memcg_vmstats_percpu *)->stats_updates += __builtin_choose_expr(__builtin_types_compatible_p(typeof (val), long long) || __builtin_types_compatible_p(typeof (val), unsigned long long), ({",
+          "int cpu = debug_smp_processor_id();",
+          "const void *__vpp_verify = (typeof ((memcg->vmstats_percpu) + 0))((void *)0);",
+          "statc (ImplicitCastExpr, LValueToRValue, struct memcg_vmstats_percpu *)->stats_updates = 0 (ImplicitCastExpr, IntegralCast, unsigned int)",
+          "statc = statc (ImplicitCastExpr, LValueToRValue, struct memcg_vmstats_percpu *)->parent (ImplicitCastExpr, LValueToRValue, struct memcg_vmstats_percpu *)",
+          "__ptr = (unsigned long)((typeof (*(memcg->vmstats_percpu)) *)(memcg (ImplicitCastExpr, LValueToRValue, struct mem_cgroup *)->vmstats_percpu) (ImplicitCastExpr, LValueToRValue, struct memcg_vmstats_percpu *) (CStyleCastExpr, NoOp, typeof (*(memcg->vmstats_percpu)) *)) (CStyleCastExpr, PointerToIntegral, unsigned long)",
+          "statc = ({ ... ; ({ ... ; (typeof ((typeof (*(memcg->vmstats_percpu)) *)(memcg->vmstats_percpu)))(__ptr (ImplicitCastExpr, LValueToRValue, unsigned long) + (((__per_cpu_offset (ImplicitCastExpr, ArrayToPointerDecay, unsigned long *)[[B11.14] (ImplicitCastExpr, FunctionToPointerDecay, unsigned int (*)(void))()]))) (ImplicitCastExpr, LValueToRValue, unsigned long)) (CStyleCastExpr, IntegralToPointer, typeof ((typeof (*(memcg->vmstats_percpu)) *)(memcg->vmstats_percpu))) }) })"
+        ],
+        "call_edges": [
+          "memcg_rstat_updated -> debug_smp_processor_id",
+          "memcg_rstat_updated -> cgroup_rstat_updated",
+          "memcg_rstat_updated -> memcg_vmstats_needs_flush",
+          "memcg_rstat_updated -> atomic64_add"
+        ],
+        "call_targets": [
+          "debug_smp_processor_id",
+          "cgroup_rstat_updated",
+          "memcg_vmstats_needs_flush",
+          "atomic64_add"
+        ],
+        "state_statements": [
+          "[B1.2]->parent",
+          "[B1.5] = [B1.4]",
+          "[B2.4]->stats_updates",
+          "[B2.5] = [B2.2]",
+          "[B3.4]->stats_updates",
+          "[B3.9]->vmstats",
+          "[B3.11]->stats_updates",
+          "[B4.4]->vmstats",
+          "[B9.3] += [B6.3]",
+          "[B6.6]->stats_updates",
+          "[B9.2]->stats_updates",
+          "int __x = (val);"
+        ],
+        "field_accesses": [
+          "memcg->vmstats_percpu"
+        ],
+        "return_statements": [
+          "return;"
+        ],
+        "dump_excerpt": " --- Call graph Dump --- \n  Function: < root > calls: offset_to_ptr __kasan_check_read __kasan_check_write kasan_check_read kasan_check_write __read_once_word_nocheck read_word_at_a_time rip_rel_ptr arch_cmpxchg128 arch_cmpxchg128_local arch_try_cmpxchg128 __builtin_expect arch_try_cmpxchg128_local array_index_mask_nospec arch_atomic_read arch_atomic_set arch_atomic_add arch_atomic_sub arch_atomic_sub_and_test arch_atomic_inc arch_atomic_dec arch_atomic_dec_and_test arch_atomic_inc_and_test arch_atomic_add_negative arch_atomic_add_return __xadd_wrong_size arch_atomic_sub_return arch_atomic_fetch_add arch_atomic_fetch_sub arch_atomic_cmpxchg __cmpxchg_wrong_size arch_atomic_try_cmpxchg arch_atomic_xchg __xchg_wrong_size arch_atomic_and arch_atomic_fetch_and arch_atomic_or arch_atomic_fetch_or arch_atomic_xor arch_atomic_fetch_xor arch_atomic64_read arch_atomic64_set arch_atomic64_add arch_atomic64_sub arch_atomic64_sub_and_test arch_atomic64_inc arch_atomic64_dec arch_atomic64_dec_and_test arch_atomic64_inc_and_test arch_atomic64_add_negative arch_atomic64_add_return arch_atomic64_sub_return arch_atomic64_fetch_add arch_atomic64_fetch_sub arch_atomic64_cmpxchg arch_atomic64_try_cmpxchg arch_atomic64_xchg arch_atomic64_and arch_atomic64_fetch_and arch_atomic64_or arch_atomic64_fetch_or arch_atomic64_xor arch_atomic64_fetch_xor raw_atomic_read raw_atomic_read_acquire __compiletime_assert_0 __compiletime_assert_1 __atomic_signal_fence raw_atomic_set raw_atomic_set_release __compiletime_assert_2 __compiletime_assert_3 raw_atomic_add raw_atomic_add_return raw_atomic_add_return_acquire raw_atomic_add_return_release raw_atomic_add_return_relaxed raw_atomic_fetch_add raw_atomic_fetch_add_acquire raw_atomic_fetch_add_release raw_atomic_fetch_add_relaxed raw_atomic_sub raw_atomic_sub_return raw_atomic_sub_return_acquire raw_atomic_sub_return_release raw_atomic_sub_return_relaxed raw_atomic_fetch_sub raw_atomic_fetch_sub_acquire raw_atomic_fetch_sub_release raw_atomic_fetch_sub_relaxed raw_atomic_inc raw_atomic_inc_return raw_atomic_inc_return_acquire raw_atomic_inc_return_release raw_atomic_inc_return_relaxed raw_atomic_fetch_inc raw_atomic_fetch_inc_acquire raw_atomic_fetch_inc_release raw_atomic_fetch_inc_relaxed raw_atomic_dec raw_atomic_dec_return raw_atomic_dec_return_acquire raw_atomic_dec_return_release raw_atomic_dec_return_relaxed raw_atomic_fetch_dec raw_atomic_fetch_dec_acquire raw_atomic_fetch_dec_release raw_atomic_fetch_dec_relaxed raw_atomic_and raw_atomic_fetch_and raw_atomic_fetch_and_acquire raw_atomic_fetch_and_release raw_atomic_fetch_and_relaxed raw_atomic_andnot raw_atomic_fetch_andnot raw_atomic_fetch_andnot_acquire raw_atomic_fetch_andnot_release raw_atomic_fetch_andnot_relaxed raw_atomic_or raw_atomic_fetch_or raw_atomic_fetch_or_acquire raw_atomic_fetch_or_release raw_atomic_fetch_or_relaxed raw_atomic_xor raw_atomic_fetch_xor raw_atomic_fetch_xor_acquire raw_atomic_fetch_xor_release raw_atomic_fetch_xor_relaxed raw_atomic_xchg raw_atomic_xchg_acquire raw_atomic_xchg_release raw_atomic_xchg_relaxed raw_atomic_cmpxchg raw_atomic_cmpxchg_acquire raw_atomic_cmpxchg_release raw_atomic_cmpxchg_relaxed raw_atomic_try_cmpxchg raw_atomic_try_cmpxchg_acquire raw_atomic_try_cmpxchg_release raw_atomic_try_cmpxchg_relaxed raw_atomic_sub_and_test raw_atomic_dec_and_test raw_atomic_inc_and_test raw_atomic_add_negative raw_atomic_add_negative_acquire raw_atomic_add_negative_release raw_atomic_add_negative_relaxed raw_atomic_fetch_add_unless raw_atomic_add_unless raw_atomic_inc_not_zero raw_atomic_inc_unless_negative raw_atomic_dec_unless_positive raw_atomic_dec_if_positive raw_atomic64_read raw_atomic64_read_acquire __compiletime_assert_4 __compiletime_assert_5 raw_atomic64_set raw_atomic64_set_release __compiletime_assert_6 __compiletime_assert_7 raw_atomic64_add raw_atomic64_add_return raw_atomic64_add_return_acquire raw_atomic64_add_return_release raw_atomic64_add_return_relaxed raw_atomic64_fetch_add raw_atomic64_fetch_add",
+        "error": "",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/generate_only_evidence_all39_v8_r5/G12_78ec6f9df664_Concurrency/csa/patchweaver_runtime/csa_raw/mm-memcontrol.c-memcg_rstat_updated.txt",
+        "raw_output_sha256": "45c0d8c747b2138ed566f94241eac00aa7d7441bcdc49dc4feef49b52dd2e042",
+        "command_sha256": "2ced3a2990ad4fc765284524539b1ffab17e08159c9365de554be3092117c432",
+        "clang_command_preview": "/usr/lib/llvm-18/bin/clang --analyze -nostdinc -I./arch/x86/include -I./arch/x86/include/generated -I./include -I./arch/x86/include/uapi -I./arch/x86/include/generated/uapi -I./...",
+        "return_code": 0
+      }
+    ],
+    "call_edges": [
+      "mem_cgroup_css_rstat_flush -> mem_cgroup_from_css",
+      "mem_cgroup_css_rstat_flush -> parent_mem_cgroup",
+      "mem_cgroup_css_rstat_flush -> __compiletime_assert_3036",
+      "mem_cgroup_css_rstat_flush -> __compiletime_assert_3037",
+      "mem_cgroup_css_rstat_flush -> __first_node",
+      "mem_cgroup_css_rstat_flush -> __next_node",
+      "mem_cgroup_css_rstat_flush -> __compiletime_assert_3038",
+      "mem_cgroup_css_rstat_flush -> atomic64_read",
+      "mem_cgroup_css_rstat_flush -> atomic64_set",
+      "memcg_rstat_updated -> debug_smp_processor_id",
+      "memcg_rstat_updated -> cgroup_rstat_updated",
+      "memcg_rstat_updated -> memcg_vmstats_needs_flush",
+      "memcg_rstat_updated -> atomic64_add"
+    ],
+    "error": ""
+  }
+}

@@ -1,0 +1,8 @@
+Refinement Plan:
+- The false positive comes from treating either `complete()` **or** `kfree()` as sufficient evidence that a worker frees the completion’s context. `adf_device_sriov_worker` calls `complete()` but does not free its context, so it should not trigger this checker’s timed-wait ownership warning.
+- Require `SEEN_KFREE` for the context before reporting. The buggy reset worker calls `kfree(reset_data)` and has no `completion_done()` guard, so it remains detectable.
+- This change addresses the reported false positive only. The separate possibility of queued SR-IOV work outliving the stack-local `sriov_data` is a different lifetime issue and is not checked here.
+
+Refined Code:
+```cpp
+```

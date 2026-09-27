@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "status": "targeted_development_regression",
+  "implementation_features": [
+    "vulnerable-revision source snapshot",
+    "compile after every edit",
+    "metamorphic structural review gates"
+  ],
+  "cases": [
+    {
+      "case_id": "08_768f17fd25e4_Integer_Overflow",
+      "run_manifest_sha256": "10fe547d11076d6d3ef028e4f2575be5de80ae9bcd2f9bb741fcc0903189f297",
+      "paired_result_sha256": "3aa746daea82d5f8004e514b1d4e27aa82c83a2a00e1175d81a5310720369008",
+      "compile_attempts": 3,
+      "vulnerable_alerts": 8,
+      "fixed_alerts": 6,
+      "pds": false,
+      "outcome": "residual_fixed_noise"
+    },
+    {
+      "case_id": "19_39b13dce1a91_Double_Free",
+      "run_manifest_sha256": "929805a14a87930c32126a5db77a0ebf08ca08fc8322e59c13dbd25b52492e8b",
+      "paired_result_sha256": "36563db85eda8d3a3d9ee575a3a81b1622e313f393b3528594c1f30d1b19230e",
+      "compile_attempts": 5,
+      "vulnerable_alerts": 1,
+      "fixed_alerts": 0,
+      "pds": true,
+      "development_suite": {
+        "positive_passed": 6,
+        "positive_total": 6,
+        "negative_passed": 3,
+        "negative_total": 3,
+        "robust": true,
+        "result_sha256": "33e6148dc8770002625c5504c59be31bea7499864a3365e9433108b021aece13"
+      },
+      "fresh_confirmatory_suite": {
+        "positive_passed": 0,
+        "positive_total": 6,
+        "negative_passed": 2,
+        "negative_total": 3,
+        "robust": false,
+        "failed_variants": [
+          "positive_parenthesized",
+          "positive_callback_address",
+          "positive_compare_nonzero",
+          "positive_compare_negative",
+          "positive_saved_status",
+          "positive_goto_cleanup",
+          "negative_plain_registration"
+        ],
+        "result_sha256": "6e0c6f49c650cb25e8527e24578ecbbc7bcbe3ee31de40d29b3b7dbcfa98179e"
+      },
+      "rrs": false
+    },
+    {
+      "case_id": "23_13e788deb734_Out_of_Bound",
+      "run_manifest_sha256": "c23cbb35e26c01cd217d6af31887f3c0686d721528108c722d4f02ccfd763455",
+      "paired_result_sha256": "57977f7dabd16a919e4f8e3de2a009cee45e1583446018557124f3503f1ce448",
+      "compile_attempts": 2,
+      "vulnerable_alerts": 0,
+      "fixed_alerts": 0,
+      "pds": false,
+      "outcome": "validity_loss"
+    }
+  ],
+  "candidate_code_edited_by_human": false,
+  "primary_confirmatory_eligible": false,
+  "conclusion": "Immediate real compilation removed workflow-level compile ambiguity, but the fresh case-19 suite exposes severe representation overfitting. No targeted candidate qualifies as confirmatory RRS."
+}

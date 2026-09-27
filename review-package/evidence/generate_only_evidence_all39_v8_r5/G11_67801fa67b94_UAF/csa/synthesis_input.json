@@ -1,0 +1,1317 @@
+{
+  "analyzer_id": "csa",
+  "detector_artifact": "checker_plugin",
+  "primary_pattern": "use_after_free",
+  "objective": "Synthesize a path-sensitive use_after_free detector that encodes the same local state, guards, and lifecycle mechanism evidenced by the patch, while still generalizing to semantically equivalent sites.",
+  "mechanism_contract": {
+    "mechanism_family": "resource_lifetime_violation",
+    "semantic_dimensions": [
+      "resource identity or alias",
+      "release event",
+      "later use sink on the same resource",
+      "reinitialization/nulling/ownership transfer barrier"
+    ],
+    "trigger_invariants": [
+      "a resource is released",
+      "the same symbolic resource reaches a later use without reinitialization or ownership transfer",
+      "Patch-backed trigger clue: added or highlighted APIs: xe_file_get"
+    ],
+    "silence_invariants": [
+      "the resource is nulled, rebound, or reinitialized before reuse",
+      "ownership transfer or guard logic blocks access after release"
+    ],
+    "transfer_axes": [
+      "equivalent release-then-use sequences on the same resource role",
+      "equivalent lifecycle transitions across wrappers or helper functions",
+      "equivalent guard or barrier predicates on sibling paths",
+      "equivalent local state transitions around the same sink or dereference",
+      "equivalent ownership or release/reinit lifecycle on the same symbolic resource"
+    ],
+    "forbidden_shortcuts": [
+      "bind the detector to fixed file paths, line numbers, or exact patch strings",
+      "broaden into unrelated bug families just to improve hit count",
+      "report every free/delete call as if it were a bug",
+      "ignore resource identity and alias continuity between release and use",
+      "identify resources only by variable or field names such as session/cache/context instead of lifecycle evidence",
+      "placeholder helper logic or empty ProgramState modeling"
+    ],
+    "evidence_backed_axes": [
+      "path guards and barrier conditions",
+      "state transitions",
+      "resource lifecycle",
+      "semantic trigger slice"
+    ]
+  },
+  "detector_name_hint": "",
+  "focus_files": [],
+  "focus_functions": [],
+  "hypotheses": [
+    "The patch likely changes a resource lifecycle or stale-state transition."
+  ],
+  "required_evidence_types": [
+    "patch_fact",
+    "allocation_lifecycle",
+    "state_transition"
+  ],
+  "missing_evidence_types": [],
+  "evidence_degraded": false,
+  "patch_mechanism_signals": [
+    "added or highlighted APIs: xe_file_get"
+  ],
+  "silencing_conditions": [],
+  "retry_guidance": [],
+  "selected_evidence_ids": [
+    "csa_guard_0",
+    "csa_state_0",
+    "csa_validation_allocation_lifecycle_1",
+    "csa_validation_semantic_slice_0"
+  ],
+  "selected_evidence": [
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/xe/xe_exec_queue.c",
+        "function": "xe_exec_queue_create_ioctl"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "if q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->vm (ImplicitCastExpr, LValueToRValue, struct xe_vm *) && q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->hwe (ImplicitCastExpr, LValueToRValue, struct xe_hw_engine *)->hw_engine_group (ImplicitCastExpr, LValueToRValue, struct xe_hw_engine_group *)",
+        "summary": "Analyzer CFG for xe_exec_queue_create_ioctl in drivers/gpu/drm/xe/xe_exec_queue.c: bindings: q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->lr.context = dma_fence_context_alloc (ImplicitCastExpr, FunctionToPointerDecay, u64 (*)(unsigned int))(1 (ImplicitCastExpr, IntegralCast, unsigned int)); q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->xef = xe_file_get (ImplicitCastExpr, FunctionToPointerDecay, struct xe_file *(*)(struct xe_file *))(xef (ImplicitCastExpr, LValueToRValue, struct xe_file *)) | branches: if q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->vm (ImplicitCastExpr, LValueToRValue, struct xe_vm *) && q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->hwe (ImplicitCastExpr, LValueToRValue, struct xe_hw_engine *)->hw_engine_group (ImplicitCastExpr, LValueToRValue, struct xe_hw_engine_group *); q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->vm (ImplicitCastExpr, LValueToRValue, struct xe_vm *) && ... | calls: xe_exec_queue_create_ioctl -> to_xe_device; xe_exec_queue_create_ioctl -> to_xe_file",
+        "summary_line": 643,
+        "state_before": [
+          "buffer(args->num_placements)",
+          "buffer(args->width)",
+          "sinks(xe_vm_put, xe_exec_queue_create)"
+        ],
+        "state_after": [
+          "cfg_binding(q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->lr.context = dma_fence_context_alloc (ImplicitCastExpr, FunctionToPointerDecay, u64 (*)(unsigned int))(1 (ImplicitCastExpr, IntegralCast, unsigned int)))",
+          "cfg_binding(q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->xef = xe_file_get (ImplicitCastExpr, FunctionToPointerDecay, struct xe_file *(*)(struct xe_file *))(xef (ImplicitCastExpr, LValueToRValue, struct xe_file *)))",
+          "cfg_branch(if q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->vm (ImplicitCastExpr, LValueToRValue, struct xe_vm *) && q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->hwe (ImplicitCastExpr, LValueToRValue, struct xe_hw_engine *)->hw_engine_group (ImplicitCastExpr, LValueToRValue, struct xe_hw_engine_group *))",
+          "cfg_branch(q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->vm (ImplicitCastExpr, LValueToRValue, struct xe_vm *) && ...)"
+        ],
+        "tracked_symbols": [
+          "args->num_placements",
+          "args->width",
+          "xe->info",
+          "args->reserved",
+          "args->flags",
+          "args->instances"
+        ],
+        "buffer_fields": [
+          "args->num_placements",
+          "args->width",
+          "xe->info",
+          "args->reserved",
+          "args->flags",
+          "args->instances"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "xe_exec_queue_create_ioctl"
+        ],
+        "call_targets": [
+          "xe_vm_put",
+          "xe_exec_queue_create",
+          "up_read",
+          "dma_fence_context_alloc",
+          "xe_vm_add_compute_exec_queue",
+          "xe_hw_engine_group_add_exec_queue",
+          "xa_alloc",
+          "xe_file_get"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,drivers/gpu/drm/xe/.xe_exec_queue.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/uapi -I....",
+        "cfg_branch_kinds": [
+          "if",
+          "for"
+        ],
+        "branch_conditions": [
+          "goto kill_exec_queue;",
+          "if [B5.42]",
+          "goto put_exec_queue;",
+          "if [B7.15]",
+          "if [B9.4] && [B8.6]",
+          "[B9.4] && ..."
+        ],
+        "call_edges": [
+          "xe_exec_queue_create_ioctl -> to_xe_device",
+          "xe_exec_queue_create_ioctl -> to_xe_file",
+          "xe_exec_queue_create_ioctl -> __drm_dev_dbg",
+          "xe_exec_queue_create_ioctl -> __copy_from_user",
+          "xe_exec_queue_create_ioctl -> xe_exec_queue_create_bind",
+          "xe_exec_queue_create_ioctl -> IS_ERR"
+        ],
+        "state_statements": [
+          "return [B1.7];",
+          "[B3.4]->exec_queue_id",
+          "[B3.5] = [B3.2]",
+          "[B3.13]->xef",
+          "[B3.14] = [B3.11]",
+          "return [B3.16];"
+        ],
+        "source_file": "drivers/gpu/drm/xe/xe_exec_queue.c"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/xe/xe_exec_queue.c",
+          "hunk_index": 0,
+          "source_line": 643
+        },
+        "summary": "Analyzer CFG for xe_exec_queue_create_ioctl in drivers/gpu/drm/xe/xe_exec_queue.c: bindings: q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->lr.context = dma_fence_context_alloc (ImplicitCastExpr, FunctionToPointerDecay, u64 (*)(unsigned int))(1 (ImplicitCastExpr, IntegralCast, unsigned int)); q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->xef = xe_file_get (ImplicitCastExpr, FunctionToPointerDecay, struct xe_file *(*)(struct xe_file *))(xef (ImplicitCastExpr, LValueToRValue, struct xe_file *)) | branches: if q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->vm (ImplicitCastExpr, LValueToRValue, struct xe_vm *) && q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->hwe (ImplicitCastExpr, LValueToRValue, struct xe_hw_engine *)->hw_engine_group (ImplicitCastExpr, LValueToRValue, struct xe_hw_engine_group *); q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->vm (ImplicitCastExpr, LValueToRValue, struct xe_vm *) && ... | calls: xe_exec_queue_create_ioctl -> to_xe_device; xe_exec_queue_create_ioctl -> to_xe_file",
+        "statements": [
+          "611: \t\t\txe_vm_put(vm);",
+          "612: \t\t\treturn -ENOENT;",
+          "613: \t\t}",
+          "614:",
+          "615: \t\tq = xe_exec_queue_create(xe, vm, logical_mask,",
+          "616: \t\t\t\t\t args->width, hwe, 0,"
+        ],
+        "guards": [
+          "if q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->vm (ImplicitCastExpr, LValueToRValue, struct xe_vm *) && q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->hwe (ImplicitCastExpr, LValueToRValue, struct xe_hw_engine *)->hw_engine_group (ImplicitCastExpr, LValueToRValue, struct xe_hw_engine_group *)",
+          "q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->vm (ImplicitCastExpr, LValueToRValue, struct xe_vm *) && ...",
+          "if IS_ERR (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const void *))(q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *) (ImplicitCastExpr, BitCast, const void *))",
+          "if q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)"
+        ],
+        "call_boundary": [
+          "xe_vm_put",
+          "xe_exec_queue_create",
+          "up_read",
+          "dma_fence_context_alloc",
+          "xe_vm_add_compute_exec_queue",
+          "xe_hw_engine_group_add_exec_queue"
+        ],
+        "call_edges": [
+          "xe_exec_queue_create_ioctl -> to_xe_device",
+          "xe_exec_queue_create_ioctl -> to_xe_file",
+          "xe_exec_queue_create_ioctl -> __drm_dev_dbg",
+          "xe_exec_queue_create_ioctl -> __copy_from_user",
+          "xe_exec_queue_create_ioctl -> xe_exec_queue_create_bind",
+          "xe_exec_queue_create_ioctl -> IS_ERR",
+          "xe_exec_queue_create_ioctl -> PTR_ERR",
+          "xe_exec_queue_create_ioctl -> list_add_tail"
+        ],
+        "state_transitions": [
+          "cfg_binding(q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->lr.context = dma_fence_context_alloc (ImplicitCastExpr, FunctionToPointerDecay, u64 (*)(unsigned int))(1 (ImplicitCastExpr, IntegralCast, unsigned int)))",
+          "cfg_binding(q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->xef = xe_file_get (ImplicitCastExpr, FunctionToPointerDecay, struct xe_file *(*)(struct xe_file *))(xef (ImplicitCastExpr, LValueToRValue, struct xe_file *)))",
+          "cfg_branch(if q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->vm (ImplicitCastExpr, LValueToRValue, struct xe_vm *) && q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->hwe (ImplicitCastExpr, LValueToRValue, struct xe_hw_engine *)->hw_engine_group (ImplicitCastExpr, LValueToRValue, struct xe_hw_engine_group *))",
+          "cfg_branch(q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->vm (ImplicitCastExpr, LValueToRValue, struct xe_vm *) && ...)",
+          "return [B1.7];",
+          "[B3.4]->exec_queue_id"
+        ],
+        "api_terms": [
+          "to_xe_device",
+          "to_xe_file",
+          "__drm_dev_dbg",
+          "__copy_from_user",
+          "xe_exec_queue_create_bind",
+          "IS_ERR"
+        ],
+        "related_symbols": [
+          "args->num_placements",
+          "args->width",
+          "xe->info",
+          "args->reserved",
+          "args->flags",
+          "args->instances"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/xe/xe_exec_queue.c",
+        "function": "xe_exec_queue_create_ioctl"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "xe_exec_queue_create_ioctl in drivers/gpu/drm/xe/xe_exec_queue.c: cfg_calls=xe_exec_queue_create_ioctl -> to_xe_device; xe_exec_queue_create_ioctl -> to_xe_file",
+        "state_before": [
+          "buffer(args->num_placements)",
+          "buffer(args->width)",
+          "sinks(xe_vm_put, xe_exec_queue_create)"
+        ],
+        "state_after": [
+          "transition(return [B1.7];)",
+          "transition([B3.4]->exec_queue_id)",
+          "transition([B3.5] = [B3.2])"
+        ],
+        "tracked_symbols": [
+          "args->num_placements",
+          "args->width",
+          "xe->info",
+          "args->reserved",
+          "args->flags",
+          "args->instances"
+        ],
+        "buffer_fields": [
+          "args->num_placements",
+          "args->width",
+          "xe->info",
+          "args->reserved",
+          "args->flags",
+          "args->instances"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "xe_exec_queue_create_ioctl"
+        ],
+        "call_targets": [
+          "xe_vm_put",
+          "xe_exec_queue_create",
+          "up_read",
+          "dma_fence_context_alloc",
+          "xe_vm_add_compute_exec_queue",
+          "xe_hw_engine_group_add_exec_queue",
+          "xa_alloc",
+          "xe_file_get"
+        ],
+        "cfg_branch_kinds": [
+          "if",
+          "for"
+        ],
+        "branch_conditions": [
+          "goto kill_exec_queue;",
+          "if [B5.42]",
+          "goto put_exec_queue;",
+          "if [B7.15]"
+        ],
+        "call_edges": [
+          "xe_exec_queue_create_ioctl -> to_xe_device",
+          "xe_exec_queue_create_ioctl -> to_xe_file",
+          "xe_exec_queue_create_ioctl -> __drm_dev_dbg",
+          "xe_exec_queue_create_ioctl -> __copy_from_user",
+          "xe_exec_queue_create_ioctl -> xe_exec_queue_create_bind",
+          "xe_exec_queue_create_ioctl -> IS_ERR"
+        ],
+        "state_statements": [
+          "return [B1.7];",
+          "[B3.4]->exec_queue_id",
+          "[B3.5] = [B3.2]",
+          "[B3.13]->xef",
+          "[B3.14] = [B3.11]",
+          "return [B3.16];",
+          "[B5.4]->exec_queue",
+          "{.min = [B5.16], .max = ([B5.14])}"
+        ],
+        "return_statements": [
+          "return [B1.7];",
+          "return [B3.16];",
+          "return [B17.7];",
+          "return [B19.14];"
+        ],
+        "source_file": "drivers/gpu/drm/xe/xe_exec_queue.c"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/xe/xe_exec_queue.c",
+          "hunk_index": 0,
+          "source_line": 643
+        },
+        "summary": "xe_exec_queue_create_ioctl in drivers/gpu/drm/xe/xe_exec_queue.c: cfg_calls=xe_exec_queue_create_ioctl -> to_xe_device; xe_exec_queue_create_ioctl -> to_xe_file",
+        "statements": [
+          "611: \t\t\txe_vm_put(vm);",
+          "612: \t\t\treturn -ENOENT;",
+          "613: \t\t}",
+          "614:",
+          "615: \t\tq = xe_exec_queue_create(xe, vm, logical_mask,",
+          "616: \t\t\t\t\t args->width, hwe, 0,"
+        ],
+        "guards": [
+          "goto kill_exec_queue;",
+          "if [B5.42]",
+          "goto put_exec_queue;"
+        ],
+        "call_boundary": [
+          "xe_vm_put",
+          "xe_exec_queue_create",
+          "up_read",
+          "dma_fence_context_alloc",
+          "xe_vm_add_compute_exec_queue",
+          "xe_hw_engine_group_add_exec_queue"
+        ],
+        "call_edges": [
+          "xe_exec_queue_create_ioctl -> to_xe_device",
+          "xe_exec_queue_create_ioctl -> to_xe_file",
+          "xe_exec_queue_create_ioctl -> __drm_dev_dbg",
+          "xe_exec_queue_create_ioctl -> __copy_from_user",
+          "xe_exec_queue_create_ioctl -> xe_exec_queue_create_bind",
+          "xe_exec_queue_create_ioctl -> IS_ERR",
+          "xe_exec_queue_create_ioctl -> PTR_ERR",
+          "xe_exec_queue_create_ioctl -> list_add_tail"
+        ],
+        "state_transitions": [
+          "transition(return [B1.7];)",
+          "transition([B3.4]->exec_queue_id)",
+          "transition([B3.5] = [B3.2])",
+          "return [B1.7];",
+          "[B3.4]->exec_queue_id",
+          "[B3.5] = [B3.2]"
+        ],
+        "api_terms": [
+          "to_xe_device",
+          "to_xe_file",
+          "__drm_dev_dbg",
+          "__copy_from_user",
+          "xe_exec_queue_create_bind",
+          "IS_ERR"
+        ],
+        "related_symbols": [
+          "args->num_placements",
+          "args->width",
+          "xe->info",
+          "args->reserved",
+          "args->flags",
+          "args->instances"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.88
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_1",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/xe/xe_exec_queue.c",
+        "function": "xe_exec_queue_create_ioctl"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "xe_exec_queue_create_ioctl in drivers/gpu/drm/xe/xe_exec_queue.c provides CSA-backed pointer/resource lifecycle context near line 643",
+        "state_before": [
+          "buffer(args->num_placements)",
+          "buffer(args->width)",
+          "sinks(xe_vm_put, xe_exec_queue_create)"
+        ],
+        "state_after": [
+          "operation(return [B1.7];)",
+          "operation([B3.4]->exec_queue_id)",
+          "operation([B3.5] = [B3.2])",
+          "operation([B3.13]->xef)"
+        ],
+        "buffer_fields": [
+          "args->num_placements",
+          "args->width",
+          "xe->info",
+          "args->reserved",
+          "args->flags",
+          "args->instances"
+        ],
+        "coverage_status": "partial",
+        "operations": [
+          "return [B1.7];",
+          "[B3.4]->exec_queue_id",
+          "[B3.5] = [B3.2]",
+          "[B3.13]->xef",
+          "[B3.14] = [B3.11]",
+          "return [B3.16];"
+        ],
+        "functions": [
+          "xe_exec_queue_create_ioctl"
+        ],
+        "call_targets": [
+          "xe_vm_put",
+          "xe_exec_queue_create",
+          "up_read",
+          "dma_fence_context_alloc",
+          "xe_vm_add_compute_exec_queue",
+          "xe_hw_engine_group_add_exec_queue"
+        ],
+        "call_edges": [
+          "xe_exec_queue_create_ioctl -> to_xe_device",
+          "xe_exec_queue_create_ioctl -> to_xe_file",
+          "xe_exec_queue_create_ioctl -> __drm_dev_dbg",
+          "xe_exec_queue_create_ioctl -> __copy_from_user",
+          "xe_exec_queue_create_ioctl -> xe_exec_queue_create_bind",
+          "xe_exec_queue_create_ioctl -> IS_ERR"
+        ],
+        "state_statements": [
+          "return [B1.7];",
+          "[B3.4]->exec_queue_id",
+          "[B3.5] = [B3.2]",
+          "[B3.13]->xef",
+          "[B3.14] = [B3.11]",
+          "return [B3.16];"
+        ],
+        "source_file": "drivers/gpu/drm/xe/xe_exec_queue.c"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/xe/xe_exec_queue.c",
+          "hunk_index": 0,
+          "source_line": 643
+        },
+        "summary": "xe_exec_queue_create_ioctl in drivers/gpu/drm/xe/xe_exec_queue.c provides CSA-backed pointer/resource lifecycle context near line 643",
+        "statements": [
+          "611: \t\t\txe_vm_put(vm);",
+          "612: \t\t\treturn -ENOENT;",
+          "613: \t\t}",
+          "614:",
+          "615: \t\tq = xe_exec_queue_create(xe, vm, logical_mask,",
+          "616: \t\t\t\t\t args->width, hwe, 0,"
+        ],
+        "guards": [
+          "IS_ERR(q)",
+          "xe_vm_in_preempt_fence_mode(vm)",
+          "XE_IOCTL_DBG(xe, err)",
+          "q->vm && q->hwe->hw_engine_group"
+        ],
+        "call_boundary": [
+          "xe_vm_put",
+          "xe_exec_queue_create",
+          "up_read",
+          "dma_fence_context_alloc",
+          "xe_vm_add_compute_exec_queue",
+          "xe_hw_engine_group_add_exec_queue"
+        ],
+        "call_edges": [
+          "xe_exec_queue_create_ioctl -> to_xe_device",
+          "xe_exec_queue_create_ioctl -> to_xe_file",
+          "xe_exec_queue_create_ioctl -> __drm_dev_dbg",
+          "xe_exec_queue_create_ioctl -> __copy_from_user",
+          "xe_exec_queue_create_ioctl -> xe_exec_queue_create_bind",
+          "xe_exec_queue_create_ioctl -> IS_ERR"
+        ],
+        "state_transitions": [
+          "operation(return [B1.7];)",
+          "operation([B3.4]->exec_queue_id)",
+          "operation([B3.5] = [B3.2])",
+          "operation([B3.13]->xef)"
+        ],
+        "api_terms": [
+          "return [B1.7];",
+          "[B3.4]->exec_queue_id",
+          "[B3.5] = [B3.2]",
+          "[B3.13]->xef",
+          "[B3.14] = [B3.11]",
+          "return [B3.16];"
+        ],
+        "related_symbols": [],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      },
+      "confidence": 0.72
+    },
+    {
+      "evidence_id": "csa_validation_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/xe/xe_exec_queue.c",
+        "function": "xe_exec_queue_create_ioctl"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at drivers/gpu/drm/xe/xe_exec_queue.c:643",
+        "state_before": [
+          "buffer(args->num_placements)",
+          "buffer(args->width)",
+          "sinks(xe_vm_put, xe_exec_queue_create)"
+        ],
+        "state_after": [
+          "diagnostic(csa)"
+        ],
+        "buffer_fields": [
+          "args->num_placements",
+          "args->width",
+          "xe->info",
+          "args->reserved",
+          "args->flags",
+          "args->instances"
+        ],
+        "coverage_status": "partial",
+        "functions": [
+          "xe_exec_queue_create_ioctl"
+        ],
+        "call_targets": [
+          "xe_vm_put",
+          "xe_exec_queue_create",
+          "up_read",
+          "dma_fence_context_alloc",
+          "xe_vm_add_compute_exec_queue",
+          "xe_hw_engine_group_add_exec_queue"
+        ],
+        "call_edges": [
+          "xe_exec_queue_create_ioctl -> to_xe_device",
+          "xe_exec_queue_create_ioctl -> to_xe_file",
+          "xe_exec_queue_create_ioctl -> __drm_dev_dbg",
+          "xe_exec_queue_create_ioctl -> __copy_from_user",
+          "xe_exec_queue_create_ioctl -> xe_exec_queue_create_bind",
+          "xe_exec_queue_create_ioctl -> IS_ERR"
+        ],
+        "state_statements": [
+          "return [B1.7];",
+          "[B3.4]->exec_queue_id",
+          "[B3.5] = [B3.2]",
+          "[B3.13]->xef",
+          "[B3.14] = [B3.11]",
+          "return [B3.16];"
+        ],
+        "source_file": "drivers/gpu/drm/xe/xe_exec_queue.c"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/xe/xe_exec_queue.c",
+          "hunk_index": 0,
+          "source_line": 643
+        },
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at drivers/gpu/drm/xe/xe_exec_queue.c:643",
+        "statements": [
+          "611: \t\t\txe_vm_put(vm);",
+          "612: \t\t\treturn -ENOENT;",
+          "613: \t\t}",
+          "614:",
+          "615: \t\tq = xe_exec_queue_create(xe, vm, logical_mask,",
+          "616: \t\t\t\t\t args->width, hwe, 0,"
+        ],
+        "guards": [
+          "IS_ERR(q)",
+          "xe_vm_in_preempt_fence_mode(vm)",
+          "XE_IOCTL_DBG(xe, err)",
+          "q->vm && q->hwe->hw_engine_group"
+        ],
+        "call_boundary": [
+          "xe_vm_put",
+          "xe_exec_queue_create",
+          "up_read",
+          "dma_fence_context_alloc",
+          "xe_vm_add_compute_exec_queue",
+          "xe_hw_engine_group_add_exec_queue"
+        ],
+        "call_edges": [
+          "xe_exec_queue_create_ioctl -> to_xe_device",
+          "xe_exec_queue_create_ioctl -> to_xe_file",
+          "xe_exec_queue_create_ioctl -> __drm_dev_dbg",
+          "xe_exec_queue_create_ioctl -> __copy_from_user",
+          "xe_exec_queue_create_ioctl -> xe_exec_queue_create_bind",
+          "xe_exec_queue_create_ioctl -> IS_ERR"
+        ],
+        "state_transitions": [
+          "diagnostic(csa)"
+        ],
+        "api_terms": [
+          "return [B1.7];",
+          "[B3.4]->exec_queue_id",
+          "[B3.5] = [B3.2]",
+          "[B3.13]->xef",
+          "[B3.14] = [B3.11]",
+          "return [B3.16];"
+        ],
+        "related_symbols": [],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      },
+      "confidence": 0.72
+    }
+  ],
+  "semantic_slice_count": 4,
+  "context_summary_count": 0,
+  "semantic_slice_coverage": "partial",
+  "selected_semantic_slice_ids": [
+    "csa_guard_0",
+    "csa_state_0",
+    "csa_validation_allocation_lifecycle_1",
+    "csa_validation_semantic_slice_0"
+  ],
+  "selected_context_summary_ids": [],
+  "selected_semantic_slices": [
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/xe/xe_exec_queue.c",
+        "function": "xe_exec_queue_create_ioctl"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "if q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->vm (ImplicitCastExpr, LValueToRValue, struct xe_vm *) && q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->hwe (ImplicitCastExpr, LValueToRValue, struct xe_hw_engine *)->hw_engine_group (ImplicitCastExpr, LValueToRValue, struct xe_hw_engine_group *)",
+        "summary": "Analyzer CFG for xe_exec_queue_create_ioctl in drivers/gpu/drm/xe/xe_exec_queue.c: bindings: q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->lr.context = dma_fence_context_alloc (ImplicitCastExpr, FunctionToPointerDecay, u64 (*)(unsigned int))(1 (ImplicitCastExpr, IntegralCast, unsigned int)); q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->xef = xe_file_get (ImplicitCastExpr, FunctionToPointerDecay, struct xe_file *(*)(struct xe_file *))(xef (ImplicitCastExpr, LValueToRValue, struct xe_file *)) | branches: if q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->vm (ImplicitCastExpr, LValueToRValue, struct xe_vm *) && q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->hwe (ImplicitCastExpr, LValueToRValue, struct xe_hw_engine *)->hw_engine_group (ImplicitCastExpr, LValueToRValue, struct xe_hw_engine_group *); q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->vm (ImplicitCastExpr, LValueToRValue, struct xe_vm *) && ... | calls: xe_exec_queue_create_ioctl -> to_xe_device; xe_exec_queue_create_ioctl -> to_xe_file",
+        "summary_line": 643,
+        "state_before": [
+          "buffer(args->num_placements)",
+          "buffer(args->width)",
+          "sinks(xe_vm_put, xe_exec_queue_create)"
+        ],
+        "state_after": [
+          "cfg_binding(q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->lr.context = dma_fence_context_alloc (ImplicitCastExpr, FunctionToPointerDecay, u64 (*)(unsigned int))(1 (ImplicitCastExpr, IntegralCast, unsigned int)))",
+          "cfg_binding(q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->xef = xe_file_get (ImplicitCastExpr, FunctionToPointerDecay, struct xe_file *(*)(struct xe_file *))(xef (ImplicitCastExpr, LValueToRValue, struct xe_file *)))",
+          "cfg_branch(if q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->vm (ImplicitCastExpr, LValueToRValue, struct xe_vm *) && q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->hwe (ImplicitCastExpr, LValueToRValue, struct xe_hw_engine *)->hw_engine_group (ImplicitCastExpr, LValueToRValue, struct xe_hw_engine_group *))",
+          "cfg_branch(q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->vm (ImplicitCastExpr, LValueToRValue, struct xe_vm *) && ...)"
+        ],
+        "tracked_symbols": [
+          "args->num_placements",
+          "args->width",
+          "xe->info",
+          "args->reserved",
+          "args->flags",
+          "args->instances"
+        ],
+        "buffer_fields": [
+          "args->num_placements",
+          "args->width",
+          "xe->info",
+          "args->reserved",
+          "args->flags",
+          "args->instances"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "xe_exec_queue_create_ioctl"
+        ],
+        "call_targets": [
+          "xe_vm_put",
+          "xe_exec_queue_create",
+          "up_read",
+          "dma_fence_context_alloc",
+          "xe_vm_add_compute_exec_queue",
+          "xe_hw_engine_group_add_exec_queue",
+          "xa_alloc",
+          "xe_file_get"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,drivers/gpu/drm/xe/.xe_exec_queue.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/uapi -I....",
+        "cfg_branch_kinds": [
+          "if",
+          "for"
+        ],
+        "branch_conditions": [
+          "goto kill_exec_queue;",
+          "if [B5.42]",
+          "goto put_exec_queue;",
+          "if [B7.15]",
+          "if [B9.4] && [B8.6]",
+          "[B9.4] && ..."
+        ],
+        "call_edges": [
+          "xe_exec_queue_create_ioctl -> to_xe_device",
+          "xe_exec_queue_create_ioctl -> to_xe_file",
+          "xe_exec_queue_create_ioctl -> __drm_dev_dbg",
+          "xe_exec_queue_create_ioctl -> __copy_from_user",
+          "xe_exec_queue_create_ioctl -> xe_exec_queue_create_bind",
+          "xe_exec_queue_create_ioctl -> IS_ERR"
+        ],
+        "state_statements": [
+          "return [B1.7];",
+          "[B3.4]->exec_queue_id",
+          "[B3.5] = [B3.2]",
+          "[B3.13]->xef",
+          "[B3.14] = [B3.11]",
+          "return [B3.16];"
+        ],
+        "source_file": "drivers/gpu/drm/xe/xe_exec_queue.c"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/xe/xe_exec_queue.c",
+          "hunk_index": 0,
+          "source_line": 643
+        },
+        "summary": "Analyzer CFG for xe_exec_queue_create_ioctl in drivers/gpu/drm/xe/xe_exec_queue.c: bindings: q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->lr.context = dma_fence_context_alloc (ImplicitCastExpr, FunctionToPointerDecay, u64 (*)(unsigned int))(1 (ImplicitCastExpr, IntegralCast, unsigned int)); q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->xef = xe_file_get (ImplicitCastExpr, FunctionToPointerDecay, struct xe_file *(*)(struct xe_file *))(xef (ImplicitCastExpr, LValueToRValue, struct xe_file *)) | branches: if q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->vm (ImplicitCastExpr, LValueToRValue, struct xe_vm *) && q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->hwe (ImplicitCastExpr, LValueToRValue, struct xe_hw_engine *)->hw_engine_group (ImplicitCastExpr, LValueToRValue, struct xe_hw_engine_group *); q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->vm (ImplicitCastExpr, LValueToRValue, struct xe_vm *) && ... | calls: xe_exec_queue_create_ioctl -> to_xe_device; xe_exec_queue_create_ioctl -> to_xe_file",
+        "statements": [
+          "611: \t\t\txe_vm_put(vm);",
+          "612: \t\t\treturn -ENOENT;",
+          "613: \t\t}",
+          "614:",
+          "615: \t\tq = xe_exec_queue_create(xe, vm, logical_mask,",
+          "616: \t\t\t\t\t args->width, hwe, 0,"
+        ],
+        "guards": [
+          "if q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->vm (ImplicitCastExpr, LValueToRValue, struct xe_vm *) && q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->hwe (ImplicitCastExpr, LValueToRValue, struct xe_hw_engine *)->hw_engine_group (ImplicitCastExpr, LValueToRValue, struct xe_hw_engine_group *)",
+          "q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->vm (ImplicitCastExpr, LValueToRValue, struct xe_vm *) && ...",
+          "if IS_ERR (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const void *))(q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *) (ImplicitCastExpr, BitCast, const void *))",
+          "if q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)"
+        ],
+        "call_boundary": [
+          "xe_vm_put",
+          "xe_exec_queue_create",
+          "up_read",
+          "dma_fence_context_alloc",
+          "xe_vm_add_compute_exec_queue",
+          "xe_hw_engine_group_add_exec_queue"
+        ],
+        "call_edges": [
+          "xe_exec_queue_create_ioctl -> to_xe_device",
+          "xe_exec_queue_create_ioctl -> to_xe_file",
+          "xe_exec_queue_create_ioctl -> __drm_dev_dbg",
+          "xe_exec_queue_create_ioctl -> __copy_from_user",
+          "xe_exec_queue_create_ioctl -> xe_exec_queue_create_bind",
+          "xe_exec_queue_create_ioctl -> IS_ERR",
+          "xe_exec_queue_create_ioctl -> PTR_ERR",
+          "xe_exec_queue_create_ioctl -> list_add_tail"
+        ],
+        "state_transitions": [
+          "cfg_binding(q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->lr.context = dma_fence_context_alloc (ImplicitCastExpr, FunctionToPointerDecay, u64 (*)(unsigned int))(1 (ImplicitCastExpr, IntegralCast, unsigned int)))",
+          "cfg_binding(q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->xef = xe_file_get (ImplicitCastExpr, FunctionToPointerDecay, struct xe_file *(*)(struct xe_file *))(xef (ImplicitCastExpr, LValueToRValue, struct xe_file *)))",
+          "cfg_branch(if q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->vm (ImplicitCastExpr, LValueToRValue, struct xe_vm *) && q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->hwe (ImplicitCastExpr, LValueToRValue, struct xe_hw_engine *)->hw_engine_group (ImplicitCastExpr, LValueToRValue, struct xe_hw_engine_group *))",
+          "cfg_branch(q (ImplicitCastExpr, LValueToRValue, struct xe_exec_queue *)->vm (ImplicitCastExpr, LValueToRValue, struct xe_vm *) && ...)",
+          "return [B1.7];",
+          "[B3.4]->exec_queue_id"
+        ],
+        "api_terms": [
+          "to_xe_device",
+          "to_xe_file",
+          "__drm_dev_dbg",
+          "__copy_from_user",
+          "xe_exec_queue_create_bind",
+          "IS_ERR"
+        ],
+        "related_symbols": [
+          "args->num_placements",
+          "args->width",
+          "xe->info",
+          "args->reserved",
+          "args->flags",
+          "args->instances"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.92
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/xe/xe_exec_queue.c",
+        "function": "xe_exec_queue_create_ioctl"
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "xe_exec_queue_create_ioctl in drivers/gpu/drm/xe/xe_exec_queue.c: cfg_calls=xe_exec_queue_create_ioctl -> to_xe_device; xe_exec_queue_create_ioctl -> to_xe_file",
+        "state_before": [
+          "buffer(args->num_placements)",
+          "buffer(args->width)",
+          "sinks(xe_vm_put, xe_exec_queue_create)"
+        ],
+        "state_after": [
+          "transition(return [B1.7];)",
+          "transition([B3.4]->exec_queue_id)",
+          "transition([B3.5] = [B3.2])"
+        ],
+        "tracked_symbols": [
+          "args->num_placements",
+          "args->width",
+          "xe->info",
+          "args->reserved",
+          "args->flags",
+          "args->instances"
+        ],
+        "buffer_fields": [
+          "args->num_placements",
+          "args->width",
+          "xe->info",
+          "args->reserved",
+          "args->flags",
+          "args->instances"
+        ],
+        "coverage_status": "full",
+        "functions": [
+          "xe_exec_queue_create_ioctl"
+        ],
+        "call_targets": [
+          "xe_vm_put",
+          "xe_exec_queue_create",
+          "up_read",
+          "dma_fence_context_alloc",
+          "xe_vm_add_compute_exec_queue",
+          "xe_hw_engine_group_add_exec_queue",
+          "xa_alloc",
+          "xe_file_get"
+        ],
+        "cfg_branch_kinds": [
+          "if",
+          "for"
+        ],
+        "branch_conditions": [
+          "goto kill_exec_queue;",
+          "if [B5.42]",
+          "goto put_exec_queue;",
+          "if [B7.15]"
+        ],
+        "call_edges": [
+          "xe_exec_queue_create_ioctl -> to_xe_device",
+          "xe_exec_queue_create_ioctl -> to_xe_file",
+          "xe_exec_queue_create_ioctl -> __drm_dev_dbg",
+          "xe_exec_queue_create_ioctl -> __copy_from_user",
+          "xe_exec_queue_create_ioctl -> xe_exec_queue_create_bind",
+          "xe_exec_queue_create_ioctl -> IS_ERR"
+        ],
+        "state_statements": [
+          "return [B1.7];",
+          "[B3.4]->exec_queue_id",
+          "[B3.5] = [B3.2]",
+          "[B3.13]->xef",
+          "[B3.14] = [B3.11]",
+          "return [B3.16];",
+          "[B5.4]->exec_queue",
+          "{.min = [B5.16], .max = ([B5.14])}"
+        ],
+        "return_statements": [
+          "return [B1.7];",
+          "return [B3.16];",
+          "return [B17.7];",
+          "return [B19.14];"
+        ],
+        "source_file": "drivers/gpu/drm/xe/xe_exec_queue.c"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/xe/xe_exec_queue.c",
+          "hunk_index": 0,
+          "source_line": 643
+        },
+        "summary": "xe_exec_queue_create_ioctl in drivers/gpu/drm/xe/xe_exec_queue.c: cfg_calls=xe_exec_queue_create_ioctl -> to_xe_device; xe_exec_queue_create_ioctl -> to_xe_file",
+        "statements": [
+          "611: \t\t\txe_vm_put(vm);",
+          "612: \t\t\treturn -ENOENT;",
+          "613: \t\t}",
+          "614:",
+          "615: \t\tq = xe_exec_queue_create(xe, vm, logical_mask,",
+          "616: \t\t\t\t\t args->width, hwe, 0,"
+        ],
+        "guards": [
+          "goto kill_exec_queue;",
+          "if [B5.42]",
+          "goto put_exec_queue;"
+        ],
+        "call_boundary": [
+          "xe_vm_put",
+          "xe_exec_queue_create",
+          "up_read",
+          "dma_fence_context_alloc",
+          "xe_vm_add_compute_exec_queue",
+          "xe_hw_engine_group_add_exec_queue"
+        ],
+        "call_edges": [
+          "xe_exec_queue_create_ioctl -> to_xe_device",
+          "xe_exec_queue_create_ioctl -> to_xe_file",
+          "xe_exec_queue_create_ioctl -> __drm_dev_dbg",
+          "xe_exec_queue_create_ioctl -> __copy_from_user",
+          "xe_exec_queue_create_ioctl -> xe_exec_queue_create_bind",
+          "xe_exec_queue_create_ioctl -> IS_ERR",
+          "xe_exec_queue_create_ioctl -> PTR_ERR",
+          "xe_exec_queue_create_ioctl -> list_add_tail"
+        ],
+        "state_transitions": [
+          "transition(return [B1.7];)",
+          "transition([B3.4]->exec_queue_id)",
+          "transition([B3.5] = [B3.2])",
+          "return [B1.7];",
+          "[B3.4]->exec_queue_id",
+          "[B3.5] = [B3.2]"
+        ],
+        "api_terms": [
+          "to_xe_device",
+          "to_xe_file",
+          "__drm_dev_dbg",
+          "__copy_from_user",
+          "xe_exec_queue_create_bind",
+          "IS_ERR"
+        ],
+        "related_symbols": [
+          "args->num_placements",
+          "args->width",
+          "xe->info",
+          "args->reserved",
+          "args->flags",
+          "args->instances"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      },
+      "confidence": 0.88
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_1",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/xe/xe_exec_queue.c",
+        "function": "xe_exec_queue_create_ioctl"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "xe_exec_queue_create_ioctl in drivers/gpu/drm/xe/xe_exec_queue.c provides CSA-backed pointer/resource lifecycle context near line 643",
+        "state_before": [
+          "buffer(args->num_placements)",
+          "buffer(args->width)",
+          "sinks(xe_vm_put, xe_exec_queue_create)"
+        ],
+        "state_after": [
+          "operation(return [B1.7];)",
+          "operation([B3.4]->exec_queue_id)",
+          "operation([B3.5] = [B3.2])",
+          "operation([B3.13]->xef)"
+        ],
+        "buffer_fields": [
+          "args->num_placements",
+          "args->width",
+          "xe->info",
+          "args->reserved",
+          "args->flags",
+          "args->instances"
+        ],
+        "coverage_status": "partial",
+        "operations": [
+          "return [B1.7];",
+          "[B3.4]->exec_queue_id",
+          "[B3.5] = [B3.2]",
+          "[B3.13]->xef",
+          "[B3.14] = [B3.11]",
+          "return [B3.16];"
+        ],
+        "functions": [
+          "xe_exec_queue_create_ioctl"
+        ],
+        "call_targets": [
+          "xe_vm_put",
+          "xe_exec_queue_create",
+          "up_read",
+          "dma_fence_context_alloc",
+          "xe_vm_add_compute_exec_queue",
+          "xe_hw_engine_group_add_exec_queue"
+        ],
+        "call_edges": [
+          "xe_exec_queue_create_ioctl -> to_xe_device",
+          "xe_exec_queue_create_ioctl -> to_xe_file",
+          "xe_exec_queue_create_ioctl -> __drm_dev_dbg",
+          "xe_exec_queue_create_ioctl -> __copy_from_user",
+          "xe_exec_queue_create_ioctl -> xe_exec_queue_create_bind",
+          "xe_exec_queue_create_ioctl -> IS_ERR"
+        ],
+        "state_statements": [
+          "return [B1.7];",
+          "[B3.4]->exec_queue_id",
+          "[B3.5] = [B3.2]",
+          "[B3.13]->xef",
+          "[B3.14] = [B3.11]",
+          "return [B3.16];"
+        ],
+        "source_file": "drivers/gpu/drm/xe/xe_exec_queue.c"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/xe/xe_exec_queue.c",
+          "hunk_index": 0,
+          "source_line": 643
+        },
+        "summary": "xe_exec_queue_create_ioctl in drivers/gpu/drm/xe/xe_exec_queue.c provides CSA-backed pointer/resource lifecycle context near line 643",
+        "statements": [
+          "611: \t\t\txe_vm_put(vm);",
+          "612: \t\t\treturn -ENOENT;",
+          "613: \t\t}",
+          "614:",
+          "615: \t\tq = xe_exec_queue_create(xe, vm, logical_mask,",
+          "616: \t\t\t\t\t args->width, hwe, 0,"
+        ],
+        "guards": [
+          "IS_ERR(q)",
+          "xe_vm_in_preempt_fence_mode(vm)",
+          "XE_IOCTL_DBG(xe, err)",
+          "q->vm && q->hwe->hw_engine_group"
+        ],
+        "call_boundary": [
+          "xe_vm_put",
+          "xe_exec_queue_create",
+          "up_read",
+          "dma_fence_context_alloc",
+          "xe_vm_add_compute_exec_queue",
+          "xe_hw_engine_group_add_exec_queue"
+        ],
+        "call_edges": [
+          "xe_exec_queue_create_ioctl -> to_xe_device",
+          "xe_exec_queue_create_ioctl -> to_xe_file",
+          "xe_exec_queue_create_ioctl -> __drm_dev_dbg",
+          "xe_exec_queue_create_ioctl -> __copy_from_user",
+          "xe_exec_queue_create_ioctl -> xe_exec_queue_create_bind",
+          "xe_exec_queue_create_ioctl -> IS_ERR"
+        ],
+        "state_transitions": [
+          "operation(return [B1.7];)",
+          "operation([B3.4]->exec_queue_id)",
+          "operation([B3.5] = [B3.2])",
+          "operation([B3.13]->xef)"
+        ],
+        "api_terms": [
+          "return [B1.7];",
+          "[B3.4]->exec_queue_id",
+          "[B3.5] = [B3.2]",
+          "[B3.13]->xef",
+          "[B3.14] = [B3.11]",
+          "return [B3.16];"
+        ],
+        "related_symbols": [],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      },
+      "confidence": 0.72
+    },
+    {
+      "evidence_id": "csa_validation_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/gpu/drm/xe/xe_exec_queue.c",
+        "function": "xe_exec_queue_create_ioctl"
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at drivers/gpu/drm/xe/xe_exec_queue.c:643",
+        "state_before": [
+          "buffer(args->num_placements)",
+          "buffer(args->width)",
+          "sinks(xe_vm_put, xe_exec_queue_create)"
+        ],
+        "state_after": [
+          "diagnostic(csa)"
+        ],
+        "buffer_fields": [
+          "args->num_placements",
+          "args->width",
+          "xe->info",
+          "args->reserved",
+          "args->flags",
+          "args->instances"
+        ],
+        "coverage_status": "partial",
+        "functions": [
+          "xe_exec_queue_create_ioctl"
+        ],
+        "call_targets": [
+          "xe_vm_put",
+          "xe_exec_queue_create",
+          "up_read",
+          "dma_fence_context_alloc",
+          "xe_vm_add_compute_exec_queue",
+          "xe_hw_engine_group_add_exec_queue"
+        ],
+        "call_edges": [
+          "xe_exec_queue_create_ioctl -> to_xe_device",
+          "xe_exec_queue_create_ioctl -> to_xe_file",
+          "xe_exec_queue_create_ioctl -> __drm_dev_dbg",
+          "xe_exec_queue_create_ioctl -> __copy_from_user",
+          "xe_exec_queue_create_ioctl -> xe_exec_queue_create_bind",
+          "xe_exec_queue_create_ioctl -> IS_ERR"
+        ],
+        "state_statements": [
+          "return [B1.7];",
+          "[B3.4]->exec_queue_id",
+          "[B3.5] = [B3.2]",
+          "[B3.13]->xef",
+          "[B3.14] = [B3.11]",
+          "return [B3.16];"
+        ],
+        "source_file": "drivers/gpu/drm/xe/xe_exec_queue.c"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "drivers/gpu/drm/xe/xe_exec_queue.c",
+          "hunk_index": 0,
+          "source_line": 643
+        },
+        "summary": "CSA validation diagnostic anchors the patch-local semantic slice at drivers/gpu/drm/xe/xe_exec_queue.c:643",
+        "statements": [
+          "611: \t\t\txe_vm_put(vm);",
+          "612: \t\t\treturn -ENOENT;",
+          "613: \t\t}",
+          "614:",
+          "615: \t\tq = xe_exec_queue_create(xe, vm, logical_mask,",
+          "616: \t\t\t\t\t args->width, hwe, 0,"
+        ],
+        "guards": [
+          "IS_ERR(q)",
+          "xe_vm_in_preempt_fence_mode(vm)",
+          "XE_IOCTL_DBG(xe, err)",
+          "q->vm && q->hwe->hw_engine_group"
+        ],
+        "call_boundary": [
+          "xe_vm_put",
+          "xe_exec_queue_create",
+          "up_read",
+          "dma_fence_context_alloc",
+          "xe_vm_add_compute_exec_queue",
+          "xe_hw_engine_group_add_exec_queue"
+        ],
+        "call_edges": [
+          "xe_exec_queue_create_ioctl -> to_xe_device",
+          "xe_exec_queue_create_ioctl -> to_xe_file",
+          "xe_exec_queue_create_ioctl -> __drm_dev_dbg",
+          "xe_exec_queue_create_ioctl -> __copy_from_user",
+          "xe_exec_queue_create_ioctl -> xe_exec_queue_create_bind",
+          "xe_exec_queue_create_ioctl -> IS_ERR"
+        ],
+        "state_transitions": [
+          "diagnostic(csa)"
+        ],
+        "api_terms": [
+          "return [B1.7];",
+          "[B3.4]->exec_queue_id",
+          "[B3.5] = [B3.2]",
+          "[B3.13]->xef",
+          "[B3.14] = [B3.11]",
+          "return [B3.16];"
+        ],
+        "related_symbols": [],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      },
+      "confidence": 0.72
+    }
+  ],
+  "selected_context_summaries": [],
+  "semantic_clause_plan": [
+    {
+      "clause_id": "vulnerable_trigger_clause",
+      "intent": "Trigger on the vulnerable use_after_free mechanism using evidence-backed path/flow semantics.",
+      "supporting_evidence_ids": [
+        "csa_guard_0",
+        "csa_state_0",
+        "csa_validation_allocation_lifecycle_1",
+        "csa_validation_semantic_slice_0"
+      ],
+      "repair_when": [
+        "semantic_no_hits"
+      ],
+      "focus_functions": []
+    },
+    {
+      "clause_id": "patched_silence_clause",
+      "intent": "Stay silent on patched code when patch-added guards, barriers, or safe APIs prove the mechanism is blocked.",
+      "supporting_evidence_ids": [
+        "csa_guard_0",
+        "csa_state_0",
+        "csa_validation_semantic_slice_0"
+      ],
+      "repair_when": [],
+      "silencing_conditions": []
+    },
+    {
+      "clause_id": "semantic_transfer_clause",
+      "intent": "Generalize along semantic slices and call-chain evidence rather than patch-local syntax.",
+      "supporting_evidence_ids": [
+        "csa_validation_semantic_slice_0"
+      ],
+      "repair_when": [],
+      "analyzer_id": "csa"
+    },
+    {
+      "clause_id": "analyzer_interface_clause",
+      "intent": "Preserve valid analyzer-facing syntax and interfaces while keeping semantics unchanged.",
+      "supporting_evidence_ids": [],
+      "repair_when": [
+        "semantic_execution_error"
+      ],
+      "analyzer_id": "csa"
+    }
+  ],
+  "repair_directives": [],
+  "constraints": [
+    {
+      "title": "Generalize beyond patch site",
+      "description": "Do not bind the detector to fixed file paths, line numbers, or exact patch strings.",
+      "priority": "high"
+    },
+    {
+      "title": "Preserve vulnerability semantics",
+      "description": "Keep the detector focused on the vulnerability family implied by the patch and evidence.",
+      "priority": "high"
+    },
+    {
+      "title": "Respect analyzer-native form",
+      "description": "Output must be a valid checker_plugin for csa.",
+      "priority": "high"
+    },
+    {
+      "title": "Stay within proven mechanism scope",
+      "description": "Generalize only along evidence-supported semantic dimensions. Do not broaden the detector into unrelated globals, APIs, or bug families.",
+      "priority": "high"
+    },
+    {
+      "title": "Honor mechanism contract",
+      "description": "Preserve the mechanism family `resource_lifetime_violation` by keeping trigger invariants a resource is released; the same symbolic resource reaches a later use without reinitialization or ownership transfer; Patch-backed trigger clue: added or highlighted APIs: xe_file_get.",
+      "priority": "high"
+    },
+    {
+      "title": "Generalize only on contract axes",
+      "description": "Reuse semantics only along these transfer axes: equivalent release-then-use sequences on the same resource role; equivalent lifecycle transitions across wrappers or helper functions; equivalent guard or barrier predicates on sibling paths.",
+      "priority": "high"
+    },
+    {
+      "title": "Encode the patch-added barrier",
+      "description": "use APIs such as xe_file_get as semantic clues, not string matches.",
+      "priority": "high"
+    },
+    {
+      "title": "Track resource identity across lifetime edges",
+      "description": "Model release, reuse, reinitialization, and ownership transfer on the same symbolic resource; do not count frees or uses in isolation.",
+      "priority": "high"
+    },
+    {
+      "title": "Do not key on local identifier names",
+      "description": "Do not define the vulnerable resource role solely by field/variable names such as session/cache/context; infer it from release-use-nulling-relookup semantics and alias continuity.",
+      "priority": "high"
+    },
+    {
+      "title": "Use path-sensitive evidence",
+      "description": "Prefer guards, state transitions, and lifecycle facts over broad textual matching.",
+      "priority": "high"
+    },
+    {
+      "title": "No placeholder helper logic",
+      "description": "Helper predicates must inspect AST/program state and must not be unconditional return-true/return-false stubs.",
+      "priority": "high"
+    }
+  ],
+  "implementation_hints": [
+    "Mechanism family: resource_lifetime_violation",
+    "Mechanism dimensions: resource identity or alias, release event, later use sink on the same resource, reinitialization/nulling/ownership transfer barrier",
+    "Trigger invariants: a resource is released, the same symbolic resource reaches a later use without reinitialization or ownership transfer, Patch-backed trigger clue: added or highlighted APIs: xe_file_get",
+    "Silence invariants: the resource is nulled, rebound, or reinitialized before reuse, ownership transfer or guard logic blocks access after release",
+    "Transfer axes: equivalent release-then-use sequences on the same resource role, equivalent lifecycle transitions across wrappers or helper functions, equivalent guard or barrier predicates on sibling paths",
+    "Relevant APIs: xe_file_get",
+    "Patch mechanism: added or highlighted APIs: xe_file_get",
+    "Track the same symbolic resource across release, nulling/reinit, and later use/free; do not reduce lifecycle reasoning to raw API names."
+  ],
+  "validation_expectations": [
+    "Vulnerable version should trigger a use_after_free finding.",
+    "Patched version should stay silent for the same mechanism.",
+    "Semantic validation that executes but returns zero hits is not acceptable; recover coverage with evidence-backed semantics.",
+    "Repair phase may fix syntax/interfaces only; it must not simplify away the core detection logic.",
+    "Generalization must stay inside the mechanism contract transfer axes instead of widening to adjacent bug families.",
+    "Sibling variants that preserve the same release-then-use lifecycle should also trigger; patch-local identifier matching is not sufficient.",
+    "Trigger invariant: a resource is released.",
+    "Trigger invariant: the same symbolic resource reaches a later use without reinitialization or ownership transfer."
+  ]
+}

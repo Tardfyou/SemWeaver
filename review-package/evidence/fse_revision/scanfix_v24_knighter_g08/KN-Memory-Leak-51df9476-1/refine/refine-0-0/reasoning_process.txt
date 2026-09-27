@@ -1,0 +1,8 @@
+The false positive comes from treating the syntactic `goto exit` branch as a leak without checking the condition that reaches it. The allocation-failure branch is exactly a null check of the tracked result, so no device exists there; I’ll add a narrow null-branch guard while leaving the later `if (err)` failure path reportable.Refinment Plan:
+1. Keep the existing pending-allocation tracking and exit-goto analysis.
+2. Before reporting, recognize a null-test of the tracked allocation result when the `then` branch is the null branch. That branch cannot leak an allocated device.
+3. Do not suppress unrelated error checks such as `if (err) goto exit;`, which still detect the target bug.
+
+Refined Code:
+```cpp
+```

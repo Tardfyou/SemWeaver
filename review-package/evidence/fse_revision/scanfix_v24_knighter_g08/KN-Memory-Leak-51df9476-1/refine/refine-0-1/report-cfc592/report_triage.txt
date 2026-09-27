@@ -1,0 +1,4 @@
+- Decision: NotABug
+- Reason: The reported path assumes `alloc_etherdev()` returned `NULL`. In that case, no `net_device` was allocated, so there is nothing to free. The cleanup loop’s pre-decrement index correctly cleans only earlier iterations.
+
+  The target bug is a separate path: `alloc_etherdev()` succeeds, then `rvu_rep_devlink_port_register()` fails. That path previously jumped to `exit` without freeing the current device, and the cleanup loop skipped it. The fix adds `free_netdev(ndev)` on that path. Thus, the target bug is real, but this report points to the allocation-failure branch and does not identify it.

@@ -1,0 +1,2 @@
+enum { CAP=8 }; extern void use(int);
+void f(void) { int a[CAP]; for(int i=0;i<=CAP-1;++i) use(a[i+1]); }

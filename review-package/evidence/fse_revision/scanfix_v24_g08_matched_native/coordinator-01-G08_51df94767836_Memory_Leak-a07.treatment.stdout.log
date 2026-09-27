@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "method": "semweaver_provenance_gated_csa_treatment",
+  "objective": "precision_refine",
+  "evidence_mode": "native",
+  "origin_gate_enabled": true,
+  "case_id": "G08_51df94767836_Memory_Leak",
+  "model": "gpt-6-luna",
+  "provider": "openai_compatible",
+  "wire_api": "responses",
+  "reasoning_effort": "high",
+  "max_iterations": 1,
+  "max_tokens_per_call": 16384,
+  "max_model_calls": 1,
+  "temperature": 0.0,
+  "request_timeout_seconds": 3000,
+  "wrapper_max_retries": 0,
+  "inline_semantic_validation": false,
+  "external_paired_validation_required": true,
+  "internal_evidence_preloaded": true,
+  "evidence_requests_disabled": true,
+  "compile_after_each_edit": true,
+  "budget_finalized_candidate_ready": false,
+  "llm_exchange_log": "/artifact/work/artifacts/fse_revision/scanfix_v24_g08_matched_native/G08_51df94767836_Memory_Leak/attempt-07/llm_exchanges.jsonl",
+  "llm_exchange_log_sha256": "563f2c28b1d334994906e0d009b94c6dc2117f14ef0d8a539e1351b4cd87ec3d",
+  "preloaded_internal_evidence_ids": [
+    "csa_guard_1",
+    "csa_lifecycle_0"
+  ],
+  "patch_sha256": "19c390ca77d412d0614689402ba7f57d0122a73079af2165d586f8220c30e842",
+  "original_checker_sha256": "c4bbffbf3e19780897a9677ae5607f9f5d2a578d8085e92540931e74850b59eb",
+  "starting_checker_sha256": "37e07951d27af559b7a4b97372faa30325ac25b93ed3dfae6d49d43a59b86a42",
+  "evidence_bundle_sha256": "e36cdcc26ff7224f5b6d7303f48a7de5930d2aeb6f030ae362b826be2dee4855",
+  "fixed_report_bindings": [
+    {
+      "id": "report-aab946",
+      "sha256": "5ce96131043a4f05855e0ee5c317811f3ee87e61faf370dc58a58d04244d1b1f"
+    },
+    {
+      "id": "report-cfc592",
+      "sha256": "f36edfd489a3fb64fdbae760baaf9c7484b16fd119bcabd6b316f5672e195765"
+    }
+  ],
+  "fixed_report_feedback_sha256": "942c634bd8b21ac5de59ac47eb0b1e39a60c0f8ecdfe903ee341b82d7ce1faf5",
+  "generated_fixed_report_bindings": [],
+  "generated_fixed_report_feedback_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "visible_evidence_sha256": "2e8a569242e641ce13b9c3f5c4d1858f2517c24eaad0b1b6e693af85d15f5728",
+  "visible_evidence_record_count": 5,
+  "frozen_source_revision": "51df947678360faf1967fe0bd1a40c681f634104^",
+  "frozen_source_hashes": {
+    "drivers/net/ethernet/marvell/octeontx2/nic/rep.c": "e87e427c54dfe48ad2ed4944b416b4aed1c086b6ccf4958c87b4d09ad2f3f38b"
+  },
+  "feedback_result_sha256": null,
+  "feedback_run_manifest_sha256": "b5f9990868fedb48a706c0bc873cadb66a5ddcf787beba6d43ef3183a2ee5d76",
+  "feedback_candidate_sha256": "37e07951d27af559b7a4b97372faa30325ac25b93ed3dfae6d49d43a59b86a42",
+  "feedback_kind": "failed_tool",
+  "candidate_sha256": "b1ee83deba66f40845bf077df795bbbd239fad032fccbaca4a712cdd4e846f61",
+  "candidate_changed": true,
+  "success": false,
+  "agent_success": false,
+  "iterations": 1,
+  "compile_attempts": 1,
+  "error_message": "达到最大精炼轮次 (1)",
+  "final_message": "达到最大精炼轮次，仍未通过本地验证。",
+  "output_path": "",
+  "elapsed_seconds": 103.27902793884277,
+  "llm_usage": {
+    "prompt_tokens": 16443,
+    "completion_tokens": 3495,
+    "total_tokens": 19938,
+    "call_count": 1,
+    "available": true,
+    "model": "gpt-6-luna",
+    "phases": 1
+  },
+  "model_calls_used": 1,
+  "model_call_budget_exhausted": false,
+  "llm_usage_by_phase": {
+    "decide": {
+      "prompt_tokens": 16443,
+      "completion_tokens": 3495,
+      "total_tokens": 19938,
+      "call_count": 1,
+      "available": true,
+      "model": "gpt-6-luna"
+    }
+  },
+  "artifact_review": {
+    "artifact_path": "/artifact/work/artifacts/fse_revision/scanfix_v24_g08_matched_native/G08_51df94767836_Memory_Leak/attempt-07/SAGenTestChecker.cpp",
+    "analyzer": "csa",
+    "review_mode": "refine",
+    "findings": [],
+    "warnings": []
+  },
+  "failure_type": "compile_failure",
+  "latest_failure_title": "apply_patch.compile_candidate",
+  "latest_failure_text": "ERROR: 编译失败: 2 个错误, 3 个警告\n/artifact/work/artifacts/fse_revision/scanfix_v24_g08_matched_native/G08_51df94767836_Memory_Leak/attempt-07/SAGenTestChecker.cpp:363:40: error: no matching function for call to 'findSpecificTypeInChildren'\n  363 |                                        findSpecificTypeInChildren<CallExpr>(AllocStore, C))\n      |                                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n/artifact/work/artifacts/fse_revision/scanfix_v24_g08_matched_native/G08_51df94767836_Memory_Leak/attempt-07/generated-include/clang/StaticAnalyzer/Checkers/utility.h:63:10: note: candidate function template not viable: requires single argument 'S', but 2 arguments were provided\n   63 | const T* findSpecificTypeInChildren(const Stmt *S) {\n      |          ^                          ~~~~~~~~~~~~~\n/artifact/work/artifacts/fse_revision/scanfix_v24_g08_matched_native/G08_51df94767836_Memory_Leak/attempt-07/SAGenTestChecker.cpp:364:76: error: too few arguments to function call, expected 5, have 2\n  364 |                 AllocTarget = DeclRefExpr::CreateEmpty(C.getASTContext(), 0);\n      |                               ~~~~~~~~~~~~~~~~~~~~~~~~                     ^\n/usr/lib/llvm-18/include/clang/AST/Expr.h:1311:23: note: 'CreateEmpty' declared here\n 1311 |   static DeclRefExpr *CreateEmpty(const ASTContext &Context, bool HasQualifier,\n      |                       ^           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n 1312 |                                   bool HasFoundDecl,\n      |                                   ~~~~~~~~~~~~~~~~~~\n 1313 |                                   bool HasTemplateKWAndArgsInfo,\n      |                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n 1314 |                                   unsigned NumTemplateArgs);\n      |                                   ~~~~~~~~~~~~~~~~~~~~~~~~\n/artifact/work/artifacts/fse_revision/scanfix_v24_g08_matched_native/G08_51df94767836_Memory_Leak/attempt-07/SAGenTestChecker.cpp:418:12: warning: 'startswith' is deprecated: Use starts_with instead [-Wdeprecated-declarations]\n  418 |   if (LRef.startswith(\"err\") || LRef.startswith(\"error\") || LRef.startswith(\"out\"))\n      |            ^~~~~~~~~~\n      |            starts_with\n/usr/lib/llvm-18/include/llvm/ADT/StringRef.h:261:19: note: 'startswith' has been explicitly marked deprecated here\n  261 |     [[nodiscard]] LLVM_DEPRECATED(\n      |                   ^\n/usr/lib/llvm-18/include/llvm/Support/Compiler.h:155:50: note: expanded from macro 'LLVM_DEPRECATED'\n  155 | #define LLVM_DEPRECATED(MSG, FIX) __attribute__((deprecated(MSG, FIX)))\n      |                                                  ^\n/artifact/work/artifacts/fse_revision/scanfix_v24_g08_matched_native/G08_51df94767836_Memory_Leak/attempt-07/SAGenTestChecker.cpp:418:38: warning: 'startswith' is deprecated: Use starts_with instead [-Wdeprecated-declarations]\n  418 |   if (LRef.startswith(\"err\") || LRef.startswith(\"error\") || LRef.startswith(\"out\"))\n      |                                      ^~~~~~~~~~\n      |                                      starts_with\n/usr/lib/llvm-18/include/llvm/ADT/StringRef.h:261:19: note: 'startswith' has been explicitly marked deprecated here\n  261 |     [[nodiscard]] LLVM_DEPRECATED(\n      |                   ^\n/usr/lib/llvm-18/include/llvm/Support/Compiler.h:155:50: note: expanded from macro 'LLVM_DEPRECATED'\n  155 | #define LLVM_DEPRECATED(MSG, FIX) __attribute__((deprecated(MSG, FIX)))\n      |                                                  ^\n/artifact/work/artifacts/fse_revision/scanfix_v24_g08_matched_native/G08_51df94767836_Memory_Leak/attempt-07/SAGenTestChecker.cpp:418:66: warning: 'startswith' is deprecated: Use starts_with instead [-Wdeprecated-declarations]\n  418 |   if (LRef.startswith(\"err\") || LRef.startswith(\"error\") || LRef.startswith(\"out\"))\n      |                                                                  ^~~~~~~~~~\n      |                                                                  starts_with\n/usr/lib/llvm-18/include/llvm/ADT/StringRef.h:261:19: note: 'startswith' has been explicitly marked deprecated here\n  261 |     [[nodiscard]] LLVM_DEPRECATED(\n      |                   ^\n/usr/lib/llvm-18/include/llvm/Support/Compiler.h:155:50: note: expanded from macro 'LLVM_DEPRECATED'\n  155 | #define LLVM_DEPRECATED(MSG, FIX) __attribute__((deprecated(MSG, FIX)))\n      |                                                  ^\n3 warnings and 2 errors generated.",
+  "event_count": 26,
+  "model_rate_limit_retries": 0
+}

@@ -1,0 +1,905 @@
+{
+  "records": [
+    {
+      "evidence_id": "csa_semantic_slice_0",
+      "type": "semantic_slice",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/video/backlight/hx8357.c",
+        "function": "hx8357_probe"
+      },
+      "location": {
+        "line": 609,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "hx8357_probe adds patch barrier `lcd->im_pins` around devm_kzalloc, dev_err.",
+        "contract_type": "patch_barrier",
+        "same_call_binding": "tie the guard to the current downstream sink or protected state transition instead of any unrelated if-statement",
+        "trigger_contract": "report when a risky write proceeds without the patch-style barrier",
+        "silence_contract": "stay silent when the nearby guard proves the current write is blocked or bounded",
+        "guard_exprs": [
+          "lcd->im_pins",
+          "lcd->im_pins->ndescs < HX8357_NUM_IM_PINS"
+        ],
+        "removed_calls": [
+          "dev_err_probe",
+          "gpiod_set_consumer_name"
+        ],
+        "added_calls": [
+          "dev_err_probe",
+          "gpiod_set_consumer_name"
+        ],
+        "tracked_symbols": [
+          "lcd",
+          "im_pins",
+          "ndescs",
+          "HX8357_NUM_IM_PINS",
+          "dev_err_probe",
+          "dev",
+          "EINVAL",
+          "not"
+        ],
+        "widened_variables": [],
+        "state_resets": [],
+        "old_numeric_type": "",
+        "new_numeric_type": "",
+        "numeric_domain_change": "",
+        "arithmetic_operations": [],
+        "sink_calls": [
+          "devm_kzalloc",
+          "dev_err",
+          "of_match_device",
+          "lcd->reset = devm_gpiod_get(dev, \"reset\", GPIOD_OUT_LOW)"
+        ],
+        "buffer_fields": [
+          "lcd->im_pins",
+          "lcd->reset"
+        ],
+        "source_file": "drivers/video/backlight/hx8357.c",
+        "function": "hx8357_probe",
+        "source_excerpt": "580: static int hx8357_probe(struct spi_device *spi)\n581: {\n582: \tstruct device *dev = &spi->dev;\n583: \tstruct lcd_device *lcdev;\n584: \tstruct hx8357_data *lcd;\n585: \tconst struct of_device_id *match;\n586: \tint i, ret;\n587: \n588: \tlcd = devm_kzalloc(&spi->dev, sizeof(*lcd), GFP_KERNEL);\n589: \tif (!lcd)\n590: \t\treturn -ENOMEM;\n591: \n592: \tret = spi_setup(spi);\n593: \tif (ret < 0) {\n594: \t\tdev_err(&spi->dev, \"SPI setup failed.\\n\");\n595: \t\treturn ret;\n596: \t}\n597: \n598: \tlcd->spi = spi;\n599: \n600: \tmatch = of_match_device(hx8357_dt_ids, &spi->dev);\n601: \tif (!match || !match->data)\n602: \t\treturn -EINVAL;\n603: \n604: \tlcd->reset = devm_gpiod_get(dev, \"reset\", GPIOD_OUT_LOW);\n605: \tif (IS_ERR(lcd->reset))\n606: \t\treturn dev_err_probe(dev, PTR_ERR(lcd->reset), \"failed to request reset GPIO\\n\");\n607: \tgpiod_set_consumer_name(lcd->reset, \"hx8357-reset\");\n608: \n609: \tlcd->im_pins = devm_gpiod_get_array_optional(dev, \"im\", GPIOD_OUT_LOW);\n610: \tif (IS_ERR(lcd->im_pins))\n611: \t\treturn dev_err_probe(dev, PTR_ERR(lcd->im_pins), \"failed to request im GPIOs\\n\");\n612: \tif (lcd->im_pins->ndescs < HX8357_NUM_IM_PINS)\n613: \t\treturn dev_err_probe(dev, -EINVAL, \"not enough im GPIOs\\n\");\n614: \n615: \tfor (i = 0; i < HX8357_NUM_IM_PINS; i++)\n616: \t\tgpiod_set_consumer_name(lcd->im_pins->desc[i], \"im_pins\");\n617: \n618: \tlcdev = devm_lcd_device_register(&spi->dev, \"mxsfb\", &spi->dev, lcd,\n619: \t\t\t\t\t&hx8357_ops);\n620: \tif (IS_ERR(lcdev)) {\n621: \t\tret = PTR_ERR(lcdev);\n622: \t\treturn ret;\n623: \t}\n624: \tspi_set_drvdata(spi, lcdev);\n625: \n626: \thx8357_lcd_reset(lcdev);\n627: \n628: \tret = ((int (*)(struct lcd_device *))match->data)(lcdev);\n629: \tif (ret) {\n630: \t\tdev_err(&spi->dev, \"Couldn't initialize panel\\n\");\n631: \t\treturn ret;\n632: \t}\n633: \n634: \tdev_info(&spi->dev, \"Panel probed\\n\");\n635: \n636: \treturn 0;\n637: }",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:semantic-contract",
+        "confidence": 0.92,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "semantic_slice",
+        "anchor": {
+          "patch_file": "drivers/video/backlight/hx8357.c",
+          "hunk_index": 0,
+          "source_line": 609
+        },
+        "summary": "hx8357_probe adds patch barrier `lcd->im_pins` around devm_kzalloc, dev_err.",
+        "statements": [
+          "if (lcd->im_pins) {",
+          "if (lcd->im_pins->ndescs < HX8357_NUM_IM_PINS)",
+          "return dev_err_probe(dev, -EINVAL, \"not enough im GPIOs\\n\");",
+          "for (i = 0; i < HX8357_NUM_IM_PINS; i++)",
+          "gpiod_set_consumer_name(lcd->im_pins->desc[i], \"im_pins\");",
+          "}"
+        ],
+        "guards": [
+          "lcd->im_pins",
+          "lcd->im_pins->ndescs < HX8357_NUM_IM_PINS"
+        ],
+        "call_boundary": [
+          "devm_kzalloc",
+          "dev_err",
+          "of_match_device",
+          "lcd->reset = devm_gpiod_get(dev, \"reset\", GPIOD_OUT_LOW)"
+        ],
+        "call_edges": [
+          "hx8357_probe -> devm_kzalloc",
+          "hx8357_probe -> dev_err",
+          "hx8357_probe -> of_match_device"
+        ],
+        "state_transitions": [
+          "",
+          "report when a risky write proceeds without the patch-style barrier",
+          "stay silent when the nearby guard proves the current write is blocked or bounded"
+        ],
+        "api_terms": [
+          "devm_kzalloc",
+          "dev_err",
+          "of_match_device",
+          "dev_err_probe",
+          "gpiod_set_consumer_name",
+          "dev_err_probe",
+          "gpiod_set_consumer_name"
+        ],
+        "related_symbols": [
+          "lcd",
+          "im_pins",
+          "ndescs",
+          "HX8357_NUM_IM_PINS",
+          "dev_err_probe",
+          "dev"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_guard_0",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/video/backlight/hx8357.c",
+        "function": "hx8357_probe"
+      },
+      "location": {
+        "line": 609,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "lcd->im_pins",
+        "summary": "hx8357_probe introduces patch guard `lcd->im_pins` before devm_kzalloc, dev_err.",
+        "state_before": [
+          "input(lcd)",
+          "input(im_pins)",
+          "buffer(lcd->im_pins)",
+          "buffer(lcd->reset)",
+          "risky(dev_err_probe)",
+          "risky(gpiod_set_consumer_name)"
+        ],
+        "state_after": [
+          "guard(lcd->im_pins)",
+          "current_call(devm_kzalloc)",
+          "current_call(dev_err)"
+        ],
+        "functions": [
+          "hx8357_probe"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "lcd",
+          "im_pins",
+          "ndescs",
+          "HX8357_NUM_IM_PINS",
+          "dev_err_probe",
+          "dev"
+        ],
+        "buffer_fields": [
+          "lcd->im_pins",
+          "lcd->reset"
+        ],
+        "call_targets": [
+          "devm_kzalloc",
+          "dev_err",
+          "of_match_device",
+          "lcd->reset = devm_gpiod_get(dev, \"reset\", GPIOD_OUT_LOW)"
+        ],
+        "call_edges": [
+          "hx8357_probe -> devm_kzalloc",
+          "hx8357_probe -> dev_err",
+          "hx8357_probe -> of_match_device"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "lcd->im_pins"
+        ],
+        "state_statements": [
+          "if (lcd->im_pins) {",
+          "if (lcd->im_pins->ndescs < HX8357_NUM_IM_PINS)",
+          "return dev_err_probe(dev, -EINVAL, \"not enough im GPIOs\\n\");",
+          "for (i = 0; i < HX8357_NUM_IM_PINS; i++)",
+          "gpiod_set_consumer_name(lcd->im_pins->desc[i], \"im_pins\");",
+          "}"
+        ],
+        "compile_command_preview": "",
+        "source_file": "drivers/video/backlight/hx8357.c",
+        "source_excerpt": "580: static int hx8357_probe(struct spi_device *spi)\n581: {\n582: \tstruct device *dev = &spi->dev;\n583: \tstruct lcd_device *lcdev;\n584: \tstruct hx8357_data *lcd;\n585: \tconst struct of_device_id *match;\n586: \tint i, ret;\n587: \n588: \tlcd = devm_kzalloc(&spi->dev, sizeof(*lcd), GFP_KERNEL);\n589: \tif (!lcd)\n590: \t\treturn -ENOMEM;\n591: \n592: \tret = spi_setup(spi);\n593: \tif (ret < 0) {\n594: \t\tdev_err(&spi->dev, \"SPI setup failed.\\n\");\n595: \t\treturn ret;\n596: \t}\n597: \n598: \tlcd->spi = spi;\n599: \n600: \tmatch = of_match_device(hx8357_dt_ids, &spi->dev);\n601: \tif (!match || !match->data)\n602: \t\treturn -EINVAL;\n603: \n604: \tlcd->reset = devm_gpiod_get(dev, \"reset\", GPIOD_OUT_LOW);\n605: \tif (IS_ERR(lcd->reset))\n606: \t\treturn dev_err_probe(dev, PTR_ERR(lcd->reset), \"failed to request reset GPIO\\n\");\n607: \tgpiod_set_consumer_name(lcd->reset, \"hx8357-reset\");\n608: \n609: \tlcd->im_pins = devm_gpiod_get_array_optional(dev, \"im\", GPIOD_OUT_LOW);\n610: \tif (IS_ERR(lcd->im_pins))\n611: \t\treturn dev_err_probe(dev, PTR_ERR(lcd->im_pins), \"failed to request im GPIOs\\n\");\n612: \tif (lcd->im_pins->ndescs < HX8357_NUM_IM_PINS)\n613: \t\treturn dev_err_probe(dev, -EINVAL, \"not enough im GPIOs\\n\");\n614: \n615: \tfor (i = 0; i < HX8357_NUM_IM_PINS; i++)\n616: \t\tgpiod_set_consumer_name(lcd->im_pins->desc[i], \"im_pins\");\n617: \n618: \tlcdev = devm_lcd_device_register(&spi->dev, \"mxsfb\", &spi->dev, lcd,\n619: \t\t\t\t\t&hx8357_ops);\n620: \tif (IS_ERR(lcdev)) {\n621: \t\tret = PTR_ERR(lcdev);\n622: \t\treturn ret;\n623: \t}\n624: \tspi_set_drvdata(spi, lcdev);\n625: \n626: \thx8357_lcd_reset(lcdev);\n627: \n628: \tret = ((int (*)(struct lcd_device *))match->data)(lcdev);\n629: \tif (ret) {\n630: \t\tdev_err(&spi->dev, \"Couldn't initialize panel\\n\");\n631: \t\treturn ret;\n632: \t}\n633: \n634: \tdev_info(&spi->dev, \"Panel probed\\n\");\n635: \n636: \treturn 0;\n637: }",
+        "summary_line": 609,
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:path-guard",
+        "confidence": 0.92,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/video/backlight/hx8357.c",
+          "hunk_index": 0,
+          "source_line": 609
+        },
+        "summary": "hx8357_probe introduces patch guard `lcd->im_pins` before devm_kzalloc, dev_err.",
+        "statements": [
+          "if (lcd->im_pins) {",
+          "if (lcd->im_pins->ndescs < HX8357_NUM_IM_PINS)",
+          "return dev_err_probe(dev, -EINVAL, \"not enough im GPIOs\\n\");",
+          "for (i = 0; i < HX8357_NUM_IM_PINS; i++)",
+          "gpiod_set_consumer_name(lcd->im_pins->desc[i], \"im_pins\");",
+          "}"
+        ],
+        "guards": [
+          "lcd->im_pins"
+        ],
+        "call_boundary": [
+          "devm_kzalloc",
+          "dev_err",
+          "of_match_device",
+          "lcd->reset = devm_gpiod_get(dev, \"reset\", GPIOD_OUT_LOW)"
+        ],
+        "call_edges": [
+          "hx8357_probe -> devm_kzalloc",
+          "hx8357_probe -> dev_err",
+          "hx8357_probe -> of_match_device"
+        ],
+        "state_transitions": [
+          "guard(lcd->im_pins)",
+          "current_call(devm_kzalloc)",
+          "current_call(dev_err)"
+        ],
+        "api_terms": [
+          "devm_kzalloc",
+          "dev_err",
+          "of_match_device"
+        ],
+        "related_symbols": [
+          "lcd",
+          "im_pins",
+          "ndescs",
+          "HX8357_NUM_IM_PINS",
+          "dev_err_probe",
+          "dev"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_guard_1",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/video/backlight/hx8357.c",
+        "function": "hx8357_probe"
+      },
+      "location": {
+        "line": 609,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "lcd->im_pins->ndescs < HX8357_NUM_IM_PINS",
+        "summary": "hx8357_probe introduces patch guard `lcd->im_pins->ndescs < HX8357_NUM_IM_PINS` before devm_kzalloc, dev_err.",
+        "state_before": [
+          "input(lcd)",
+          "input(im_pins)",
+          "buffer(lcd->im_pins)",
+          "buffer(lcd->reset)",
+          "risky(dev_err_probe)",
+          "risky(gpiod_set_consumer_name)"
+        ],
+        "state_after": [
+          "guard(lcd->im_pins->ndescs < HX8357_NUM_IM_PINS)",
+          "current_call(devm_kzalloc)",
+          "current_call(dev_err)"
+        ],
+        "functions": [
+          "hx8357_probe"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "lcd",
+          "im_pins",
+          "ndescs",
+          "HX8357_NUM_IM_PINS",
+          "dev_err_probe",
+          "dev"
+        ],
+        "buffer_fields": [
+          "lcd->im_pins",
+          "lcd->reset"
+        ],
+        "call_targets": [
+          "devm_kzalloc",
+          "dev_err",
+          "of_match_device",
+          "lcd->reset = devm_gpiod_get(dev, \"reset\", GPIOD_OUT_LOW)"
+        ],
+        "call_edges": [
+          "hx8357_probe -> devm_kzalloc",
+          "hx8357_probe -> dev_err",
+          "hx8357_probe -> of_match_device"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "lcd->im_pins->ndescs < HX8357_NUM_IM_PINS"
+        ],
+        "state_statements": [
+          "if (lcd->im_pins) {",
+          "if (lcd->im_pins->ndescs < HX8357_NUM_IM_PINS)",
+          "return dev_err_probe(dev, -EINVAL, \"not enough im GPIOs\\n\");",
+          "for (i = 0; i < HX8357_NUM_IM_PINS; i++)",
+          "gpiod_set_consumer_name(lcd->im_pins->desc[i], \"im_pins\");",
+          "}"
+        ],
+        "compile_command_preview": "",
+        "source_file": "drivers/video/backlight/hx8357.c",
+        "source_excerpt": "580: static int hx8357_probe(struct spi_device *spi)\n581: {\n582: \tstruct device *dev = &spi->dev;\n583: \tstruct lcd_device *lcdev;\n584: \tstruct hx8357_data *lcd;\n585: \tconst struct of_device_id *match;\n586: \tint i, ret;\n587: \n588: \tlcd = devm_kzalloc(&spi->dev, sizeof(*lcd), GFP_KERNEL);\n589: \tif (!lcd)\n590: \t\treturn -ENOMEM;\n591: \n592: \tret = spi_setup(spi);\n593: \tif (ret < 0) {\n594: \t\tdev_err(&spi->dev, \"SPI setup failed.\\n\");\n595: \t\treturn ret;\n596: \t}\n597: \n598: \tlcd->spi = spi;\n599: \n600: \tmatch = of_match_device(hx8357_dt_ids, &spi->dev);\n601: \tif (!match || !match->data)\n602: \t\treturn -EINVAL;\n603: \n604: \tlcd->reset = devm_gpiod_get(dev, \"reset\", GPIOD_OUT_LOW);\n605: \tif (IS_ERR(lcd->reset))\n606: \t\treturn dev_err_probe(dev, PTR_ERR(lcd->reset), \"failed to request reset GPIO\\n\");\n607: \tgpiod_set_consumer_name(lcd->reset, \"hx8357-reset\");\n608: \n609: \tlcd->im_pins = devm_gpiod_get_array_optional(dev, \"im\", GPIOD_OUT_LOW);\n610: \tif (IS_ERR(lcd->im_pins))\n611: \t\treturn dev_err_probe(dev, PTR_ERR(lcd->im_pins), \"failed to request im GPIOs\\n\");\n612: \tif (lcd->im_pins->ndescs < HX8357_NUM_IM_PINS)\n613: \t\treturn dev_err_probe(dev, -EINVAL, \"not enough im GPIOs\\n\");\n614: \n615: \tfor (i = 0; i < HX8357_NUM_IM_PINS; i++)\n616: \t\tgpiod_set_consumer_name(lcd->im_pins->desc[i], \"im_pins\");\n617: \n618: \tlcdev = devm_lcd_device_register(&spi->dev, \"mxsfb\", &spi->dev, lcd,\n619: \t\t\t\t\t&hx8357_ops);\n620: \tif (IS_ERR(lcdev)) {\n621: \t\tret = PTR_ERR(lcdev);\n622: \t\treturn ret;\n623: \t}\n624: \tspi_set_drvdata(spi, lcdev);\n625: \n626: \thx8357_lcd_reset(lcdev);\n627: \n628: \tret = ((int (*)(struct lcd_device *))match->data)(lcdev);\n629: \tif (ret) {\n630: \t\tdev_err(&spi->dev, \"Couldn't initialize panel\\n\");\n631: \t\treturn ret;\n632: \t}\n633: \n634: \tdev_info(&spi->dev, \"Panel probed\\n\");\n635: \n636: \treturn 0;\n637: }",
+        "summary_line": 609,
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:path-guard",
+        "confidence": 0.92,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/video/backlight/hx8357.c",
+          "hunk_index": 0,
+          "source_line": 609
+        },
+        "summary": "hx8357_probe introduces patch guard `lcd->im_pins->ndescs < HX8357_NUM_IM_PINS` before devm_kzalloc, dev_err.",
+        "statements": [
+          "if (lcd->im_pins) {",
+          "if (lcd->im_pins->ndescs < HX8357_NUM_IM_PINS)",
+          "return dev_err_probe(dev, -EINVAL, \"not enough im GPIOs\\n\");",
+          "for (i = 0; i < HX8357_NUM_IM_PINS; i++)",
+          "gpiod_set_consumer_name(lcd->im_pins->desc[i], \"im_pins\");",
+          "}"
+        ],
+        "guards": [
+          "lcd->im_pins->ndescs < HX8357_NUM_IM_PINS"
+        ],
+        "call_boundary": [
+          "devm_kzalloc",
+          "dev_err",
+          "of_match_device",
+          "lcd->reset = devm_gpiod_get(dev, \"reset\", GPIOD_OUT_LOW)"
+        ],
+        "call_edges": [
+          "hx8357_probe -> devm_kzalloc",
+          "hx8357_probe -> dev_err",
+          "hx8357_probe -> of_match_device"
+        ],
+        "state_transitions": [
+          "guard(lcd->im_pins->ndescs < HX8357_NUM_IM_PINS)",
+          "current_call(devm_kzalloc)",
+          "current_call(dev_err)"
+        ],
+        "api_terms": [
+          "devm_kzalloc",
+          "dev_err",
+          "of_match_device"
+        ],
+        "related_symbols": [
+          "lcd",
+          "im_pins",
+          "ndescs",
+          "HX8357_NUM_IM_PINS",
+          "dev_err_probe",
+          "dev"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_guard_2",
+      "type": "path_guard",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/video/backlight/hx8357.c",
+        "function": "hx8357_probe"
+      },
+      "location": {
+        "line": 612,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "guard_expr": "if lcd (ImplicitCastExpr, LValueToRValue, struct hx8357_data *)->im_pins (ImplicitCastExpr, LValueToRValue, struct gpio_descs *)->ndescs (ImplicitCastExpr, LValueToRValue, unsigned int) < 3 (ImplicitCastExpr, IntegralCast, unsigned int)",
+        "summary": "Analyzer CFG for hx8357_probe in drivers/video/backlight/hx8357.c: bindings: lcd = devm_kzalloc (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(struct device *, size_t, gfp_t))(&spi (ImplicitCastExpr, LValueToRValue, struct spi_device *)->dev, sizeof (*lcd), (((gfp_t)(1024U | 2048U) (CStyleCastExpr, NoOp, gfp_t)) | ((gfp_t)64U (CStyleCastExpr, NoOp, gfp_t)) | ((gfp_t)128U (CStyleCastExpr, NoOp, gfp_t)))) (ImplicitCastExpr, BitCast, struct hx8357_data *); lcd (ImplicitCastExpr, LValueToRValue, struct hx8357_data *)->reset = devm_gpiod_get (ImplicitCastExpr, FunctionToPointerDecay, struct gpio_desc *(*)(struct device *, const char *, enum gpiod_flags))(dev (ImplicitCastExpr, LValueToRValue, struct device *), \"reset\" (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *), GPIOD_OUT_LOW (ImplicitCastExpr, IntegralCast, enum gpiod_flags)) | branches: if lcd (ImplicitCastExpr, LValueToRValue, struct hx8357_data *)->im_pins (ImplicitCastExpr, LValueToRValue, struct gpio_descs *)->ndescs (ImplicitCastExpr, LValueToRValue, unsigned int) < 3 (ImplicitCastExpr, IntegralCast, unsigned int); if IS_ERR (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const void *))(lcd (ImplicitCastExpr, LValueToRValue, struct hx8357_data *)->im_pins (ImplicitCastExpr, LValueToRValue, struct gpio_descs *) (ImplicitCastExpr, BitCast, const void *)) | calls: hx8357_probe -> devm_kzalloc; hx8357_probe -> spi_setup",
+        "state_before": [
+          "input(spi)",
+          "buffer(spi->dev)",
+          "buffer(lcd->spi)",
+          "sinks(devm_kzalloc, spi_setup)"
+        ],
+        "state_after": [
+          "cfg_binding(lcd = devm_kzalloc (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(struct device *, size_t, gfp_t))(&spi (ImplicitCastExpr, LValueToRValue, struct spi_device *)->dev, sizeof (*lcd), (((gfp_t)(1024U | 2048U) (CStyleCastExpr, NoOp, gfp_t)) | ((gfp_t)64U (CStyleCastExpr, NoOp, gfp_t)) | ((gfp_t)128U (CStyleCastExpr, NoOp, gfp_t)))) (ImplicitCastExpr, BitCast, struct hx8357_data *))",
+          "cfg_binding(lcd (ImplicitCastExpr, LValueToRValue, struct hx8357_data *)->reset = devm_gpiod_get (ImplicitCastExpr, FunctionToPointerDecay, struct gpio_desc *(*)(struct device *, const char *, enum gpiod_flags))(dev (ImplicitCastExpr, LValueToRValue, struct device *), \"reset\" (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *), GPIOD_OUT_LOW (ImplicitCastExpr, IntegralCast, enum gpiod_flags)))",
+          "cfg_branch(if lcd (ImplicitCastExpr, LValueToRValue, struct hx8357_data *)->im_pins (ImplicitCastExpr, LValueToRValue, struct gpio_descs *)->ndescs (ImplicitCastExpr, LValueToRValue, unsigned int) < 3 (ImplicitCastExpr, IntegralCast, unsigned int))",
+          "cfg_branch(if IS_ERR (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const void *))(lcd (ImplicitCastExpr, LValueToRValue, struct hx8357_data *)->im_pins (ImplicitCastExpr, LValueToRValue, struct gpio_descs *) (ImplicitCastExpr, BitCast, const void *)))"
+        ],
+        "functions": [
+          "hx8357_probe"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "spi",
+          "spi->dev",
+          "lcd->spi",
+          "match->data",
+          "lcd->reset",
+          "lcd->im_pins"
+        ],
+        "buffer_fields": [
+          "spi->dev",
+          "lcd->spi",
+          "match->data",
+          "lcd->reset",
+          "lcd->im_pins"
+        ],
+        "call_targets": [
+          "devm_kzalloc",
+          "spi_setup",
+          "dev_err",
+          "of_match_device",
+          "devm_gpiod_get",
+          "dev_err_probe",
+          "gpiod_set_consumer_name",
+          "devm_gpiod_get_array_optional"
+        ],
+        "call_edges": [
+          "hx8357_probe -> devm_kzalloc",
+          "hx8357_probe -> spi_setup",
+          "hx8357_probe -> __builtin_constant_p",
+          "hx8357_probe -> _dev_err",
+          "hx8357_probe -> of_match_device",
+          "hx8357_probe -> devm_gpiod_get"
+        ],
+        "cfg_branch_kinds": [
+          "if",
+          "for"
+        ],
+        "branch_conditions": [
+          "do ... while [B2.1]",
+          "static init _entry_ptr",
+          "[B8.15] ? ... : ...",
+          "[B11.5] ? ... : ...",
+          "static init _entry",
+          "if [B14.5] && [B13.5]"
+        ],
+        "resolved_branch_conditions": [
+          "if lcd (ImplicitCastExpr, LValueToRValue, struct hx8357_data *)->im_pins (ImplicitCastExpr, LValueToRValue, struct gpio_descs *)->ndescs (ImplicitCastExpr, LValueToRValue, unsigned int) < 3 (ImplicitCastExpr, IntegralCast, unsigned int)",
+          "if IS_ERR (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const void *))(lcd (ImplicitCastExpr, LValueToRValue, struct hx8357_data *)->im_pins (ImplicitCastExpr, LValueToRValue, struct gpio_descs *) (ImplicitCastExpr, BitCast, const void *))",
+          "if IS_ERR (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const void *))(lcd (ImplicitCastExpr, LValueToRValue, struct hx8357_data *)->reset (ImplicitCastExpr, LValueToRValue, struct gpio_desc *) (ImplicitCastExpr, BitCast, const void *))",
+          "if !lcd (ImplicitCastExpr, LValueToRValue, struct hx8357_data *)",
+          "do ... while 0",
+          "static init _entry_ptr"
+        ],
+        "cfg_value_bindings": [
+          "lcd = devm_kzalloc (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(struct device *, size_t, gfp_t))(&spi (ImplicitCastExpr, LValueToRValue, struct spi_device *)->dev, sizeof (*lcd), (((gfp_t)(1024U | 2048U) (CStyleCastExpr, NoOp, gfp_t)) | ((gfp_t)64U (CStyleCastExpr, NoOp, gfp_t)) | ((gfp_t)128U (CStyleCastExpr, NoOp, gfp_t)))) (ImplicitCastExpr, BitCast, struct hx8357_data *)",
+          "lcd (ImplicitCastExpr, LValueToRValue, struct hx8357_data *)->reset = devm_gpiod_get (ImplicitCastExpr, FunctionToPointerDecay, struct gpio_desc *(*)(struct device *, const char *, enum gpiod_flags))(dev (ImplicitCastExpr, LValueToRValue, struct device *), \"reset\" (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *), GPIOD_OUT_LOW (ImplicitCastExpr, IntegralCast, enum gpiod_flags))",
+          "lcd (ImplicitCastExpr, LValueToRValue, struct hx8357_data *)->im_pins = devm_gpiod_get_array_optional (ImplicitCastExpr, FunctionToPointerDecay, struct gpio_descs *(*)(struct device *, const char *, enum gpiod_flags))(dev (ImplicitCastExpr, LValueToRValue, struct device *), \"im\" (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *), GPIOD_OUT_LOW (ImplicitCastExpr, IntegralCast, enum gpiod_flags))",
+          "lcdev = devm_lcd_device_register (ImplicitCastExpr, FunctionToPointerDecay, struct lcd_device *(*)(struct device *, const char *, struct device *, void *, struct lcd_ops *))(&spi (ImplicitCastExpr, LValueToRValue, struct spi_device *)->dev, \"mxsfb\" (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *), &spi (ImplicitCastExpr, LValueToRValue, struct spi_device *)->dev, lcd (ImplicitCastExpr, LValueToRValue, struct hx8357_data *) (ImplicitCastExpr, BitCast, void *), &hx8357_ops)",
+          "lcd (ImplicitCastExpr, LValueToRValue, struct hx8357_data *)->spi = spi (ImplicitCastExpr, LValueToRValue, struct spi_device *)",
+          "ret = spi_setup (ImplicitCastExpr, FunctionToPointerDecay, int (*)(struct spi_device *))(spi (ImplicitCastExpr, LValueToRValue, struct spi_device *))"
+        ],
+        "state_statements": [
+          "[B1.4]->dev",
+          "return [B1.13];",
+          "static const struct pi_entry *_entry_ptr __attribute__((used)) __attribute__((section(\".printk_index\"))) = &_entry;",
+          "{.fmt = [B8.2], .func = [B8.5], .file = [B8.8], .line = [B8.10], .level = [B5.2], .subsys_fmt_prefix = [B5.5]}",
+          "static const struct pi_entry _entry __attribute__((used)) = {.fmt = __builtin_constant_p(\"Panel probed\\n\") ? (\"Panel probed\\n\") : ((void *)0), .func = __func__, .file = \"/work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/video/backlight/hx8357.c\", .line = 634, .level = __builtin_constant_p(\"\\0016\") ? (\"\\0016\") : ((void *)0), .subsys_fmt_prefix = \"%s %s: \"};",
+          "[B16.4]->dev"
+        ],
+        "compile_command_preview": "clang -Wp,-MMD,drivers/video/backlight/.hx8357.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/uapi -I./a...",
+        "source_file": "drivers/video/backlight/hx8357.c",
+        "source_excerpt": "580: static int hx8357_probe(struct spi_device *spi)\n581: {\n582: \tstruct device *dev = &spi->dev;\n583: \tstruct lcd_device *lcdev;\n584: \tstruct hx8357_data *lcd;\n585: \tconst struct of_device_id *match;\n586: \tint i, ret;\n587: \n588: \tlcd = devm_kzalloc(&spi->dev, sizeof(*lcd), GFP_KERNEL);\n589: \tif (!lcd)\n590: \t\treturn -ENOMEM;\n591: \n592: \tret = spi_setup(spi);\n593: \tif (ret < 0) {\n594: \t\tdev_err(&spi->dev, \"SPI setup failed.\\n\");\n595: \t\treturn ret;\n596: \t}\n597: \n598: \tlcd->spi = spi;\n599: \n600: \tmatch = of_match_device(hx8357_dt_ids, &spi->dev);\n601: \tif (!match || !match->data)\n602: \t\treturn -EINVAL;\n603: \n604: \tlcd->reset = devm_gpiod_get(dev, \"reset\", GPIOD_OUT_LOW);\n605: \tif (IS_ERR(lcd->reset))\n606: \t\treturn dev_err_probe(dev, PTR_ERR(lcd->reset), \"failed to request reset GPIO\\n\");\n607: \tgpiod_set_consumer_name(lcd->reset, \"hx8357-reset\");\n608: \n609: \tlcd->im_pins = devm_gpiod_get_array_optional(dev, \"im\", GPIOD_OUT_LOW);\n610: \tif (IS_ERR(lcd->im_pins))\n611: \t\treturn dev_err_probe(dev, PTR_ERR(lcd->im_pins), \"failed to request im GPIOs\\n\");\n612: \tif (lcd->im_pins->ndescs < HX8357_NUM_IM_PINS)\n613: \t\treturn dev_err_probe(dev, -EINVAL, \"not enough im GPIOs\\n\");\n614: \n615: \tfor (i = 0; i < HX8357_NUM_IM_PINS; i++)\n616: \t\tgpiod_set_consumer_name(lcd->im_pins->desc[i], \"im_pins\");\n617: \n618: \tlcdev = devm_lcd_device_register(&spi->dev, \"mxsfb\", &spi->dev, lcd,\n619: \t\t\t\t\t&hx8357_ops);\n620: \tif (IS_ERR(lcdev)) {\n621: \t\tret = PTR_ERR(lcdev);\n622: \t\treturn ret;\n623: \t}\n624: \tspi_set_drvdata(spi, lcdev);\n625: \n626: \thx8357_lcd_reset(lcdev);\n627: \n628: \tret = ((int (*)(struct lcd_device *))match->data)(lcdev);\n629: \tif (ret) {\n630: \t\tdev_err(&spi->dev, \"Couldn't initialize panel\\n\");\n631: \t\treturn ret;\n632: \t}\n633: \n634: \tdev_info(&spi->dev, \"Panel probed\\n\");\n635: \n636: \treturn 0;\n637: }",
+        "summary_line": 612,
+        "coverage_status": "full",
+        "interface": "clang-18:debug.DumpCFG+debug.DumpCallGraph",
+        "output_schema": "semweaver.csa_cfg_snapshot.v1",
+        "raw_output_path": "/work/artifacts/fse_revision/generate_only_evidence_all39_v8_r5/G25_b1ba8bcb2d1f_Null_Pointer_Dereference/csa/patchweaver_runtime/csa_raw/drivers-video-backlight-hx8357.c-hx8357_probe.txt",
+        "raw_output_sha256": "f2af7f4fdcdfe36588c284de33d5c7b11da0ab1780f38c8a046a71a0b071df18",
+        "command_sha256": "3e8a1c98c6806a79f9842f9da08e88d2fa785d19aa8e7052854298f02668193b"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "clang-analyzer:debug-cfg",
+        "confidence": 0.92,
+        "origin": "analyzer_internal"
+      },
+      "evidence_slice": {
+        "kind": "path_witness",
+        "anchor": {
+          "patch_file": "drivers/video/backlight/hx8357.c",
+          "hunk_index": 0,
+          "source_line": 612
+        },
+        "summary": "Analyzer CFG for hx8357_probe in drivers/video/backlight/hx8357.c: bindings: lcd = devm_kzalloc (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(struct device *, size_t, gfp_t))(&spi (ImplicitCastExpr, LValueToRValue, struct spi_device *)->dev, sizeof (*lcd), (((gfp_t)(1024U | 2048U) (CStyleCastExpr, NoOp, gfp_t)) | ((gfp_t)64U (CStyleCastExpr, NoOp, gfp_t)) | ((gfp_t)128U (CStyleCastExpr, NoOp, gfp_t)))) (ImplicitCastExpr, BitCast, struct hx8357_data *); lcd (ImplicitCastExpr, LValueToRValue, struct hx8357_data *)->reset = devm_gpiod_get (ImplicitCastExpr, FunctionToPointerDecay, struct gpio_desc *(*)(struct device *, const char *, enum gpiod_flags))(dev (ImplicitCastExpr, LValueToRValue, struct device *), \"reset\" (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *), GPIOD_OUT_LOW (ImplicitCastExpr, IntegralCast, enum gpiod_flags)) | branches: if lcd (ImplicitCastExpr, LValueToRValue, struct hx8357_data *)->im_pins (ImplicitCastExpr, LValueToRValue, struct gpio_descs *)->ndescs (ImplicitCastExpr, LValueToRValue, unsigned int) < 3 (ImplicitCastExpr, IntegralCast, unsigned int); if IS_ERR (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const void *))(lcd (ImplicitCastExpr, LValueToRValue, struct hx8357_data *)->im_pins (ImplicitCastExpr, LValueToRValue, struct gpio_descs *) (ImplicitCastExpr, BitCast, const void *)) | calls: hx8357_probe -> devm_kzalloc; hx8357_probe -> spi_setup",
+        "statements": [
+          "580: static int hx8357_probe(struct spi_device *spi)",
+          "581: {",
+          "582: \tstruct device *dev = &spi->dev;",
+          "583: \tstruct lcd_device *lcdev;",
+          "584: \tstruct hx8357_data *lcd;",
+          "585: \tconst struct of_device_id *match;"
+        ],
+        "guards": [
+          "if lcd (ImplicitCastExpr, LValueToRValue, struct hx8357_data *)->im_pins (ImplicitCastExpr, LValueToRValue, struct gpio_descs *)->ndescs (ImplicitCastExpr, LValueToRValue, unsigned int) < 3 (ImplicitCastExpr, IntegralCast, unsigned int)",
+          "if IS_ERR (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const void *))(lcd (ImplicitCastExpr, LValueToRValue, struct hx8357_data *)->im_pins (ImplicitCastExpr, LValueToRValue, struct gpio_descs *) (ImplicitCastExpr, BitCast, const void *))",
+          "if IS_ERR (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const void *))(lcd (ImplicitCastExpr, LValueToRValue, struct hx8357_data *)->reset (ImplicitCastExpr, LValueToRValue, struct gpio_desc *) (ImplicitCastExpr, BitCast, const void *))",
+          "if !lcd (ImplicitCastExpr, LValueToRValue, struct hx8357_data *)"
+        ],
+        "call_boundary": [
+          "devm_kzalloc",
+          "spi_setup",
+          "dev_err",
+          "of_match_device",
+          "devm_gpiod_get",
+          "dev_err_probe"
+        ],
+        "call_edges": [
+          "hx8357_probe -> devm_kzalloc",
+          "hx8357_probe -> spi_setup",
+          "hx8357_probe -> __builtin_constant_p",
+          "hx8357_probe -> _dev_err",
+          "hx8357_probe -> of_match_device",
+          "hx8357_probe -> devm_gpiod_get",
+          "hx8357_probe -> IS_ERR",
+          "hx8357_probe -> dev_err_probe"
+        ],
+        "state_transitions": [
+          "cfg_binding(lcd = devm_kzalloc (ImplicitCastExpr, FunctionToPointerDecay, void *(*)(struct device *, size_t, gfp_t))(&spi (ImplicitCastExpr, LValueToRValue, struct spi_device *)->dev, sizeof (*lcd), (((gfp_t)(1024U | 2048U) (CStyleCastExpr, NoOp, gfp_t)) | ((gfp_t)64U (CStyleCastExpr, NoOp, gfp_t)) | ((gfp_t)128U (CStyleCastExpr, NoOp, gfp_t)))) (ImplicitCastExpr, BitCast, struct hx8357_data *))",
+          "cfg_binding(lcd (ImplicitCastExpr, LValueToRValue, struct hx8357_data *)->reset = devm_gpiod_get (ImplicitCastExpr, FunctionToPointerDecay, struct gpio_desc *(*)(struct device *, const char *, enum gpiod_flags))(dev (ImplicitCastExpr, LValueToRValue, struct device *), \"reset\" (ImplicitCastExpr, ArrayToPointerDecay, char *) (ImplicitCastExpr, NoOp, const char *), GPIOD_OUT_LOW (ImplicitCastExpr, IntegralCast, enum gpiod_flags)))",
+          "cfg_branch(if lcd (ImplicitCastExpr, LValueToRValue, struct hx8357_data *)->im_pins (ImplicitCastExpr, LValueToRValue, struct gpio_descs *)->ndescs (ImplicitCastExpr, LValueToRValue, unsigned int) < 3 (ImplicitCastExpr, IntegralCast, unsigned int))",
+          "cfg_branch(if IS_ERR (ImplicitCastExpr, FunctionToPointerDecay, bool (*)(const void *))(lcd (ImplicitCastExpr, LValueToRValue, struct hx8357_data *)->im_pins (ImplicitCastExpr, LValueToRValue, struct gpio_descs *) (ImplicitCastExpr, BitCast, const void *)))",
+          "[B1.4]->dev",
+          "return [B1.13];"
+        ],
+        "api_terms": [
+          "devm_kzalloc",
+          "spi_setup",
+          "__builtin_constant_p",
+          "_dev_err",
+          "of_match_device",
+          "devm_gpiod_get"
+        ],
+        "related_symbols": [
+          "spi",
+          "spi->dev",
+          "lcd->spi",
+          "match->data",
+          "lcd->reset",
+          "lcd->im_pins"
+        ],
+        "verifier": "clang-analyzer",
+        "extraction_method": "runtime_cfg+source_window",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_state_0",
+      "type": "state_transition",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/video/backlight/hx8357.c",
+        "function": "hx8357_probe"
+      },
+      "location": {
+        "line": 609,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Standalone evidence collection precomputes all refine-supported evidence for this analyzer.",
+        "summary": "hx8357_probe adds patch barrier `lcd->im_pins` around devm_kzalloc, dev_err.",
+        "state_before": [
+          "input(lcd)",
+          "input(im_pins)",
+          "buffer(lcd->im_pins)",
+          "buffer(lcd->reset)",
+          "risky(dev_err_probe)",
+          "risky(gpiod_set_consumer_name)"
+        ],
+        "state_after": [
+          "guard(lcd->im_pins)",
+          "sink(devm_kzalloc)",
+          "sink(dev_err)",
+          "replaces(dev_err_probe)",
+          "replaces(gpiod_set_consumer_name)"
+        ],
+        "functions": [
+          "hx8357_probe"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "lcd",
+          "im_pins",
+          "ndescs",
+          "HX8357_NUM_IM_PINS",
+          "dev_err_probe",
+          "dev"
+        ],
+        "buffer_fields": [
+          "lcd->im_pins",
+          "lcd->reset"
+        ],
+        "call_targets": [
+          "devm_kzalloc",
+          "dev_err",
+          "of_match_device",
+          "lcd->reset = devm_gpiod_get(dev, \"reset\", GPIOD_OUT_LOW)"
+        ],
+        "call_edges": [
+          "hx8357_probe -> devm_kzalloc",
+          "hx8357_probe -> dev_err",
+          "hx8357_probe -> of_match_device"
+        ],
+        "cfg_branch_kinds": [
+          "if"
+        ],
+        "branch_conditions": [
+          "lcd->im_pins"
+        ],
+        "state_statements": [
+          "if (lcd->im_pins) {",
+          "if (lcd->im_pins->ndescs < HX8357_NUM_IM_PINS)",
+          "return dev_err_probe(dev, -EINVAL, \"not enough im GPIOs\\n\");",
+          "for (i = 0; i < HX8357_NUM_IM_PINS; i++)",
+          "gpiod_set_consumer_name(lcd->im_pins->desc[i], \"im_pins\");",
+          "}"
+        ],
+        "return_statements": [],
+        "source_file": "drivers/video/backlight/hx8357.c",
+        "source_excerpt": "580: static int hx8357_probe(struct spi_device *spi)\n581: {\n582: \tstruct device *dev = &spi->dev;\n583: \tstruct lcd_device *lcdev;\n584: \tstruct hx8357_data *lcd;\n585: \tconst struct of_device_id *match;\n586: \tint i, ret;\n587: \n588: \tlcd = devm_kzalloc(&spi->dev, sizeof(*lcd), GFP_KERNEL);\n589: \tif (!lcd)\n590: \t\treturn -ENOMEM;\n591: \n592: \tret = spi_setup(spi);\n593: \tif (ret < 0) {\n594: \t\tdev_err(&spi->dev, \"SPI setup failed.\\n\");\n595: \t\treturn ret;\n596: \t}\n597: \n598: \tlcd->spi = spi;\n599: \n600: \tmatch = of_match_device(hx8357_dt_ids, &spi->dev);\n601: \tif (!match || !match->data)\n602: \t\treturn -EINVAL;\n603: \n604: \tlcd->reset = devm_gpiod_get(dev, \"reset\", GPIOD_OUT_LOW);\n605: \tif (IS_ERR(lcd->reset))\n606: \t\treturn dev_err_probe(dev, PTR_ERR(lcd->reset), \"failed to request reset GPIO\\n\");\n607: \tgpiod_set_consumer_name(lcd->reset, \"hx8357-reset\");\n608: \n609: \tlcd->im_pins = devm_gpiod_get_array_optional(dev, \"im\", GPIOD_OUT_LOW);\n610: \tif (IS_ERR(lcd->im_pins))\n611: \t\treturn dev_err_probe(dev, PTR_ERR(lcd->im_pins), \"failed to request im GPIOs\\n\");\n612: \tif (lcd->im_pins->ndescs < HX8357_NUM_IM_PINS)\n613: \t\treturn dev_err_probe(dev, -EINVAL, \"not enough im GPIOs\\n\");\n614: \n615: \tfor (i = 0; i < HX8357_NUM_IM_PINS; i++)\n616: \t\tgpiod_set_consumer_name(lcd->im_pins->desc[i], \"im_pins\");\n617: \n618: \tlcdev = devm_lcd_device_register(&spi->dev, \"mxsfb\", &spi->dev, lcd,\n619: \t\t\t\t\t&hx8357_ops);\n620: \tif (IS_ERR(lcdev)) {\n621: \t\tret = PTR_ERR(lcdev);\n622: \t\treturn ret;\n623: \t}\n624: \tspi_set_drvdata(spi, lcdev);\n625: \n626: \thx8357_lcd_reset(lcdev);\n627: \n628: \tret = ((int (*)(struct lcd_device *))match->data)(lcdev);\n629: \tif (ret) {\n630: \t\tdev_err(&spi->dev, \"Couldn't initialize panel\\n\");\n631: \t\treturn ret;\n632: \t}\n633: \n634: \tdev_info(&spi->dev, \"Panel probed\\n\");\n635: \n636: \treturn 0;\n637: }",
+        "coverage_status": "full"
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "patch-diff:guarded-state",
+        "confidence": 0.9,
+        "origin": "source_derived"
+      },
+      "evidence_slice": {
+        "kind": "state_witness",
+        "anchor": {
+          "patch_file": "drivers/video/backlight/hx8357.c",
+          "hunk_index": 0,
+          "source_line": 609
+        },
+        "summary": "hx8357_probe adds patch barrier `lcd->im_pins` around devm_kzalloc, dev_err.",
+        "statements": [
+          "if (lcd->im_pins) {",
+          "if (lcd->im_pins->ndescs < HX8357_NUM_IM_PINS)",
+          "return dev_err_probe(dev, -EINVAL, \"not enough im GPIOs\\n\");",
+          "for (i = 0; i < HX8357_NUM_IM_PINS; i++)",
+          "gpiod_set_consumer_name(lcd->im_pins->desc[i], \"im_pins\");",
+          "}"
+        ],
+        "guards": [
+          "lcd->im_pins"
+        ],
+        "call_boundary": [
+          "devm_kzalloc",
+          "dev_err",
+          "of_match_device",
+          "lcd->reset = devm_gpiod_get(dev, \"reset\", GPIOD_OUT_LOW)"
+        ],
+        "call_edges": [
+          "hx8357_probe -> devm_kzalloc",
+          "hx8357_probe -> dev_err",
+          "hx8357_probe -> of_match_device"
+        ],
+        "state_transitions": [
+          "guard(lcd->im_pins)",
+          "sink(devm_kzalloc)",
+          "sink(dev_err)",
+          "replaces(dev_err_probe)",
+          "replaces(gpiod_set_consumer_name)"
+        ],
+        "api_terms": [
+          "devm_kzalloc",
+          "dev_err",
+          "of_match_device"
+        ],
+        "related_symbols": [
+          "lcd",
+          "im_pins",
+          "ndescs",
+          "HX8357_NUM_IM_PINS",
+          "dev_err_probe",
+          "dev"
+        ],
+        "verifier": "patch-diff",
+        "extraction_method": "patch_hunk_contracts",
+        "coverage_status": "full"
+      }
+    },
+    {
+      "evidence_id": "csa_validation_allocation_lifecycle_0",
+      "type": "allocation_lifecycle",
+      "analyzer": "csa",
+      "scope": {
+        "repo": "commit.patch",
+        "file": "drivers/video/backlight/hx8357.c",
+        "function": "hx8357_probe"
+      },
+      "location": {
+        "line": 612,
+        "column": 0
+      },
+      "semantic_payload": {
+        "reason": "Recovered from existing CSA validation diagnostics without rerunning patch planning.",
+        "summary": "hx8357_probe in drivers/video/backlight/hx8357.c provides CSA-backed pointer/resource lifecycle context near line 612",
+        "diagnostic_message": "",
+        "diagnostic_checker": "",
+        "state_before": [
+          "input(spi)",
+          "buffer(spi->dev)",
+          "buffer(lcd->spi)",
+          "sinks(devm_kzalloc, spi_setup)"
+        ],
+        "state_after": [
+          "operation(for (i = 0; i < HX8357_NUM_IM_PINS; i++))",
+          "operation([B1.4]->dev)",
+          "operation(return [B1.13];)",
+          "operation(static const struct pi_entry *_entry_ptr __attribute__((used)) __attribute__((section(\".printk_index\"))) = &_entry;)"
+        ],
+        "functions": [
+          "hx8357_probe"
+        ],
+        "globals": [],
+        "tracked_symbols": [
+          "spi",
+          "lcd",
+          "im_pins",
+          "ndescs",
+          "HX8357_NUM_IM_PINS",
+          "dev_err_probe"
+        ],
+        "buffer_fields": [
+          "spi->dev",
+          "lcd->spi",
+          "match->data",
+          "lcd->reset",
+          "lcd->im_pins"
+        ],
+        "call_targets": [
+          "devm_kzalloc",
+          "spi_setup",
+          "dev_err",
+          "of_match_device",
+          "devm_gpiod_get",
+          "dev_err_probe"
+        ],
+        "call_edges": [
+          "hx8357_probe -> devm_kzalloc",
+          "hx8357_probe -> spi_setup",
+          "hx8357_probe -> __builtin_constant_p",
+          "hx8357_probe -> _dev_err",
+          "hx8357_probe -> of_match_device",
+          "hx8357_probe -> devm_gpiod_get"
+        ],
+        "state_statements": [
+          "for (i = 0; i < HX8357_NUM_IM_PINS; i++)",
+          "[B1.4]->dev",
+          "return [B1.13];",
+          "static const struct pi_entry *_entry_ptr __attribute__((used)) __attribute__((section(\".printk_index\"))) = &_entry;",
+          "{.fmt = [B8.2], .func = [B8.5], .file = [B8.8], .line = [B8.10], .level = [B5.2], .subsys_fmt_prefix = [B5.5]}",
+          "static const struct pi_entry _entry __attribute__((used)) = {.fmt = __builtin_constant_p(\"Panel probed\\n\") ? (\"Panel probed\\n\") : ((void *)0), .func = __func__, .file = \"/work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/video/backlight/hx8357.c\", .line = 634, .level = __builtin_constant_p(\"\\0016\") ? (\"\\0016\") : ((void *)0), .subsys_fmt_prefix = \"%s %s: \"};"
+        ],
+        "source_file": "drivers/video/backlight/hx8357.c",
+        "source_excerpt": "580: static int hx8357_probe(struct spi_device *spi)\n581: {\n582: \tstruct device *dev = &spi->dev;\n583: \tstruct lcd_device *lcdev;\n584: \tstruct hx8357_data *lcd;\n585: \tconst struct of_device_id *match;\n586: \tint i, ret;\n587: \n588: \tlcd = devm_kzalloc(&spi->dev, sizeof(*lcd), GFP_KERNEL);\n589: \tif (!lcd)\n590: \t\treturn -ENOMEM;\n591: \n592: \tret = spi_setup(spi);\n593: \tif (ret < 0) {\n594: \t\tdev_err(&spi->dev, \"SPI setup failed.\\n\");\n595: \t\treturn ret;\n596: \t}\n597: \n598: \tlcd->spi = spi;\n599: \n600: \tmatch = of_match_device(hx8357_dt_ids, &spi->dev);\n601: \tif (!match || !match->data)\n602: \t\treturn -EINVAL;\n603: \n604: \tlcd->reset = devm_gpiod_get(dev, \"reset\", GPIOD_OUT_LOW);\n605: \tif (IS_ERR(lcd->reset))\n606: \t\treturn dev_err_probe(dev, PTR_ERR(lcd->reset), \"failed to request reset GPIO\\n\");\n607: \tgpiod_set_consumer_name(lcd->reset, \"hx8357-reset\");\n608: \n609: \tlcd->im_pins = devm_gpiod_get_array_optional(dev, \"im\", GPIOD_OUT_LOW);\n610: \tif (IS_ERR(lcd->im_pins))\n611: \t\treturn dev_err_probe(dev, PTR_ERR(lcd->im_pins), \"failed to request im GPIOs\\n\");\n612: \tif (lcd->im_pins->ndescs < HX8357_NUM_IM_PINS)\n613: \t\treturn dev_err_probe(dev, -EINVAL, \"not enough im GPIOs\\n\");\n614: \n615: \tfor (i = 0; i < HX8357_NUM_IM_PINS; i++)\n616: \t\tgpiod_set_consumer_name(lcd->im_pins->desc[i], \"im_pins\");\n617: \n618: \tlcdev = devm_lcd_device_register(&spi->dev, \"mxsfb\", &spi->dev, lcd,\n619: \t\t\t\t\t&hx8357_ops);\n620: \tif (IS_ERR(lcdev)) {\n621: \t\tret = PTR_ERR(lcdev);\n622: \t\treturn ret;\n623: \t}\n624: \tspi_set_drvdata(spi, lcdev);\n625: \n626: \thx8357_lcd_reset(lcdev);\n627: \n628: \tret = ((int (*)(struct lcd_device *))match->data)(lcdev);\n629: \tif (ret) {\n630: \t\tdev_err(&spi->dev, \"Couldn't initialize panel\\n\");\n631: \t\treturn ret;\n632: \t}\n633: \n634: \tdev_info(&spi->dev, \"Panel probed\\n\");\n635: \n636: \treturn 0;\n637: }",
+        "coverage_status": "partial",
+        "operations": [
+          "for (i = 0; i < HX8357_NUM_IM_PINS; i++)",
+          "[B1.4]->dev",
+          "return [B1.13];",
+          "static const struct pi_entry *_entry_ptr __attribute__((used)) __attribute__((section(\".printk_index\"))) = &_entry;",
+          "{.fmt = [B8.2], .func = [B8.5], .file = [B8.8], .line = [B8.10], .level = [B5.2], .subsys_fmt_prefix = [B5.5]}",
+          "static const struct pi_entry _entry __attribute__((used)) = {.fmt = __builtin_constant_p(\"Panel probed\\n\") ? (\"Panel probed\\n\") : ((void *)0), .func = __func__, .file = \"/work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/video/backlight/hx8357.c\", .line = 634, .level = __builtin_constant_p(\"\\0016\") ? (\"\\0016\") : ((void *)0), .subsys_fmt_prefix = \"%s %s: \"};"
+        ],
+        "acquisition_ops": [],
+        "release_ops": []
+      },
+      "provenance": {
+        "tool": "csa",
+        "artifact": "csa-validation:result-json",
+        "confidence": 0.72,
+        "origin": "analyzer_output"
+      },
+      "evidence_slice": {
+        "kind": "lifecycle_witness",
+        "anchor": {
+          "patch_file": "drivers/video/backlight/hx8357.c",
+          "hunk_index": 0,
+          "source_line": 612
+        },
+        "summary": "hx8357_probe in drivers/video/backlight/hx8357.c provides CSA-backed pointer/resource lifecycle context near line 612",
+        "statements": [
+          "580: static int hx8357_probe(struct spi_device *spi)",
+          "581: {",
+          "582: \tstruct device *dev = &spi->dev;",
+          "583: \tstruct lcd_device *lcdev;",
+          "584: \tstruct hx8357_data *lcd;",
+          "585: \tconst struct of_device_id *match;"
+        ],
+        "guards": [
+          "!lcd",
+          "ret < 0",
+          "!match || !match->data",
+          "IS_ERR(lcd->reset)"
+        ],
+        "call_boundary": [
+          "devm_kzalloc",
+          "spi_setup",
+          "dev_err",
+          "of_match_device",
+          "devm_gpiod_get",
+          "dev_err_probe"
+        ],
+        "call_edges": [
+          "hx8357_probe -> devm_kzalloc",
+          "hx8357_probe -> spi_setup",
+          "hx8357_probe -> __builtin_constant_p",
+          "hx8357_probe -> _dev_err",
+          "hx8357_probe -> of_match_device",
+          "hx8357_probe -> devm_gpiod_get"
+        ],
+        "state_transitions": [
+          "operation(for (i = 0; i < HX8357_NUM_IM_PINS; i++))",
+          "operation([B1.4]->dev)",
+          "operation(return [B1.13];)",
+          "operation(static const struct pi_entry *_entry_ptr __attribute__((used)) __attribute__((section(\".printk_index\"))) = &_entry;)"
+        ],
+        "api_terms": [
+          "for (i = 0; i < HX8357_NUM_IM_PINS; i++)",
+          "[B1.4]->dev",
+          "return [B1.13];",
+          "static const struct pi_entry *_entry_ptr __attribute__((used)) __attribute__((section(\".printk_index\"))) = &_entry;",
+          "{.fmt = [B8.2], .func = [B8.5], .file = [B8.8], .line = [B8.10], .level = [B5.2], .subsys_fmt_prefix = [B5.5]}",
+          "static const struct pi_entry _entry __attribute__((used)) = {.fmt = __builtin_constant_p(\"Panel probed\\n\") ? (\"Panel probed\\n\") : ((void *)0), .func = __func__, .file = \"/work/SemWeaver/artifacts/external/linux-evidence-clone-v8b/drivers/video/backlight/hx8357.c\", .line = 634, .level = __builtin_constant_p(\"\\0016\") ? (\"\\0016\") : ((void *)0), .subsys_fmt_prefix = \"%s %s: \"};"
+        ],
+        "related_symbols": [
+          "spi",
+          "lcd",
+          "im_pins",
+          "ndescs",
+          "HX8357_NUM_IM_PINS",
+          "dev_err_probe"
+        ],
+        "verifier": "csa-validation",
+        "extraction_method": "existing_result_json+source_window",
+        "coverage_status": "partial"
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "collected_analyzers": [
+    "csa"
+  ],
+  "provenance_summary": {
+    "total_records": 6,
+    "origin_counts": {
+      "analyzer_internal": 1,
+      "analyzer_output": 1,
+      "source_derived": 4
+    },
+    "analyzer_internal_records": 1,
+    "analyzer_internal_fraction": 0.16666666666666666,
+    "analyzer_backed_records": 2,
+    "analyzer_backed_fraction": 0.3333333333333333,
+    "source_derived_records": 4,
+    "source_derived_fraction": 0.6666666666666666
+  }
+}
