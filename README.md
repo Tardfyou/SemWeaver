@@ -17,11 +17,22 @@ prompt views, and the complete recorded-evidence package in a lossless transport
 
 ## Exact reproduction from the downloaded repository
 
-Every published file is below7MiB, to fit the anonymous service's documented
+Every published file is at most7MiB, to fit the anonymous service's documented
 single-file limit. The neutral binary parts contain the complete already-vetted
 publication tree, including large indexes and original byte bindings. They are
 not text-anonymized again. Browsable text may receive additional service masking;
 use the protected tree when validating exact bytes or rebuilding the paper.
+
+If the service does not offer a repository ZIP download, use its public file API
+(replace `REVIEW_ID` with the identifier from your anonymous link):
+
+```sh
+python3 download_transport.py --api-base https://anonymous.4open.science/api/repo/REVIEW_ID/file --output ../review-download
+python3 ../review-download/restore_review.py restore ../review-download --output ../review-exact
+```
+
+Downloads use ordinary public GET requests, bounded retries, and byte hashes.
+An access-denied response is reported, never bypassed or treated as empty data.
 
 ```sh
 python3 restore_review.py verify .
