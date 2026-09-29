@@ -43,8 +43,10 @@ python3 ../study-expanded/project/final-native-20260928/verify_final_artifact.py
 ```
 
 All destinations must be new. Allow roughly1.3GiB for the exact publication tree,
-10.23GiB for expanded evidence, and temporary space. These commands use Python3.10+
-without keys, models, analyzer executions or network. R0/R1 reanalysis does not
+10.23GiB for expanded evidence, and temporary space. Restoration, unpacking and
+reanalysis use Python3.10+ and run offline after download, without keys, models
+or analyzer executions. The optional downloader uses ordinary public network GET.
+R0/R1 reanalysis does not
 claim fresh execution or bit-identical future model replies.
 
 The actual same-model39-subject comparison includes KNighter's real no-report
