@@ -1,4 +1,0 @@
-- Decision: NotABug
-- Reason: The reported `kfree(msg)` in `gsm_dlci_clear_queues()` is executed while `gsm->tx_lock` is held: the function acquires it at line 866 and releases it at line 874. The lock therefore protects traversal, removal, and freeing of matching `tx_data_list` entries from concurrent queue operations.
-
-  The target bug is in `gsm_cleanup_mux()`, where queue entries were freed after the mutex was released and without acquiring `tx_lock`; the patch adds that lock around the cleanup traversal. The report points to a different call path where the protecting lock is already held, so it does not demonstrate the target bug pattern or the same unprotected-free root cause.

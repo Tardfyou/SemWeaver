@@ -1,2 +1,0 @@
-- Decision: NotABug
-- Reason: The reported warning says the worker is missing a `completion_done()` guard, but the shown code has that guard in the restart-failure path at lines 133–135. For synchronous resets, the worker frees `reset_data` only when the completion is done; otherwise it returns without freeing it. The patch also removes the submitter’s free on timeout, which was the pre-patch use-after-free source. This report therefore does not identify the target bug pattern in the shown code.

@@ -1,4 +1,0 @@
-- Decision: NotABug
-- Reason: The report’s annotated source is already patched. `devm_kzalloc()` stores its result in `spi_bus->spi_int[iter]`, and the code checks that exact pointer for `NULL` at lines 728–729 before assigning it to `spi_sub_ptr` or dereferencing it at line 731. Allocation failure therefore returns `-ENOMEM` without a null dereference.
-
-  The pre-patch function did have the target bug pattern: it aliased the unchecked allocation result to `spi_sub_ptr` and immediately accessed `spi_sub_ptr->spi_host`. The supplied fix addresses that real bug, but the reported source includes the fix, so the warning does not describe a remaining bug.

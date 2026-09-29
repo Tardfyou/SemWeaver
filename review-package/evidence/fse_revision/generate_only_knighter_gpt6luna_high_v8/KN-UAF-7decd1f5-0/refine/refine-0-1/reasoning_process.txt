@@ -1,8 +1,0 @@
-Refinment Plan:
-The false positive comes from the checker retaining a `ReleasedMap` entry across loop iterations. The analyzer can represent successive list entries with the same abstract region, so after one iteration frees an entry, a later `list_del_rcu()` may be treated as accessing that already-released region. The warning is especially misleading here because the list removal occurs before the free in the same execution; the `kfree` marker is stale.
-
-The fix keeps tracking `kfree` and `kvfree`, and continues to track `mptcp_close_ssk` so the target bug remains detectable. It tags frees performed by `__mptcp_pm_release_addr_entry()` and suppresses only stale reports for list-unlink operations (`__list_del_entry` and `list_del_rcu`) associated with that tag. Other accesses to the tagged region remain reportable. The narrow suppression avoids broadly disabling detection of use-after-free after `kfree`.
-
-Refined Code:
-```cpp
-```

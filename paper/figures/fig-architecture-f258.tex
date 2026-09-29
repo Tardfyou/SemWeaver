@@ -1,0 +1,41 @@
+% Separate suggested architecture; original manual assets remain untouched.
+% Concrete evaluated contracts, not exhaustive symbolic/target correctness.
+\begin{tikzpicture}[f258,x=1bp,y=-1bp]
+\path[use as bounding box] (0,0) rectangle (378,225);
+\fill[F258Region] (0,0) rectangle (94,211);
+\fill[F258Region] (104,0) rectangle (252,211);
+\fill[F258Region] (262,0) rectangle (378,211);
+\node[f258label] at (5,11) {(a) Frozen inputs};
+\node[f258label] at (110,11) {(b) Provenance views};
+\node[f258label] at (268,11) {(c) Edit and retain};
+\node[f258box,text width=72bp,minimum height=19bp] (detector) at (47,39) {Starting detector\\checker / query};
+\node[f258box,text width=72bp,minimum height=19bp] (patch) at (47,77) {Security patch};
+\node[f258box,text width=72bp,minimum height=19bp] (source) at (47,115) {Frozen source\\patch-related scope};
+\node[f258box,text width=72bp,minimum height=19bp] (target) at (47,153) {Vulnerable / fixed\\build-object pair};
+\node[font=\FTDiagramFont,align=center,text width=82bp] at (47,194) {One input checker;\\all edits recorded};
+\node[f258box,text width=131bp,minimum height=24bp] (native) at (178,41) {CSA native:\\CFG / callgraph dumps};
+\node[f258box,text width=131bp,minimum height=24bp] (dynamic) at (178,77) {Optional live checker traces\\hash / scope / parity checked};
+\node[f258box,text width=131bp,minimum height=24bp] (context) at (178,113) {Source-derived context:\\patch and bounded source views};
+\node[f258box,text width=131bp,minimum height=24bp] (output) at (178,149) {Analyzer outputs:\\build errors and V/F reports};
+\node[font=\FTDiagramFont\bfseries,anchor=west,inner sep=0bp] at (110,176) {Typed bundle; absence retained};
+\foreach \x/\label in {110/origin,154/scope,198/digest}{
+ \draw[fill=F258GrayCell] (\x,184) rectangle +(44,17);
+ \node[font=\FTDiagramFont] at (\x+22,192.5) {\label};}
+\node[f258box,text width=90bp,minimum height=20bp] (agent) at (320,41) {LLM edit\\bounded context};
+\node[f258box,text width=90bp,minimum height=20bp] (latest) at (320,77) {Latest candidate $L$};
+\node[f258box,text width=90bp,minimum height=24bp] (scan) at (320,113) {Compile and execute\\same V/F scope};
+\node[f258box,text width=90bp,minimum height=27bp] (gate) at (320,155) {Healthy, $H_v>0$;\\recover warnings or\\reduce fixed reports};
+\node[f258box,text width=90bp,minimum height=20bp] (retained) at (320,193) {Retained checker $D^*$};
+\draw[f258arrow] (detector.east) -- (98,39) -- (98,22) -- (320,22) -- (agent.north);
+\draw[f258arrow] (patch.east) -- (native.west);
+\draw[f258arrow] (source.east) -- (context.west);
+\draw[f258arrow] (target.east) -- (output.west);
+\draw[f258arrow] (249,176) -- (257,176) -- (257,41) -- (agent.west);
+\draw[f258arrow] (agent.south) -- (latest.north);
+\draw[f258arrow] (latest.south) -- (scan.north);
+\draw[f258arrow] (scan.south) -- (gate.north);
+\draw[f258arrow] (gate.south) -- (retained.north);
+\draw[f258feedback] (scan.east) -- (375,113) -- (375,22) -- (320,22);
+\node[font=\FTDiagramFont,anchor=base west,inner sep=0bp] at (0,223)
+ {Persist evidence, replies, code and results. Native-only fixture guard is not a target oracle.};
+\end{tikzpicture}%

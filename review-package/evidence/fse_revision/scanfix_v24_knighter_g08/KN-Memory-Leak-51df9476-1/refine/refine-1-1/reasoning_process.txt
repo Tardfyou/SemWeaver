@@ -1,8 +1,0 @@
-**Refinement Plan:**
-The false positive comes from tracking the assignment to `ndev` as an allocation without accounting for the branch where `alloc_etherdev()` returned null. The checker then sees the `goto exit` in `if (!ndev)` and reports a leak, even though no device was allocated.
-
-The refinement recognizes direct null-failure guards for the tracked pointer: `if (!ndev)` and `if (ndev == NULL)` (including reversed equality). It suppresses the report only when the branch containing the `goto` proves that specific tracked pointer is null. A later failure such as `if (err)` after `rvu_rep_devlink_port_register(rep)` remains reportable. This keeps the change narrow and uses Clang AST APIs available in Clang 18.
-
-**Refined Code:**
-```cpp
-```

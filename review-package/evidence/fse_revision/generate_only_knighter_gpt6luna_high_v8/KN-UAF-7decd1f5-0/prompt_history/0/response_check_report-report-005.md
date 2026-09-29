@@ -1,4 +1,0 @@
-- Decision: NotABug
-- Reason: This report does not match the target bug pattern. The target is a read of `subflow->request_join` after `mptcp_close_ssk()` may release the subflow. The patch fixes it by reading the field before closing the subflow.
-
-  The reported path is different: `__flush_addrs()` removes an address entry with `list_del_rcu()` and then frees it. Both callers establish that the RCU grace period has elapsed before calling `__flush_addrs()`: the flush path calls `synchronize_rcu()`, and the network-namespace exit path documents that the core has already waited for one. `list_del_rcu()` updates the neighboring list links before the entry is freed; the loop’s next iteration reads from the list head, not the freed entry. Thus the reported list operation is not a use-after-free in this context, and it is unrelated to the patched subflow lifetime bug.

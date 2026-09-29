@@ -1,0 +1,14 @@
+{
+  "case_id": "G08_51df94767836_Memory_Leak",
+  "candidate_sha256": "842ef6b2e3e30c37c31f572d5df38345610e685af6168b2aa02c4938a84fa9fb",
+  "review_role": "primary_source_and_diagnostic_audit",
+  "starting_alerts": [2, 2],
+  "retained_alerts": [1, 1],
+  "raw_fixed_alert_reduction": 1,
+  "qualified_target_retention_gain": false,
+  "retained_report_lines": {"vulnerable": [653], "fixed": [653]},
+  "patch_change_line": 680,
+  "code_change": "Skip direct null-test true branches for the tracked region; remove pending allocation/loop entries on a null rebind.",
+  "interpretation": "Raw review-burden reduction with warning positivity retained. The retained warning is before the patch's devlink-registration failure site, not evidence of preserved target detection. Null allocation failure itself has no allocated resource to free, but clearing an outstanding allocation merely because a slot is rebound toNULL can hide real leaks and is not generally justified by this pair.",
+  "aggregation_rule": "Bind this note to the exact retained candidate. Do not infer native-versus-control superiority before the control closes or count this as established general precision gain. All raw outcomes remain included."
+}

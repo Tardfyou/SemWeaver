@@ -1,8 +1,0 @@
-**Refinement Plan:**
-The false positive comes from treating every `kfree()` in a worker as evidence of the timeout race. In the patched code, the async path frees the context without calling `completion_done()`, which is correct because the submitter does not wait on or free that context. The checker then warns on that path despite the worker having a `completion_done()` check for the sync path.
-
-Keep the existing path-sensitive tracking, but before reporting, inspect the worker body for a `completion_done()` call whose argument refers to the completion field. That suppresses this async-path false positive in the patched worker. The buggy target worker has no such call, so it remains detectable. This is a focused syntactic fix; it does not prove that every possible `completion_done()` use is a correct guard.
-
-**Refined Code:**
-```cpp
-```

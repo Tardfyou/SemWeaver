@@ -1,0 +1,21 @@
+% Component reference: F258 Table II, physical page 11. PDF units are bp.
+% Local definitions only: ACM document class, caption format and body remain.
+\RequirePackage{colortbl}
+\definecolor{F258Low}{rgb}{0.61412,0.85255,0.52313}
+\definecolor{F258MidLow}{rgb}{0.79138,0.88196,0.72548}
+\definecolor{F258MidHigh}{rgb}{0.95609,0.72275,0.72275}
+\definecolor{F258High}{rgb}{0.91333,0.53333,0.53333}
+\newcommand{\FTTableSetup}{%
+  \fontencoding{T1}\fontfamily{ptm}\selectfont
+  \fontsize{8.369bp}{10.54bp}\selectfont
+  \setlength{\arrayrulewidth}{0.33432bp}%
+  \setlength{\doublerulesep}{1.67412bp}%
+  \setlength{\tabcolsep}{4bp}%
+  \renewcommand{\arraystretch}{1.0}}
+% Explicit adaptation: shade 1-F1 in quartiles, not counts or significance.
+% Values exactly at a risk boundary enter the higher-risk bin.
+\newcommand{\FTFScore}[1]{%
+  \ifdim#1pt>0.75pt\cellcolor{F258Low}\else
+  \ifdim#1pt>0.50pt\cellcolor{F258MidLow}\else
+  \ifdim#1pt>0.25pt\cellcolor{F258MidHigh}\else
+  \cellcolor{F258High}\fi\fi\fi#1}

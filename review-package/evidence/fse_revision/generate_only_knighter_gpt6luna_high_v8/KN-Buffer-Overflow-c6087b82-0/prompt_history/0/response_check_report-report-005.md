@@ -1,2 +1,0 @@
-- Decision: NotABug
-- Reason: The report is in `lpfc_debugfs_nvmeio_trc_write()`, not the target’s buggy `lpfc_debugfs_lockstat_write()`. This function already clamps `nbytes` to `sizeof(mybuf) - 1` before calling `copy_from_user()`. With `mybuf` sized at 64 bytes, the copied length is at most 63 bytes, so the copy fits in the buffer. The reported path where the clamp condition is false also implies `nbytes <= 63`. This does not match the target bug pattern: the target function passed the unbounded length directly to `copy_from_user()`, and its fix added the clamp.

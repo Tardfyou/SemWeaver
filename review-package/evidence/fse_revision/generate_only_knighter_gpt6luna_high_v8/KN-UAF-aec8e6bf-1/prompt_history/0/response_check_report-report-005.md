@@ -1,4 +1,0 @@
-- Decision: NotABug
-- Reason: The target defect was real in the pre-patch code: `btrfs_close_bdev()` called `fput(device->bdev_file)`, while `btrfs_close_one_device()` cleared `device->bdev` but left `device->bdev_file` dangling. A later mount could then pass that stale pointer to `fput()` in `__btrfs_free_extra_devids()`. The fix patch clears `device->bdev_file` after closing the device.
-
-  However, the reported source already contains that fix at line 1108, and `__btrfs_free_extra_devids()` also clears the field after its `fput()`. The reported location, `list.h:196`, updates list links; it does not release or reuse `device->bdev_file`. Thus the report does not demonstrate the target bug in the code shown, even though the pre-patch bug pattern itself is valid.

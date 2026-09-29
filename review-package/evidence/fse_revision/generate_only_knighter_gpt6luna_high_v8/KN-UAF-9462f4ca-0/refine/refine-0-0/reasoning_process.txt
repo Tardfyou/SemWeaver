@@ -1,6 +1,0 @@
-Refinment Plan:
-The false positive comes from treating any `kfree()` in a function containing a `tx_*` list loop as unsafe, then relying on call-event lock tracking to recognize protection. That tracking can miss locks expressed through kernel macros. I would keep the path-sensitive lock tracking, but add a narrow structural check: suppress a report only when the `kfree()` is inside a target-list loop and the source shows a `tx_lock` guard covering that loop, or an explicit acquire before the loop with a matching release after the free. The buggy `gsm_cleanup_mux()` has no such protection, so it remains reportable.
-
-Refined Code:
-```cpp
-```

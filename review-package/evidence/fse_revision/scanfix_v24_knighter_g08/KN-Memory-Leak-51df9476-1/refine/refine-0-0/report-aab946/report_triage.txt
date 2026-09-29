@@ -1,2 +1,0 @@
-- Decision: NotABug
-- Reason: The report flags the `alloc_etherdev()` failure branch. On that branch, `ndev` is `NULL`, so no net_device was allocated and there is nothing to free. The exit loop’s pre-decrement skips the current index and cleans up only earlier iterations, which is correct here. The target bug and fix concern a different branch: `rvu_rep_devlink_port_register()` can fail after allocation, leaving the current net_device unfreed because the cleanup loop skips it. The patch adds `free_netdev(ndev)` there, not at the reported allocation-failure branch.

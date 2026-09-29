@@ -1,4 +1,0 @@
-- Decision: NotABug
-- Reason: The report identifies a `kfree()` in `gsm_data_kick()`, but that function’s contract requires the caller to hold `gsm->tx_lock`. The shown caller, `gsmld_write_task()`, acquires that spinlock before calling `gsm_data_kick()` and releases it afterward. Thus the list traversal and frees reported here are protected against concurrent queue manipulation.
-
-  The target bug is different: `gsm_cleanup_mux()` frees the same queues after dropping `gsm->mutex`, without holding `gsm->tx_lock`. The patch adds that lock around cleanup’s queue traversal and frees. The reported `gsm_data_kick()` frees already run under the protecting lock, so they do not demonstrate the target bug pattern.

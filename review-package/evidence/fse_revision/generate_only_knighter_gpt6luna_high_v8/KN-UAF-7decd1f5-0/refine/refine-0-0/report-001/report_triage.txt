@@ -1,4 +1,0 @@
-- Decision: NotABug
-- Reason: The report does not match the target bug pattern. The target is a use-after-free in `mptcp_pm_nl_rm_addr_or_subflow`: it reads `subflow->request_join` after `mptcp_close_ssk()` may release the subflow. The fix moves that read before the close.
-
-  The reported path is different. In `__flush_addrs()`, each entry is obtained from the list, removed with `list_del_rcu()`, and then freed by `__mptcp_pm_release_addr_entry()`. The loop’s next iteration uses the list head to obtain the next entry; it does not reuse the freed `cur`. The function’s callers ensure the required RCU grace period has elapsed before freeing entries. Thus, the reported access occurs before the free, and there is no demonstrated use-after-free.

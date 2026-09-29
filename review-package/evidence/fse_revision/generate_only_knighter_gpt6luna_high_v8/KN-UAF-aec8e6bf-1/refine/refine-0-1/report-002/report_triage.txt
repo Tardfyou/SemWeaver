@@ -1,4 +1,0 @@
-- Decision: NotABug
-- Reason: The target bug was real in the pre-patch code: when `device->bdev` was non-NULL, `btrfs_close_bdev()` called `fput(device->bdev_file)`, but the old cleanup cleared only `device->bdev`. That left `bdev_file` dangling for a later reuse.
-
-  This report’s path assumes `device->bdev` is NULL at the check after `btrfs_close_bdev()`. Since that helper returns without calling `fput()` when `device->bdev` is NULL, the reported path does not show a release followed by a missing clear. The annotated source also contains the fix, `device->bdev_file = NULL`, in the branch that closes an open device. Thus the warning’s reported path does not establish the target bug pattern in the shown code.

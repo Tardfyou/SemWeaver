@@ -1,4 +1,0 @@
-- Decision: NotABug
-- Reason: This is a false positive and does not match the target bug pattern. The reported code is `__flush_addrs()`, not the buggy `mptcp_pm_nl_rm_addr_or_subflow()` path. In `__flush_addrs()`, each iteration obtains the first remaining entry, unlinks it with `list_del_rcu()`, and then frees it. The next iteration reads `list->next` from the list head, which `list_del_rcu()` has updated; it does not reuse the freed `cur` pointer.
-
-  The callers also satisfy the function’s lifetime requirement: the netlink flush path waits for `synchronize_rcu()` before freeing entries, and the namespace-exit path is documented as already having waited for an RCU grace period. The target bug instead reads `subflow->request_join` after `mptcp_close_ssk()` may release the subflow. The patch fixes that by reading the field before the close call. That read-after-close pattern is absent from the reported code.

@@ -1,4 +1,0 @@
-- Decision: NotABug
-- Reason: The report flags line 728, which is a null check: `if (!spi_bus->spi_int[iter])`. Comparing the pointer to `NULL` does not dereference it. The subsequent assignment to `spi_sub_ptr` and use of `spi_sub_ptr->...` occur only after the check returns, so this reported code path is guarded.
-
-  The pre-patch function did contain the target bug: it assigned the result of `devm_kzalloc()` to `spi_bus->spi_int[iter]`, copied it to `spi_sub_ptr`, and dereferenced it without checking for allocation failure. The supplied patch adds the check that fixes that bug. Thus, the historical bug matches the target pattern, but this report points at the fix’s null check rather than an unchecked dereference.

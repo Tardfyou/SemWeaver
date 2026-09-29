@@ -1,4 +1,0 @@
-- Decision: NotABug
-- Reason: The reported `kfree()` is in `gsm_data_kick()`, which is documented to require the GSM transmit lock. The shown caller, `gsmld_write_task()`, acquires `gsm->tx_lock` before calling it and releases the lock afterward, so the list traversal, removal, and free are serialized against concurrent queue access.
-
-  The target bug is different: `gsm_cleanup_mux()` frees entries from the same queues after releasing `gsm->mutex`, without holding `gsm->tx_lock`. The patch adds that lock around cleanup’s queue traversal. It does not address the reported `gsm_data_kick()` frees, which already run under the protecting lock.

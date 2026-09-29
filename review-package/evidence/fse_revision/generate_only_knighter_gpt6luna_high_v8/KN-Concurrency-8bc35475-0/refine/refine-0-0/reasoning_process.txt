@@ -1,8 +1,0 @@
-Refinment Plan:
-The checker currently relies on whichever enclosing `IfStmt` the parent-search utility returns, then treats that statement’s condition as the guard. That can associate a branch-condition callback with an enclosing `if` rather than the exact condition being analyzed. The fix below requires the callback condition to be the `IfStmt`’s full condition, and uses that condition for the analysis.
-
-The target remains detectable: `from_cancel` is an independent first conjunct, while later conjuncts use `data`. The watchdog case does not match: `pool_ts` is used to evaluate `time_after(...)`, so it is not a read used only after an independent guard. The separate guarded-branch shape is retained for cases where the condition does not use the assigned variable.
-
-Refined Code:
-```cpp
-```

@@ -1,8 +1,0 @@
-I’m tracing the checker’s release modeling against the analyzer path. The key distinction is that `btrfs_close_bdev(device)` is only a release when `device->bdev` is non-null; modeling that owner-release call unconditionally creates the reported false positive.I’ll make the owner-release model conditional on the helper’s `bdev` guard. For symbolic states, the checker will fork: only the feasible non-null path records a release, while the null path remains unmarked. This preserves detection when the device is open and prevents the exact null-`bdev` report.Refinement Plan:
-- The false positive comes from treating every `btrfs_close_bdev(device)` call as a release. The helper only calls `fput(device->bdev_file)` when `device->bdev` is non-null.
-- Add the helper’s guard field to the owner-release specification. At the call, split the analyzer state on that field and mark the release only on the feasible non-null path.
-- Keep direct release handling and the existing cleared-field behavior unchanged. This still detects the buggy path when `bdev` is non-null and `bdev_file` is not cleared, while avoiding a release report on the null-`bdev` path.
-
-Refined Code:
-```cpp
-```

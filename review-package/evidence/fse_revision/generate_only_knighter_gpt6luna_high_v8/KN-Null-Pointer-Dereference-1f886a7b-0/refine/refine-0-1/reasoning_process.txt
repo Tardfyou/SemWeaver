@@ -1,8 +1,0 @@
-Refinement Plan:
-The false positive comes from `checkLocation` treating every `ArraySubscriptExpr` as a pointer dereference. In the reported statement, `spi_bus->spi_int[iter]` is an array element being written, not a dereference of the newly allocated pointer. The existing NULL check is therefore not the issue: the checker is misclassifying the assignment’s destination.
-
-The fix is to recognize assignments to elements of an array-typed base and skip that storage access. Pointer indexing such as `p[i]` remains eligible for checking, as do member dereferences such as `p->field`. This preserves detection of the buggy code: after the allocation, an unchecked `spi_sub_ptr->spi_host` access is still reported.
-
-Refined Code:
-```cpp
-```

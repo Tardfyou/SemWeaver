@@ -1,4 +1,0 @@
-- Decision: NotABug
-- Reason: The reported source initializes `event->datalen` at line 500 before accessing the flexible array at line 505. Therefore, in the code shown in the report, the `__counted_by` counter is set before `memcpy()` and this warning does not match the target bug pattern.
-
-  The supplied pre-patch function did contain the bug: `kzalloc()` leaves `datalen` at zero, then `memcpy(event->data, data, datalen)` accesses the flexible array before the counter is updated. For a nonzero packet `datalen`, that can trigger the bounds check; the patch fixes it by moving the assignment before the copy. But the annotated report shows that fix already present, so this specific warning is a false positive for the reported code.

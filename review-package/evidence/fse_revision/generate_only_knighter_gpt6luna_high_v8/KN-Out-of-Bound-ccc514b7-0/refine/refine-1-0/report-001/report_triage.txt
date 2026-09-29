@@ -1,2 +1,0 @@
-- Decision: NotABug
-- Reason: The pre-patch function had the target bug pattern: it looped over 8 `SocVoltage` entries and could index the 7-entry `DcfClocks` array at index 7. The reported source already contains the fix: it breaks when `i >= VG_NUM_DCFCLK_DPM_LEVELS` before comparing or indexing. Thus `DcfClocks[i]` is accessed only for indices 0 through 6, so the reported out-of-bounds access is not reachable.

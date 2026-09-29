@@ -1,4 +1,0 @@
-- Decision: NotABug
-- Reason: The reported frees occur in `gsm_data_kick()`, which requires the GSM transmit lock. Its shown caller, `gsmld_write_task()`, holds `gsm->tx_lock` across the call and releases it only afterward. Therefore, the `list_del()` and `kfree()` operations at the report location are protected against concurrent list manipulation.
-
-  The target bug is in `gsm_cleanup_mux()`: it frees entries from `tx_ctrl_list` and `tx_data_list` after releasing `gsm->mutex`, without holding `gsm->tx_lock`. The patch adds that lock around cleanup. The report identifies a different code path where the protecting lock is already held, so it does not match the target bug pattern.
