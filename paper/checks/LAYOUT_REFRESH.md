@@ -11,8 +11,8 @@ experimental denominators. No new model or analyzer execution was requested.
 |---|---:|---|
 | Figure 1 | 5 | Automatic motivating example; corrected abridged branch and callout background |
 | Figure 2 | 6 | Architecture, after the Approach heading |
-| Table 1 | 7 | Rule-guided evidence requirements |
-| Algorithm 1 | 8 | Same refinement operations, compact inline conditional statements |
+| Algorithm 1 | 7 | Same refinement operations, compact inline conditional statements |
+| Table 1 | 8 | Rule-guided evidence requirements |
 | Table 2 | 8 | Evidence origin definitions and counts 81/51/61 |
 | Table 3 | 12 | Operational warning-outcome definitions |
 | Table 4 | 13 | Full 39 comparison and complete noisy-15 stratum in two panels |
@@ -20,8 +20,8 @@ experimental denominators. No new model or analyzer execution was requested.
 | Figure 3 | 15 | All 12 subjects x 3 paired decodes, not selected successes |
 | Table 6 | 15 | Initial state and three limited-budget model configurations |
 
-The final compiled PDF has 21 pages: body, AI statement and Data Availability
-end on page 18; references occupy pages 19-21. ACM body typography and margins
+The current compiled PDF has 22 pages: body, AI statement and Data Availability
+end on page 18; references occupy pages 19-22. ACM body typography and margins
 are unchanged. Section-boundary float barriers keep diagrams/results in their
 sections; subsection barriers that produced empty float pages were removed.
 
@@ -31,7 +31,7 @@ sections; subsection barriers that produced empty float pages were removed.
   or duplicate labels. Bibliography missing-field warnings remain; they are not
   figure clipping or failed compilation.
 - The small paper archive was extracted into a new directory and built from
-  scratch with networking disabled. All 21 pages' extracted text matches the
+  scratch with networking disabled. All pages' extracted text matches the
   reviewed PDF; the build does not depend on leftover local bibliography/cache files.
 - All six tables, the algorithm and three figures were inspected at final size.
   Diagram glyphs are inside their standalone PDF bounds; arrows/callouts were
@@ -41,7 +41,8 @@ sections; subsection barriers that produced empty float pages were removed.
   Initial model-subset values and CodeQL cost values were promoted from existing
   recorded summaries/prose into tables, not newly measured.
 - The original paper-writing AI sentence is restored verbatim after Conclusion
-  and before Data Availability. Its heading is neutral, not an acknowledgment.
+  and before Data Availability. At the user's follow-up request, its original
+  `Acknowledgments` heading is also restored; no identity/funding text is added.
   The separate research-AI disclosure remains in Experimental Environment.
 - The reference's line/color/typographic conventions remain local to displays;
   open-font and content-geometry adaptations remain disclosed in the style report.
@@ -87,5 +88,7 @@ full-paper prose review remains a separate earlier pass.
 
 Both citations support specific contextual sentences, not our numerical results.
 No cross-paper performance comparison or new first/universal claim was introduced.
-This is a targeted citation update, not an exhaustive novelty search or new
-baseline evaluation. The bibliography now contains 53 cited entries (previously 51).
+This initial update reached 53 cited entries (from 51). The subsequent requested
+extension reaches 59; see `REFERENCE_FINAL_CHECKPOINT.md` for the six added
+citations, primary sources and their exact roles. These are targeted citation
+updates, not an exhaustive novelty search or new baseline evaluation.

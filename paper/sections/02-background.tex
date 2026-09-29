@@ -1,5 +1,3 @@
-This section introduces the background on static vulnerability checkers, LLM-based checker generation from security patches, and the analyzer-internal intermediate results that motivate our approach.
-
 \subsection{Static Vulnerability Checkers}
 
 Static analysis examines source code without executing it, aiming to find bugs, security vulnerabilities, and code-quality issues at compile time or during code review~\cite{engler2001bugs,bessey2010coverity}.
@@ -12,6 +10,7 @@ Both paradigms have been deployed at industrial scale for continuous vulnerabili
 Writing effective checkers remains a bottleneck.
 A checker must encode not only the syntactic pattern of a vulnerability but also the semantic conditions (path guards, state invariants, data-flow relations, and API contracts) that distinguish real bugs from safe code.
 This requires deep domain knowledge of both the target codebase and the analysis framework, making manual checker authoring expensive and error-prone.
+Report burden also affects practical use~\cite{johnson2013why,heckman2011alerts}; ranking and actionability prediction address emitted warnings~\cite{kremenek2002zranking,ruthruff2008actionable}, whereas our refinement changes checker code.
 
 \subsection{LLM-Based Patch-Driven Checker Generation}
 
@@ -20,8 +19,7 @@ A security patch provides a compact before/after specification: the vulnerable r
 This idea builds on a well-established line of work that treats patches as vulnerability specifications, including semantic patching~\cite{padioleau2008coccinelle}, clone-based vulnerability discovery~\cite{jang2012redebug,kim2017vuddy}, and patch-derived datasets~\cite{fan2020bigvul}.
 KNighter~\cite{yang2025knighter} is a representative system that synthesizes CSA checkers from historical Linux kernel fixes and validates them against the vulnerable and fixed revisions.
 
-However, generated checkers can omit semantic conditions needed to distinguish vulnerable from fixed code.
-A patch is inherently underspecified: a one-line edit may encode a path guard, an ownership transition, a lifetime barrier, or an API contract, yet the generated checker can capture only the syntactic shape of the edit without the semantic condition the edit enforces.
+Generated checkers may miss semantic conditions: a small patch can encode a guard, ownership transition, lifetime barrier or API contract beyond its syntactic shape.
 Existing refinement loops, including KNighter's own iterative strategy, operate at the output level~\cite{yang2025knighter,madaan2023selfrefine,shinn2023reflexion}.
 They feed behavioral signals (e.g., ``the fixed side still warns'') back to the LLM, revealing the symptom but not diagnosing the cause.
 Such feedback does not directly identify whether the missing predicate concerns a path guard, a cleanup barrier, an ownership transition, or an API contract; the model must infer the condition from the patch, source context and observed outputs.

@@ -1,8 +1,35 @@
 # Reference integrity: current manuscript, 2026-09-29
 
-The bibliography contains 64 entries; 51 keys are cited in the section sources.
+The initial integrity pass covered 64 bibliography entries and 51 cited keys.
+After the requested citation additions, the current bibliography contains 69
+entries and renders 59 cited references. The additions are detailed below;
+the original audit counts in the following sections remain historical counts.
 No missing citation key was found. The unused entries are not rendered by the
 current BibTeX bibliography and are not claimed individually verified here.
+
+## Follow-up: six more cited references and original AI heading
+
+The preceding layout pass added LLift and RepoAudit (51 to 53 cited entries).
+This follow-up adds six relevant citations (53 to 59); three were already in
+the BibTeX database but had not been cited, and three are new entries.
+
+| Key | Placement / purpose | Primary verification |
+|---|---|---|
+| `johnson2013why` | Background: report burden and adoption | [Google Research](https://research.google/pubs/why-dont-software-developers-use-static-analysis-tools-to-find-bugs/); publisher-deposited DOI metadata 10.1109/ICSE.2013.6606613, ICSE 2013, 672-681 |
+| `heckman2011alerts` | Background: actionable-alert research | [Authors' institutional manuscript](https://repository.lib.ncsu.edu/bitstreams/fa707e19-8ce5-4ca6-b459-b6bdbf72db61/download); DOI metadata confirms IST 53(4), 363-387, 2011 |
+| `kremenek2002zranking` | Background: ranking emitted warnings | [Authors' paper](https://web.stanford.edu/~engler/sas-camera-ready.pdf); DOI 10.1007/3-540-44898-5_16 confirms SAS **2003**, 295-315; historical key spelling is retained |
+| `ruthruff2008actionable` | Background: predicting accuracy/actionability | [Institutional author record](https://digitalcommons.unl.edu/cseconfwork/128/); DOI 10.1145/1368088.1368135 confirms authors, ICSE 2008 and 341-350 |
+| `wang2024llmdfa` | Related Work: compilation-free dataflow analysis and synthesized tools | [NeurIPS proceedings and linked BibTeX](https://proceedings.neurips.cc/paper_files/paper/2024/hash/ed9dcde1eb9c597f68c1d375bbecf3fc-Abstract-Conference.html), volume 37, 131545-131574, 2024 |
+| `serebryany2012asan` | Motivating example: tool already used for fixture checks | [USENIX paper entry and BibTeX](https://www.usenix.org/conference/atc12/technical-sessions/presentation/serebryany), ATC 2012, 309-318 |
+
+The new sentences distinguish emitted-warning prioritization and code analysis
+from modifying an existing checker. No cross-paper performance claim or new
+experimental result was introduced. The overview sentence and duplicated patch
+explanation in Background were compressed with the same semantic boundary.
+The original `Acknowledgments` heading and AI-use sentence were both checked
+verbatim against the preserved first manuscript. No identity or funding text
+was inserted. References start on page 19, occupy four pages, and retain ACM
+typography; bibliography entries are kept together to avoid isolated DOI lines.
 
 ## Publisher-deposited DOI metadata
 
