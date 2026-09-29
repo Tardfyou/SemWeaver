@@ -2,14 +2,14 @@
 
 % \subsection{Overview}
 
-\begin{figure*}[t]
+\begin{figure}[!htbp]
   \centering
   \includegraphics[width=\textwidth]{figures/fig-architecture-f258.pdf}
   \Description{Workflow from a generated checker and patch through evidence collection, a typed provenance-labelled bundle, checker editing, paired validation, and audit artifacts.}
   \caption{\textbf{\toolname architecture.}
   A generated detector, patch and bounded evidence feed the editor and paired retention rule. Native provenance is checked separately from collector names. Retention tracks version-warning presence, not target correctness; fixed silence is secondary. Inputs, rejected/retained candidates and raw validation records remain auditable.}
   \label{fig:approach-architecture}
-\end{figure*}
+\end{figure}
 
 Figure~\ref{fig:approach-architecture} groups the workflow into three panels.
 \textbf{(a)~Generator context.} The input is an existing detector, patch, source tree and validation scope, not a new generation task.
@@ -28,20 +28,16 @@ Figure~\ref{fig:approach-architecture} groups the workflow into three panels.
 \State $E_p,E_s \gets \Call{Preflight}{P},\ \Call{ExtractSource}{P,S,D}$
 \State $E_a \gets \bigcup_{a\in A}\Call{CollectNative}{a,D,P,S}$ \quad $E_v \gets \Call{Feedback}{R_0}$
 \State $B \gets \Call{NormalizeMerge}{E_p,E_s,E_a,E_v}$
-\If{$\Call{PDS}{D,P,V}$}
-  \State \Return $\Call{Audit}{D,B}$
-\EndIf
+\State \textbf{if} $\Call{PDS}{D,P,V}$ \textbf{then return} $\Call{Audit}{D,B}$
 \State $D^* \gets D$ \quad $L \gets D$ \quad $T \gets \Call{InitialStopState}{}$
 \For{$i=1$ to $K$}
   \State $V_i \gets \Call{BoundedView}{B}$ \quad $C_i \gets \Call{AgentEdit}{L,P,V_i}$
   \State $R_i \gets \Call{ValidateIfCompilable}{C_i,P,V}$
-  \If{$\Call{Accept}{C_i,D^*}$} \Comment{Equation~\ref{eq:accept}}
-    \State $D^* \gets C_i$
-  \EndIf
+  \State \textbf{if} $\Call{Accept}{C_i,D^*}$ \textbf{then} $D^* \gets C_i$ \Comment{Equation~\ref{eq:accept}}
   \State $L \gets C_i$ \quad $E_i \gets \Call{Feedback}{R_i}$
   \State $B \gets \Call{Merge}{B,E_i}$
   \State $T \gets \Call{UpdateStopState}{T,R_i,D^*}$
-  \If{$\Call{Stop}{T,K}$} \State \textbf{break} \EndIf
+  \State \textbf{if} $\Call{Stop}{T,K}$ \textbf{then break}
 \EndFor
 \State \Return $\Call{Audit}{D^*,B}$
 \end{algorithmic}
@@ -56,7 +52,7 @@ The central design choice in evidence assembly~(Figure~\ref{fig:approach-archite
 The implementation has no separately trained or prompted patch-mechanism classifier.  \texttt{PatchFacts\allowbreak Extractor} parses the patch and metadata for affected functions, added guards, risky calls, and type widenings.  \texttt{Evidence\allowbreak Planner} takes a primary pattern from analysis metadata when available or infers it from those facts, then assigns fixed priorities to requirements: patch anchoring is 100, lifetime/state requirements for double-free or use-after-free are 92/89, and a guard for null or bounds cases is 90.  It sorts by descending priority with evidence type as a tie-breaker and retains at most eight planned requirements in the default configuration.  Table~\ref{tab:evidence-routing} summarizes mechanism-to-role examples; it is not a classifier confusion matrix or a promise that every role is analyzer-internal.  The normalizer does not learn or re-rank facts.  In the general workflow the editor may request evidence types, with duplicate and request-count limits.
 For the audited CSA comparison, static records are precomputed and additional requests disabled. The selected v43 implementation resolves compiler references into at most four function-local CFG witness cards, selected with patch/report scope; graph dominance is not path feasibility. It contrasts compiler/checker state associations and helper spelling with the detector, appending available execution observations. No-internal receives neither native witness nor dynamic views, but keeps patch, frozen source and ordinary feedback. This bounded deterministic exposure is not a classifier or a measured optimal routing policy.
 
-\begin{table}[t]
+\begin{table}[!htbp]
 \centering
 \caption{Rule-guided evidence requirements by patch mechanism (representative); names are persisted record types, not gold labels or measured classifier outputs.}
 \label{tab:evidence-routing}
@@ -78,19 +74,15 @@ API misuse / missing check & \texttt{semantic\_slice}, \texttt{call\_chain} & Co
 \subsection{Evidence Sources and Roles}
 \label{sec:evidence-roles}
 
-Given the patch scope and any planned requirements, four collectors execute in sequence. Figure~\ref{fig:approach-architecture}b groups their views by origin, not execution order:
-
-\textbf{Patch preflight} identifies changed files/hunks and their mechanism context: what changed and where.
-
-\textbf{Source extraction} resolves bounded function, guard, call, state and build context without repository-scale dumps.
+Four collectors execute in sequence; Figure~\ref{fig:approach-architecture}b groups views by origin rather than execution order. \textbf{Patch preflight} locates changed files/hunks and mechanism context. \textbf{Source extraction} resolves function, guard, call, state and build context in bounded views, without repository-scale dumps.
 
 \textbf{Analyzer evidence} is classified by its actual origin, not by the collector's name.  We call a record \emph{analyzer-internal} only if its payload is derived from a backend-produced intermediate representation, identifies the interface and raw output, and is bound to a source revision, file, and function.  In the measured CSA cohort the interface is Clang 18's \texttt{debug.DumpCFG} and \texttt{debug.DumpCallGraph}; the persisted UTF-8 dump is parsed into schema \texttt{semweaver.csa\_cfg\_snapshot.v1}, with a raw-output SHA-256 and source-scope binding.  These dumps provide CFG branches and value bindings and call edges.  They do \emph{not} themselves prove a path-feasible lifetime or ownership transition.  Analyzer diagnostics and alert counts are \emph{analyzer output}, not internal state.  Patch diffs, source windows, and compile-database-assisted source extraction are \emph{source-derived} fallbacks even when a CSA or CodeQL collector emits them.  A live CodeQL database query could meet the internal-evidence definition if its query, database revision, and tuples were retained; we do not attribute source-window-derived CodeQL facts to that category.
 
 The selected implementation also observes instrumented CSA callbacks, abstract values/regions and checker-state associations. Raw JSONL uses \texttt{semweaver.checker\_trace.v2}; bounded feedback uses \texttt{semweaver.trace\_feedback.v1}. This is not concrete execution or exhaustive symbolic-state proof. Original/instrumented scans must preserve diagnostics on both revisions; caps, live fixtures and input hashes distinguish valid absence from broken instrumentation.
 
-Extraction is challenging because intermediates are verbose, backend-specific and sometimes unavailable; instrumentation can shadow identifiers, exceed caps or see no eligible callback. Revision, architecture, scope and parity checks are essential. Missing observations remain unavailable. Corrected bundles cover all 39 subjects with 193 records: 81 native-backed, 51 analyzer output and 61 source-derived. Native types comprise 45 guards, 27 state-transition and 9 allocation-lifecycle records. All 61 source-derived records here are patch-diff-derived, not source-window fallbacks. Attached source context is not itself native. Dynamic availability has a separate per-attempt denominator (RQ3).
+Extraction must handle verbose, backend-specific intermediates and instrumentation that may shadow identifiers, exceed caps or see no eligible callback. Revision, architecture, scope and parity checks retain missing observations as unavailable. Table~\ref{tab:origin-types} partitions 193 records across all 39 subjects. Its 81 native records comprise 45 guards, 27 state-transition and 9 allocation-lifecycle records; all 61 source-derived records are patch diffs, not source-window fallbacks. Attached context is not itself native. Dynamic availability is per-attempt (RQ3).
 
-\begin{table}[t]
+\begin{table}[!htbp]
 \centering
 \caption{Evidence primitives and provenance in the audited 39-case CSA cohort. One record may contain several CFG primitives; counts are by record origin, not primitive.}
 \label{tab:origin-types}
@@ -110,7 +102,9 @@ Source-derived & Patch-diff records here; other interfaces may emit source-windo
 \textbf{Validation feedback} records compilation, execution health and paired warnings: symptoms to diagnose, not semantic ground truth.
 
 % \smallskip
-The persisted type vocabulary is \texttt{patch\_fact}, \texttt{semantic\_slice}, \texttt{dataflow\_candidate}, \texttt{call\_chain}, \texttt{path\_guard}, \texttt{allocation\_lifecycle}, and \texttt{state\_transition}.  A \texttt{patch\_fact} anchors changed statements; \texttt{semantic\_slice} summarizes bounded statements, guards, API terms, and related symbols.  \texttt{dataflow\_candidate} and \texttt{call\_chain} describe possible propagation and call context, while \texttt{path\_guard}, \texttt{allocation\_lifecycle}, and \texttt{state\_transition} describe control, resource, and abstract-state context.  ``Barrier,'' ``type filter,'' and ``API usage'' are semantic interpretations inside these records, not additional persisted types or claims of proven path feasibility.
+\begingroup\emergencystretch=2em
+The seven persisted types are \texttt{patch\_fact} (changed statements), \texttt{semantic\_slice} (bounded statements, guards, API terms and symbols), \texttt{dataflow\_candidate} (possible propagation), \texttt{call\_chain} (call context), \texttt{path\_guard} (control), \texttt{allocation\_lifecycle} (resources), and \texttt{state\_transition} (abstract state). ``Barrier,'' ``type filter,'' and ``API usage'' interpret record content; they are neither extra types nor proven path feasibility.
+\par\endgroup
 
 When a selected role yields no evidence, the bundle retains an explicit missing-evidence marker rather than treating the absence silently, so the refinement agent knows what was requested but unavailable.
 

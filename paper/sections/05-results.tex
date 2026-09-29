@@ -1,13 +1,15 @@
 \subsection{RQ1: Generated CSA Checkers}
 
-Table~\ref{tab:all39-system} reports every frozen subject. Initially, 15 checkers warn on both revisions and 24 are silent on both; zero starting PDS is not KNighter's refinement result. Native \toolname reaches 23 warning-positive vulnerable revisions and version-level $F_1=0.575$, versus 15 and $0.448$ for KNighter. All 15 initially warning-positive vulnerable revisions remain warning-positive in every portfolio. Among the 24 initially silent subjects, native recovers 8, no-internal 6, and KNighter 0 under its actual no-report policy. These are warning signals, not verified target-recall counts.
+Table~\ref{tab:all39-system} reports all 39 subjects and the preexisting 15-case noisy stratum. Zero starting PDS is an entry condition, not KNighter's refinement result. Every portfolio retains the 15 initially warning-positive vulnerable revisions. Among the 24 initially silent subjects, native recovers 8, no-internal 6, and KNighter 0 under its actual no-report policy. These are warning signals, not verified target-recall counts.
 
-\begin{table}[t]
+\begin{table}[!htbp]
 \centering
-\caption{Complete 39-case CSA comparison. TP/FP/FN are patch-version warning decisions; fixed reports measure burden. Replies are received responses. PDS is secondary. Color shades $1-F_1$ with fixed thresholds .25/.50/.75, not significance.}
+\caption{CSA comparison: (a) all 39 subjects; (b) the complete preexisting 15-case fixed-noisy stratum, reusing the same outputs. TP/FP/FN are version-warning decisions; fixed reports measure burden and replies count received responses. Color shades $1-F_1$ at .25/.50/.75, not significance.}
 \label{tab:all39-system}
+\label{tab:matched14}
 \begingroup\FTTableSetup
 \begin{tabular}{l|cccc|c|cc}
+\multicolumn{8}{l}{(a) Full cohort: 39 subjects}\\
 \hline\hline
 \multirow{2}{*}{Condition}&\multicolumn{4}{c|}{Version outcomes}&
 \multirow{2}{*}{$F_1$}&\multicolumn{2}{c}{Burden / effort}\\
@@ -19,79 +21,75 @@ KNighter loop &2&15&13&24&\FTFScore{.448}&69&179\\\hline
 \toolname, no internal &8&21&13&18&\FTFScore{.5753}&68&133\\
 \hline\hline
 \end{tabular}
+\par\smallskip
+\begin{tabular}{l|c|c|c}
+\multicolumn{4}{l}{(b) Noisy 15: all methods retain TP=15, PDS=2 and $F_1=.6977$}\\
+\hline\hline
+& KNighter loop & Native & No internal\\\hline
+Fixed reports &69&44&68\\
+\hline\hline
+\end{tabular}
 \endgroup
 \end{table}
 
 The additional coverage has a noise cost: native's 123 fixed reports exceed no-internal's 68 and KNighter's 69; its precision is $0.561$ versus $0.618$ for no-internal. Nearly tied $F_1$ does not establish native superiority. G12 contributes 73 distinct fixed-side warning locations, not duplicates; its broader matching yields 74 vulnerable and 73 fixed reports. This unfavorable tradeoff remains in the aggregate.
 
-The original 15 fixed-noisy subjects form the complete report-refinement view (Table~\ref{tab:matched14}). All methods retain vulnerable warning presence; native leaves 44 fixed reports versus 68/69 for control/KNighter. Its 25-report reduction against KNighter is 36.2\%, concentrated in G24, whose fixed count falls from 27 to 2. Other small differences offset one another; against control the net reduction is 24 reports (35.3\%). Binary fixed positivity and $F_1$ are identical in this stratum. G24's target preservation is unverified, so lower burden is not a guarantee of sound suppression.
-
-\begin{table}[t]
-\centering
-\caption{Complete preexisting 15-subject stratum, using full-cohort outputs. All methods retain 15 vulnerable warning signals; starting fixed reports are 73. $F_1$ shading follows Table~\ref{tab:all39-system}.}
-\label{tab:matched14}
-\begingroup\FTTableSetup
-\begin{tabular}{l|cc|c|c}
-\hline\hline
-Method & TP & PDS & Fixed reports & $F_1$\\
-\hline
-KNighter loop &15&2&69&\FTFScore{.6977}\\\hline
-\toolname, native &15&2&44&\FTFScore{.6977}\\\hline
-\toolname, no internal &15&2&68&\FTFScore{.6977}\\
-\hline\hline
-\end{tabular}
-\endgroup
-\end{table}
+In the complete 15-case fixed-noisy stratum (Table~\ref{tab:matched14}b), native reduces reports by 25 (36.2\%) against KNighter and 24 (35.3\%) against control. The effect is concentrated in G24's $27\rightarrow2$ fixed reports; other small differences offset one another. Binary fixed positivity and $F_1$ are identical across methods. G24's target preservation is unverified, so lower burden does not guarantee sound suppression.
 
 \subsection{RQ2: Cross-Backend Feasibility}
 
-The historical mixed/manual 20-detector table is excluded from automatic-effect counts. A separate archived automatic ImageMagick CodeQL query starts at $0/0$ vulnerable/fixed rows. Three decodes of the same input reach $8/0$ twice after one call each; the third retains a $22/22$ recovery after eight calls. The successful edit corrects relative-path matching while keeping exact file/function/local-variable filters. This demonstrates patch-local operation on a second format, not broad backend transfer or native-evidence causality. A second query already starts at $2/0$ and is not counted as a gain. KNighter is not a CodeQL baseline.
+A separate archived automatic ImageMagick CodeQL query starts at $0/0$ vulnerable/fixed rows. Table~\ref{tab:codeql-decoding} includes two $8/0$ recoveries and the third decode's $22/22$ outcome. The successful edit corrects relative-path matching while keeping exact file/function/local-variable filters. This demonstrates patch-local operation on a second format, not broad backend transfer or native-evidence causality. A second query already starts at $2/0$ and is not counted as a gain. KNighter is not a CodeQL baseline.
 
-\textbf{Second-backend costs.} Three warm paired replays per query preserve $0/0$ and $8/0$. Median query-plus-decode time is 12.57\,s initially and 36.51\,s after refinement with two threads; peak process RSS is 976/1,078\,MiB. Database-creation log intervals span 31/30\,s, excluding unlogged startup. Original model decodes consume 15,122/14,345/110,282 tokens; retained agent-round durations are 87.87/42.74/516.77\,s. Developer labor is unmeasured. These one-case existing-environment observations are neither a speedup, cold-install benchmark nor whole-project scalability estimate.
+\begin{table}[!htbp]
+\centering
+\caption{Three automatic CodeQL decodes of one query. Counts are vulnerable/fixed output rows; time is recorded agent-round duration, excluding separate paired replay.}
+\label{tab:codeql-decoding}
+\begingroup\FTTableSetup
+\begin{tabular}{c|c|c|r|r}
+\hline\hline
+Decode & V/F rows & Replies & Tokens & Agent time (s)\\\hline
+1 &8/0&1&15,122&87.87\\
+2 &8/0&1&14,345&42.74\\
+3 &22/22&8&110,282&516.77\\
+\hline\hline
+\end{tabular}\endgroup
+\end{table}
+
+\textbf{Second-backend costs.} Table~\ref{tab:codeql-decoding} reports the original model runs. Three warm paired replays per query preserve $0/0$ and $8/0$. Median query-plus-decode time is 12.57\,s initially and 36.51\,s after refinement with two threads; peak process RSS is 976/1,078\,MiB. Database-creation log intervals span 31/30\,s, excluding unlogged startup. Developer labor is unmeasured. These one-case existing-environment observations are neither a speedup, cold-install benchmark nor whole-project scalability estimate.
 
 \subsection{RQ3: Internal-Evidence Sensitivity}
 
-Corrected initial evidence contains 193 records on all 39 subjects: 81 native-backed, 51 analyzer outputs and 61 source-derived records. All 61 source-derived records are patch-diff-derived, not source-window fallbacks. Native types comprise 45 guards, 27 state-transition and 9 allocation-lifecycle records; contextual fields attached to a native-backed record are not necessarily native facts. Dynamic availability has a separate denominator: 103 of 150 unique native-chain attempts have usable hash-bound observations; 11 are unavailable due to candidate compilation, 18 unsupported context, 13 zero scoped callbacks, 1 reproduced candidate crash and 4 capped optional observations. None establishes safety from absence.
+Table~\ref{tab:origin-types} reports initial record provenance; Section~\ref{sec:evidence-roles} defines native types and source-derived context. Dynamic availability has a separate denominator: 103 of 150 unique native-chain attempts have usable hash-bound observations; 11 are unavailable due to candidate compilation, 18 unsupported context, 13 zero scoped callbacks, 1 reproduced candidate crash and 4 capped optional observations. None establishes safety from absence.
 
 The full 39 comparison has six native comparative benefits, five disadvantages and 28 ties/other outcomes. Changes include cleanup-wrapper recognition in G19, nested dereference/binding recovery in G25, and null/region/frame handling in G24. G19 adds \texttt{\_\_free\_kfree} to a cleanup predicate, yielding $15/0$ versus control's $0/0$; 15 reports are not 15 bugs. Conversely, control recovers symbolic-region handling in G23 and persistent-field release recognition in G38 without native records. G12 drops CPU-role restrictions, explaining its broad matching and noise. Code differences are observable, but a record's presence or an LLM explanation alone does not prove edit causality.
 
-\begin{table}[t]
+\begin{figure}[!htbp]
 \centering
-\caption{Completed E3: 36 paired decodes on 12 subjects, first from E1 plus 48 new condition cells. Outcomes compare arms, not regression from one's own start.}
-\label{tab:repeats}
-\begingroup\FTTableSetup
-\begin{tabular}{l|c}
-\hline\hline
-Comparison outcome & Paired decodes /36\\
-\hline
-Native warning recovery &4\\
-Native fixed-report reduction &1\\
-Control-only warning recovery &1\\
-Native has more fixed reports &2\\
-Tie/other &28\\
-\hline\hline
-\end{tabular}
-\endgroup
-\end{table}
+\includegraphics[width=\textwidth]{figures/fig-e3-repeats.pdf}
+\Description{A twelve-subject by three-decode matrix of native and no-internal vulnerable/fixed warning counts, highlighting comparative benefits, disadvantages and ties.}
+\caption{E3: all 36 paired decodes on 12 subjects; cells compare native and no-internal V/F counts. Decode 1 reuses E1; the remaining decodes add 48 condition cells. Color and sign encode the comparative direction.}
+\label{fig:repeats}
+\end{figure}
 
-Five subjects tie in all three decodes and seven have mixed directions; none benefits comparatively in all three. G19's native $15/0$ recurs, but control also reaches $15/0$ in its third decode. G24's main reduction does not repeat: later pairs are $3/3$ versus $3/3$ and $27/27$ versus $27/27$. G14's $3/3\rightarrow2/2$ is an own improvement but worse than control's $2/1$; later decodes tie at $2/1$. G05/G23/G38 retain initially $0/0$ in native while control recovers warnings; their disadvantage is not loss of an initial signal. Repeated subjects, selection/reuse and native-only gating limit stronger attribution. Realized call differences under a shared stopping rule are outcomes/mediators, not independently assigned confounds.
+Figure~\ref{fig:repeats} shows five subjects tying in all three decodes and seven with mixed directions; none benefits comparatively in all three. G19's native $15/0$ recurs, but control catches up in its third decode. G24's main reduction does not repeat. G14's $3/3\rightarrow2/2$ improves its own start but trails control's $2/1$; later decodes tie. In the main comparison, G05/G23/G38 retain initially $0/0$ in native while control recovers warnings, so their disadvantage is not loss of an initial signal. Repeated subjects, selection/reuse and native-only gating limit stronger attribution. Realized call differences under a shared stopping rule are outcomes/mediators, not independently assigned confounds.
 
 \subsection{RQ4: Model Configuration Sensitivity}
 
-Table~\ref{tab:models39} uses the original 12 subjects, native only, one decode per model, 2-reply and 65,536-output ceilings with requested high effort. Starting metrics are five vulnerable-positive subjects, 42 fixed reports and $F_1=0.455$. All configurations retain those five signals and recover additional warning-positive versions. Flash has the strongest observed outcome here, but one decode on this subset does not establish general ranking or variance-controlled model robustness.
+Table~\ref{tab:models39} uses the original 12 subjects, native only, one decode per model, 2-reply and 65,536-output ceilings with requested high effort. All configurations retain the five initial vulnerable warning signals and recover additional versions. Flash has the strongest observed outcome here, but one decode on this subset does not establish general ranking or variance-controlled model robustness.
 
-\begin{table}[t]
+\begin{table}[!htbp]
 \centering
 \caption{Limited-budget native sensitivity: 12 subjects per model, not full-39 robustness. Computation differs despite common reply/output ceilings. $F_1$ shading follows Table~\ref{tab:all39-system}.}
 \label{tab:models39}
 \begingroup\FTTableSetup
-\begin{tabular}{l|ccc|c|c}
+\begin{tabular}{l|ccc|c|cc}
 \hline\hline
-Editor & TP & FP & PDS & $F_1$ & Fixed reports\\
+Editor & TP & FP & PDS & $F_1$ & Fixed reports & Replies\\
 \hline
-GPT-6-Luna high &7&6&1&\FTFScore{.560}&40\\\hline
-GLM-5.3 high &7&5&2&\FTFScore{.583}&16\\\hline
-GLM-5.3-Flash high &9&5&4&\FTFScore{.692}&11\\
+Unmodified &5&5&0&\FTFScore{.455}&42&0\\\hline
+GPT-6-Luna high &7&6&1&\FTFScore{.560}&40&24\\\hline
+GLM-5.3 high &7&5&2&\FTFScore{.583}&16&23\\\hline
+GLM-5.3-Flash high &9&5&4&\FTFScore{.692}&11&21\\
 \hline\hline
 \end{tabular}
 \endgroup

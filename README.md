@@ -6,6 +6,9 @@ prompt views, and the complete recorded-evidence package in a lossless transport
 ## Browse
 
 - [Paper PDF](paper/main.pdf) and [LaTeX](paper/main.tex).
+- [Current exact paper archive](paper-current.tar.gz),
+  [layout change note](paper/checks/LAYOUT_REFRESH.md) and
+  [figure redraw guide](paper/figures/REDRAW_GUIDE.md).
 - [All39 starting checkers and patches](inputs/).
 - [English prompt pages](prompts/README.md).
 - [Illustrative versus main example checkers](example/).
@@ -21,7 +24,23 @@ Every published file is at most7MiB, to fit the anonymous service's documented
 single-file limit. The neutral binary parts contain the complete already-vetted
 publication tree, including large indexes and original byte bindings. They are
 not text-anonymized again. Browsable text may receive additional service masking;
-use the protected tree when validating exact bytes or rebuilding the paper.
+use the protected tree when validating experimental bytes. The transport is an
+immutable experiment-closure snapshot and contains the paper as it stood at
+closure. The current layout-only paper revision is in `paper/` and the separately
+hash-bound `paper-current.tar.gz`; experimental payload parts are unchanged.
+
+To rebuild the latest paper without text-masking changes, download the small
+archive, check its SHA-256 against `RELEASE_ID.txt`, and extract into a new folder:
+
+```sh
+mkdir ../paper-current
+tar -xzf paper-current.tar.gz -C ../paper-current
+cd ../paper-current/paper
+latexmk -pdf main.tex
+```
+
+The archive contains only the current PDF, required sources and English layout /
+redraw notes. This presentation update adds no experiments and changes no scores.
 
 If the service does not offer a repository ZIP download, use its public file API
 (replace `REVIEW_ID` with the identifier from your anonymous link):

@@ -4,18 +4,21 @@ Reference PDF SHA256:
 `4087ef12f47e73dbe2a4c412787ab3a15b6ffaa721cc587f0d114964edec4711`.
 The original physical pages5/11/12 were rendered and measured in
 `visual-audit/reference-f258`. Source article text/fonts are not redistributed.
-All seven current tables and both automatically generated figures were inspected;
+The original style pass inspected seven tables and two generated figures. The
+current refresh has six numbered tables (seven tabular panels) and three figures;
+its placements and additional checks are recorded in `LAYOUT_REFRESH.md`.
+All current displays were inspected;
 no unused statistical plot or synthetic experimental value was added.
 
 ## Tables: physical-page11 Table II reference
 
 | Property | Source | Current output / disposition |
 |---|---|---|
-| Typeface/size | NimbusRomNo9L-Regu,8.369bp | Same text face and8.369bp in all seven tables; code tokens and mathematical glyphs retain their appropriate fonts. |
+| Typeface/size | NimbusRomNo9L-Regu,8.369bp | Same text face and8.369bp in all table panels; code tokens and mathematical glyphs retain their appropriate fonts. |
 | Rule width | .33432bp | .33430bp measured; .00002bp residual from the TeX/PDF rule serialization. |
 | Double-rule center spacing | 2.00844bp | 2.00840bp measured; .00004bp residual. |
 | Body content height |10.54bp|10.54bp base strut; row separators add .33430bp. Wrapped prose rows are taller rather than clipped/shrunk. |
-| Topology | Double top/bottom; group dividers; no outer box | Preserved in all seven tables; two-level merged main-result header has local clines that avoid the multirow labels. |
+| Topology | Double top/bottom; group dividers; no outer box | Preserved in all table panels; two-level merged main-result header has local clines that avoid the multirow labels. |
 | Colors | Four five-decimal RGB tokens | All four source tokens are defined. Actual F1 cells occupy two bins and emit exact(.79138,.88196,.72548) and(.95609,.72275,.72275), without forced extreme/synthetic values. |
 | Threshold mapping | Original mapping code unknown | Explicit adaptation shades1-F1 with fixed.25/.50/.75 thresholds. Counts, unknowns and unvalidated target semantics are not heatmapped. Colors do not encode significance. |
 | Width/captions |496.56bp cross-column source table; NDSS numbering|Widths adapt to actual columns/content and FSE single-column space. ACM caption formatting and Arabic numbering remain mandatory venue defaults. |
@@ -61,8 +64,9 @@ commit. Proposed architecture and G21 diagrams have separate filenames; old
 automated diagrams remain available. Algorithm/equation formatting stays ACM
 native because the reference has no corresponding evaluated algorithm component.
 
-Main39, matched15 and model-subset numerical rows, the five E3 outcome rows,
-record origins81/51/61 and all labels/denominators remain unchanged. Both figures
-are schematic views, not new executions. Data/trace hashes are not altered.
-The final small prose pass is separate and must be followed by another compile,
-page, caption, anonymity and local visual regression check before publication.
+Main39, matched15 and model-subset outcomes, the five E3 category totals,
+record origins81/51/61 and all denominators remain unchanged. The schematic
+figures are not executions. The new E3 figure visualizes all recorded pairs;
+it uses the existing pale green/red colors for comparative direction, not the
+F1 quartile mapping. Data/trace hashes are not altered. The refresh's compile,
+page, caption and local visual checks are recorded in `LAYOUT_REFRESH.md`.

@@ -21,7 +21,7 @@ largest look-ahead index to $N-1$. Other branch conditions determine whether
 an access occurs, but the patched loop bound already prevents this final
 iteration from reaching an out-of-range look-ahead.
 
-\begin{figure*}[t]
+\begin{figure}[!htbp]
   \centering
   \includegraphics[width=\textwidth]{figures/fig-motivating-g21-f258.pdf}
   \Description{A three-panel example. The left panel shows the array extent
@@ -31,16 +31,14 @@ iteration from reaching an out-of-range look-ahead.
   AST-based checker. Solid arrows denote control flow and dashed arrows
   connect checker conditions to code.}
   \caption{\textbf{Capacity-aware look-ahead refinement.}
-  Panel A combines an abridged array declaration and patch hunk; $N$ denotes
-  \lstinline|MAX_PIPES * 2|. Panels B and C show abridged checker logic.
-  The original checker reports \texttt{1/1} vulnerable/fixed alerts;
-  the separately budgeted, 14-response model-produced illustration reports
-  \texttt{1/0} in an independent execution replay. Its revisions used fixture
-  feedback; it is not the one-response main-study checker. Solid arrows show control flow, dashed arrows semantic
-  correspondences. Orange marks the unsafe bound/access and green the
-  patched bound and capacity test.}
+  Abridged code: $N$ denotes \lstinline|MAX_PIPES * 2|;
+  \texttt{hr\_match} denotes host-router equality. Original/refined vulnerable/fixed
+  alerts are \texttt{1/1} and \texttt{1/0} in independent replay. The 14-response,
+  model-produced illustration used fixture feedback and is separate from the
+  one-response main-study checker. Solid/dashed arrows denote control flow/semantic
+  correspondence; orange/green marks unsafe/patched bound and capacity logic.}
   \label{fig:motivating}
-\end{figure*}
+\end{figure}
 
 \textbf{Why the baseline checker fails.}
 The generated checker already recognizes an induction variable, a loop
