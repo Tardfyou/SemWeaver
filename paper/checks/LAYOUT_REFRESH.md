@@ -43,6 +43,22 @@ sections; subsection barriers that produced empty float pages were removed.
 
 ## Checks and remaining distinctions
 
+The Subjects section now explicitly documents the original 12-subject selection:
+rank `SHA-256(salt + ':' + case_id)` within the original starting-status strata
+(14 noisy / 25 silent), then take the first 4 and 8. The fixed salt is
+`semweaver-fse2027-e3-e4-repeat-v1`; the source screen's SHA-256 is
+`d89fc9d6c6140f0329d118fdbf4f02ac99b96cc50e0a917699c15edfa980b798`.
+The ranking reads no post-refinement outcomes. Correcting G08's scan changes
+its start from 0/0 to 2/2 and the retained subset to 5/7, without a membership
+change. The cohort is not vulnerability-class-stratified or an independent
+confirmation set. The frozen diagrams and their wording are not modified.
+This is a requested factual addition, not a rhetorical claim of random sampling;
+the editorial equivalence check preserves all existing experiment limits.
+To retain the page budget, repeated Subjects wording was tightened and the
+duplicate no-classifier/no-adaptive-routing paragraph was removed from Evaluation;
+the same qualifications remain explicitly in Approach Sections 4.1 and 4.4.
+No claim, dataset, metric, retained diagram or experimental output was changed.
+
 - pdfLaTeX compilation succeeded, with no overfull boxes, undefined references
   or duplicate labels. Bibliography missing-field warnings remain; they are not
   figure clipping or failed compilation.
