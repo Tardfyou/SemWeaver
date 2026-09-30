@@ -1,126 +1,75 @@
-# Layout refresh and editorial change note
+# Current layout and author-figure handoff
 
-This pass changes presentation, not experimental outputs or study membership.
-The full recorded-study verifier passed after workspace cache cleanup: 357 paired
-record occurrences and 162 refinement cells; these are audit counts, not new
-experimental denominators. No new model or analyzer execution was requested.
+All three author-redrawn figures are integrated from the Mac-exported PDF.
+Only external white margins are cropped. No text, shape, color, font or result
+inside the drawings has been rewritten. The original vector content streams are
+unchanged, and the selected three-page source renders identically to the same
+pages of the full author PDF. Other project slides are not included in the artifact.
 
 ## Current display map
 
-Final two-figure redesign: Figure 2 now uses independently drawn sans-serif
-vector primitives, with evidence sources above a horizontal main flow and a
-separate lower feedback loop. Its PDF is `figures/redrawn/fig2-architecture.pdf`.
-The study-design drawing is also finalized there but is not inserted into the
-paper. Both have PDF, editable SVG, native editable PowerPoint and layout JSON.
-This supersedes the earlier Figure 2 design described in the next paragraph.
-
-The requested diagram redraw replaces Fig.2's tall columns with three horizontal
-stages, aligned boxes and explicit semantic colors. Its feedback lane is isolated
-below the edit/scan/retain chain. Fig.1's orange/green/gray arrows are implemented
-in the files and caption, not merely recommended. Standalone and in-paper renders
-were checked; text is inside the canvas and Fig.2's labeled rectangles. The footer
-was moved to baseline anchors after the first render exposed bottom clipping.
-Figure dimensions and experiment results are unchanged; no global typography
-adjustment is used. The redraw guide includes exact colors and layout coordinates.
-
-| Display | Placement | Content |
+| Display | PDF page | Content |
 |---|---:|---|
-| Figure 1 | 5 | Automatic motivating example; corrected abridged branch and callout background |
-| Figure 2 | 6 | Architecture, after the Approach heading |
-| Algorithm 1 | 7 | Same refinement operations, compact inline conditional statements |
+| Figure 1 | 5 | Author motivating example |
+| Figure 2 | 6 | Author architecture |
+| Algorithm 1 | 7 | Paired-warning refinement |
 | Table 1 | 8 | Rule-guided evidence requirements |
-| Table 2 | 8 | Evidence origin definitions and counts 81/51/61 |
-| Table 3 | 12 | Operational warning-outcome definitions |
-| Table 4 | 13 | Full 39 comparison and complete noisy-15 stratum in two panels |
-| Table 5 | 14 | All three CodeQL decodes, replies, tokens and recorded agent time |
-| Figure 3 | 15 | All 12 subjects x 3 paired decodes, not selected successes |
-| Table 6 | 15 | Initial state and three limited-budget model configurations |
+| Table 2 | 8 | Evidence origins: 81 / 51 / 61 |
+| Figure 3 | 12 | Author study design and E1/E3/E4 reuse |
+| Table 3 | 14 | Full 39 and complete noisy-15 comparison |
+| Table 4 | 14 | All three CodeQL decodes and recorded costs |
+| Figure 4 | 15 | All 36 paired E3 decodes |
+| Table 5 | 16 | Initial state and three model configurations |
 
-The current compiled PDF has 22 pages: body, AI statement and Data Availability
-end on page 18; references occupy pages 19-22. ACM body typography and margins
-are unchanged. Section-boundary float barriers keep diagrams/results in their
-sections; subsection barriers that produced empty float pages were removed.
+The complete PDF has 22 pages. Main content and the original AI-use statement
+end on page 18. Data Availability precedes References on page 19; References
+occupy pages 19-22. The [FSE 2027 Research Track call](https://conf.researchr.org/track/fse-2027/fse-2027-papers)
+explicitly excludes Data Availability from the page limit (Double-Anonymous
+Review Process and Open Science Policy; checked September 30, 2026).
+ACM body font, margins and line spacing are unchanged. References remain
+together with Data Availability rather than forcing a largely empty extra page.
 
-## Checks and remaining distinctions
+## Edits supporting the added study figure
 
-The Subjects section now explicitly documents the original 12-subject selection:
-rank `SHA-256(salt + ':' + case_id)` within the original starting-status strata
-(14 noisy / 25 silent), then take the first 4 and 8. The fixed salt is
-`semweaver-fse2027-e3-e4-repeat-v1`; the source screen's SHA-256 is
-`d89fc9d6c6140f0329d118fdbf4f02ac99b96cc50e0a917699c15edfa980b798`.
-The ranking reads no post-refinement outcomes. Correcting G08's scan changes
-its start from 0/0 to 2/2 and the retained subset to 5/7, without a membership
-change. The cohort is not vulnerability-class-stratified or an independent
-confirmation set. The frozen diagrams and their wording are not modified.
-This is a requested factual addition, not a rhetorical claim of random sampling;
-the editorial equivalence check preserves all existing experiment limits.
-To retain the page budget, repeated Subjects wording was tightened and the
-duplicate no-classifier/no-adaptive-routing paragraph was removed from Evaluation;
-the same qualifications remain explicitly in Approach Sections 4.1 and 4.4.
-No claim, dataset, metric, retained diagram or experimental output was changed.
+The former operational-definition table is merged into Metrics prose. Warning
+recovery, fixed-report reduction, PDS, rejected signal loss and comparative
+disadvantage remain defined; equations and acceptance conditions remain intact.
+Repeated protocol summaries are tightened, not removed from the actual Protocol
+section. Model/programmatic boundaries and prompt inputs remain enumerated.
+Repeated Discussion counts now refer to RQ1; all original numerical results,
+noise costs and limitations remain in the Results, tables and conclusion.
+Related Work retains the same citation coverage and substantive distinctions.
 
-- pdfLaTeX compilation succeeded, with no overfull boxes, undefined references
-  or duplicate labels. Bibliography missing-field warnings remain; they are not
-  figure clipping or failed compilation.
-- The small paper archive was extracted into a new directory and built from
-  scratch with networking disabled. All pages' extracted text matches the
-  reviewed PDF; the build does not depend on leftover local bibliography/cache files.
-- All six tables, the algorithm and three figures were inspected at final size.
-  Diagram glyphs are inside their standalone PDF bounds; arrows/callouts were
-  checked visually. PDF glyph containment is not a proof of all semantic relations.
-- Main, noisy-subset, evidence-origin and model values remain unchanged. The
-  E3 matrix is generated from all 36 recorded pairs with category-total assertions.
-  Initial model-subset values and CodeQL cost values were promoted from existing
-  recorded summaries/prose into tables, not newly measured.
-- The original paper-writing AI sentence is restored verbatim after Conclusion
-  and before Data Availability. At the user's follow-up request, its original
-  `Acknowledgments` heading is also restored; no identity/funding text is added.
+## The 12-subject selection
+
+Subjects explicitly records starting-status stratification and deterministic
+ranking, not refinement-outcome selection: sort SHA-256 of
+salt + ':' + case_id in the original 14 noisy / 25 silent strata and take 4 / 8.
+The fixed salt is semweaver-fse2027-e3-e4-repeat-v1.
+The source screen hash is
+d89fc9d6c6140f0329d118fdbf4f02ac99b96cc50e0a917699c15edfa980b798.
+Repairing G08's scan changes its start from 0/0 to 2/2 and the retained subset
+to 5 noisy / 7 silent, without replacing a subject. It is not a
+vulnerability-class-stratified or independent confirmation set.
+
+## Verification and cleanup
+
+- The paper compiles with no overfull boxes, undefined references or duplicate
+  labels. Bibliography missing-field warnings remain distinct from compilation
+  or figure errors.
+- The isolated paper archive is rebuilt offline; all page text is compared with
+  the reviewed PDF. The build uses embedded PDF fonts, not server-installed
+  Comic Sans/Consolas substitutions.
+- The old generated non-data figures, builders, wrappers and preview trees were
+  removed from the active paper and publication directories. The current E3 data
+  matrix, its generator, all experimental evidence, original manuscript backups,
+  Git history and sealed snapshots are retained.
+- The current figure sources and crop-only reproduction instructions are in
+  figures/manual/README.md, IMPORT_MANIFEST.json and EXPORT_MANIFEST.json.
+- The author's full original PPTX and PDF were preserved unchanged outside the
+  public package. Only the selected SemWeaver slides are public.
+- The original Acknowledgments heading and AI-use sentence remain verbatim.
   The separate research-AI disclosure remains in Experimental Environment.
-- The reference's line/color/typographic conventions remain local to displays;
-  open-font and content-geometry adaptations remain disclosed in the style report.
-
-## Meaning-preserving editorial changes
-
-Reading coverage: edited Approach, motivating-example caption, Evaluation,
-Results, Discussion, Conclusion and end matter, with their equations, display
-sources and the recorded main/auxiliary results. No experiments were added.
-At the user's follow-up request, two relevant citations were added to Related
-Work after primary-source verification, as recorded below. The existing
-full-paper prose review remains a separate earlier pass.
-
-- Results: repeated values moved into adjacent tables; the entire E3 outcome
-  distribution is expanded into a matrix. Same denominators, adverse outcomes,
-  selected/reused-subject boundaries and attribution limits remain explicit.
-- Approach: repeated type-name enumeration is merged with type definitions;
-  origin counts are cross-referenced to Table 2. No origin is reclassified.
-- Discussion: the repeated scope paragraph is merged into the precision/scaling
-  paragraph. Changed-fork tests, target correctness, noise cost, limited model
-  repetitions and unmeasured labor remain adjacent to the supported claims.
-- Conclusion (S1/S5): grammatical focus becomes the auditable checker-editor
-  contribution, retaining every comparison and the limits on precision, target
-  recall and generalization. This is a small scope-preserving editorial choice,
-  not evidence of higher review scores.
-- S6 equivalence check: compression was checked against unchanged tables and
-  method conditions. No significance, causality, universal superiority or
-  reviewer-score claim was introduced. The requested AI sentence was not edited.
-
-## Requested citation additions
-
-- `li2024llift`: Li, Hao, Zhai and Qian, *Enhancing Static Analysis for Practical
-  Bug Detection: An LLM-Integrated Approach*, PACMPL 8(OOPSLA1), Article 111,
-  26 pages (2024), DOI 10.1145/3649828. Bibliographic identity and the
-  post-constraint-guided UBI mechanism were checked against the
-  [authors' published paper](https://www.cs.ucr.edu/~zhiyunq/pub/oopsla24_llift.pdf).
-  The ACM landing page returned 403; this was not interpreted as missing literature.
-  The earlier differently titled arXiv version was not cited as a separate study.
-- `guo2025repoaudit`: Guo, Wang, Xu, Su and Zhang, *RepoAudit: An Autonomous
-  LLM-Agent for Repository-Level Code Auditing*, ICML 2025, PMLR 267:21083-21100.
-  Authors, venue, pages and repository-auditing scope were checked against the
-  [official proceedings](https://proceedings.mlr.press/v267/guo25n.html).
-
-Both citations support specific contextual sentences, not our numerical results.
-No cross-paper performance comparison or new first/universal claim was introduced.
-This initial update reached 53 cited entries (from 51). The subsequent requested
-extension reaches 59; see `REFERENCE_FINAL_CHECKPOINT.md` for the six added
-citations, primary sources and their exact roles. These are targeted citation
-updates, not an exhaustive novelty search or new baseline evaluation.
+- No experiment was rerun or relabelled for this layout change. Original adverse
+  outcomes, reuse, sample denominators, model budgets and interpretation limits
+  remain in the paper.

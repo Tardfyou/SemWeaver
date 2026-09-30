@@ -6,11 +6,11 @@ prompt views, and the complete recorded-evidence package in a lossless transport
 ## Browse
 
 - [Paper PDF](paper/main.pdf) and [LaTeX](paper/main.tex).
-- [Final editable diagrams (PowerPoint)](paper/figures/redrawn/editable-figures.pptx)
-  and [PDF/SVG/PNG figure handoff](paper/figures/redrawn/final-figures.zip).
+- [Author-redrawn diagrams (PowerPoint)](paper/figures/manual/semweaver-figures.pptx)
+  and [author-exported source PDF](paper/figures/manual/source-slides.pdf).
 - [Current exact paper archive](paper-current.tar.gz),
   [layout change note](paper/checks/LAYOUT_REFRESH.md) and
-  [figure redraw guide](paper/figures/REDRAW_GUIDE.md).
+  [current figure sources and export instructions](paper/figures/manual/README.md).
 - [All39 starting checkers and patches](inputs/).
 - [English prompt pages](prompts/README.md).
 - [Illustrative versus main example checkers](example/).

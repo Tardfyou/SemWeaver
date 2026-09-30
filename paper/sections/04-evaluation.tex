@@ -4,11 +4,11 @@ We evaluate automated patch-related warning recovery and report reduction, not w
 
 \textbf{RQ1: Generated CSA checkers.} From identical starting artifacts, how do KNighter's actual loop and \toolname affect vulnerable-version warning coverage, fixed-side report burden and paired discrimination?
 
-\textbf{RQ2: Cross-backend feasibility and cost.} Can a separately archived automatic CodeQL query be refined and independently replayed, and what integration surface and execution costs are observable?
+\textbf{RQ2: Cross-backend feasibility and cost.} Can an archived automatic CodeQL query be refined and independently replayed, and what integration/execution costs are observable?
 
-\textbf{RQ3: Evidence sensitivity.} How do native-visible and no-internal pipelines differ on all 39 subjects and three paired decodes of the original 12-subject subset?
+\textbf{RQ3: Evidence sensitivity.} How do native/no-internal outcomes differ across all 39 subjects and three paired decodes of the original 12?
 
-\textbf{RQ4: Model configuration sensitivity.} What outcomes arise on those 12 subjects under three editor configurations with common reply/output ceilings?
+\textbf{RQ4: Model configuration sensitivity.} How do three editor configurations perform on those 12 subjects under common reply/output ceilings?
 
 \subsection{Subjects}
 
@@ -18,9 +18,17 @@ All 39 exercise actual KNighter refinement and native/no-internal \toolname. The
 
 The selected whole implementation is v43, chosen after comparing two configurations on six experimental subjects. Exact compatible executions on those subjects are reused in E1; selection probes are not an independent confirmation set. Source revisions, reuse equivalence and earlier trials remain available. G04 uses the architecture-correct ARM64 scope and evidence, not a zero substituted for earlier wrong-object execution.
 
-E2 separately repeats one automatic CodeQL input from an archived independent generator three times. Historical mixed/manual 20-row claims are withdrawn; CodeQL is neither pooled with CSA 39 nor compared against KNighter. E3 compares all 39 main pairs and repeats the original 12 subjects three times per arm: decode 1 reuses E1, with 48 additional cells. E4 uses the same 12 across three native editors, one decode each (36 cells).
+Figure~\ref{fig:study-design} summarizes E1--E4. E2 uses an automatic CodeQL input from an archived independent generator; historical mixed/manual 20-row claims are withdrawn. CodeQL is neither pooled with CSA nor compared against KNighter. E3 covers all 39 main pairs plus the repeated subset; E4 is native-only, one decode per model.
 
 The 12-subject selection uses starting status, not refinement outcomes. Within the original 14 warning-positive/fixed-noisy and 25 vulnerable-silent cases, we sort SHA-256 hashes of a fixed, artifact-recorded salt plus case ID and take the first 4 and 8, respectively. Later scan repair corrected G08 from $0/0$ to $2/2$: the unchanged subset becomes 5 noisy and 7 silent, with no replacement. Membership predates this final round; selection is not stratified by vulnerability class and includes no buffer-overflow/out-of-bound cases. Repeated decodes are not independent bugs; E4 is neither full-39 nor multi-run cross-model robustness.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\textwidth]{figures/manual/study-design.pdf}
+\Description{All 39 CSA checkers enter three main comparison arms. E3 and E4 use the same original 12-subject subset. E3 reuses 24 first-decode condition cells and adds 48; E4 has 36 native-only cells. The CodeQL case is separate.}
+\caption{\textbf{Experimental design and reuse.} E3's first decode reuses E1; E4 uses the same 12 inputs, not another cohort. Cells are not independent bugs. $^*$Audited natural-stop reuses retain original caps; shared ceilings do not imply equal realized effort.}
+\label{fig:study-design}
+\end{figure}
 
 \subsection{Metrics}
 
@@ -33,26 +41,7 @@ S_f(D,P,V)&=\mathbb{1}[\mathrm{alerts}(D,V_{\mathrm{fix}},P)=0],\\
 \end{aligned}
 \label{eq:pds}
 \end{equation}
-PDS is not required for every useful edit. Recovery from silence may retain fixed noise; a warning-positive checker may improve by reducing fixed reports (Table~\ref{tab:terminology}).
-
-\begin{table}[!htbp]
-\centering
-\caption{Measured warning outcomes, not adjudicated target labels.}
-\label{tab:terminology}
-\begingroup\FTTableSetup
-\begin{tabular}{p{0.23\columnwidth}|p{0.70\columnwidth}}
-\hline\hline
-Term & Operational meaning \\
-\hline
-Warning recovery & Initial vulnerable silence becomes warning-positive; fixed noise remains visible. \\
-Report reduction & Fixed reports decrease while vulnerable warning presence remains. \\
-PDS & Vulnerable warning-positive and fixed silent; a stronger secondary outcome. \\
-Signal loss & A previously warning-positive vulnerable revision becomes silent; rejected. \\
-Comparative disadvantage & Another arm obtains a better retained outcome; not necessarily own-start regression. \\
-\hline\hline
-\end{tabular}
-\endgroup
-\end{table}
+PDS is not required for a useful edit. \emph{Warning recovery} makes an initially silent vulnerable revision warning-positive, possibly with fixed noise; \emph{report reduction} lowers fixed reports while preserving vulnerable warning presence. Silencing a previously positive vulnerable revision is rejected. \emph{Comparative disadvantage} means another arm retains a better result, not necessarily regression from the starting checker.
 
 For retained detector $D^*$ and normally paired-executed candidate $C$, the improvement rule is:
 \begin{equation}
