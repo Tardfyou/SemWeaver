@@ -112,9 +112,14 @@ target recall; G24 target preservation is unverified; native causality and
 unseen-family generalization are not established; model names do not verify
 immutable backend weights. These limitations are not removed by formatting.
 
-The author-owned Figure 1 still contains the callout `extend N` where `extent N`
-is intended. It is a known spelling issue, not changed experimental data; the
-protected native PDF export has deliberately not been edited.
+Follow-up: the author supplied a corrected Figure 1 PDF with `extent N` and a
+revised Figure 2 PDF on 2026-09-30. The selected three-page source combines
+those two corrected slides with the unchanged third slide. Figure 2's new layout
+uses a new crop box; the Figure 1 and Figure 3 cropped PDFs are byte-identical
+to their previous corrected versions. All three author figures are displayed at
+90% text width, preserving aspect ratios. The editable PPTX is the earlier version.
+Figure 2's denser labels render smaller than those of the earlier diagram at
+that common width; readers may need PDF zoom for individual labels.
 
 ## Release validation
 

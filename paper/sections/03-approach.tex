@@ -4,14 +4,14 @@
 
 \begin{figure}[!htbp]
   \centering
-  \includegraphics[width=\textwidth]{figures/manual/architecture.pdf}
-  \Description{Three evidence sources above the main flow feed a provenance-labelled bundle. Inputs, the bundle, LLM editing and paired validation form a left-to-right chain. A lower dashed feedback arrow returns to the editor; a separate acceptance arrow updates the retained checker.}
+  \includegraphics[width=0.90\textwidth]{figures/manual/architecture.pdf}
+  \Description{Five labelled components show the upstream checker and patch, evidence assembly, typed bundle, paired-warning editor and audit artifacts. Three evidence collectors and validation feedback feed the bundle. A bounded view goes to the editor; paired validation either updates a separate retained checker or sends the latest code and feedback to the editor. The retained checker points to audit artifacts.}
   \caption{\textbf{\toolname architecture.}
-  Blue denotes native evidence, gray source context, orange outputs/feedback, and green the retained checker; colors indicate roles, not correctness. Solid arrows carry inputs and candidates; the dashed lane returns latest code and feedback. Retention tracks warning presence and burden, not target correctness; fixed silence is secondary. All attempts remain auditable.}
+  Green groups evidence assembly, blue the provenance-labelled bundle, yellow the editor and paired validation, and purple the best retained checker; colors indicate roles, not correctness. The lower path returns latest code and feedback to the editor; accepted code also enters the audit artifacts. Retention tracks vulnerable-side warning presence and fixed-side burden, not target correctness; fixed silence is secondary. All attempts remain auditable.}
   \label{fig:approach-architecture}
 \end{figure}
 
-Figure~\ref{fig:approach-architecture} groups the workflow into three panels.
+Figure~\ref{fig:approach-architecture} groups the workflow into five labelled components.
 \textbf{(a)~Frozen inputs.} The input is an existing detector, patch, source tree and validation scope, not a new generation task.
 \textbf{(b)~Assembly and bundle.} Rule-guided preflight, source extraction, analyzer collection and validation feedback supply provenance-typed records and bounded views (Sections~\ref{sec:adaptive-selection}--\ref{sec:evidence-schema}).
 \textbf{(c)~Paired-warning refinement.} The agent edits the latest attempted detector; normal paired outcomes update a separate best detector when they recover warning presence or reduce fixed reports while retaining it. Rejected attempts remain next-step input/feedback (Section~\ref{sec:refinement}).

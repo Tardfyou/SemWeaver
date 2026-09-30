@@ -42,5 +42,10 @@ inputs, three native-only model configurations, one decode each and a 2-reply
 cap. CodeQL is separate and is not compared with KNighter. The detailed
 starting-status/hash selection rule and G08 correction are in Subjects.
 
-The source drawing's label `extend N` is preserved verbatim; it appears to be
-a spelling slip for `extent N`. It has not been silently edited during cropping.
+The author supplied a corrected PDF on 2026-09-30 with `extent N` in Figure 1.
+The author then supplied a revised Figure 2 PDF on the same date. The retained
+three-page PDF combines the corrected first slide, revised second slide and
+unchanged third slide; only the second slide required a new crop box. The editable
+PPTX is the earlier author version and may still contain `extend N`; the PDFs are
+authoritative. Figure 3 remains byte-identical.
+No diagram text was edited by the cropping process.

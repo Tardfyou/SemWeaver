@@ -11,7 +11,7 @@ from pypdf import PdfReader, PdfWriter
 from pypdf.generic import RectangleObject
 
 FIGURES=[('motivating-example',[231.0,133.5,717.0,382.5]),
-         ('architecture',[148.0,18.0,812.5,406.5]),
+         ('architecture',[9.0,42.0,680.0,335.0]),
          ('study-design',[143.5,49.5,877.0,457.0])]
 
 
