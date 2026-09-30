@@ -116,10 +116,10 @@ Follow-up: the author supplied a corrected Figure 1 PDF with `extent N` and a
 revised Figure 2 PDF on 2026-09-30. The selected three-page source combines
 those two corrected slides with the unchanged third slide. Figure 2's new layout
 uses a new crop box; the Figure 1 and Figure 3 cropped PDFs are byte-identical
-to their previous corrected versions. All three author figures are displayed at
-90% text width, preserving aspect ratios. The editable PPTX is the earlier version.
-Figure 2's denser labels render smaller than those of the earlier diagram at
-that common width; readers may need PDF zoom for individual labels.
+to their previous corrected versions. Figures 1 and 3 display at 70% text
+width, and Figure 2 at 100%, preserving their aspect ratios. The editable PPTX
+is the earlier version. Figure 2's denser labels render smaller than those of
+the earlier diagram even at full width; readers may need PDF zoom.
 
 ## Release validation
 
