@@ -1,5 +1,11 @@
 # Figure redraw guide
 
+**Current final Figure 2 and study-design drawing:** use
+[`redrawn/README.md`](redrawn/README.md), its PDF/SVG/PNG files and the native
+editable PowerPoint. These two figures were independently redesigned without
+the previous style template. The older architecture instructions below are
+historical; Figure 1 and the E3 data-matrix instructions remain applicable.
+
 Use the current vector PDFs as geometry references. PNG previews are 4x renders,
 not replacements for vector output. All dimensions below are PDF points (bp).
 

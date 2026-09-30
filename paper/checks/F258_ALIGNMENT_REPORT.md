@@ -1,5 +1,11 @@
 # F258 component-level alignment and residual differences
 
+Scope update: the final Figure 2 and study-design drawing now use an independent
+design and exporter under `figures/redrawn/`, at the user's explicit request.
+They are not F258 replicas or adaptations. The architecture descriptions below
+record superseded iterations; table styles, Figure 1 and the E3 matrix retain
+their existing design. See `figures/redrawn/README.md` for the final pair.
+
 Reference PDF SHA256:
 `4087ef12f47e73dbe2a4c412787ab3a15b6ffaa721cc587f0d114964edec4711`.
 The original physical pages5/11/12 were rendered and measured in

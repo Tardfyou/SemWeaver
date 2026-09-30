@@ -6,6 +6,8 @@ prompt views, and the complete recorded-evidence package in a lossless transport
 ## Browse
 
 - [Paper PDF](paper/main.pdf) and [LaTeX](paper/main.tex).
+- [Final editable diagrams (PowerPoint)](paper/figures/redrawn/editable-figures.pptx)
+  and [PDF/SVG/PNG figure handoff](paper/figures/redrawn/final-figures.zip).
 - [Current exact paper archive](paper-current.tar.gz),
   [layout change note](paper/checks/LAYOUT_REFRESH.md) and
   [figure redraw guide](paper/figures/REDRAW_GUIDE.md).

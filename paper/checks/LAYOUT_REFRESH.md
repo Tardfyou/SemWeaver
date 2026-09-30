@@ -7,6 +7,13 @@ experimental denominators. No new model or analyzer execution was requested.
 
 ## Current display map
 
+Final two-figure redesign: Figure 2 now uses independently drawn sans-serif
+vector primitives, with evidence sources above a horizontal main flow and a
+separate lower feedback loop. Its PDF is `figures/redrawn/fig2-architecture.pdf`.
+The study-design drawing is also finalized there but is not inserted into the
+paper. Both have PDF, editable SVG, native editable PowerPoint and layout JSON.
+This supersedes the earlier Figure 2 design described in the next paragraph.
+
 The requested diagram redraw replaces Fig.2's tall columns with three horizontal
 stages, aligned boxes and explicit semantic colors. Its feedback lane is isolated
 below the edit/scan/retain chain. Fig.1's orange/green/gray arrows are implemented
