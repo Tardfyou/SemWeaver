@@ -6,8 +6,8 @@ prompt views, and the complete recorded-evidence package in a lossless transport
 ## Browse
 
 - [Paper PDF](paper/main.pdf) and [LaTeX](paper/main.tex).
-- [Author-redrawn diagrams (PowerPoint)](paper/figures/manual/semweaver-figures.pptx)
-  and [author-exported source PDF](paper/figures/manual/source-slides.pdf).
+- [Original editable author-slide subset (before Figures 1 and 2 were corrected)](paper/figures/manual/semweaver-figures.pptx)
+  and [current author-exported source PDF](paper/figures/manual/source-slides.pdf).
 - [Current exact paper archive](paper-current.tar.gz),
   [layout change note](paper/checks/LAYOUT_REFRESH.md) and
   [current figure sources and export instructions](paper/figures/manual/README.md).

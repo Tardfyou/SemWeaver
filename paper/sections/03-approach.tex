@@ -13,9 +13,10 @@
 
 Figure~\ref{fig:approach-architecture} groups the workflow into five labelled components.
 \textbf{(a)~Frozen inputs.} The input is an existing detector, patch, source tree and validation scope, not a new generation task.
-\textbf{(b)~Assembly and bundle.} Rule-guided preflight, source extraction, analyzer collection and validation feedback supply provenance-typed records and bounded views (Sections~\ref{sec:adaptive-selection}--\ref{sec:evidence-schema}).
-\textbf{(c)~Paired-warning refinement.} The agent edits the latest attempted detector; normal paired outcomes update a separate best detector when they recover warning presence or reduce fixed reports while retaining it. Rejected attempts remain next-step input/feedback (Section~\ref{sec:refinement}).
-\textbf{Audit artifacts.} The verifier checks raw-output/source-scope bindings, interfaces, provenance counts, selected code and paired logs. Original prompts, replies and all attempts persist; an LLM explanation is not an origin certificate.
+\textbf{(b)~Evidence assembly.} Rule-guided preflight, source extraction, analyzer collection and validation feedback supply provenance-typed records (Sections~\ref{sec:adaptive-selection}--\ref{sec:evidence-roles}).
+\textbf{(c)~Evidence bundle.} Normalization retains the record origin, source scope and bounded views (Section~\ref{sec:evidence-schema}).
+\textbf{(d)~Paired-warning refinement.} The agent edits the latest attempted detector; normal paired outcomes update a separate best detector when they recover warning presence or reduce fixed reports while retaining it. Rejected attempts remain next-step input/feedback (Section~\ref{sec:refinement}).
+\textbf{(e)~Audit artifacts.} The verifier checks raw-output/source-scope bindings, interfaces, provenance counts, selected code and paired logs. Original prompts, replies and all attempts persist; an LLM explanation is not an origin certificate.
 
 \begin{algorithm}[t]
 \footnotesize
@@ -74,7 +75,7 @@ API misuse / missing check & \texttt{semantic\_slice}, \texttt{call\_chain} & Co
 \subsection{Evidence Sources and Roles}
 \label{sec:evidence-roles}
 
-Four collectors execute in sequence; Figure~\ref{fig:approach-architecture}b groups views by origin rather than execution order. \textbf{Patch preflight} locates changed files/hunks and mechanism context. \textbf{Source extraction} resolves function, guard, call, state and build context in bounded views, without repository-scale dumps.
+Four collectors execute in sequence; Figure~\ref{fig:approach-architecture}b displays their outputs and Figure~\ref{fig:approach-architecture}c records provenance. \textbf{Patch preflight} locates changed files/hunks and mechanism context. \textbf{Source extraction} resolves function, guard, call, state and build context in bounded views, without repository-scale dumps.
 
 \textbf{Analyzer evidence} is classified by its actual origin, not by the collector's name.  We call a record \emph{analyzer-internal} only if its payload is derived from a backend-produced intermediate representation, identifies the interface and raw output, and is bound to a source revision, file, and function.  In the measured CSA cohort the interface is Clang 18's \texttt{debug.DumpCFG} and \texttt{debug.DumpCallGraph}; the persisted UTF-8 dump is parsed into schema \texttt{semweaver.csa\_cfg\_snapshot.v1}, with a raw-output SHA-256 and source-scope binding.  These dumps provide CFG branches and value bindings and call edges.  They do \emph{not} themselves prove a path-feasible lifetime or ownership transition.  Analyzer diagnostics and alert counts are \emph{analyzer output}, not internal state.  Patch diffs, source windows, and compile-database-assisted source extraction are \emph{source-derived} fallbacks even when a CSA or CodeQL collector emits them.  A live CodeQL database query could meet the internal-evidence definition if its query, database revision, and tuples were retained; we do not attribute source-window-derived CodeQL facts to that category.
 
@@ -111,7 +112,7 @@ When a selected role yields no evidence, the bundle retains an explicit missing-
 \subsection{Evidence Bundle Schema}
 \label{sec:evidence-schema}
 
-The normalizer merges all collected facts into the \texttt{EvidenceBundle} shown in Figure~\ref{fig:approach-architecture}b.  Each fact becomes an \texttt{EvidenceRecord} carrying a type, the contributing analyzer, scope, source location, payload, provenance, and an optional \texttt{EvidenceSlice} (the compact semantic content consumed by the agent).  The schema separates program facts from analysis rules in the spirit of relational analyzer frameworks~\cite{avgustinov2016ql,jordan2016souffle,bravenboer2009doop}, but uses a smaller role vocabulary tailored to checker refinement.  Formally:
+The normalizer merges all collected facts into the \texttt{EvidenceBundle} shown in Figure~\ref{fig:approach-architecture}c.  Each fact becomes an \texttt{EvidenceRecord} carrying a type, the contributing analyzer, scope, source location, payload, provenance, and an optional \texttt{EvidenceSlice} (the compact semantic content consumed by the agent).  The schema separates program facts from analysis rules in the spirit of relational analyzer frameworks~\cite{avgustinov2016ql,jordan2016souffle,bravenboer2009doop}, but uses a smaller role vocabulary tailored to checker refinement.  Formally:
 \begin{equation}
 \begin{aligned}
 B &= \mathrm{Norm}(E_p \cup E_s \cup E_a \cup E_v),\\
@@ -130,7 +131,7 @@ The bundle is bounded by design: scope and selected views limit raw dumps. The m
 \subsection{Paired-Warning Refinement}
 \label{sec:refinement}
 
-The refinement loop (Figure~\ref{fig:approach-architecture}c) receives the current detector, patch, baseline validation notes, and a bounded role-specific evidence view.  The interface supports requesting further roles from the persisted bundle, but the provenance-audited matched condition freezes the visible view before the edit and disables additional agent requests.  Thus its measured effect is a contrast between preselected native-evidence and no-internal views, not a test of dynamic evidence retrieval.  This keeps the prompt bounded and the two conditions auditable.
+The refinement loop (Figure~\ref{fig:approach-architecture}d) receives the current detector, patch, baseline validation notes, and a bounded role-specific evidence view.  The interface supports requesting further roles from the persisted bundle, but the provenance-audited matched condition freezes the visible view before the edit and disables additional agent requests.  Thus its measured effect is a contrast between preselected native-evidence and no-internal views, not a test of dynamic evidence retrieval.  This keeps the prompt bounded and the two conditions auditable.
 
 The agent's tool-mediated loop draws on recent LLM agent and self-refinement architectures but constrains actions to attached evidence, detector edits, and validation commands~\cite{madaan2023selfrefine,shinn2023reflexion,yao2023react,schick2023toolformer}.  Where evidence requests are enabled, they replay attached records rather than launch open-ended repository exploration; the request count is capped and unused or missing evidence is logged.  In the matched condition, request count is zero by protocol.
 

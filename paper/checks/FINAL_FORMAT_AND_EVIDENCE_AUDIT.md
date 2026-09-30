@@ -24,7 +24,8 @@ Checked against the live [FSE 2027 Research Papers CFP](https://conf.researchr.o
   warnings are not fabricated references and were not hidden with invented
   metadata.
 - Author names/affiliations are anonymous; the artifact URL is the anonymous
-  mirror. Original three author-exported figure files remain unchanged.
+  mirror. The author-exported figure content is preserved during PDF cropping;
+  the current Figure 1 and Figure 2 reflect later author corrections.
 - The CFP encourages omitting acknowledgments, but does not prohibit them.
   The author expressly requested the original `Acknowledgments` heading and
   AI-writing sentence verbatim; both remain. That section has no identifying
@@ -127,4 +128,5 @@ The paper-only archive was extracted into a fresh directory and compiled with
 network access disabled. All 22 rebuilt page texts equal the reviewed PDF;
 the final build has no overfull, unresolved-reference or missing-character
 warnings. All 144 immutable experiment transport files retain their prior
-hashes. The three author figure sources and numerical matrix JSON are unchanged.
+hashes. The current author figure PDFs match their export manifest; the
+numerical matrix JSON is unchanged.
