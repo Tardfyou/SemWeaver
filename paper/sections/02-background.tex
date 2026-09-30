@@ -5,7 +5,7 @@ A vulnerability checker is a rule or query within a static-analysis framework th
 Modern frameworks support different checker paradigms.
 Path-sensitive engines such as the Clang Static Analyzer (CSA) perform symbolic exploration over program paths, tracking branch guards, symbolic values, memory regions, and lifetime transitions to detect bugs like use-after-free, null dereference, and resource leaks~\cite{clangsaDocs}.
 Relational query engines such as CodeQL compile source code into a queryable database and express checkers as declarative queries over data-flow edges, call-graph relations, type hierarchies, and API-usage patterns~\cite{avgustinov2016ql,codeqlDocs}.
-Both paradigms have been deployed at industrial scale for continuous vulnerability detection~\cite{sadowski2015tricorder,calcagno2015infer}.
+Static-analysis frameworks have been deployed at industrial scale for continuous bug detection~\cite{sadowski2015tricorder,calcagno2015infer}.
 
 Writing effective checkers remains a bottleneck.
 A checker must encode not only the syntactic pattern of a vulnerability but also the semantic conditions (path guards, state invariants, data-flow relations, and API contracts) that distinguish real bugs from safe code.
@@ -20,8 +20,8 @@ This idea builds on a well-established line of work that treats patches as vulne
 KNighter~\cite{yang2025knighter} is a representative system that synthesizes CSA checkers from historical Linux kernel fixes and validates them against the vulnerable and fixed revisions.
 
 Generated checkers may miss semantic conditions: a small patch can encode a guard, ownership transition, lifetime barrier or API contract beyond its syntactic shape.
-Existing refinement loops, including KNighter's own iterative strategy, operate at the output level~\cite{yang2025knighter,madaan2023selfrefine,shinn2023reflexion}.
-They feed behavioral signals (e.g., ``the fixed side still warns'') back to the LLM, revealing the symptom but not diagnosing the cause.
+KNighter's refinement loop operates at the output level~\cite{yang2025knighter}.
+It feeds behavioral signals (e.g., ``the fixed side still warns'') back to the LLM, revealing the symptom but not diagnosing the cause.
 Such feedback does not directly identify whether the missing predicate concerns a path guard, a cleanup barrier, an ownership transition, or an API contract; the model must infer the condition from the patch, source context and observed outputs.
 
 \subsection{Analyzer-Internal Intermediate Results}

@@ -41,14 +41,17 @@ def build(summary, output):
                 ('F258MidHigh',r'$-$') if outcome.startswith('negative') else ('F258Region','='))
             nv,nf=cell['native'];cv,cf=cell['control']
             lines.extend([rf'\fill[{fill}] ({x},{y:.3f}) rectangle ({x+112},{y+10.54:.3f});',
-                rf'\node[inner sep=0bp] at ({x+56},{y+5.27:.3f}) {{{sign}\quad {nv}/{nf} : {cv}/{cf}}};'])
+                rf'\node[inner sep=0bp] at ({x+13},{y+5.27:.3f}) {{{sign}}};',
+                rf'\node[anchor=east,inner sep=0bp] at ({x+53},{y+5.27:.3f}) {{{nv}/{nf}}};',
+                rf'\node[inner sep=0bp] at ({x+61},{y+5.27:.3f}) {{:}};',
+                rf'\node[anchor=east,inner sep=0bp] at ({x+96},{y+5.27:.3f}) {{{cv}/{cf}}};'])
     for x in (41,153,265,377):
         lines.append(rf'\draw[line width=.33432bp] ({x},18) -- ({x},144.48);')
     lines.extend([
         r'\draw[line width=.33432bp] (41,18) -- (377,18);',
         r'\draw[line width=.33432bp] (41,144.48) -- (377,144.48);',
         r'\node[anchor=base west,inner sep=0bp,font=\fontencoding{T1}\fontfamily{ptm}\fontsize{7.3bp}{9bp}\selectfont] at (0,158) {Native V/F : no-internal V/F.\quad + benefit; $-$ disadvantage; = tie/other.};',
-        r'\node[anchor=base west,inner sep=0bp,font=\fontencoding{T1}\fontfamily{ptm}\fontsize{7.3bp}{9bp}\selectfont] at (0,170) {Recovery +4 / $-$1; fixed-report change +1 / $-$2; tie/other 28.};',
+        rf'\node[anchor=base west,inner sep=0bp,font=\fontencoding{{T1}}\fontfamily{{ptm}}\fontsize{{7.3bp}}{{9bp}}\selectfont] at (0,170) {{Recovery: native {counts["positive_warning_recovery"]} / control {counts["negative_lost_version_hit"]}; report reduction: native {counts["positive_fixed_warning_reduction"]} / control {counts["negative_more_fixed_warnings"]}; ties/other {counts["tie_or_other"]}.}};',
         r'\end{tikzpicture}%'])
     output.write_text('\n'.join(lines)+'\n')
     output.with_suffix('.json').write_text(json.dumps(dict(source_file=summary.name,

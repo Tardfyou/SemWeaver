@@ -1,5 +1,12 @@
 # Current data displays and author figure sources
 
+The 2026-09-30 follow-up is documented in
+`FINAL_FORMAT_AND_EVIDENCE_AUDIT.md`: all five tables and the numerical matrix
+were checked against the reference PDF. Text-column wrapping and numeric
+anchors were improved; the matrix now uses 8.369 bp text at its natural
+378 bp width. Final placement is Table 1 p7, Table 2 p8, Table 3 p13,
+Table 4 p14, and Figure 4/Table 5 p15. All underlying values are unchanged.
+
 The active non-data drawings are the author's Mac PowerPoint exports under
 `figures/manual/`. They are not generated from the former diagram styles.
 The original three-page export and editable PPTX subset are retained there;

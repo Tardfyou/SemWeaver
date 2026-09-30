@@ -13,8 +13,8 @@ A checker that captures only the syntactic shape of the edit, without encoding t
 After na\"ive refinement, the checker may instead lose the vulnerable-side trigger entirely, a failure mode we call over-pruning.
 These outcomes can arise from incomplete API models, incorrect state updates, or a missing relation between the patch and the detector's trigger.
 
-Current refinement strategies, including KNighter's own iterative loop, attempt to address this problem by operating at the output level~\cite{yang2025knighter,madaan2023selfrefine,shinn2023reflexion}.
-They use execution reports and compiler feedback to guide further edits. KNighter's report-driven loop does not attempt an edit when no report is available.
+Iterative LLM refinement can use self-generated or external feedback~\cite{madaan2023selfrefine,shinn2023reflexion}.
+For checker refinement, KNighter uses execution reports and compiler feedback to guide edits~\cite{yang2025knighter}; its report-driven loop does not attempt an edit when no report is available.
 The observed warning identifies a failed behavior, but may leave several plausible causes: a missing path guard, cleanup barrier, ownership transition, or API condition. An editor can reason from its patch and source context; additional analyzer representations provide another inspectable source of relevant structure.
 
 We make a narrower observation: \textbf{some patch-relevant program structure is available in analyzer-produced intermediate representations} but is not ordinarily surfaced to the refinement loop.
