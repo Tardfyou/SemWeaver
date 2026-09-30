@@ -7,6 +7,15 @@ experimental denominators. No new model or analyzer execution was requested.
 
 ## Current display map
 
+The requested diagram redraw replaces Fig.2's tall columns with three horizontal
+stages, aligned boxes and explicit semantic colors. Its feedback lane is isolated
+below the edit/scan/retain chain. Fig.1's orange/green/gray arrows are implemented
+in the files and caption, not merely recommended. Standalone and in-paper renders
+were checked; text is inside the canvas and Fig.2's labeled rectangles. The footer
+was moved to baseline anchors after the first render exposed bottom clipping.
+Figure dimensions and experiment results are unchanged; no global typography
+adjustment is used. The redraw guide includes exact colors and layout coordinates.
+
 | Display | Placement | Content |
 |---|---:|---|
 | Figure 1 | 5 | Automatic motivating example; corrected abridged branch and callout background |

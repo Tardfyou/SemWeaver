@@ -12,21 +12,59 @@ not replacements for vector output. All dimensions below are PDF points (bp).
 ## Non-data diagrams
 
 Figure 1 keeps one left panel and two stacked right panels. Keep the six numbered
-callouts and the distinction between solid control-flow links and dashed semantic
+callouts and the distinction between solid bound-to-access links and dashed semantic
 links. The abbreviations `N` and `hr_match` are explained in the caption, not new
 program identifiers. The lower-right panel includes callout 6 within its gray
 background. Preserve the 1/1 versus 1/0 labels and the separate 14-response example
 boundary; this is not the one-response main-study checker.
 
-Figure 2 has three panels: frozen inputs; provenance views; edit and retain.
+Figure 1 now implements the agreed colors: 2-to-3 is orange `#D97732`, 4-to-3
+is green `#388443`, and all three cross-panel dashed arrows are gray `#666666`.
+These are bound/access relations and correspondences, not a complete control-flow graph.
+
+Figure 2 is redrawn as three horizontal stages, not the old three tall columns:
+
+1. Four equal frozen-input boxes feed a shared collection bus.
+2. Three equal provenance boxes feed one full-width typed evidence bundle.
+3. One left-to-right chain edits the latest candidate, performs the paired scan,
+   and updates the separately retained checker. One dashed orange feedback lane
+   returns latest code and validation feedback below this row; it does not pass
+   through a box or the retained output.
+
 Do not merge the latest candidate with the retained checker. Preserve unavailable
 evidence, output/source-derived provenance, and the native-only fixture boundary.
-The feedback arrow runs outside the right-hand boxes.
+The bounded-view arrow is black because the bundle is mixed provenance, not all native.
+
+| Role | Stroke / label | Fill |
+|---|---|---|
+| Native evidence | `#356E9A` | `#E9F1F7` |
+| Source context / neutral inputs | `#666666` | gray 0.949 |
+| Diagnostics, validation and feedback | `#D97732` | `#FFF1E5` |
+| Retained checker | `#388443` | `#E9F4EB` |
+| Editor and mixed bundle | black | white |
+
+Color indicates role, not correctness or measured performance. The labels and
+solid/dashed line distinction remain interpretable without color.
+
+For manual reproduction, use the 378 x 225 bp canvas with a top-left origin:
+
+| Element | Left x positions | Top y | Width x height |
+|---|---|---:|---|
+| Four inputs | 0, 96, 192, 288 | 18 | 90 x 21 |
+| Three evidence boxes | 0, 129, 258 | 65 | 120 x 35 |
+| Mixed evidence bundle | 0 | 112 | 378 x 20 |
+| Editor / validation / retained | 0, 132, 272 | 157 | 106 / 114 / 106 x 30 |
+
+Section-title centers are at y=8, 52, 142; the feedback lane is y=200. Footer
+baselines are y=213 and 223. Main labels are 8.039 bp and footer/feedback labels
+7.3 bp. Borders use 0.65/0.8 bp; main arrows use 0.8626 bp. Exact arrow bends
+are in the TikZ source. Keep text within boxes rather than stretching the canvas.
 
 Diagram prose uses Nimbus Roman at 8.039 bp; code uses Courier at 7.1 bp.
 Use the exact colors, stroke widths and arrow geometry in
 `f258-diagram-style.tex`. These are open-font adaptations, not pixel-identical
-copies of the style reference. Re-render after manual changes and check labels,
+copies of the style reference. The new Fig.2 topology and semantic colors are a
+readability adaptation, not a source-strict replica. Re-render after manual changes and check labels,
 callout circles, arrow routing, bottom legends and the actual 378 bp inclusion width.
 
 ## Data figure and tables

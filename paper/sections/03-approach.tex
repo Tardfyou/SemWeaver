@@ -5,14 +5,14 @@
 \begin{figure}[!htbp]
   \centering
   \includegraphics[width=\textwidth]{figures/fig-architecture-f258.pdf}
-  \Description{Workflow from a generated checker and patch through evidence collection, a typed provenance-labelled bundle, checker editing, paired validation, and audit artifacts.}
+  \Description{Three horizontal stages: frozen inputs, three provenance-labelled evidence classes merged into a typed bundle, then a left-to-right edit/validate/retain chain. A separate dashed feedback lane returns the latest code and validation feedback to the editor.}
   \caption{\textbf{\toolname architecture.}
-  A generated detector, patch and bounded evidence feed the editor and paired retention rule. Native provenance is checked separately from collector names. Retention tracks version-warning presence, not target correctness; fixed silence is secondary. Inputs, rejected/retained candidates and raw validation records remain auditable.}
+  Blue denotes native evidence, gray source context, orange outputs/feedback, and green the retained checker; colors indicate roles, not correctness. Solid arrows carry inputs and candidates; the dashed lane returns latest code and feedback. Retention tracks warning presence and burden, not target correctness; fixed silence is secondary. All attempts remain auditable.}
   \label{fig:approach-architecture}
 \end{figure}
 
 Figure~\ref{fig:approach-architecture} groups the workflow into three panels.
-\textbf{(a)~Generator context.} The input is an existing detector, patch, source tree and validation scope, not a new generation task.
+\textbf{(a)~Frozen inputs.} The input is an existing detector, patch, source tree and validation scope, not a new generation task.
 \textbf{(b)~Assembly and bundle.} Rule-guided preflight, source extraction, analyzer collection and validation feedback supply provenance-typed records and bounded views (Sections~\ref{sec:adaptive-selection}--\ref{sec:evidence-schema}).
 \textbf{(c)~Paired-warning refinement.} The agent edits the latest attempted detector; normal paired outcomes update a separate best detector when they recover warning presence or reduce fixed reports while retaining it. Rejected attempts remain next-step input/feedback (Section~\ref{sec:refinement}).
 \textbf{Audit artifacts.} The verifier checks raw-output/source-scope bindings, interfaces, provenance counts, selected code and paired logs. Original prompts, replies and all attempts persist; an LLM explanation is not an origin certificate.

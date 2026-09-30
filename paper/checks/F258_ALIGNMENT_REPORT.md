@@ -30,15 +30,19 @@ override was used to achieve this.
 
 ## Figures: physical-page5 Figure2 reference
 
-`f258-diagram-style.tex` uses measured .949/.851 gray regions, rectangular
-structure, black .8626bp strokes, compact labels and the source orange/green
-RGB triples(.957,.694,.514)/(.663,.820,.557). There are no shadow cards or
-decorative source-paper icons. Solid versus dashed links retain explicit meanings.
+The original diagram style used measured .949/.851 gray regions, rectangular
+structure, black .8626bp strokes and source orange/green fills. The requested
+Fig.2 redraw now uses an explicitly **adapted-readable** layout: three horizontal
+stages, aligned rectangular boxes, role-specific dark strokes and pale fills.
+Fig.1 keeps its original code fills but implements orange/green bound-to-access
+arrows and gray dashed correspondences. These new semantic colors are not
+claimed to be source-paper tokens. See `figures/REDRAW_GUIDE.md` for exact values.
 
-- Architecture: three provenance/workflow panels, latest candidate versus
-  retained checkpoint, normal paired execution, and an explicit native-only
-  guard/target-oracle boundary. Body cross-references were updated to those
-  panels, not left pointing to old d/e labels or a nonexistent request arrow.
+- Architecture: four frozen inputs, three provenance classes, one mixed bundle,
+  then the edit/scan/retain chain with a separate labeled feedback lane. The latest
+  candidate and retained checkpoint stay separate. Optional observations, the
+  native-only guard and target-correctness boundary remain explicit. Panel a/b/c
+  references are retained; no new algorithm or experiment is implied.
 - G21: the user's requested original left/top-right/bottom-right topology is
   retained. Array extent, vulnerable/fixed bounds and capacity test remain
   linked to the six callouts. Routing was adjusted after rendering so links do
@@ -52,7 +56,8 @@ glyph is inside the respective PDF page. The final paper's inclusion width
 matches these nominal physical dimensions within that quantization.
 
 The source Figure2 uses Times New Roman/Cambria glyphs; available open Nimbus
-Roman8.039bp and Courier7.1bp are used for prose and code. Math fonts differ.
+Roman8.039bp and Courier7.1bp are used for prose and code. The new architecture
+footer/feedback labels are 7.3bp; border widths are 0.65/0.8bp. Math fonts differ.
 These font/layout adaptations are explicitly not pixel-identical source copying.
 G21's asymmetric topology is preserved because the user requested it, rather
 than changing it into the source's three horizontal panels.

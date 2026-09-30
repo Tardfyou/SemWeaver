@@ -1,41 +1,58 @@
-% Separate suggested architecture; original manual assets remain untouched.
-% Concrete evaluated contracts, not exhaustive symbolic/target correctness.
+% Readability-first vector redraw. Coordinates are PDF bp; colors denote roles.
 \begin{tikzpicture}[f258,x=1bp,y=-1bp]
 \path[use as bounding box] (0,0) rectangle (378,225);
-\fill[F258Region] (0,0) rectangle (94,211);
-\fill[F258Region] (104,0) rectangle (252,211);
-\fill[F258Region] (262,0) rectangle (378,211);
-\node[f258label] at (5,11) {(a) Frozen inputs};
-\node[f258label] at (110,11) {(b) Provenance views};
-\node[f258label] at (268,11) {(c) Edit and retain};
-\node[f258box,text width=72bp,minimum height=19bp] (detector) at (47,39) {Starting detector\\checker / query};
-\node[f258box,text width=72bp,minimum height=19bp] (patch) at (47,77) {Security patch};
-\node[f258box,text width=72bp,minimum height=19bp] (source) at (47,115) {Frozen source\\patch-related scope};
-\node[f258box,text width=72bp,minimum height=19bp] (target) at (47,153) {Vulnerable / fixed\\build-object pair};
-\node[font=\FTDiagramFont,align=center,text width=82bp] at (47,194) {One input checker;\\all edits recorded};
-\node[f258box,text width=131bp,minimum height=24bp] (native) at (178,41) {CSA native:\\CFG / callgraph dumps};
-\node[f258box,text width=131bp,minimum height=24bp] (dynamic) at (178,77) {Optional live checker traces\\hash / scope / parity checked};
-\node[f258box,text width=131bp,minimum height=24bp] (context) at (178,113) {Source-derived context:\\patch and bounded source views};
-\node[f258box,text width=131bp,minimum height=24bp] (output) at (178,149) {Analyzer outputs:\\build errors and V/F reports};
-\node[font=\FTDiagramFont\bfseries,anchor=west,inner sep=0bp] at (110,176) {Typed bundle; absence retained};
-\foreach \x/\label in {110/origin,154/scope,198/digest}{
- \draw[fill=F258GrayCell] (\x,184) rectangle +(44,17);
- \node[font=\FTDiagramFont] at (\x+22,192.5) {\label};}
-\node[f258box,text width=90bp,minimum height=20bp] (agent) at (320,41) {LLM edit\\bounded context};
-\node[f258box,text width=90bp,minimum height=20bp] (latest) at (320,77) {Latest candidate $L$};
-\node[f258box,text width=90bp,minimum height=24bp] (scan) at (320,113) {Compile and execute\\same V/F scope};
-\node[f258box,text width=90bp,minimum height=27bp] (gate) at (320,155) {Healthy, $H_v>0$;\\recover warnings or\\reduce fixed reports};
-\node[f258box,text width=90bp,minimum height=20bp] (retained) at (320,193) {Retained checker $D^*$};
-\draw[f258arrow] (detector.east) -- (98,39) -- (98,22) -- (320,22) -- (agent.north);
-\draw[f258arrow] (patch.east) -- (native.west);
-\draw[f258arrow] (source.east) -- (context.west);
-\draw[f258arrow] (target.east) -- (output.west);
-\draw[f258arrow] (249,176) -- (257,176) -- (257,41) -- (agent.west);
-\draw[f258arrow] (agent.south) -- (latest.north);
-\draw[f258arrow] (latest.south) -- (scan.north);
-\draw[f258arrow] (scan.south) -- (gate.north);
-\draw[f258arrow] (gate.south) -- (retained.north);
-\draw[f258feedback] (scan.east) -- (375,113) -- (375,22) -- (320,22);
-\node[font=\FTDiagramFont,anchor=base west,inner sep=0bp] at (0,223)
- {Persist evidence, replies, code and results. Native-only fixture guard is not a target oracle.};
+% (a) Shared input bus: no false one-to-one input/evidence mapping.
+\node[f258label] at (0,8) {(a) Frozen inputs};
+\foreach \x in {0,96,192,288}{
+ \draw[fill=F258Region,draw=SWContext,line width=.65bp] (\x,18) rectangle +(90,21);}
+\node[align=center,inner sep=0bp] at (45,28.5) {Starting checker $D$\\CSA / CodeQL};
+\node[align=center,inner sep=0bp] at (141,28.5) {Security patch $P$};
+\node[align=center,inner sep=0bp] at (237,28.5) {Frozen source $S$};
+\node[align=center,inner sep=0bp] at (333,28.5) {V/F object scope $V$};
+\foreach \x in {45,141,237,333}{\draw[draw=SWContext,line width=.65bp] (\x,39) -- (\x,44);}
+\draw[draw=SWContext,line width=.65bp] (45,44) -- (333,44);
+\draw[draw=SWContext,line width=.65bp] (189,44) -- (189,58);
+% (b) Optional observations remain explicitly optional.
+\node[f258label] at (0,52) {(b) Evidence by origin};
+\node[anchor=west,inner sep=0bp,text=SWContext] at (201,51) {collect within scope};
+\draw[draw=SWContext,line width=.65bp] (60,58) -- (318,58);
+\foreach \x in {60,189,318}{\draw[f258arrow,draw=SWContext,line width=.65bp] (\x,58) -- (\x,65);}
+\draw[draw=SWNative,fill=SWNativeFill,line width=.8bp] (0,65) rectangle (120,100);
+\draw[draw=SWContext,fill=F258Region,line width=.8bp] (129,65) rectangle (249,100);
+\draw[draw=SWFeedback,fill=SWFeedbackFill,line width=.8bp] (258,65) rectangle (378,100);
+\node[font=\FTDiagramFont\bfseries,text=SWNative] at (60,73) {Analyzer-internal};
+\node[align=center,inner sep=0bp] at (60,88) {CSA CFG / callgraph dumps\\Optional checked traces};
+\node[font=\FTDiagramFont\bfseries,text=SWContext] at (189,73) {Source-derived};
+\node[align=center,inner sep=0bp] at (189,88) {Patch + bounded source\\Function / guard / call context};
+\node[font=\FTDiagramFont\bfseries,text=SWFeedback] at (318,73) {Analyzer output};
+\node[align=center,inner sep=0bp] at (318,88) {Compiler diagnostics\\Vulnerable / fixed reports};
+\draw[f258arrow,draw=SWNative] (60,100) -- (60,112);
+\draw[f258arrow,draw=SWContext] (189,100) -- (189,112);
+\draw[f258arrow,draw=SWFeedback] (318,100) -- (318,112);
+\draw[draw=black,fill=white,line width=.8bp] (0,112) rectangle (378,132);
+\node[anchor=west,inner sep=0bp,font=\FTDiagramFont\bfseries] at (6,122) {Typed evidence bundle};
+\node[anchor=west,inner sep=0bp] at (98,122) {origin | scope | hash\quad;\quad absence stays explicit};
+% (c) One forward chain; one separate, labeled feedback lane.
+\node[f258label] at (0,142) {(c) Refine and retain};
+\node[anchor=west,inner sep=0bp,text=SWContext] at (151,142) {bounded view to editor};
+\draw[f258arrow] (119,132) -- (119,150) -- (53,150) -- (53,157);
+\draw[draw=black,fill=white,line width=.8bp] (0,157) rectangle (106,187);
+\draw[draw=SWFeedback,fill=SWFeedbackFill,line width=.8bp] (132,157) rectangle (246,187);
+\draw[draw=SWRetained,fill=SWRetainedFill,line width=.8bp] (272,157) rectangle (378,187);
+\node[font=\FTDiagramFont\bfseries] at (53,166) {LLM edit};
+\node at (53,178) {Latest candidate $L$};
+\node[font=\FTDiagramFont\bfseries] at (189,166) {Compile + paired scan};
+\node at (189,178) {Same vulnerable / fixed scope};
+\node[font=\FTDiagramFont\bfseries,text=SWRetained] at (325,166) {Retained checker $D^*$};
+\node at (325,178) {Update only if accepted};
+\draw[f258arrow] (106,174) -- (132,174);
+\draw[f258arrow,draw=SWRetained] (246,174) -- (272,174);
+\node[font=\FTCodeFont,text=SWRetained,inner sep=0bp] at (259,165) {keep};
+\draw[f258feedback,draw=SWFeedback] (189,187) -- (189,200) -- (53,200) -- (53,187);
+\node[font=\fontencoding{T1}\fontfamily{ptm}\fontsize{7.3bp}{9bp}\selectfont,
+ fill=white,inner sep=2bp,text=SWFeedback] at (121,200) {latest code + validation feedback};
+\node[anchor=base west,inner sep=0bp,font=\fontencoding{T1}\fontfamily{ptm}\fontsize{7.3bp}{9bp}\selectfont] at (0,213)
+ {Gate: healthy + vulnerable warning; recover warnings or reduce fixed reports.};
+\node[anchor=base west,inner sep=0bp,font=\fontencoding{T1}\fontfamily{ptm}\fontsize{7.3bp}{9bp}\selectfont] at (0,223)
+ {Native fixture guard is not a target oracle. $L,D^*$ start at $D$; all attempts are recorded.};
 \end{tikzpicture}%
