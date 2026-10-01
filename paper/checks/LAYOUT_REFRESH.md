@@ -10,24 +10,31 @@ pages of the full author PDF. Other project slides are not included in the artif
 
 | Display | PDF page | Content |
 |---|---:|---|
-| Figure 1 | 5 | Author motivating example |
-| Figure 2 | 6 | Author architecture |
-| Algorithm 1 | 7 | Paired-warning refinement |
-| Table 1 | 8 | Rule-guided evidence requirements |
-| Table 2 | 8 | Evidence origins: 81 / 51 / 61 |
-| Figure 3 | 12 | Author study design and E1/E3/E4 reuse |
-| Table 3 | 14 | Full 39 and complete noisy-15 comparison |
-| Table 4 | 14 | All three CodeQL decodes and recorded costs |
-| Figure 4 | 15 | All 36 paired E3 decodes |
-| Table 5 | 16 | Initial state and three model configurations |
+| Figure 1 | 3 | Author motivating example |
+| Figure 2 | 5 | Author architecture |
+| Algorithm 1 | 6 | Paired-warning refinement |
+| Table 1 | 6 | Rule-guided evidence requirements |
+| Table 2 | 7 | Evidence origins: 81 / 51 / 61 |
+| Figure 3 | 10 | Author study design and E1/E3/E4 reuse |
+| Table 3 | 13 | Full 39 and complete noisy-15 comparison |
+| Table 4 | 13 | All three CodeQL decodes and recorded costs |
+| Figure 4 | 14 | All 36 paired E3 decodes |
+| Table 5 | 15 | Initial state and three model configurations |
+| Table 6 | 16 | Phase-separated terminal checkpoint outcomes |
 
-The complete PDF has 22 pages. Main content and the original AI-use statement
-end on page 18. Data Availability precedes References on page 19; References
-occupy pages 19-22. The [FSE 2027 Research Track call](https://conf.researchr.org/track/fse-2027/fse-2027-papers)
-explicitly excludes Data Availability from the page limit (Double-Anonymous
-Review Process and Open Science Policy; checked September 30, 2026).
-ACM body font, margins and line spacing are unchanged. References remain
-together with Data Availability rather than forcing a largely empty extra page.
+The complete PDF has 22 pages. Main content, AI-use disclosures and Data
+Availability end on page 18; References occupy pages 19-22. ACM body font,
+margins and line spacing are unchanged.
+
+## Table clearance correction (October 1, 2026)
+
+Table 6 now uses three actual header rows instead of bottom-aligned short stacks;
+the grouped rule no longer crosses the upper line of the column labels. A local
+1 bp row-height allowance separates text from rules without reducing the font.
+Table 5 adds header height for the mathematical F1 label. Existing F258-style
+rules, colors and numeric cells are unchanged. Tables 1--6 and the E3 matrix were
+checked at final PDF size; no comparable text/rule collision was found in the
+other data components. The author-owned Figures 1--3 were not edited.
 
 ## Edits supporting the added study figure
 
