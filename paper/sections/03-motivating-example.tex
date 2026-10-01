@@ -1,25 +1,14 @@
-This section traces an automatic refinement of the KNighter-derived CSA
-checker for Linux commit \texttt{97cba232549b}, which repairs an off-by-one
-access in the AMD display driver~\cite{linuxCommit97cba232,yang2025knighter}.
-The example has an explicit safety relation: the largest look-ahead index
-must be smaller than the extent of the array actually accessed. Both the
-starting and refined checkers use \lstinline|checkASTCodeBody|; the edit
-adds a missing bound relation to the existing analysis.
+This section traces one refinement instance end to end, using the KNighter-derived CSA checker for Linux commit \texttt{97cba232549b}, which repairs an off-by-one access in the AMD display driver~\cite{linuxCommit97cba232,yang2025knighter}.
+The case is small enough to inspect manually yet exhibits the core problem.
+The generated checker recognizes a look-ahead access but misses the relation between the loop bound and the array's capacity.
 
 \textbf{The bug and its patch.}
-The member \lstinline|dc->links| has declared capacity
-\lstinline|MAX_PIPES * 2| (Figure~\ref{fig:motivating}, \cmark{1}).
-We abbreviate this constant as $N$ in the figure; this is a presentation
-alias, not a new program variable. The function
-\lstinline|get_host_router_total_dp_tunnel_bw| iterates over candidate
-links and, on a matching host-router branch, reads both
-\lstinline|links[i]| and \lstinline|links[i + 1]| (M10--M11, \cmark{3}).
-With the original condition $i<N$ (M5, \cmark{2}), the loop permits
-$i=N-1$, so the look-ahead can reach index $N$, outside the array.
-The patch changes the bound to $i<N-1$ (M6, \cmark{4}), which limits the
-largest look-ahead index to $N-1$. Other branch conditions determine whether
-an access occurs, but the patched loop bound already prevents this final
-iteration from reaching an out-of-range look-ahead.
+The member \lstinline|dc->links| has declared capacity \lstinline|MAX_PIPES * 2|, abbreviated as $N$ in Figure~\ref{fig:motivating} (\cmark{1}).
+The function \lstinline|get_host_router_total_dp_tunnel_bw| iterates over candidate links.
+On a matching host-router branch, it reads both \lstinline|links[i]| and \lstinline|links[i + 1]| (M10--M11, \cmark{3}).
+With the original condition $i<N$ (M5, \cmark{2}), the loop permits $i=N-1$, so the look-ahead can reach index $N$, outside the array.
+The patch changes the bound to $i<N-1$ (M6, \cmark{4}), limiting the largest look-ahead index to $N-1$.
+Other branch conditions determine whether the access occurs; the new loop bound prevents this final out-of-range access.
 
 \begin{figure}[!htbp]
   \centering
@@ -42,55 +31,36 @@ iteration from reaching an out-of-range look-ahead.
 \end{figure}
 
 \textbf{Why the baseline checker fails.}
-The generated checker already recognizes an induction variable, a loop
-bound, and a look-ahead array subscript. It reports an access when it does
-not recognize a protective condition in an enclosing \lstinline|if|
-(B1--B5, \cmark{5}). That rule overlooks a guard carried by the loop
-condition itself. The fixed program still contains \lstinline|links[i + 1]|,
-so the checker reports on both revisions despite the reduced loop bound.
-The independent patch-related-object replay yields \texttt{1/1} alerts.
-The refinement problem is therefore to interpret the relation between
-the loop bound and array extent while retaining the unsafe access.
+The generated checker already recognizes an induction variable, a loop bound, and a look-ahead array subscript.
+It reports an access when it does not recognize a protective condition in an enclosing \lstinline|if| (B1--B5, \cmark{5}).
+That rule overlooks a guard carried by the loop condition itself.
+The fixed program still contains \lstinline|links[i + 1]|, so the checker reports on both revisions despite the reduced loop bound.
+Independent patch-related-object replay yields \texttt{1/1} alerts.
+The checker has learned that a look-ahead access needs a guard, but not how the loop condition already supplies one.
 
 \textbf{Evidence-guided refinement.}
-The available bundle contains four provenance-labelled records: two
-strictly internal Clang~18 CFG/call-graph records and two analyzer-output
-records. The internal records anchor the affected loop and branch context
-to raw dumps from \texttt{debug.DumpCFG} and
-\texttt{debug.DumpCallGraph}; patch and source context identify the bound
-change. The declared array extent is read from the AST type by the emitted
-checker. It is not a path-feasibility proof supplied by the evidence bundle.
+\toolname starts from the same validation symptom and assembles the available patch, source and analyzer context.
+This bundle has four provenance-labelled records: two internal Clang~18 CFG/call-graph records and two analyzer-output records.
+The internal records anchor the loop and branch context to raw \texttt{debug.DumpCFG} and \texttt{debug.DumpCallGraph} output; patch and source context identify the bound change.
 
-The initial GLM-5.3-Flash edit adds a capacity-aware condition while
-retaining the original traversal. For the depicted loop $i<B$, the maximum
-look-ahead index is $(B-1)+1=B$. A known extent $N$ justifies suppressing the
-warning only when this index is smaller than $N$ (C3--C6, \cmark{6}).
-Consequently, the vulnerable $B=N$ remains reported and the fixed $B=N-1$
-becomes silent. This condition depends on type and index relations rather
-than the patched function name, a particular array capacity, or adjacency
-of the relevant statements. The initial edit uses two model calls and
-passes the independent Linux replay at \texttt{1/0}.
+The initial GLM-5.3-Flash refinement adds a capacity-aware condition while retaining \lstinline|checkASTCodeBody| and the existing traversal.
+The emitted checker reads the declared array extent from the AST type.
+For the loop $i<B$, the maximum look-ahead index is $(B-1)+1=B$.
+It suppresses the warning when that index is smaller than the known extent $N$ (C3--C6, \cmark{6}).
+Thus the vulnerable $B=N$ remains reported, while the fixed $B=N-1$ becomes silent.
+The condition uses type and index relations rather than the patched function name, a particular capacity, or adjacency of statements.
+After two model calls, the candidate passes independent Linux replay at \texttt{1/0}.
 
-\textbf{Checking the example beyond its patch.}
-Additional perturbation probes expose shortcomings in the initial candidate's
-fallback and inherited guard recognition. Model-driven quality
-continuations receive these hash-bound diagnostics and repair the checker;
-the raw model edits and failed intermediate versions are retained.
-Four automatic GPT-6-Luna-high quality continuations use 12 additional
-model calls (14 including the initial Flash refinement). The final frozen
-checker retains \texttt{1/0} on the original Linux pair. It passes all 28
-core fixtures, six boundary fixtures, 20 additional guard/bound fixtures,
-and 60 renamed/capacity-varied executions of those 20 forms: 58/58 unsafe
-and 56/56 safe executions overall. The labels for the latter 80 executions
-were also checked with AddressSanitizer~\cite{serebryany2012asan}. These are finite experimental
-fixtures, not 114 independent bugs or an unseen-data confirmation set. The
-fixtures and diagnostic feedback were prepared through the research workflow
-with coding-assistant support; every scored checker-code edit is model-produced.
-The tests support robustness to the tested name changes, unrelated
-statements, constant capacities, and equivalent unit-step-loop/guard forms.
-Arbitrary aliasing, dynamic extents, and non-unit loop updates remain
-outside this claim. This illustrative continuation is separate from the
-frozen 39-case results and does not establish a causal benefit from internal
-records alone. The one-response main-cohort G21 checker also reports
-\texttt{1/0}, but passes only 74/114 of these same fixtures. The stronger
-14-response illustration is not substituted into the 39-case scores.
+\textbf{Checking the refinement.}
+Further probes expose shortcomings in the candidate's fallback and inherited guard recognition.
+Four automatic GPT-6-Luna-high quality continuations use 12 additional calls to repair these problems, giving 14 calls in total.
+They receive the recorded fixture diagnostics; every scored checker edit is model-produced, and failed intermediate versions are retained.
+The final checker still reports \texttt{1/0} on the Linux pair.
+It passes 28 core fixtures, six boundary fixtures, 20 additional guard/bound fixtures, and 60 renamed/capacity-varied executions of those 20 forms: 58/58 unsafe and 56/56 safe executions overall.
+AddressSanitizer also checks the labels of the latter 80 executions~\cite{serebryany2012asan}.
+
+These tests cover name changes, unrelated statements, constant capacities and equivalent unit-step-loop/guard forms.
+They informed the refinement, so they are a finite development suite rather than unseen-data confirmation or 114 independent bugs.
+Arbitrary aliasing, dynamic extents and non-unit loop updates remain outside the tested forms.
+The stronger illustration is kept separate from the 39-case experiment: its one-response G21 checker also reports \texttt{1/0} on the Linux pair but passes 74/114 of these fixtures.
+Neither version isolates the contribution of internal records from the other supplied context.

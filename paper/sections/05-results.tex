@@ -1,6 +1,9 @@
-\subsection{RQ1: Generated CSA Checkers}
+\subsection{RQ1: KNighter-Derived Checkers}
 
-Table~\ref{tab:all39-system} reports all 39 subjects and the preexisting 15-case noisy stratum. Zero starting PDS is an entry condition, not KNighter's refinement result. Every portfolio retains the 15 initially warning-positive vulnerable revisions. Among the 24 initially silent subjects, native recovers 8, no-internal 6, and KNighter 0 under its actual no-report policy. These are warning signals, not verified target-recall counts.
+Table~\ref{tab:all39-system} reports the complete 39-subject comparison.
+All three refinement portfolios retain the 15 initially warning-positive vulnerable revisions.
+Among the 24 silent starts, native \toolname recovers eight, no-internal recovers six, and KNighter makes no recovery edit under its no-report policy.
+The anonymous artifact lists every subject and its paired counts.
 
 \begin{table}[!htbp]
 \centering
@@ -32,13 +35,26 @@ Fixed reports &69&44&68\\
 \endgroup
 \end{table}
 
-Warning coverage and report burden move in different directions: native's 123 fixed reports exceed no-internal's 68 and KNighter's 69; its precision is $0.561$ versus $0.618$ for no-internal. The nearly tied $F_1$ summarizes different coverage/noise portfolios and does not establish native superiority. G12 contributes 73 distinct fixed-side warning locations, not duplicates; its broader matching yields 74 vulnerable and 73 fixed reports. This unfavorable tradeoff remains in the aggregate.
+The additional warning coverage comes with more fixed-side reports.
+Native produces 123, compared with 68 for no-internal and 69 for KNighter.
+Its precision is $0.561$, versus $0.618$ for no-internal; their $F_1$ values are nearly equal.
+G12 accounts for 73 native fixed-side reports at distinct locations.
+Its broader matching produces 74 vulnerable reports and 73 fixed reports, showing why warning recovery and report reduction need to be read together.
 
-In the complete 15-case fixed-noisy stratum (Table~\ref{tab:matched14}b), native reduces reports by 25 (36.2\%) against KNighter and 24 (35.3\%) against control. The effect is concentrated in G24's $27\rightarrow2$ fixed reports; other small differences offset one another. Identical binary fixed positivity and $F_1$ thus coexist with different report burdens. The follow-up finds G24's retained reports outside the target lifecycle (Section~\ref{sec:target-results}); the lower count is therefore not evidence of target-preserving suppression.
+The initially noisy group gives a different view (Table~\ref{tab:matched14}b).
+On all 15 subjects, native reduces fixed reports by 25 (36.2\%) against KNighter and 24 (35.3\%) against no-internal.
+The reduction is concentrated in G24's $27\rightarrow2$ fixed reports; other small differences offset one another.
+All methods have the same binary fixed positivity and $F_1$ in this group.
+The follow-up in Section~\ref{sec:target-results} finds that G24's surviving reports concern another lifecycle, so the count reduction does not establish preservation of its intended target.
 
 \subsection{RQ2: Cross-Backend Feasibility}
 
-A separate archived automatic ImageMagick CodeQL query starts at $0/0$ vulnerable/fixed rows. Table~\ref{tab:codeql-decoding} includes two $8/0$ recoveries and the third decode's $22/22$ outcome. The successful edit corrects relative-path matching while keeping exact file/function/local-variable filters. This demonstrates patch-local operation on a second format, not broad backend transfer or native-evidence causality. A second query already starts at $2/0$ and is not counted as a gain. KNighter is not a CodeQL baseline.
+Table~\ref{tab:codeql-decoding} reports three automatic decodes of the archived ImageMagick CodeQL query.
+The starting query returns $0/0$ vulnerable/fixed rows.
+Two decodes recover $8/0$; the third returns $22/22$.
+The successful edit corrects relative-path matching while keeping the exact file, function and local-variable filters.
+A second query already starts at $2/0$ and is excluded from the gain count.
+This experiment exercises query refinement separately from the KNighter CSA comparison.
 
 \begin{table}[!htbp]
 \centering
@@ -55,13 +71,25 @@ Decode & V/F rows & Replies & Tokens & Agent time (s)\\\hline
 \end{tabular}\endgroup
 \end{table}
 
-\textbf{Second-backend costs.} Table~\ref{tab:codeql-decoding} reports the original model runs. Three warm paired replays per query preserve $0/0$ and $8/0$. Median query-plus-decode time is 12.57\,s initially and 36.51\,s after refinement with two threads; peak process RSS is 976/1,078\,MiB. Database-creation log intervals span 31/30\,s, excluding unlogged startup. Developer labor is unmeasured. These one-case existing-environment observations are neither a speedup, cold-install benchmark nor whole-project scalability estimate.
+\textbf{Second-backend costs.}
+Three warm paired replays per query reproduce $0/0$ before refinement and $8/0$ after it.
+Median query-plus-decode time is 12.57\,s initially and 36.51\,s after refinement with two threads; peak process RSS is 976/1,078\,MiB.
+Database-creation log intervals span 31/30\,s, excluding unlogged startup.
+These are execution measurements in the existing environment.
+Developer labor and cold installation were not measured.
 
-\subsection{RQ3: Internal-Evidence Sensitivity}
+\subsection{RQ3: Contribution of Analyzer Evidence}
 
-Table~\ref{tab:origin-types} reports initial record provenance; Section~\ref{sec:evidence-roles} defines native types and source-derived context. Dynamic availability has a separate denominator: 103 of 150 unique native-chain attempts have usable hash-bound observations; 11 are unavailable due to candidate compilation, 18 unsupported context, 13 zero scoped callbacks, 1 reproduced candidate crash and 4 capped optional observations. None establishes safety from absence.
+Table~\ref{tab:origin-types} accounts for the initial records.
+During refinement, 103 of 150 unique native-chain attempts have usable hash-bound checker observations.
+The remaining attempts are unavailable because of candidate compilation (11), unsupported context (18), zero scoped callbacks (13), a reproduced candidate crash (1), or capped optional observations (4).
+Zero observations are treated as absence of evidence.
 
-Across 39 subjects, native has six comparative benefits, five disadvantages and 28 ties/other outcomes. The associated edits expose concrete differences in checker behavior: cleanup-wrapper recognition in G19, nested dereference/binding recovery in G25, and null/region/frame handling in G24. G19 adds \texttt{\_\_free\_kfree} to a cleanup predicate, yielding $15/0$ versus control's $0/0$; 15 reports are not 15 bugs. Conversely, control recovers symbolic-region handling in G23 and persistent-field release recognition in G38 without native records. G12 drops CPU-role restrictions, explaining its broad matching and noise. These code observations distinguish repairs from broader matching; a record's presence or an LLM explanation alone does not prove edit causality.
+Across the 39 subjects, native has six comparative benefits, five disadvantages and 28 ties/other outcomes.
+The edits include cleanup-wrapper recognition in G19, nested dereference/binding recovery in G25, and null/region/frame handling in G24.
+For example, adding the lowered cleanup name \texttt{\_\_free\_kfree} in G19 changes vulnerable/fixed counts to $15/0$, while no-internal remains at $0/0$.
+Conversely, no-internal recovers symbolic-region handling in G23 and persistent-field release recognition in G38.
+In G12, removing CPU-role restrictions broadens matching and produces the noise discussed above.
 
 \begin{figure}[!htbp]
 \centering
@@ -71,11 +99,20 @@ Across 39 subjects, native has six comparative benefits, five disadvantages and 
 \label{fig:repeats}
 \end{figure}
 
-Figure~\ref{fig:repeats} shows five subjects tying in all three decodes and seven with mixed directions; none benefits comparatively in all three. G19's native $15/0$ recurs, but control catches up in its third decode. G24's main reduction does not repeat. G14's $3/3\rightarrow2/2$ improves its own start but trails control's $2/1$; later decodes tie. In the main comparison, G05/G23/G38 retain initially $0/0$ in native while control recovers warnings, so their disadvantage is not loss of an initial signal. Repeated subjects, selection/reuse and native-only gating limit stronger attribution. Realized call differences under a shared stopping rule are outcomes/mediators, not independently assigned confounds.
+Figure~\ref{fig:repeats} shows all three paired decodes on the original 12 subjects.
+Five subjects tie in every decode; seven have mixed directions.
+None benefits comparatively in all three.
+G19's native $15/0$ repeats, but no-internal catches up in the third decode.
+G24's main report reduction does not repeat.
+G14 improves its own start from $3/3$ to $2/2$ but trails no-internal's $2/1$; later decodes tie.
+The disadvantages in G05/G23/G38 arise because native stays at its initial $0/0$ while no-internal recovers warnings.
+These outcomes show variation in what the editor can recover, even when the accepted artifact preserves its own initial warning signal.
 
-\subsection{RQ4: Model Configuration Sensitivity}
+\subsection{RQ4: Sensitivity Across Models}
 
-Table~\ref{tab:models39} uses the original 12 subjects, native only, one decode per model, 2-reply and 65,536-output ceilings with requested high effort. All configurations retain the five initial vulnerable warning signals and recover additional versions. Flash has the strongest observed outcome here, but one decode on this subset does not establish general ranking or variance-controlled model robustness.
+Table~\ref{tab:models39} uses the same 12 subjects with three native-editor configurations, one decode each.
+All configurations retain the five initial vulnerable warning signals and recover additional versions.
+GLM-5.3-Flash has the strongest observed result in this limited-budget comparison.
 
 \begin{table}[!htbp]
 \centering
@@ -95,20 +132,51 @@ GLM-5.3-Flash high &9&5&4&\FTFScore{.692}&11&21\\
 \endgroup
 \end{table}
 
-Received replies total 24/23/21 respectively. Capped, format-invalid and compile-failed replies remain charged; a healthy previous detector is retained when no valid improvement occurs. These are complete workflow outcomes, not successful code generation on every call. No no-internal arm is run across models, so E4 cannot isolate cross-model evidence effects.
+Received replies total 24/23/21 for GPT-6-Luna, GLM-5.3 and GLM-5.3-Flash.
+Capped, format-invalid and compile-failed replies remain charged; the workflow retains a healthy earlier detector when an attempt fails to improve it.
+The results describe this subset under the two-reply and 65,536-output-token ceilings.
+A single decode per configuration does not establish a variance-controlled model ranking, and the native-only experiment does not isolate the contribution of evidence across models.
 
-\subsection{What the Observed Improvements Establish}
+\subsection{Qualitative Findings}
 \label{sec:target-results}
 
-\textbf{Complete non-tie audit.} Of the six warning-based native benefits, G12/G19/G25 have bounded source-supported target reports; G09 has conditional support; G24/G35 have no supported or conditional retained target report. Of the five control advantages, G01/G23/G38 have bounded source-supported target reports and G05/G14 have conditional support. These describe the complete selected subset, not corrected success rates or independently adjudicated target accuracy.
+The quantitative results match several distinct changes in the checkers.
+To understand them, we inspect all 11 non-tied comparisons and their reported locations.
+Among the six native benefits, G12/G19/G25 have bounded source-supported target reports, G09 has conditional support, and G24/G35 retain no supported or conditional target report.
+Among the five no-internal advantages, G01/G23/G38 have source support and G05/G14 conditional support.
+This source audit explains the warning counts without changing the primary scores.
 
-The code changes explain why these categories differ. Both G01 arms recover the governing loop, but only control adds a capacity/break guard; native's fixed reports contradict the actual guard. G19 adds a lowered cleanup name, while G23 control recovers symbolic-region and nested-member handling. G25's native changes add nested sink recognition and destination binding. Recognition therefore improves in both arms, but is separate from guard and state correctness. G05 preserves uncertain initialization; G09 broadens cleanup handling; G12 removes actor restrictions; G35 broadens status/condition reporting. Their recovered reports range from conditional target concerns to unrelated, contradicted reports. G38 control preserves field identity while relaxing a usage gate, with bounded reference-lifetime support.
+Both G01 variants repair recognition of the governing loop, but only no-internal checks the preceding capacity guard.
+G19 adds a lowered cleanup name.
+G23 changes symbol and nested-member lookup; G25 changes sink recognition and destination binding.
+These repairs make the intended operation visible to the checker.
+Other edits relax predicates: G05 preserves initialization uncertainty, G09 broadens cleanup handling, G12 drops actor restrictions, and G38 combines field-region preservation with a looser usage gate.
+G35's new trigger instead reports on an initialized overflow parameter outside the patched target.
 
-Report reduction can also change the surviving report population. G14's arms project onto different completion/free events; one fixed control report concerns a different supported stack-lifetime risk. G24 removes 25 reports per side, but its two retained native reports concern destroyed owners rather than the intended surviving-owner lifecycle. This does not prove loss of a previously valid witness; it does show that nonzero vulnerable warning presence cannot certify target preservation.
+The surviving report population matters as much as the count.
+G14 chooses different event predicates and retains reports about different lifetime properties.
+G24 changes region, NULL and frame tests, removing 25 reports per side; its two survivors concern owner destruction outside the target surviving-owner lifecycle.
+Some removed target reports are conditional.
+Thus this case shows lower inspection burden, but neither proves a valid target witness was lost nor establishes that the target was preserved.
 
-\textbf{Frozen perturbations.} Each primary mechanism has six positive and six negative fixtures. G12 reports at a target location in all positive fixtures and none of the negative ones, within its annotation model; its remote-write note still points to a local reset. G19 is silent on its adapted-wrapper suite. Its separate canonical control yields one supported early-exit report plus a wrong-scope allocator-return report, and misses the renamed wrapper. G25 has target-location reports in all six positive and five negative fixtures. Starting/control artifacts are silent for these three cases. In G24, starting/control has target-location reports in all six positive and six negative fixtures with 108/108 total reports; native has none with 18/12 total reports, although secondary review supports guard warnings outside the frozen target-line list. These disagreements remain visible rather than changing the scoring rule after inspection.
+\textbf{Frozen perturbations.}
+On the six positive and six negative fixtures per mechanism, retained native G12 reports at a target location in all positives and no negatives.
+This is within its annotation model; the diagnostic's remote-write note points to a local reset.
+G19 is silent on its adapted-wrapper suite.
+Its separate canonical control produces one supported early-exit report and one wrong-scope allocator-return report, and it misses the renamed wrapper.
+G25 reports at target locations in all six positives and five negatives.
+Starting/no-internal artifacts are silent for these three cases.
+For G24, starting/no-internal reports at target locations in all six positives and six negatives, with 108/108 total reports.
+Native has no frozen target-line hits and 18/12 total reports.
+Secondary inspection supports some guard warnings outside that line list; the original location scores remain unchanged.
 
-\textbf{Selected-clue intervention.} All three full G25 decisions peel outer sink-expression casts; no withheld decision does. Two full decisions also change bookkeeping. Table~\ref{tab:checkpoint-intervention} reports the separate compiler-completed artifacts: full recovers target-line presence with negative-side noise, while withheld remains silent. This rules out uncompiled controls as the sole reason for terminal silence, but does not establish three valid detection gains: all 34 reports from full repetitions 2/3 take \texttt{argc<=1}, which selects a concrete non-NULL object. Full repetition 1 has six outer count-access reports admitting a source-feasible NULL completion, without an explicit NULL-return event, alongside unsupported reports.
+\textbf{Selected-clue intervention.}
+All three full-evidence G25 decisions peel the outer casts around the sink expression; no withheld decision does.
+Two full decisions also change bookkeeping.
+After the separate compiler-only completion, full recovers target-line presence with negative-side noise, while withheld remains silent (Table~\ref{tab:checkpoint-intervention}).
+The full-evidence reports still need inspection.
+All 34 reports from repetitions 2/3 follow \texttt{argc<=1}, which selects a concrete non-NULL object.
+Repetition 1 has six outer count-access reports that admit a source-feasible NULL completion, without an explicit NULL-return event, alongside unsupported reports.
 
 \begin{table}[!htbp]
 \centering
@@ -130,6 +198,13 @@ Report reduction can also change the surviving report population. G14's arms pro
 \end{tabular}\endgroup
 \end{table}
 
-G19 instead exposes a coverage/noise tradeoff. Full repetitions 1/2 retain name-family tests; withheld generalizes registration, while repetition 3 reverses primary coverage. The broader matchers can warn on benign cleanup. Across the reviewed G19 artifacts, supported owning-scope exits coexist with reports at callee returns and a write-only cleanup mistaken for a read. This is selected-checkpoint evidence, not a population effect or a rule predicting useful native context.
+G19 exposes a different tradeoff.
+Full repetitions 1/2 retain name-family tests, while withheld generalizes registration; repetition 3 reverses primary coverage.
+The broader matchers can warn on benign cleanup.
+Across these artifacts, supported owning-scope exits coexist with reports at callee returns and a write-only cleanup mistaken for a read.
 
-\textbf{Resulting engineering distinction.} The same source line can contain a safe pointer-field read and the actual optional-object dereference, while a relevant guard report can lie outside a frozen sink-line list. Thus neither report presence nor final-line association substitutes for the reported object, operation, path and owning scope. The contribution is the evidence-linked explanation of these divergences; the source judgments remain bounded and do not turn the workflow into a semantic verifier.
+The negative cases are equally important.
+Correcting the callback or expression recognized by a checker can activate a useful check, yet leave the object, guard or owning scope wrong.
+Even the final source line can contain both a safe pointer-field read and the optional-object dereference of interest.
+Conversely, a source-supported guard warning can fall outside the chosen sink-line list.
+Examining the edit and its diagnostic together explains why recovery, target-line agreement and semantic support sometimes disagree.

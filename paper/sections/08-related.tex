@@ -1,14 +1,29 @@
 \noindent\textbf{Static Analysis and Checker Languages.}\quad
-Path-sensitive analyzers, abstract interpreters and symbolic engines supply guards, states, paths and diagnostics~\cite{engler2001bugs,ball2002slam,cousot2005astree,cadar2008klee}, including industrial deployments~\cite{calcagno2015infer,bessey2010coverity,sadowski2015tricorder}. Relational frameworks express rules over program facts~\cite{avgustinov2016ql,jordan2016souffle,bravenboer2009doop}; semantic patching encodes systems-code transformations~\cite{padioleau2008coccinelle}. \toolname adds no analyzer or query language. Its edited artifact is a generated checker, whose use of those facilities is part of the object being evaluated.
+Static-analysis systems provide the substrate that \toolname refines against.
+Path-sensitive analyzers, abstract interpreters, and symbolic engines expose guards, states, paths, and diagnostics reusable as evidence~\cite{engler2001bugs,ball2002slam,cousot2005astree,cadar2008klee} and deploy at industrial scale~\cite{calcagno2015infer,bessey2010coverity,sadowski2015tricorder}.
+Declarative languages offer a complementary approach by querying program facts through relational rules and points-to specifications~\cite{avgustinov2016ql,jordan2016souffle,bravenboer2009doop}, while semantic patching encodes recurring transformations over systems code~\cite{padioleau2008coccinelle}.
+\toolname introduces no new analyzer or query language.
+It treats generated checker code as the artifact to be refined.
 
 \noindent\textbf{Vulnerability Detection and Patch Evidence.}\quad
-Detection uses taint/data-flow reasoning~\cite{livshits2005finding,jovanovic2006pixy,arzt2014flowdroid}, graph/AST representations~\cite{yamaguchi2014cpg,yamaguchi2012vex}, and learned token-, slice- and line-level models~\cite{russell2018vulnerability,li2018vuldeepecker,li2021sysevr,fu2022linevul}; dataset and evaluation studies expose semantic robustness concerns~\cite{fan2020bigvul,chakraborty2021deep}. Clone- and patch-driven systems use historical fixes as evidence~\cite{jang2012redebug,li2016vulpecker,kim2017vuddy}. Here a patch scopes the refinement task, but neither a changed line nor a warning on that line certifies the intended target property.
+Static vulnerability detection has long used taint and data-flow reasoning~\cite{livshits2005finding,jovanovic2006pixy,arzt2014flowdroid}, graph and AST representations~\cite{yamaguchi2014cpg,yamaguchi2012vex}, and learning-based token-, graph-, slice-, and line-level models~\cite{russell2018vulnerability,li2018vuldeepecker,li2021sysevr,fu2022linevul}, though datasets and evaluations show that semantic robustness remains difficult~\cite{fan2020bigvul,chakraborty2021deep}.
+Clone- and patch-driven systems use historical fixes as compact witnesses~\cite{jang2012redebug,li2016vulpecker,kim2017vuddy}.
+These motivate our use of patches to scope the refinement task.
 
-\noindent\textbf{LLM-Based Reasoning and Checker Refinement.}\quad
-Code models and repository agents synthesize and analyze programs~\cite{chen2021codex,guo2025repoaudit}; LLMDFA decomposes data-flow reasoning and synthesizes tools~\cite{wang2024llmdfa}. Security evaluations show why generated artifacts require validation~\cite{pearce2022copilot,perry2023users,khoury2023chatgpt}. KNighter~\cite{yang2025knighter} is our nearest workflow comparator: it already generates, compiles, edits and revalidates checkers using patch and report context. Our distinction is the bounded compiler/checker observation supplied to the editor and the recovery objective on silent starts, not the existence or temporal placement of refinement. The no-internal variant and selected-clue interventions examine that additional context at different scopes.
+\noindent\textbf{LLM-Based Checker Synthesis.}\quad
+Code models and repository agents support program generation and analysis~\cite{chen2021codex,guo2025repoaudit}; LLMDFA decomposes data-flow reasoning and synthesizes tools~\cite{wang2024llmdfa}.
+Security studies show why generated code requires validation~\cite{pearce2022copilot,perry2023users,khoury2023chatgpt}.
+KNighter~\cite{yang2025knighter} is the closest workflow: it generates, compiles, edits and revalidates checkers using patch and report context.
+\toolname adds bounded compiler/checker observations to that setting and attempts warning recovery on silent starts.
 
-\noindent\textbf{Feedback and Validation.}\quad
-Repair and synthesis use compiler, test or verifier feedback~\cite{clarke2000cegar,solarlezama2006sketch,legoues2012genprog,kim2013par,long2015spr,nguyen2013semfix,mechtaev2016angelix,long2016prophet}; LLM workflows add iterative feedback, tools and search~\cite{madaan2023selfrefine,shinn2023reflexion,yao2023react,schick2023toolformer,yao2023tree}. Weak validation proxies and repair overfitting are established problems~\cite{qi2015plausibility,smith2015overfitting}. We do not claim their discovery. Our empirical evidence concerns the predicates and diagnostic obligations of edited static checkers: a representation repair can change report production without establishing the reported object/path/scope property, including on evaluated inputs.
+\noindent\textbf{Feedback-Guided Repair.}\quad
+The loop also relates to repair and synthesis under compiler, test, verifier or learned feedback~\cite{clarke2000cegar,solarlezama2006sketch,legoues2012genprog,kim2013par,long2015spr,nguyen2013semfix,mechtaev2016angelix,long2016prophet}, and to LLM work on iterative feedback, tool use and search~\cite{madaan2023selfrefine,shinn2023reflexion,yao2023react,schick2023toolformer,yao2023tree}.
+Weak validation proxies and repair overfitting are established concerns~\cite{qi2015plausibility,smith2015overfitting}.
+Our follow-up examines their consequences for edited static checkers, where a warning can return at the expected line while its object, scope or path remains wrong.
 
-\noindent\textbf{Analyzer Context.}\quad
-LLift uses analyzer reports and post-constraints~\cite{li2024llift}; Chapman et al. interleave analyzer intermediates and prompting for error specifications~\cite{chapman2024interleaving}; IRIS infers taint specifications with CodeQL~\cite{li2025iris}. LLM4PFA performs report-feasibility reasoning~\cite{du2025llm4pfa}, and ZeroFalse enriches reports before adjudication~\cite{iranmanesh2025zerofalse}. VulGenie combines patch dependencies, attack/defense flows and API-rule synthesis~\cite{chen2026vulgenie}. These preclude a first-use claim for analyzer context or semantic roles. \toolname edits an existing detector and evaluates the resulting changes; its provenance interface neither implements a new feasibility procedure nor guarantees more precise detection.
+\noindent\textbf{Analyzer Context and Alert Triage.}\quad
+LLift uses analyzer reports and post-constraints~\cite{li2024llift}; Chapman et al. interleave analyzer intermediates and prompting for error specifications~\cite{chapman2024interleaving}; IRIS infers taint specifications with CodeQL~\cite{li2025iris}.
+LLM4PFA reasons about report feasibility~\cite{du2025llm4pfa}, and ZeroFalse enriches reports before adjudication~\cite{iranmanesh2025zerofalse}.
+VulGenie combines patch dependencies, attack/defense flows and API-rule synthesis~\cite{chen2026vulgenie}.
+These studies already use analyzer context.
+\toolname instead studies how such context changes an existing checker's implementation and the reports it produces, retaining both the useful edits and their remaining semantic errors.

@@ -10,21 +10,34 @@ pages of the full author PDF. Other project slides are not included in the artif
 
 | Display | PDF page | Content |
 |---|---:|---|
-| Figure 1 | 3 | Author motivating example |
+| Figure 1 | 4 | Author motivating example |
 | Figure 2 | 5 | Author architecture |
 | Algorithm 1 | 6 | Paired-warning refinement |
 | Table 1 | 6 | Rule-guided evidence requirements |
 | Table 2 | 7 | Evidence origins: 81 / 51 / 61 |
 | Figure 3 | 10 | Author study design and E1/E3/E4 reuse |
-| Table 3 | 13 | Full 39 and complete noisy-15 comparison |
+| Table 3 | 12 | Full 39 and complete noisy-15 comparison |
 | Table 4 | 13 | All three CodeQL decodes and recorded costs |
 | Figure 4 | 14 | All 36 paired E3 decodes |
-| Table 5 | 15 | Initial state and three model configurations |
-| Table 6 | 16 | Phase-separated terminal checkpoint outcomes |
+| Table 5 | 14 | Initial state and three model configurations |
+| Table 6 | 15 | Phase-separated terminal checkpoint outcomes |
 
 The complete PDF has 22 pages. Main content, AI-use disclosures and Data
 Availability end on page 18; References occupy pages 19-22. ACM body font,
 margins and line spacing are unchanged.
+
+## Submission metadata check (October 1, 2026)
+
+The original-title/original-voice revision retains the current experimental
+content. Its prose and all figure assets are unchanged by this final check.
+The publisher-generated ACM Reference Format block is suppressed; DOI/ISBN
+placeholders are empty, copyright printing is disabled, and conference headers
+use the actual FSE 2027 name/date/location. Inline draft comments are disabled.
+All 22 rendered pages were inspected, including every table and the four reference
+pages. No template reference block, placeholder DOI, undefined reference, text
+overflow, clipped content or author-identifying PDF metadata was found. The E3
+matrix's bottom minus sign was additionally inspected at high magnification: its
+font bounding box overlaps a rule, but the visible glyph does not.
 
 ## Table clearance correction (October 1, 2026)
 

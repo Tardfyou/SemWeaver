@@ -1,26 +1,46 @@
-We evaluate automated patch-related warning recovery and report reduction, not whole-kernel bug discovery. Checker outcomes and execution health are recorded separately.
+We evaluate whether analyzer evidence helps \toolname recover vulnerable-side warnings and reduce fixed-side reports.
+The evaluation focuses on patch-local and patch-related-file behavior rather than whole-kernel bug discovery.
 
 \subsection{Research Questions}
 
-\textbf{RQ1: Generated CSA checkers.} From identical starting artifacts, how do KNighter's actual loop and \toolname affect vulnerable-version warning coverage, fixed-side report burden and paired discrimination?
+\textbf{RQ1: KNighter-derived checkers.} How does \toolname compare with KNighter's refinement loop on vulnerable-version warning coverage, fixed-side report burden and paired discrimination?
 
-\textbf{RQ2: Cross-backend feasibility and cost.} Can an archived automatic CodeQL query be refined and independently replayed, and what integration/execution costs are observable?
+\textbf{RQ2: Cross-backend feasibility and cost.} Can the refinement layer operate on an automatically generated CodeQL query, and what integration and execution costs are observable?
 
-\textbf{RQ3: Evidence sensitivity.} How do native/no-internal outcomes differ across the cohort and repeated subset, and what do the resulting edits and targeted follow-up establish about their reported gains?
+\textbf{RQ3: Evidence contribution.} How do the native and no-internal variants differ, and what do their edits and reported gains establish?
 
-\textbf{RQ4: Model configuration sensitivity.} How do three editor configurations perform on those 12 subjects under common reply/output ceilings?
+\textbf{RQ4: Model sensitivity.} How does the workflow perform with three editor configurations on the same subset under common reply/output ceilings?
 
 \subsection{Subjects}
 
-E1 freezes one generated CSA checker per selected Linux commit from KNighter's artifacts. Of 286 records on 60 commits, 241 on 39 commits lack an upstream refinement-status row. Per commit, the fixed input rule ranks by upstream TP, then TN, then lowest checker index, taking nonempty repaired source. This non-random ranking selects inputs; independent paired replay supplies outcomes. Failed/noisy refinements do not remove subjects. Initially 15 checkers warn on both revisions and 24 are silent on both; zero PDS is the starting state, not KNighter's refinement result. No manual completion enters scored portfolios.
+We organize the evaluation into four experiments (E1--E4).
+E1 uses KNighter-derived Linux CSA checkers under patch-related object validation.
+From 286 artifact records on 60 commits, 241 records on 39 commits lack an upstream refinement-status row.
+We select one nonempty repaired-source artifact per commit by upstream TP, then TN, then the lowest checker index.
+This fixed, non-random rule selects the inputs; independent paired replay supplies their starting outcomes.
+All 39 enter KNighter refinement and both \toolname variants, including cases that remain noisy or fail to improve.
+Initially, 15 checkers warn on both revisions and 24 are silent on both.
+Their zero starting PDS is the study's entry state.
 
-All 39 exercise actual KNighter refinement and native/no-internal \toolname. The noisy 15 are the complete preexisting report-refinement stratum, not a result-selected subset. For the other 24, KNighter's no-report branch compiles without model edits, whereas \toolname attempts recovery. This system comparison does not imply KNighter attempted and failed 24 recovery edits.
+The 15 initially noisy checkers also form a complete report-refinement stratum.
+Its results reuse the full-cohort outputs.
+For the 24 silent starts, KNighter's no-report branch compiles without a model edit, whereas \toolname attempts recovery.
+We report these branches as the systems execute them.
 
-The selected whole implementation is v43, chosen after comparing two configurations on six experimental subjects. Exact compatible executions on those subjects are reused in E1; selection probes are not an independent confirmation set. Source revisions, reuse equivalence and earlier trials remain available. G04 uses the architecture-correct ARM64 scope and evidence, not a zero substituted for earlier wrong-object execution.
+The selected implementation is v43, chosen after comparing two configurations on six experimental subjects.
+Compatible executions on those subjects are reused in E1; the configuration-selection cases overlap the evaluation.
+The artifact retains those trials and their reuse checks.
+G04 uses its architecture-correct ARM64 scope and evidence after repair of an earlier wrong-object scan.
 
-Figure~\ref{fig:study-design} summarizes E1--E4. E2 uses an automatic CodeQL input from an archived independent generator; historical mixed/manual 20-row claims are withdrawn. CodeQL is neither pooled with CSA nor compared against KNighter. E3 covers all 39 main pairs plus the repeated subset; E4 is native-only, one decode per model.
+E2 evaluates an automatic CodeQL query from an archived independent generator.
+We report it separately from CSA.
+Earlier mixed/manual 20-row results are excluded.
+E3 compares native and no-internal on all 39 main pairs and repeats a 12-subject subset; E4 uses the same 12 subjects, native only, with one decode per model (Figure~\ref{fig:study-design}).
 
-The 12-subject selection uses starting status, not refinement outcomes. Within the original 14 warning-positive/fixed-noisy and 25 vulnerable-silent cases, we sort SHA-256 hashes of a fixed, artifact-recorded salt plus case ID and take the first 4 and 8, respectively. Later scan repair corrected G08 from $0/0$ to $2/2$: the unchanged subset becomes 5 noisy and 7 silent, with no replacement. Membership predates this final round; selection is not stratified by vulnerability class and includes no buffer-overflow/out-of-bound cases. Repeated decodes are not independent bugs; E4 is neither full-39 nor multi-run cross-model robustness.
+Subset membership follows the initial scan status.
+We sort SHA-256 hashes of a fixed artifact-recorded salt plus case ID within the original 14 noisy and 25 silent cases, then take the first 4 and 8.
+A later scan repair corrects G08 from $0/0$ to $2/2$, leaving the same membership with 5 noisy and 7 silent subjects.
+The selection uses no refinement outcomes and no vulnerability-class stratification; it contains no buffer-overflow/out-of-bound cases.
 
 \begin{figure}[!htbp]
 \centering
@@ -32,7 +52,9 @@ The 12-subject selection uses starting status, not refinement outcomes. Within t
 
 \subsection{Metrics}
 
-Primary outcomes are vulnerable-version warning presence and fixed-side report burden. Let $n_v(D)$ and $n_f(D)$ count warnings on the same vulnerable/fixed patch-related object scope. The stronger secondary outcome PDS is:
+We report vulnerable-version warning presence and fixed-side report burden.
+Let $n_v(D)$ and $n_f(D)$ count warnings in the same vulnerable/fixed patch-related object scope.
+The stronger outcome, \emph{patch-discriminating success} (PDS), requires a vulnerable-side warning and fixed-side silence:
 \begin{equation}
 \begin{aligned}
 H_v(D,P,V)&=\mathbb{1}[\mathrm{alerts}(D,V_{\mathrm{vuln}},P)>0],\\
@@ -41,7 +63,11 @@ S_f(D,P,V)&=\mathbb{1}[\mathrm{alerts}(D,V_{\mathrm{fix}},P)=0],\\
 \end{aligned}
 \label{eq:pds}
 \end{equation}
-PDS is not required for a useful edit. \emph{Warning recovery} makes an initially silent vulnerable revision warning-positive, possibly with fixed noise; \emph{report reduction} lowers fixed reports while preserving vulnerable warning presence. Silencing a previously positive vulnerable revision is rejected. \emph{Comparative disadvantage} means another arm retains a better result, not necessarily regression from the starting checker.
+We distinguish two useful improvements.
+\emph{Warning recovery} makes an initially silent vulnerable revision warning-positive, possibly with fixed-side noise.
+\emph{Report reduction} lowers fixed-side reports while preserving vulnerable-side warning presence.
+A detector that loses an existing vulnerable warning is rejected.
+A comparative disadvantage means that another arm retains a better result, which may still be an improvement over the starting checker.
 
 For retained detector $D^*$ and normally paired-executed candidate $C$, the improvement rule is:
 \begin{equation}
@@ -51,35 +77,91 @@ For retained detector $D^*$ and normally paired-executed candidate $C$, the impr
 \end{aligned}
 \label{eq:accept}
 \end{equation}
-The editor's local gate requires a changed artifact before paired assessment. $Q$ preserves required hits on controlled array fixtures in native; it is identically true for no-internal. This native-only guard records zero rejections in E1/E3, but its overhead and policy asymmetry remain disclosed. It is not a target-location oracle.
+The editor requires a changed artifact before paired assessment.
+$Q$ preserves required hits on controlled array fixtures in native and is identically true for no-internal.
+This native-only guard records zero rejections in E1/E3, but contributes overhead and a policy asymmetry.
 
-We binarize each checker/revision by warning presence. Each vulnerable revision is one positive and its fixed revision one negative; precision, recall and $F_1=2TP/(2TP+FP+FN)$ describe 78 patch-version decisions, not individual bug sites. Fixed reports measure inspection burden, not confirmed false-positive bugs. G08 warns on allocation failure rather than the registration-failure leak repaired by its patch; the follow-up places G24's remaining warnings outside the target lifecycle (Section~\ref{sec:target-results}). No exhaustive target-recall claim follows. Failed scans are unscored, never substituted as zero warnings.
+For precision, recall and $F_1=2TP/(2TP+FP+FN)$, each vulnerable revision is a positive and its fixed revision a negative, classified by warning presence.
+These metrics cover 78 patch-version decisions.
+Fixed-side report counts measure inspection burden.
+Neither measure adjudicates individual bug sites: G08, for example, warns on allocation failure rather than the registration-failure leak repaired by its patch.
+The follow-up in Section~\ref{sec:target-followup} examines target association separately.
+Failed scans remain unscored.
 
 \subsection{Experimental Environment}
 
-CSA uses pinned Clang/LLVM 18.1.3 and Python 3.12.3; CodeQL uses 2.26.4, \texttt{codeql/cpp-all} 8.0.3 and no-build databases. Each Linux subject uses its patch commit and parent with \texttt{allyesconfig}, architecture-correct objects and identical starting/baseline/candidate scope. Manifests bind code, evidence and raw paired outputs. Requested model labels and high effort are retained; service labels do not establish immutable revisions. Configured temperature 0 is not enforced sampling control: both Responses adapters omit it. We claim no fixed seed or deterministic decoding.
+CSA uses Clang/LLVM 18.1.3 and Python 3.12.3.
+CodeQL uses version 2.26.4, \texttt{codeql/cpp-all} 8.0.3 and no-build databases.
+Each Linux subject uses its patch commit and parent, \texttt{allyesconfig}, architecture-correct objects, and the same scope for starting, baseline and refined checkers.
+Manifests record code, evidence and raw paired outputs.
+The recorded model labels and high-effort requests identify the tested services.
+Both Responses adapters omit the configured temperature field, and no fixed seed is used.
 
-\textbf{Generative AI in research.} LLMs generated starting checkers and every scored checker edit. Extraction, provenance checks, compilation, paired scans and numerical aggregation are programmatic. Codex assisted with drivers, source-contract analysis, perturbation construction and secondary diagnostic interpretation. The primary follow-up fixtures used patch and source inputs, without detector code or outputs, and were frozen before scanning. G19/G25 semantic reviewers received condition-masked checker/source/PLIST packets, not arm mappings or desired outcomes. Their source/path judgments are AI-assisted, not independent human ground truth; mechanical coverage and hash checks do not validate semantics. Original messages, code, labels, scripts, exceptions and uncertainty are retained for inspection. This research use is separate from the writing-use statement.
+\textbf{Use of generative AI in the study.}
+The named editor models generate the scored checker edits.
+Codex assists with experiment tooling, source-derived fixture preparation, source/path review, evidence analysis and manuscript preparation.
+Fixtures and labels are frozen at the points described below; paired execution and count aggregation are programmatic.
+Secondary AI-assisted interpretations remain separate from the primary measurements.
+The artifact retains the inputs, replies, code and review records needed to inspect these uses.
 
 \subsection{Baselines and Variants}
 
-E1 native, no-internal and KNighter share starting checkers, requested GPT-6-Luna high and a 32-reply ceiling. KNighter retains its five-report/two-outer-attempt/report-driven algorithm; its actual emitted artifacts receive independent scans. Its 24 no-report branches consume no reply. Two natural one-response No-FP stops are equivalence-audited reuses with their original eight-reply ceiling retained, not relabelled as fresh32-reply runs; termination occurs before either ceiling. The 15-case view uses these same outputs, not a favorable per-case allocation. Equal maximum replies do not mean equal actual calls, tokens or CPU work.
+The comparison holds the starting detector fixed.
+E1 native, no-internal and KNighter use the same requested GPT-6-Luna-high editor and a 32-reply ceiling.
+KNighter retains its five-report/two-outer-attempt report-driven algorithm, and its emitted checkers receive independent scans.
+The 24 no-report branches consume no reply.
+Two natural one-response No-FP stops are audited reuses that retain their original eight-reply ceiling; both terminate before either ceiling.
+We report actual replies and warning counts alongside the common maximum.
 
-Within \toolname, no-internal withholds native compiler and checker-execution views while keeping checker, patch, frozen source context, build/paired feedback and stopping rule. Native receives bounded CFG witness/mismatch views and available dynamics; absence is explicit. E3 repeats the original 12 at 32 replies and 16,384 output tokens per call. E4 evaluates GPT-6-Luna high, GLM-5.3 high and GLM-5.3-Flash high with 2 replies and 65,536 output tokens per call. Actual GLM effort fields are retained. E4 is limited-budget configuration sensitivity, not equal-compute model ranking or cross-model native/control causality. Earlier default-effort, smaller-output and outside-subset histories stay separate.
+Within \toolname, no-internal removes native compiler and checker-execution views while keeping the checker, patch, frozen source, build/paired feedback and stopping rule.
+Native receives the bounded CFG witness/mismatch views and available dynamic observations.
+E3 repeats the original 12 subjects at 32 replies and 16,384 output tokens per call.
+E4 uses GPT-6-Luna high, GLM-5.3 high and GLM-5.3-Flash high, with 2 replies and 65,536 output tokens per call.
+Actual GLM effort fields are retained.
+Earlier default-effort, smaller-output and outside-subset histories are kept separate.
+E4 compares limited-budget configurations; it has no no-internal arm across models.
 
 \subsection{Protocol}
 
-Each permitted reply is an edit attempt; compilable changed candidates receive independent paired replay. The next call starts from the latest attempted artifact and its failure/paired feedback, while the best retained detector is separate. Normal candidates follow Equation~\ref{eq:accept}. Stopping occurs at positive/fixed-silent saturation, three valid validations without improvement, three consecutive invalid model attempts, or the reply cap. Rejected edits, compile/format failures, observer unavailability, provider interruptions and invalid scans remain distinct.
+For each sample, we collect evidence, refine the detector and validate it on both revisions.
+Each permitted reply counts as an attempt.
+Compilable changed candidates receive independent paired replay and are retained under Equation~\ref{eq:accept}.
+The next call receives the latest attempted code and feedback; the best retained detector is stored separately.
+The loop stops at vulnerable-positive/fixed-silent saturation, three valid validations without improvement, three consecutive invalid model attempts, or the reply cap.
 
-Repairs preserve original failures and consumed prefixes. Thinking-only received replies are charged, not resent free. One GLM reply contained an explicit action and three edits but omitted explanatory summary; network-disabled replay supplied only an empty summary, reproduced exact model-specified code and made zero new calls. Healthy zero-callback probes use static evidence without invented traces. Repairs do not authorize manual scored-code edits, changed budgets or failed scans counted as negatives.
+We preserve failed attempts and consumed prefixes when repairing execution problems.
+Thinking-only replies consume budget.
+For one GLM reply containing an explicit action and three edits but no explanatory summary, network-disabled replay supplied an empty summary and reproduced the model-specified code with no new call.
+Healthy zero-callback probes use static evidence.
+Compilation/format failures, unavailable observations, provider interruptions and invalid scans remain distinct; no manual checker completion enters the scored results.
 
 \subsection{Target and Mechanism Follow-up}
 \label{sec:target-followup}
 
-We audit all 11 non-tied native/no-internal comparisons, not a favorable subset: 362 condition-expanded retained HTML occurrences and seven separately counted log-only diagnostics. For each report, the audit distinguishes target association, bounded source/API support, and support from the emitted path. Unknown off-target validity remains unknown. All 22 initial-to-selected code diffs are retained. The 28 tied/other cases are not target-audited; no full-cohort target precision or recall is inferred.
+We inspect all 11 non-tied native/no-internal comparisons.
+The retained material contains 362 condition-expanded HTML report occurrences, seven additional log-only diagnostics and all 22 initial-to-selected code diffs.
+For each report, we distinguish target association, source/API support and support from the emitted path.
+The 28 ties/other outcomes are outside this target audit.
 
-For G12, G19, G24 and G25, a separate construction pass receives patch and source inputs without checker code or outcomes and freezes six vulnerable/fixed variants per mechanism before scanning the retained detectors: 48 files and 96 unique scans. G12 models access annotations, not concurrent execution; G24 models logical retirement, not physical kernel UAF. G19's initial wrapper adaptation differs from canonical lowering, so four later canonical/renamed controls remain a separate supplement. Four benign cleanup controls are frozen before the subsequent intervention replies. Neither supplement replaces the primary misses; variants are not independent bugs.
+For G12, G19, G24 and G25, a separate construction pass receives patches and source without checker code or outcomes.
+It freezes six vulnerable/fixed variants per mechanism before scanning the retained detectors: 48 files and 96 unique scans.
+G12 models access annotations; G24 models logical retirement.
+G19's initial wrapper adaptation differs from canonical lowering, so four later canonical/renamed controls remain separate from its primary suite.
+Four benign cleanup controls are frozen before the subsequent intervention replies.
 
-At selected pre-edit checkpoints, we replace four native-observation lines for G19 and five for G25 with missing markers, keeping other context unchanged. Both arms retain other native context; G25 already contains an earlier binding repair. Three fresh next decisions per arm use GLM-5.3-Flash, high effort and a 65,536-output-token ceiling: 12 received decisions, not full-loop reruns or historical GPT attribution. Nine conform to the strict response schema. A separate post-response bounded adapter replay yields 12 applicable edits from the same replies, handling two omitted empty evidence lists and one complete text-carried JSON decision. All three exceptions are withheld outputs. G25 has no scorable strict detector pair and one adapted pair before compiler completion; no edit is rewritten or response resampled.
+At selected pre-edit checkpoints, we replace four native-observation lines for G19 and five for G25 with missing markers, keeping other context unchanged.
+Both arms retain other native context, and G25 already contains an earlier binding repair.
+Three next-decision draws per arm use GLM-5.3-Flash, high effort and a 65,536-output-token ceiling, giving 12 replies.
+Nine satisfy the strict schema.
+A separate post-response adapter handles two omitted empty evidence lists and one complete JSON decision in a text carrier, yielding 12 applicable edits from the same replies.
+All three exceptions are withheld outputs.
+G25 has zero scorable strict detector pairs and one adapted pair before compiler completion.
 
-Two applicable G25 withheld drafts fail compilation. A separately frozen compiler-only supplement uses a common eligibility rule and two-reply cap, stops at first compilation success, and supplies no fixture feedback. Both compile after three additional replies, including one invalid reply with no applied edit; only withheld consumes this extra effort. Applied fixes are local API/type corrections, without assumed semantic equivalence to unbuildable code. Original failures remain unscored; 192 terminal-artifact scans form a separate phase, not new independent draws. Mechanical scores retain final-file/line hits and negative report burden. Condition-masked source/checker/full-PLIST review adds secondary interpretations without changing primary scores.
+Two applicable G25 withheld drafts fail compilation.
+A separately frozen compiler-only supplement applies the same eligibility rule to all roots, allows two replies per failed draft and stops at the first compilation success.
+It supplies no fixture feedback.
+Both drafts compile after three additional replies, including one invalid unapplied reply.
+Only withheld consumes this extra effort; the local API/type corrections are not assumed semantically equivalent to the unbuildable drafts.
+Original failures remain unscored.
+The 192 terminal-artifact scans form a separate phase.
+We retain the frozen final-file/line scores and negative report counts, then use condition-masked source/checker/full-PLIST review for secondary interpretation.
