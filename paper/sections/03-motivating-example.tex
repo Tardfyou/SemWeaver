@@ -43,7 +43,7 @@ The checker has learned that a look-ahead access needs a guard, but not how the 
 This bundle has four provenance-labelled records: two internal Clang~18 CFG/call-graph records and two analyzer-output records.
 The internal records anchor the loop and branch context to raw \texttt{debug.DumpCFG} and \texttt{debug.DumpCallGraph} output; patch and source context identify the bound change.
 
-The initial GLM-5.3-Flash refinement adds a capacity-aware condition while retaining \lstinline|checkASTCodeBody| and the existing traversal.
+Both the starting and refined checkers use \lstinline|checkASTCodeBody|; the initial GLM-5.3-Flash edit adds a capacity-aware condition to the existing traversal.
 The emitted checker reads the declared array extent from the AST type.
 For the loop $i<B$, the maximum look-ahead index is $(B-1)+1=B$.
 It suppresses the warning when that index is smaller than the known extent $N$ (C3--C6, \cmark{6}).

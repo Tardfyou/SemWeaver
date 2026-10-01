@@ -16,6 +16,7 @@ Figure~\ref{fig:approach-architecture} summarizes the workflow across five stage
 \textbf{(c)~Evidence bundle.} The facts are normalized into typed records with their origin and source bindings.
 \textbf{(d)~Refinement.} The agent edits the latest attempt using a bounded view of those records. Paired validation updates a separate best retained detector.
 \textbf{(e)~Audit artifacts.} Each run persists evidence, prompts, replies, candidates and validation results, so a refinement can be inspected or resumed.
+The audit links the retained checker to the evidence shown, attempted edits and paired outcomes; RQ3 compares refinement with and without native evidence.
 
 \begin{algorithm}[t]
 \footnotesize
@@ -57,6 +58,7 @@ Passing them wholesale to the model dilutes the facts relevant to the checker un
 It assigns fixed priorities: patch anchoring is 100, double-free/use-after-free lifetime and state requirements are 92/89, and null/bounds guards are 90.
 Requirements are sorted by decreasing priority, with evidence type breaking ties; the default retains at most eight.
 Table~\ref{tab:evidence-routing} shows representative mappings.
+These priorities order collection requirements, rather than express confidence in individual facts.
 This component uses rules rather than a separately trained or prompted patch-mechanism classifier.
 
 For the CSA comparison, collection is precomputed and the visible view is frozen before editing.
