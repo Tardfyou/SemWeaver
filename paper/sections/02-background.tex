@@ -1,37 +1,11 @@
 \subsection{Static Vulnerability Checkers}
 
-Static analysis examines source code without executing it, aiming to find bugs, security vulnerabilities, and code-quality issues at compile time or during code review~\cite{engler2001bugs,bessey2010coverity}.
-A vulnerability checker is a rule or query within a static-analysis framework that flags program locations matching a security-relevant condition.
-Modern frameworks support different checker paradigms.
-Path-sensitive engines such as the Clang Static Analyzer (CSA) perform symbolic exploration over program paths, tracking branch guards, symbolic values, memory regions, and lifetime transitions to detect bugs like use-after-free, null dereference, and resource leaks~\cite{clangsaDocs}.
-Relational query engines such as CodeQL compile source code into a queryable database and express checkers as declarative queries over data-flow edges, call-graph relations, type hierarchies, and API-usage patterns~\cite{avgustinov2016ql,codeqlDocs}.
-Static-analysis frameworks have been deployed at industrial scale for continuous bug detection~\cite{sadowski2015tricorder,calcagno2015infer}.
-
-Writing effective checkers remains a bottleneck.
-A checker must encode not only the syntactic pattern of a vulnerability but also the semantic conditions (path guards, state invariants, data-flow relations, and API contracts) that distinguish real bugs from safe code.
-This requires deep domain knowledge of both the target codebase and the analysis framework, making manual checker authoring expensive and error-prone.
-Report burden also affects practical use~\cite{johnson2013why,heckman2011alerts}; ranking and actionability prediction address emitted warnings~\cite{kremenek2002zranking,ruthruff2008actionable}, whereas our refinement changes checker code.
+A vulnerability checker encodes a security-relevant condition within a static-analysis framework. Path-sensitive CSA checkers inspect callbacks, symbolic values, regions and state transitions; CodeQL queries operate over extracted program relations~\cite{clangsaDocs,avgustinov2016ql,codeqlDocs}. Industrial use demonstrates the value of static rules~\cite{engler2001bugs,bessey2010coverity,sadowski2015tricorder,calcagno2015infer}, but the framework does not make every custom checker's interpretation correct. Its rule must associate an operation with the right object, guards and lifetime. Report burden also affects use~\cite{johnson2013why,heckman2011alerts}; ranking and actionability prediction concern emitted reports~\cite{kremenek2002zranking,ruthruff2008actionable}, whereas refinement changes the code producing them.
 
 \subsection{LLM-Based Patch-Driven Checker Generation}
 
-Recent work has proposed using LLMs to automate checker generation from security patches.
-A security patch provides a compact before/after specification: the vulnerable revision should trigger the generated checker, and the fixed revision should not.
-This idea builds on a well-established line of work that treats patches as vulnerability specifications, including semantic patching~\cite{padioleau2008coccinelle}, clone-based vulnerability discovery~\cite{jang2012redebug,kim2017vuddy}, and patch-derived datasets~\cite{fan2020bigvul}.
-KNighter~\cite{yang2025knighter} is a representative system that synthesizes CSA checkers from historical Linux kernel fixes and validates them against the vulnerable and fixed revisions.
-
-Generated checkers may miss semantic conditions: a small patch can encode a guard, ownership transition, lifetime barrier or API contract beyond its syntactic shape.
-KNighter's refinement loop operates at the output level~\cite{yang2025knighter}.
-It feeds behavioral signals (e.g., ``the fixed side still warns'') back to the LLM, revealing the symptom but not diagnosing the cause.
-Such feedback does not directly identify whether the missing predicate concerns a path guard, a cleanup barrier, an ownership transition, or an API contract; the model must infer the condition from the patch, source context and observed outputs.
+Patches provide compact before/after evidence, building on semantic patching, clone-based vulnerability discovery and patch-derived datasets~\cite{padioleau2008coccinelle,jang2012redebug,kim2017vuddy,fan2020bigvul}. They are not complete specifications of all safe and unsafe uses. KNighter generates CSA checkers from Linux fixes and already refines them using compiler feedback, diagnostic/report-path context and validation on the original vulnerable/fixed pair~\cite{yang2025knighter}. Its no-report branch provides no report-driven edit. \toolname adds compiler/checker observations and attempts recovery from silence; it does not claim to introduce post-synthesis editing or paired validation.
 
 \subsection{Analyzer-Internal Intermediate Results}
 
-Static-analysis backends compute intermediate representations that can be exposed through debugging interfaces or database queries, but these are not normally supplied to a checker-refinement loop.
-
-CSA, as a path-sensitive engine, internally maintains per-path symbolic states that record branch conditions, memory region bindings, allocation/free events, and object lifetime transitions~\cite{clangsaDocs}.
-CodeQL, as a relational engine, materializes a full program database from which data-flow edges, call-graph relations, type hierarchies, member-access patterns, and API-usage sequences can be queried~\cite{avgustinov2016ql,codeqlDocs}.
-These intermediate facts have long underpinned taint analysis, graph-based detection, and interprocedural security reasoning~\cite{livshits2005finding,jovanovic2006pixy,arzt2014flowdroid,yamaguchi2014cpg}.
-
-These representations may suggest a missing predicate, but a CFG branch or database tuple does not itself establish vulnerability semantics.
-The operational distinction between a backend-produced representation, a diagnostic, and a source-window fallback is central to our evidence accounting (Section~\ref{sec:evidence-roles}).
-This motivates extracting bounded, provenance-labelled context for refinement while retaining normal paired execution and vulnerable-side warning presence as operational acceptance checks, not proofs of target-location correctness.
+Backend intermediates expose how the analyzer represents the program, while checker-execution observations expose how a generated implementation uses that representation. Such facilities build on established graph, data-flow and interprocedural analyses~\cite{livshits2005finding,jovanovic2006pixy,arzt2014flowdroid,yamaguchi2014cpg}. They can clarify a mismatch without proving the reported vulnerability. We therefore distinguish backend-produced representations and observations, analyzer diagnostics, and source-derived context by actual provenance (Section~\ref{sec:evidence-roles}). A source window does not become an internal fact because an analyzer-labelled collector emits it; an internal fact does not become a correctness certificate because its raw origin is verified.

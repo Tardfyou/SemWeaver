@@ -1,4 +1,4 @@
-\toolname is a post-synthesis refinement layer for LLM-generated vulnerability detectors.  Given a draft CSA checker or CodeQL query produced by an upstream generator, the patch that motivated the synthesis, and the corresponding source tree and validation scope, \toolname refines the detector to encode missing semantic predicates while retaining a vulnerable-side warning signal.
+\toolname is a post-synthesis refinement layer for LLM-generated vulnerability detectors. Given a draft CSA checker or CodeQL query, its motivating patch, source tree and validation scope, it proposes edits using bounded analyzer context and retains operational warning recovery or report reduction. Whether an edit establishes the target semantic condition is evaluated separately.
 
 % \subsection{Overview}
 
@@ -11,12 +11,7 @@
   \label{fig:approach-architecture}
 \end{figure}
 
-Figure~\ref{fig:approach-architecture} groups the workflow into five labelled components.
-\textbf{(a)~Frozen inputs.} The input is an existing detector, patch, source tree and validation scope, not a new generation task.
-\textbf{(b)~Evidence assembly.} Rule-guided preflight, source extraction, analyzer collection and validation feedback supply provenance-typed records (Sections~\ref{sec:adaptive-selection}--\ref{sec:evidence-roles}).
-\textbf{(c)~Evidence bundle.} Normalization retains the record origin, source scope and bounded views (Section~\ref{sec:evidence-schema}).
-\textbf{(d)~Paired-warning refinement.} The agent edits the latest attempted detector; normal paired outcomes update a separate best detector when they recover warning presence or reduce fixed reports while retaining it. Rejected attempts remain next-step input/feedback (Section~\ref{sec:refinement}).
-\textbf{(e)~Audit artifacts.} The verifier checks raw-output/source-scope bindings, interfaces, provenance counts, selected code and paired logs. Original prompts, replies and all attempts persist; an LLM explanation is not an origin certificate.
+Figure~\ref{fig:approach-architecture} connects frozen detector/patch/source inputs to rule-guided evidence assembly and a provenance-labelled bundle. The editor updates the latest attempt; paired outcomes update a separate retained detector under Equation~\ref{eq:accept}. Rejected attempts remain available as feedback. Audit artifacts retain source/raw-output bindings, origins, missingness, prompts, replies and all attempts. These records certify inspectable origin and execution, not the correctness of an LLM explanation or generated checker.
 
 \begin{algorithm}[t]
 \footnotesize
@@ -131,9 +126,9 @@ The bundle is bounded by design: scope and selected views limit raw dumps. The m
 \subsection{Paired-Warning Refinement}
 \label{sec:refinement}
 
-The refinement loop (Figure~\ref{fig:approach-architecture}d) receives the current detector, patch, baseline validation notes, and a bounded role-specific evidence view.  The interface supports requesting further roles from the persisted bundle, but the provenance-audited matched condition freezes the visible view before the edit and disables additional agent requests.  Thus its measured effect is a contrast between preselected native-evidence and no-internal views, not a test of dynamic evidence retrieval.  This keeps the prompt bounded and the two conditions auditable.
+The editor in Figure~\ref{fig:approach-architecture}d receives the current detector, patch, baseline validation notes and a bounded evidence view. The audited CSA condition freezes the visible view before editing and disables additional role requests, measuring preselected context rather than retrieval policy.
 
-The agent's tool-mediated loop draws on recent LLM agent and self-refinement architectures but constrains actions to attached evidence, detector edits, and validation commands~\cite{madaan2023selfrefine,shinn2023reflexion,yao2023react,schick2023toolformer}.  Where evidence requests are enabled, they replay attached records rather than launch open-ended repository exploration; the request count is capped and unused or missing evidence is logged.  In the matched condition, request count is zero by protocol.
+Tool-mediated editing uses attached evidence, detector edits and validation commands~\cite{madaan2023selfrefine,shinn2023reflexion,yao2023react,schick2023toolformer}. Where enabled, requests replay attached records rather than explore the repository; caps, unused roles and missing evidence are logged. The matched condition makes zero requests.
 
 \textbf{Model/programmatic boundary.} LLMs may produce patch-analysis metadata, checker edits and enabled role requests. Preflight rules, raw-output hashing/scope binding, normalization, compilation, paired replay and acceptance are programmatic. The LLM neither produces backend dumps nor assigns origin or PDS. The audit retains exact starting checkers, prompts/replies, visible roles, raw evidence, candidates and decisions; model explanations do not certify analyzer origin.
 Editor prompts provide current/starting checker and patch paths, bounded source/evidence, baseline V/F symptoms, backend identity and edit/validation rules. They require in-place mechanism-based edits rather than patch-spelling matches, preservation of vulnerable triggers, and compilation before paired acceptance. Repair prompts supply actual compiler diagnostics. The artifact indexes available English templates and rendered exchanges; missing historical raw exchanges are marked, never reconstructed.

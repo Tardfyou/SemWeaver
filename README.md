@@ -15,6 +15,9 @@ prompt views, and the complete recorded-evidence package in a lossless transport
 - [English prompt pages](prompts/README.md).
 - [Illustrative versus main example checkers](example/).
 - [Main results and tables](study-view/main39-tables/).
+- [Target-validation supplement](supplements/target-validation-v1/README.md):
+  complete non-tie audit, controlled fixtures, phase-separated interventions,
+  raw reports, secondary source/path interpretations and offline R0/R1 checks.
 - [Canonical main summary](study-view/FINAL39_SUMMARY.json) and
   [auxiliary summary](study-view/AUXILIARY_SUMMARY.json).
 - [Evidence interfaces](study-view/EVIDENCE_ORIGINS.md) and
@@ -28,7 +31,7 @@ publication tree, including large indexes and original byte bindings. They are
 not text-anonymized again. Browsable text may receive additional service masking;
 use the protected tree when validating experimental bytes. The transport is an
 immutable experiment-closure snapshot and contains the paper as it stood at
-closure. The current layout-only paper revision is in `paper/` and the separately
+closure. The current evidence-strengthened paper is in `paper/` and the separately
 hash-bound `paper-current.tar.gz`; experimental payload parts are unchanged.
 
 To rebuild the latest paper without text-masking changes, download the small
@@ -41,8 +44,10 @@ cd ../paper-current/paper
 latexmk -pdf main.tex
 ```
 
-The archive contains only the current PDF, required sources and English layout /
-redraw notes. This presentation update adds no experiments and changes no scores.
+The archive contains the current PDF, required sources and English revision /
+layout notes. The new supplement adds completed follow-up evidence without
+changing the original E1--E4 scores. Its six transport parts are separate from the
+immutable 143-part main package. Follow its README for standalone offline checks.
 
 If the service does not offer a repository ZIP download, use its public file API
 (replace `REVIEW_ID` with the identifier from your anonymous link):
@@ -74,7 +79,8 @@ The actual same-model39-subject comparison includes KNighter's real no-report
 branches, repeated12-subject comparisons and single-decode12-subject model
 configuration sensitivity. Native warning coverage has a noise cost; its F1
 nearly ties no-internal. The15-case report reduction is concentrated in one
-subject, without target-preservation adjudication. The14-response automatic
+subject; the new follow-up places its retained reports outside the intended target
+lifecycle. The14-response automatic
 illustration and its fixture feedback remain separate from the main checker.
 All unfavorable/failed/superseded histories are retained in the exact package.
 
