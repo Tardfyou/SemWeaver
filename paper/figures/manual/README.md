@@ -38,8 +38,9 @@ no-report branch performs no edit on 24 initially silent cases. The shared
 32-reply ceiling has recorded natural-stop reuse qualifications; actual calls
 and tokens are not matched. E3 uses the original 12 cases, two arms and three
 decodes: 24 cells reused from E1 and 48 additional cells. E4 uses those same 12
-inputs, three native-only model configurations, one decode each and a 2-reply
-cap. CodeQL is separate and is not compared with KNighter. The detailed
+inputs, three native-only model configurations and a 2-reply cap. The drawing
+shows the first 36 E4 cells; two further decodes added 72, for 108 trial
+records. CodeQL is separate and is not compared with KNighter. The detailed
 starting-status/hash selection rule and G08 correction are in Subjects.
 
 The author supplied a corrected PDF on 2026-09-30 with `extent N` in Figure 1.
@@ -48,4 +49,6 @@ three-page PDF combines the corrected first slide, revised second slide and
 unchanged third slide; only the second slide required a new crop box. The editable
 PPTX is the earlier author version and may still contain `extend N`; the PDFs are
 authoritative. Figure 3 remains byte-identical.
-No diagram text was edited by the cropping process.
+No diagram text was edited by the cropping process. The new caption identifies
+the E4 panel as the first decode, preserving the author's vector drawing while
+making the three-decode result explicit.

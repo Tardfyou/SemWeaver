@@ -110,32 +110,39 @@ These outcomes show variation in what the editor can recover, even when the acce
 
 \subsection{RQ4: Sensitivity Across Models}
 
-Table~\ref{tab:models39} uses the same 12 subjects with three native-editor configurations, one decode each.
-All configurations retain the five initial vulnerable warning signals and recover additional versions.
-GLM-5.3-Flash has the strongest observed result in this limited-budget comparison.
+Table~\ref{tab:models39} uses the same 12 subjects with three native-editor configurations and three decodes each.
+All configurations retain the five initial vulnerable warning signals and recover additional versions in the first decode.
+The other decodes show how much those results vary.
 
 \begin{table}[!htbp]
 \centering
-\caption{Limited-budget native sensitivity: 12 subjects per model, not full-39 robustness. Computation differs despite common reply/output ceilings. $F_1$ shading follows Table~\ref{tab:all39-system}.}
+\caption{Limited-budget native sensitivity: three decodes on the same 12 subjects per model, not full-39 robustness. $F_1$ is scored per decode; mean and sample SD summarize the three values. Fixed reports count warning occurrences on fixed revisions.}
 \label{tab:models39}
 \begingroup\FTTableSetup
-\begin{tabular}{l|ccc|c|cc}
+\begin{tabular}{l|ccc|cc|c}
 \hline\hline
-\rule{0pt}{10.2bp}Editor & TP & FP & PDS & $F_1$ & Fixed reports & Replies\\
+\rule{0pt}{10.2bp}Editor & $F_1$ 1 & $F_1$ 2 & $F_1$ 3 & Mean & SD & Fixed reports 1/2/3\\
 \hline
-Unmodified &5&5&0&\FTFScore{.455}&42&0\\\hline
-GPT-6-Luna high &7&6&1&\FTFScore{.560}&40&24\\\hline
-GLM-5.3 high &7&5&2&\FTFScore{.583}&16&23\\\hline
-GLM-5.3-Flash high &9&5&4&\FTFScore{.692}&11&21\\
+GPT-6-Luna high &.560&.615&.500&.558&.058&40/36/41\\\hline
+GLM-5.3 high &.583&.615&.667&.622&.042&16/13/14\\\hline
+GLM-5.3-Flash high &.692&.560&.667&.640&.070&11/41/40\\
 \hline\hline
 \end{tabular}
 \endgroup
 \end{table}
 
-Received replies total 24/23/21 for GPT-6-Luna, GLM-5.3 and GLM-5.3-Flash.
-Capped, format-invalid and compile-failed replies remain charged; the workflow retains a healthy earlier detector when an attempt fails to improve it.
-The results describe this subset under the two-reply and 65,536-output-token ceilings.
-A single decode per configuration does not establish a variance-controlled model ranking, and the native-only experiment does not isolate the contribution of evidence across models.
+Received replies across the three decodes are 24/23/24 for GPT-6-Luna, 23/23/21 for GLM-5.3 and 21/23/21 for GLM-5.3-Flash.
+Their PDS counts are 1/2/0, 2/2/4 and 4/1/4, respectively; identical vulnerable/fixed warning counts across all three runs occur on 8, 3 and 4 of the 12 subjects.
+Capped, format-invalid and compile-failed attempts remain charged; a candidate that cannot complete a valid paired scan is not scored as an improvement.
+GLM-5.3-Flash has the highest mean $F_1$, but its first-decode fixed-report advantage does not recur; GLM-5.3 has fewer fixed-side reports in all three decodes.
+The same 12 subjects, two-reply ceiling and native-only arm limit what can be inferred about other checkers or the contribution of evidence across models.
+
+\textbf{Controlled source replay.}
+The three selected original subjects are G01, G08 and G09; their unchanged-source controls reproduce the original paired counts.
+Local renaming and inert no-ops leave counts unchanged in these cases.
+Under the equivalent guard rewrite, native retains vulnerable-side warning presence in eight of nine case--change pairs: G01 falls from $2/2$ to $0/0$, G08 rises from $1/1$ to $2/2$, and G09 remains $1/1$.
+Thus the loss of two fixed-side reports in G01 is also a loss of its vulnerable warning, while G08's preserved warning costs another fixed-side report.
+These controlled changes identify source-form sensitivity without treating the three subjects as independent natural evolution events.
 
 \subsection{Qualitative Findings}
 \label{sec:target-results}

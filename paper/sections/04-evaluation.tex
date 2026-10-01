@@ -5,7 +5,7 @@ The evaluation focuses on patch-local and patch-related-file behavior rather tha
 
 \textbf{RQ1: KNighter-derived checkers.} How does \toolname compare with KNighter's refinement loop on vulnerable-version warning coverage, fixed-side report burden and paired discrimination?
 
-\textbf{RQ2: Cross-backend feasibility and cost.} Can the refinement layer operate on an automatically generated CodeQL query, and what integration and execution costs are observable?
+\textbf{RQ2: Cross-backend feasibility and cost.} Can the refinement layer operate on an archived CodeQL query associated with an earlier automatic generation run, and what integration and execution costs are observable?
 
 \textbf{RQ3: Evidence contribution.} How do the native and no-internal variants differ, and what do their edits and reported gains establish?
 
@@ -32,22 +32,22 @@ Compatible executions on those subjects are reused in E1; the configuration-sele
 The artifact retains those trials and their reuse checks.
 G04 uses its architecture-correct ARM64 scope and evidence after repair of an earlier wrong-object scan.
 
-E2 uses an archived CodeQL query automatically generated independently of KNighter for ImageMagick (CVE-2017-12877, \texttt{coders/\allowbreak mat.c}).
+E2 uses an archived CodeQL input associated with an earlier automatic generation run, independently of KNighter, for ImageMagick (CVE-2017-12877, \texttt{coders/\allowbreak mat.c}).
 All three refinement decodes start from this same query.
 We report it separately from CSA.
 Earlier mixed/manual 20-row results are excluded.
-E3 compares native and no-internal on all 39 main pairs and repeats a 12-subject subset; E4 uses the same 12 subjects, native only, with one decode per model (Figure~\ref{fig:study-design}).
+E3 compares native and no-internal on all 39 main pairs and repeats a 12-subject subset; E4 uses the same 12 subjects, native only, with three decodes per model (Figure~\ref{fig:study-design}).
 
 Subset membership follows the initial scan status.
 We sort SHA-256 hashes of a fixed artifact-recorded salt plus case ID within the original 14 noisy and 25 silent cases, then take the first 4 and 8.
 A later scan repair corrects G08 from $0/0$ to $2/2$, leaving the same membership with 5 noisy and 7 silent subjects.
-The selection uses no refinement outcomes and no vulnerability-class stratification; it contains no buffer-overflow/out-of-bound cases.
+The selection uses no refinement outcomes or vulnerability-class stratification; it contains no bounds cases.
 
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.70\textwidth]{figures/manual/study-design.pdf}
-\Description{All 39 CSA checkers enter three main comparison arms. E3 and E4 use the same original 12-subject subset. E3 reuses 24 first-decode condition cells and adds 48; E4 has 36 native-only cells. The CodeQL case is separate.}
-\caption{\textbf{Experimental design and reuse.} E3's first decode reuses E1; E4 uses the same 12 inputs, not another cohort. Cells are not independent bugs. $^*$Audited natural-stop reuses retain original caps; shared ceilings do not imply equal realized effort.}
+\Description{All 39 CSA checkers enter three main comparison arms. E3 and E4 use the same original 12-subject subset. E3 reuses 24 first-decode condition cells and adds 48. The drawing shows E4's first 36 native-only cells; two further decodes add 72, for 108 trial records. The CodeQL case is separate.}
+\caption{\textbf{Experimental design and reuse.} E3's first decode reuses E1. The E4 panel depicts its first decode (36 cells); two further decodes add 72 cells, for 108 records on the same 12 inputs. Cells are not independent bugs. $^*$Audited natural-stop reuses retain original caps; shared ceilings do not imply equal realized effort.}
 \label{fig:study-design}
 \end{figure}
 
@@ -80,14 +80,13 @@ For retained detector $D^*$ and normally paired-executed candidate $C$, the impr
 \end{equation}
 The editor requires a changed artifact before paired assessment.
 $Q$ preserves required hits on controlled array fixtures in native and is identically true for no-internal.
-This native-only guard records zero rejections in E1/E3, but contributes overhead and a policy asymmetry.
+This native-only guard records zero rejections in E1/E3.
 
 For precision, recall and $F_1=2TP/(2TP+FP+FN)$, each vulnerable revision is a positive and its fixed revision a negative, classified by warning presence.
 These metrics cover 78 patch-version decisions.
 Fixed-side report counts measure inspection burden.
 Neither measure adjudicates individual bug sites: G08, for example, warns on allocation failure rather than the registration-failure leak repaired by its patch.
-The follow-up in Section~\ref{sec:target-followup} examines target association separately.
-Failed scans remain unscored.
+The follow-up in Section~\ref{sec:target-followup} examines target association separately; failed scans remain unscored.
 
 \subsection{Experimental Environment}
 
@@ -117,10 +116,10 @@ We report actual replies and warning counts alongside the common maximum.
 Within \toolname, no-internal removes native compiler and checker-execution views while keeping the checker, patch, frozen source, build/paired feedback and stopping rule.
 Native receives the bounded CFG witness/mismatch views and available dynamic observations.
 E3 repeats the original 12 subjects at 32 replies and 16,384 output tokens per call.
-E4 uses GPT-6-Luna high, GLM-5.3 high and GLM-5.3-Flash high, with 2 replies and 65,536 output tokens per call.
+E4 uses GPT-6-Luna high, GLM-5.3 high and GLM-5.3-Flash high, with three decodes per model, 2 replies per decode and 65,536 output tokens per call.
 Actual GLM effort fields are retained.
 Earlier default-effort, smaller-output and outside-subset histories are kept separate.
-E4 compares limited-budget configurations; it has no no-internal arm across models.
+E4 has no no-internal arm across models.
 
 \subsection{Protocol}
 
@@ -163,6 +162,11 @@ A separately frozen compiler-only supplement applies the same eligibility rule t
 It supplies no fixture feedback.
 Both drafts compile after three additional replies, including one invalid unapplied reply.
 Only withheld consumes this extra effort; the local API/type corrections are not assumed semantically equivalent to the unbuildable drafts.
+
+\textbf{Controlled source replay.}
+To examine dependence on the original source form, we take the first three IDs among the 13 original subjects whose retained native checker actually changed, and freeze three source-only changes per subject on both revisions: a local rename, an inert no-op and an equivalent guard rewrite.
+We rescan the original and changed sources with the same retained checker, without another model call or checker edit.
+This tests source-form sensitivity, not future kernel changes.
 Original failures remain unscored.
 The 192 terminal-artifact scans form a separate phase.
 We retain the frozen final-file/line scores and negative report counts, then use condition-masked source/checker/full-PLIST review for secondary interpretation.

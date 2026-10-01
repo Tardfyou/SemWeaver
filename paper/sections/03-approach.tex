@@ -102,12 +102,11 @@ We call a record \emph{analyzer-internal} when its payload comes from a backend-
 In the CSA study, Clang 18's \texttt{debug.DumpCFG} and \texttt{debug.DumpCallGraph} emit UTF-8 dumps.
 The collector parses them into \texttt{semweaver.csa\_cfg\_snapshot.v1}, retaining the raw-output SHA-256 and source scope.
 They supply CFG branches, value bindings and call edges.
-A CFG relation can identify relevant control flow, but does not by itself establish a feasible interprocedural path or ownership transition.
 
 The implementation also observes instrumented CSA callbacks, abstract values/regions and checker-state associations.
 Raw observations use JSONL schema \texttt{semweaver.checker\_trace.v2}; bounded feedback uses \texttt{semweaver.trace\_feedback.v1}.
 Original and instrumented scans must preserve diagnostics on both revisions.
-These observations describe checker execution within the analyzer, rather than concrete execution of the vulnerable program.
+These are checker observations, not concrete executions of the vulnerable program.
 
 We distinguish this material from two other origins.
 \emph{Analyzer output} comprises diagnostics and alert counts.
@@ -143,7 +142,6 @@ It supplies the failure symptom for the next edit.
 
 The seven persisted types are \texttt{patch\_fact}, \texttt{semantic\_slice}, \texttt{dataflow\_candidate}, \texttt{call\_chain}, \texttt{path\_guard}, \texttt{allocation\_lifecycle} and \texttt{state\_transition}.
 They organize changed statements, bounded source context, possible propagation, call context, control conditions, resources and abstract state, respectively.
-Terms such as barrier, type filter and API usage describe the contents of these records rather than additional schema types.
 When a selected role yields no evidence, the bundle retains an explicit missing-evidence marker rather than treating the absence silently, so the refinement agent knows what was requested but unavailable.
 
 \subsection{Evidence Bundle Schema}
@@ -173,14 +171,12 @@ This decouples the bundle from any single backend representation.
 
 The refinement agent receives the current detector, the patch, baseline validation notes and a bounded evidence view.
 The tool-mediated loop draws on LLM agent and self-refinement architectures, with actions restricted to evidence requests, detector edits and validation commands~\cite{madaan2023selfrefine,shinn2023reflexion,yao2023react,schick2023toolformer}.
-Where enabled, requests replay attached records rather than launch open-ended repository exploration.
-The CSA comparison makes zero additional requests.
+The CSA comparison makes zero additional evidence requests.
 
 \textbf{Model and programmatic steps.}
 The model proposes checker edits and may supply patch-analysis metadata or enabled role requests.
 Preflight rules, normalization, raw-output hashing, source binding, compilation, paired replay and acceptance are programmatic.
 The editor prompt gives the current/starting checker, patch, source/evidence context, V/F symptoms and backend-specific edit/validation rules.
-It asks for an in-place mechanism-based edit, with compilation before paired acceptance.
 Repair prompts contain the actual compiler diagnostics.
 The artifact retains English templates and rendered exchanges, with missing historical exchanges marked.
 
@@ -188,7 +184,6 @@ The artifact retains English templates and rendered exchanges, with missing hist
 A changed candidate must compile and execute normally on both revisions.
 Equation~\ref{eq:accept} then retains a recovered vulnerable-side warning, or fewer fixed-side reports while preserving vulnerable-side warning presence.
 Fixed-side silence with a vulnerable warning achieves the stronger PDS outcome.
-A candidate that loses an existing vulnerable warning is rejected.
 Native refinement additionally checks required hits on controlled array fixtures; Section~\ref{sec:evaluation} describes this guard and the warning-level metrics.
 
 \textbf{Feedback loop.}
@@ -201,7 +196,6 @@ CSA checkers are compiled and replayed against both revisions, while CodeQL quer
 An adapter provides registration, evidence/provenance mapping, dependencies, execution/result decoding and paired validation.
 Shared modules still contain backend branches.
 The four CodeQL-specific modules occupy 2,438 physical lines, including comments and generation code.
-With an analyzer and patch pair already available, we estimate that a familiar developer using Codex could complete a basic adapter within an afternoon.
-This is a planning estimate; developer time was not measured.
+With an analyzer and patch pair already available, we estimate that a familiar developer using Codex could complete a basic adapter within an afternoon; developer time was not measured.
 New native-evidence semantics and broad validation require additional work.
 A new bug mechanism needs a role mapping and safe/unsafe fixtures, with a new extractor where a required relation is unavailable.
