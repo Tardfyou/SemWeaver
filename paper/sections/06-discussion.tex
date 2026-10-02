@@ -1,4 +1,4 @@
-\noindent\textbf{Scope of improvement.}\quad
+\subhead{Scope of improvement.}
 \toolname refines a detector with respect to its motivating patch.
 A human-written checker could use the same interface with a compatible backend, patch and validation pair.
 We study generated inputs, for which the patch supplies a common refinement target.
@@ -7,20 +7,20 @@ Our results show that refinement also has an earlier task: making the checker re
 G19 needs the lowered cleanup callback; G25 needs to look through an expression wrapper.
 These are useful repairs, but the remaining scope and path conditions still determine whether a warning is justified.
 
-\noindent\textbf{Evidence as context compression.}\quad
+\subhead{Evidence as context compression.}
 The relevant condition may span source code and analyzer outputs.
 Passing the full repository to the model is impractical, while passing only the patch may leave out the representation seen by the checker.
 \toolname collects a provenance-tagged summary of patch-relevant facts and makes it available with validation feedback.
 The interface follows the general idea of refining an artifact under additional program evidence~\cite{clarke2000cegar,solarlezama2006sketch,nguyen2013semfix,mechtaev2016angelix,long2016prophet}.
 Its usefulness varies by case: the no-internal arm also repairs representation problems in G01, G23 and G38, and nearly matches native $F_1$ overall.
 
-\noindent\textbf{Backend interfaces.}\quad
+\subhead{Backend interfaces.}
 CSA and CodeQL offer different checker formats and evidence interfaces.
 The automatic CodeQL case shows that the same editing and paired-validation workflow can operate on a query.
 It retains source-derived context and inherited patch-local filters.
 The recorded warm execution costs and existing adapter footprint describe that implementation; broader transfer and measured developer effort remain open.
 
-\noindent\textbf{Failure modes.}\quad
+\subhead{Failure modes.}
 Over-pruning is one failure mode, but retaining a warning is not enough either.
 In G24, fewer fixed-side reports coexist with surviving reports outside the intended lifecycle.
 In G19, a broader cleanup matcher can report at a callee return while the caller's variable is still live.
@@ -28,7 +28,7 @@ In G25, a recovered target-line warning can follow an explicitly non-NULL path.
 These cases suggest reporting the actual checker edit, the property supported by its diagnostic, and the change in inspection burden together.
 This separates successful recognition from the semantic conditions still needing repair.
 
-\noindent\textbf{Generalization.}\quad
+\subhead{Generalization.}
 The motivating example survives the tested renamings, capacities and equivalent guard forms.
 Those tests informed its refinement, and the additional four-mechanism suites are controlled source reductions.
 The replay of three original subjects adds a different check: local renames and no-ops preserve their counts, but an equivalent guard rewrite silences G01 on both versions and increases G08's fixed-side reports.

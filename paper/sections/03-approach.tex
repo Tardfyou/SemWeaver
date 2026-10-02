@@ -5,8 +5,7 @@ Given a draft CSA checker or CodeQL query produced by an upstream generator, the
   \centering
   \includegraphics[width=\textwidth]{figures/manual/architecture.pdf}
   \Description{Five labelled components show the upstream checker and patch, evidence assembly, typed bundle, paired-warning editor and audit artifacts. Three evidence collectors and validation feedback feed the bundle. A bounded view goes to the editor; paired validation either updates a separate retained checker or sends the latest code and feedback to the editor. The retained checker points to audit artifacts.}
-  \caption{\textbf{\toolname architecture.}
-  Green groups evidence assembly, blue the provenance-labelled bundle, yellow the editor and paired validation, and purple the best retained checker; colors indicate roles, not correctness. The lower path returns latest code and feedback to the editor; accepted code also enters the audit artifacts. Retention tracks vulnerable-side warning presence and fixed-side burden, not target correctness; fixed silence is secondary. All attempts remain auditable.}
+  \caption{\textbf{\toolname architecture.} Evidence assembly (green) feeds a provenance-labelled bundle (blue) to the editor (yellow). The retention gate (purple) keeps the best checker and returns feedback for the next iteration.}
   \label{fig:approach-architecture}
 \end{figure}
 
@@ -52,7 +51,7 @@ Analyzer outputs can be large and heterogeneous.
 Passing them wholesale to the model dilutes the facts relevant to the checker under refinement.
 \toolname limits collection to patch-related source and presents selected evidence roles through bounded views.
 
-\textbf{Rule-guided preflight.}
+\subhead{Rule-guided preflight.}
 PatchFacts Extractor parses affected functions, added guards, risky calls and type widenings.
 Evidence Planner uses a primary pattern from analysis metadata when available, or infers it from these facts.
 It assigns fixed priorities: patch anchoring is 100; lifetime and state requirements are 92 for double-free and 89 for use-after-free; null and bounds guards are 90.
@@ -89,9 +88,10 @@ API misuse or missing check & \texttt{semantic\_slice}, \texttt{call\_chain} & C
 \subsection{Evidence Sources and Roles}
 \label{sec:evidence-roles}
 
-\noindent\textbf{Definition (Analyzer-internal evidence).}\quad
+\begin{definition}[Analyzer-internal evidence]
 An observation is analyzer-internal when its payload comes from an analyzer-produced intermediate representation or from checker callbacks and state observed inside the analyzer, rather than from source text or a final warning alone.
 In \toolname, it also identifies the extraction interface and retained raw output, and is bound to the source revision and patch-related file and function.
+\end{definition}
 
 Four collectors execute in sequence (Figure~\ref{fig:approach-architecture}b, top to bottom).
 
@@ -176,26 +176,26 @@ The refinement agent receives the current detector, the patch, baseline validati
 The tool-mediated loop draws on LLM agent and self-refinement architectures, with actions restricted to evidence requests, detector edits and validation commands~\cite{madaan2023selfrefine,shinn2023reflexion,yao2023react,schick2023toolformer}.
 The CSA comparison makes zero additional evidence requests.
 
-\textbf{Model and programmatic steps.}
+\subhead{Model and programmatic steps.}
 The model proposes checker edits and may supply patch-analysis metadata or enabled role requests.
 Preflight rules, normalization, raw-output hashing, source binding, compilation, paired replay and acceptance are programmatic.
 The editor prompt gives the current and starting checkers, patch, source and evidence context, symptoms on both revisions, and backend-specific editing and validation rules.
 Repair prompts contain the actual compiler diagnostics.
 The artifact retains English templates and rendered exchanges, with missing historical exchanges marked.
 
-\textbf{Retention gate.}
+\subhead{Retention gate.}
 A changed candidate must compile and execute normally on both revisions.
 Equation~\ref{eq:accept} then retains a recovered vulnerable-side warning, or fewer fixed-side reports while preserving vulnerable-side warning presence.
 Fixed-side silence with a vulnerable warning achieves the stronger PDS outcome.
 Native refinement additionally checks required hits on controlled array fixtures; Section~\ref{sec:evaluation} describes this guard and the warning-level metrics.
 
-\textbf{Feedback loop.}
+\subhead{Feedback loop.}
 When a candidate fails to compile or improve the retained result, its code and feedback remain available for the next attempt.
 The agent edits the latest attempt, while $D^*$ stores the best retained checker.
 Algorithm~\ref{alg:evidence-guided-refinement} gives the loop; the protocol specifies its stopping conditions and treatment of interrupted executions.
 CSA checkers are compiled and replayed against both revisions, while CodeQL queries run over the corresponding databases.
 
-\textbf{Adding a backend.}
+\subhead{Adding a backend.}
 An adapter provides registration, evidence and provenance mapping, dependencies, execution and result decoding, and paired validation.
 Shared modules still contain backend branches.
 The four CodeQL-specific modules occupy 2,438 physical lines, including comments and generation code.

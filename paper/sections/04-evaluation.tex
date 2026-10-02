@@ -11,8 +11,9 @@ The evaluation focuses on patch-local and patch-related-file behavior rather tha
 
 \noindent\textbf{RQ4: Model sensitivity.} How does the workflow perform with three editor configurations on the same subset under common reply and output ceilings?
 
-\subsection{Subjects}
+\subsection{Experimental Setup}
 
+\subhead{Subjects and benchmarks.}
 We organize the evaluation into four experiments (E1--E4).
 E1 uses KNighter-derived Linux CSA checkers under patch-related object validation.
 From 286 artifact records on 60 commits, 241 records on 39 commits lack an upstream refinement-status row.
@@ -51,6 +52,47 @@ The selection uses no refinement outcomes or vulnerability-class stratification;
 \label{fig:study-design}
 \end{figure}
 
+\subhead{Baselines and variants.}
+We hold the generated detector fixed so that the comparison follows edits to the same checker rather than a fresh generation draw.
+E1 native, no-internal and KNighter use the same requested GPT-6-Luna-high editor and a 32-reply ceiling.
+KNighter retains its report-driven algorithm with five reports and two outer attempts, and its emitted checkers receive independent scans.
+The 24 no-report branches consume no reply.
+Two natural one-response No-FP stops are audited reuses that retain their original eight-reply ceiling; both terminate before either ceiling.
+We report actual replies and warning counts alongside the common maximum.
+
+Within \toolname, no-internal removes native compiler and checker-execution views while keeping the checker, patch, frozen source, build and paired-scan feedback, and stopping rule.
+Native receives the bounded CFG witness and mismatch views and available dynamic observations.
+E3 repeats the original 12 subjects at 32 replies and 16,384 output tokens per call.
+E4 uses GPT-6-Luna high, GLM-5.3 high and GLM-5.3-Flash high, with three decodes per model, 2 replies per decode and 65,536 output tokens per call.
+Actual GLM effort fields are retained.
+Earlier default-effort, smaller-output and outside-subset histories are kept separate.
+E4 has no no-internal arm across models.
+
+\subhead{Experimental procedure.}
+For each sample, we collect evidence, refine the detector and validate it on both revisions.
+Each permitted reply counts as an attempt.
+Compilable changed candidates receive independent paired replay and are retained under Equation~\ref{eq:accept}.
+The next call receives the latest attempted code and feedback; the best retained detector is stored separately.
+The loop stops when a vulnerable warning and fixed-side silence are achieved, after three valid validations without improvement, after three consecutive invalid model attempts, or at the reply cap.
+
+We preserve failed attempts and consumed prefixes when repairing execution problems.
+Thinking-only replies consume budget.
+For one GLM reply containing an explicit action and three edits but no explanatory summary, network-disabled replay supplied an empty summary and reproduced the model-specified code with no new call.
+Healthy zero-callback probes use static evidence.
+Compilation failures, format failures, unavailable observations, provider interruptions and invalid scans remain distinct; no manual checker completion enters the scored results.
+
+\subhead{Environment.}
+CSA uses Clang/LLVM 18.1.3 and Python 3.12.3.
+CodeQL uses version 2.26.4, \texttt{codeql/cpp-all} 8.0.3 and no-build databases.
+Each Linux subject uses its patch commit and parent, \texttt{allyesconfig}, architecture-correct objects, and the same scope for starting, baseline and refined checkers.
+Manifests record code, evidence and raw paired outputs.
+The recorded model labels and high-effort requests identify the tested services.
+Both Responses adapters omit the configured temperature field, and no fixed seed is used.
+
+\subhead{Use of generative AI in the study.}
+The editor models generated the checker and query edits evaluated in this study.
+Codex assisted with the development of experimental tools.
+
 \subsection{Metrics}
 
 We report vulnerable-version warning presence and fixed-side report burden.
@@ -86,84 +128,4 @@ For precision, recall and $F_1=2TP/(2TP+FP+FN)$, each vulnerable revision is a p
 These metrics cover 78 patch-version decisions.
 Fixed-side report counts measure inspection burden.
 Neither measure adjudicates individual bug sites: G08, for example, warns on allocation failure rather than the registration-failure leak repaired by its patch.
-The follow-up in Section~\ref{sec:target-followup} examines target association separately; failed scans remain unscored.
-
-\subsection{Experimental Environment}
-
-CSA uses Clang/LLVM 18.1.3 and Python 3.12.3.
-CodeQL uses version 2.26.4, \texttt{codeql/cpp-all} 8.0.3 and no-build databases.
-Each Linux subject uses its patch commit and parent, \texttt{allyesconfig}, architecture-correct objects, and the same scope for starting, baseline and refined checkers.
-Manifests record code, evidence and raw paired outputs.
-The recorded model labels and high-effort requests identify the tested services.
-Both Responses adapters omit the configured temperature field, and no fixed seed is used.
-
-\textbf{Use of generative AI in the study.}
-The editor models generated the checker and query edits evaluated in this study.
-Codex assisted with the development of experimental tools.
-
-\subsection{Baselines and Variants}
-
-We hold the generated detector fixed so that the comparison follows edits to the same checker rather than a fresh generation draw.
-E1 native, no-internal and KNighter use the same requested GPT-6-Luna-high editor and a 32-reply ceiling.
-KNighter retains its report-driven algorithm with five reports and two outer attempts, and its emitted checkers receive independent scans.
-The 24 no-report branches consume no reply.
-Two natural one-response No-FP stops are audited reuses that retain their original eight-reply ceiling; both terminate before either ceiling.
-We report actual replies and warning counts alongside the common maximum.
-
-Within \toolname, no-internal removes native compiler and checker-execution views while keeping the checker, patch, frozen source, build and paired-scan feedback, and stopping rule.
-Native receives the bounded CFG witness and mismatch views and available dynamic observations.
-E3 repeats the original 12 subjects at 32 replies and 16,384 output tokens per call.
-E4 uses GPT-6-Luna high, GLM-5.3 high and GLM-5.3-Flash high, with three decodes per model, 2 replies per decode and 65,536 output tokens per call.
-Actual GLM effort fields are retained.
-Earlier default-effort, smaller-output and outside-subset histories are kept separate.
-E4 has no no-internal arm across models.
-
-\subsection{Protocol}
-
-For each sample, we collect evidence, refine the detector and validate it on both revisions.
-Each permitted reply counts as an attempt.
-Compilable changed candidates receive independent paired replay and are retained under Equation~\ref{eq:accept}.
-The next call receives the latest attempted code and feedback; the best retained detector is stored separately.
-The loop stops when a vulnerable warning and fixed-side silence are achieved, after three valid validations without improvement, after three consecutive invalid model attempts, or at the reply cap.
-
-We preserve failed attempts and consumed prefixes when repairing execution problems.
-Thinking-only replies consume budget.
-For one GLM reply containing an explicit action and three edits but no explanatory summary, network-disabled replay supplied an empty summary and reproduced the model-specified code with no new call.
-Healthy zero-callback probes use static evidence.
-Compilation failures, format failures, unavailable observations, provider interruptions and invalid scans remain distinct; no manual checker completion enters the scored results.
-
-\subsection{Target and Mechanism Follow-up}
-\label{sec:target-followup}
-
-We inspect all 11 non-tied comparisons between native and no-internal.
-The retained material contains 362 condition-expanded HTML report occurrences, seven additional log-only diagnostics and all 22 initial-to-selected code diffs.
-For each report, we distinguish target association, support from source or API contracts, and support from the emitted path.
-The 28 ties and other outcomes are outside this target audit.
-
-To probe selected mechanisms more closely, a separate construction pass for G12, G19, G24 and G25 receives patches and source without checker code or outcomes.
-It freezes six variants per mechanism on both the vulnerable and fixed revisions before scanning the retained detectors: 48 files and 96 unique scans.
-G12 models access annotations; G24 models logical retirement.
-G19's initial wrapper adaptation differs from canonical lowering, so four later canonical and renamed controls remain separate from its primary suite.
-Four benign cleanup controls are frozen before the subsequent intervention replies.
-
-Separately, at selected pre-edit checkpoints, we replace four native-observation lines for G19 and five for G25 with missing markers, keeping other context unchanged.
-Both arms retain other native context, and G25 already contains an earlier binding repair.
-Three next-decision draws per arm use GLM-5.3-Flash, high effort and a 65,536-output-token ceiling, giving 12 replies.
-Nine satisfy the strict schema.
-A separate post-response adapter handles two omitted empty evidence lists and one complete JSON decision in a text carrier, yielding 12 applicable edits from the same replies.
-All three exceptions are withheld outputs.
-G25 has zero scorable strict detector pairs and one adapted pair before compiler completion.
-
-Two applicable G25 withheld drafts fail compilation.
-A separately frozen compiler-only supplement applies the same eligibility rule to all roots, allows two replies per failed draft and stops at the first compilation success.
-It supplies no fixture feedback.
-Both drafts compile after three additional replies, including one invalid unapplied reply.
-Only withheld consumes this extra effort; the local API and type corrections are not assumed semantically equivalent to the unbuildable drafts.
-
-\textbf{Controlled source replay.}
-To examine dependence on the original source form, we take the first three IDs among the 13 original subjects whose retained native checker actually changed, and freeze three source-only changes per subject on both revisions: a local rename, an inert no-op and an equivalent guard rewrite.
-We rescan the original and changed sources with the same retained checker, without another model call or checker edit.
-This tests source-form sensitivity, not future kernel changes.
-Original failures remain unscored.
-The 192 terminal-artifact scans form a separate phase.
-We retain the frozen file and line scores and negative report counts, then review the source, checker and full PLISTs under condition masking for secondary interpretation.
+The qualitative follow-up in Section~\ref{sec:target-results} examines target association separately; failed scans remain unscored.

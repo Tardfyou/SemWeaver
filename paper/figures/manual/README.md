@@ -52,3 +52,9 @@ authoritative. Figure 3 remains byte-identical.
 No diagram text was edited by the cropping process. The new caption identifies
 the E4 panel as the first decode, preserving the author's vector drawing while
 making the three-decode result explicit.
+
+On 2026-10-02, Figure 2 was updated from page 7 of the author's latest
+PowerPoint PDF export. It adds the section annotations and revised module
+headings. The original crop box is retained, including all annotations.
+Pages 1 and 3 of `source-slides.pdf` and the Figure 1 and Figure 3 PDFs were
+retained. The two manifests record the updated source digest and selected page.

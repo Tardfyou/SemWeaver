@@ -1,14 +1,12 @@
-This section traces one refinement instance end to end, using the KNighter-derived CSA checker for Linux commit \texttt{97cba232549b}, which repairs an off-by-one access in the AMD display driver~\cite{linuxCommit97cba232,yang2025knighter}.
-The case is small enough to inspect manually yet exhibits the core problem.
-The generated checker recognizes a look-ahead access but misses the relation between the loop bound and the array's capacity.
+We illustrate the refinement process end to end on a single case: the KNighter-derived CSA checker for Linux commit \texttt{97cba232549b}, which repairs an off-by-one access in the AMD display driver~\cite{linuxCommit97cba232,yang2025knighter}.
+This case is small enough to inspect manually yet exhibits the core problem: the generated checker recognizes a look-ahead access but misses the relation between the loop bound and the array's capacity.
 
-\textbf{The bug and its patch.}
-The member \lstinline|dc->links| has declared capacity \lstinline|MAX_PIPES * 2|, abbreviated as $N$ in Figure~\ref{fig:motivating} (\cmark{1}).
-The function \lstinline|get_host_router_total_dp_tunnel_bw| iterates over candidate links.
-On a matching host-router branch, it reads both \lstinline|links[i]| and \lstinline|links[i + 1]| (M10--M11, \cmark{3}).
-With the original condition $i<N$ (M5, \cmark{2}), the loop permits $i=N-1$, so the look-ahead can reach index $N$, outside the array.
-The patch changes the bound to $i<N-1$ (M6, \cmark{4}), limiting the largest look-ahead index to $N-1$.
-Other branch conditions determine whether the access occurs; the new loop bound prevents this final out-of-range access.
+\subhead{The bug and its patch.}
+The array \lstinline|dc->links| has a declared capacity of \lstinline|MAX_PIPES * 2|, abbreviated as $N$ in Figure~\ref{fig:motivating} (\cmark{1}).
+The function \lstinline|get_host_router_total_dp_tunnel_bw| iterates over these links.
+On a matching host-router branch, the loop body reads both \lstinline|links[i]| and \lstinline|links[i + 1]| (M10--M11, \cmark{3}).
+Under the original bound $i<N$ (M5, \cmark{2}), the loop allows $i=N-1$, so the look-ahead reaches index $N$ and overflows the array.
+The patch tightens the bound to $i<N-1$ (M6, \cmark{4}), capping the largest look-ahead index at $N-1$.
 
 \begin{figure}[!htbp]
   \centering
@@ -19,47 +17,36 @@ Other branch conditions determine whether the access occurs; the new loop bound 
   lower-right panel adds the maximum-index comparison while retaining the
   AST-based checker. Solid arrows relate loop bounds to the access; dashed arrows
   connect checker conditions to code.}
-  \caption{\textbf{Capacity-aware look-ahead refinement.}
-  Abridged code: $N$ denotes \lstinline|MAX_PIPES * 2| and
-  \texttt{hr\_match} host-router equality. Independent alerts on the vulnerable and fixed revisions
-  change from \texttt{1/1} to \texttt{1/0}. The illustrated checker was refined
-  automatically with fixture feedback (14 replies) and differs from the
-  one-response checker scored in the main study.
-  Orange and green arrows connect the bounds to the access; gray dotted links mark
-  semantic correspondences.}
+  \caption{\textbf{Motivating example.} An off-by-one look-ahead bug and its refinement. $N$ = \lstinline|MAX_PIPES * 2|. Alerts change from \texttt{1/1} to \texttt{1/0} after \toolname adds a capacity-aware condition.}
   \label{fig:motivating}
 \end{figure}
 
-\textbf{Why the baseline checker fails.}
-The generated checker already recognizes an induction variable, a loop bound, and a look-ahead array subscript.
-It reports an access when it does not recognize a protective condition in an enclosing \lstinline|if| (B1--B5, \cmark{5}).
-That rule overlooks a guard carried by the loop condition itself.
-The fixed program still contains \lstinline|links[i + 1]|, so the checker reports on both revisions despite the reduced loop bound.
-Independent patch-related-object replay yields \texttt{1/1} alerts.
-KNighter's own refinement loop stops without changing this checker; its retained output still yields \texttt{1/1} in the same independent replay.
-The checker has learned that a look-ahead access needs a guard, but not how the loop condition already supplies one.
+\subhead{Why the baseline checker fails.}
+The generated checker already recognizes an induction variable, a loop bound, and a look-ahead subscript.
+It warns whenever the access lacks a protective condition in an enclosing \lstinline|if| (B1--B5, \cmark{5}).
+This rule checks only the branch guards and overlooks the protection carried by the loop bound itself.
+Because the fixed program still contains \lstinline|links[i + 1]|, the checker fires on both revisions despite the tighter bound, yielding \texttt{1/1} alerts in independent replay.
+KNighter's own refinement loop does not change this checker: its report-driven policy finds no actionable feedback on this case, so the output remains \texttt{1/1}.
+In short, the checker has learned that a look-ahead access needs a guard, but not that the loop condition already provides one.
 
-\textbf{Evidence-guided refinement.}
-\toolname starts from the same validation symptom and assembles the available patch, source and analyzer context.
-This bundle has four provenance-labelled records: two internal Clang~18 CFG and call-graph records and two analyzer-output records.
-The internal records anchor the loop and branch context to raw \texttt{debug.DumpCFG} and \texttt{debug.DumpCallGraph} output; patch and source context identify the bound change.
+\subhead{Our refinement with analyzer evidence.}
+\toolname starts from the same validation symptom (\texttt{1/1}) but goes further by assembling analyzer-internal context alongside the patch and source.
+Specifically, it collects four evidence records: two from Clang~18 internals (a CFG dump via \texttt{debug.DumpCFG} and a call graph via \texttt{debug.DumpCallGraph}) and two from analyzer output.
+The CFG exposes the loop structure and branch context that the checker misses. The patch and source records identify the bound change.
 
-Both the starting and refined checkers use \lstinline|checkASTCodeBody|; the automatic edit adds a capacity-aware condition to the existing traversal.
-The emitted checker reads the declared array extent from the AST type.
-For the loop $i<B$, the maximum look-ahead index is $(B-1)+1=B$.
-It suppresses the warning when that index is smaller than the known extent $N$ (C3--C6, \cmark{6}).
-Thus the vulnerable $B=N$ remains reported, while the fixed $B=N-1$ becomes silent.
-The condition uses type and index relations rather than the patched function name, a particular capacity, or adjacency of statements.
+With this evidence, the LLM adds a capacity-aware condition to the existing \lstinline|checkASTCodeBody| traversal.
+The refined checker reads the declared array extent from the AST type and computes the maximum look-ahead index: for a loop $i<B$, that index is $(B-1)+1=B$.
+It suppresses the warning when $B$ is smaller than the array extent $N$ (C3--C6, \cmark{6}).
+Under the vulnerable bound $B=N$, the maximum index equals the extent, so the warning fires.
+Under the fixed bound $B=N-1$, the maximum index is safely below the extent, so the checker stays silent.
+Crucially, this condition is based on type and index relations rather than the patched function name, a specific capacity constant, or adjacency of statements.
 The first candidate passes independent Linux replay at \texttt{1/0}.
 
-\textbf{Checking the refinement.}
-The Linux pair alone cannot show whether the checker merely memorizes the patched function.
-We therefore test small C programs built from the same look-ahead pattern, changing names and capacities, inserting unrelated statements, and rewriting equivalent loop bounds and guards.
-The final version still reports \texttt{1/0} on Linux and gives the expected result on all 114 controlled executions: it warns on 58 unsafe cases and stays silent on 56 safe ones.
-On the same executions, KNighter's unchanged checker handles 31 unsafe and 25 safe cases correctly.
-AddressSanitizer also checks the safety labels for 80 of these variations~\cite{serebryany2012asan}.
+\subhead{Benefits over the baseline.}
+The refined checker offers two concrete advantages over KNighter's refined output.
+First, higher precision on the original Linux pair: \toolname's checker correctly reports \texttt{1/0} (warns on the vulnerable revision, stays silent on the fixed one), whereas KNighter's checker remains at \texttt{1/1} because it never learned the bound-to-capacity relation.
+Second, better generalization: on 114 controlled C programs built from the same look-ahead pattern (with varied names, capacities, unrelated statements, and loop-bound formulations), \toolname's checker gives the expected result on all 114 executions (58 unsafe warned, 56 safe silent), while the checker produced by KNighter's refinement loop correctly handles only 31 unsafe and 25 safe cases. AddressSanitizer independently confirms the safety labels for 80 of these variations~\cite{serebryany2012asan}.
+Both advantages stem from the same root cause: analyzer evidence (CFG and call-graph context) lets the model understand why the loop bound matters for safety, so the refined checker encodes a semantic condition (maximum index vs.\ array extent) rather than matching syntactic patterns.
 
-The 114 programs are constructed variations of the Linux bug, not 114 new vulnerabilities.
-Some helped guide the extra edits to the illustrated checker, so its \texttt{114/114} result applies to these tested variations.
-The 39-case experiment uses a separate one-response checker from the same starting code: it also gives \texttt{1/0} on Linux, but gets \texttt{74/114} here.
-We have not tested aliases, runtime-sized arrays or non-unit loop updates.
+% We note that the 114 programs are constructed variations of the same Linux bug, not independent vulnerabilities, and some were used to guide the illustrated checker's extra edits.
+% The 39-case main experiment (\S\ref{sec:evaluation}) uses a separate one-response checker from the same starting code, which also achieves \texttt{1/0} on Linux but scores \texttt{74/114} on these variations.

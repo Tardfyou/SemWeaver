@@ -7,34 +7,29 @@ LLM-based patch-driven synthesis offers a promising alternative.
 In this paradigm, a security patch serves as a compact before-and-after specification: the LLM consumes the patch and synthesizes a checker that should fire on the vulnerable revision but remain silent on the fixed revision.
 KNighter~\cite{yang2025knighter}, a representative system, has demonstrated that this approach can produce compilable and executable CSA checkers from historical Linux kernel fixes.
 
-However, the resulting checkers may be semantically inadequate.
-A security patch is inherently underspecified: a one-line \texttt{goto}-target change may encode an ownership barrier, a widened cast may encode a range guard, and a moved \texttt{free} may encode a lifetime invariant.
-A checker that captures only the syntactic shape of the edit can fire on both revisions or miss the vulnerable revision altogether.
-Refinement can also remove a useful trigger while suppressing unwanted reports, a failure mode we call over-pruning.
+However, a compilable checker is not necessarily a correct one.
+The difficulty is that a patch shows what changed in the code, but not why the change makes the code safe.
+Consider a one-character fix that tightens a loop bound from \lstinline|i < N| to \lstinline|i < N-1|: the real reason this works is that it prevents an array access at \lstinline|i+1| from exceeding the array's capacity.
+A checker that merely looks for the old loop bound but does not understand the array access behind it will either report both versions or detect neither.
+Attempting to fix such a checker can also backfire: edits that suppress spurious reports may simultaneously remove the trigger for the true bug, a failure mode we call over-pruning.
 
-Current refinement strategies, including KNighter's own iterative loop, use compilation and report feedback to guide further edits~\cite{yang2025knighter,madaan2023selfrefine,shinn2023reflexion}.
-The checker, patch and reported path help the model reason about the failure.
-Even with this context, however, a symptom such as “the vulnerable side is silent” may leave the implementation problem unclear.
-A cleanup attribute may name a lowered callback that the checker never recognizes; a cast may hide the expression expected by a callback; or a state lookup may use a different region from the preceding update.
+A natural response is to iteratively refine the checker using feedback.
+Existing strategies, including KNighter's own loop, feed compilation errors and validation reports back to the LLM so it can edit the checker~\cite{yang2025knighter,madaan2023selfrefine,shinn2023reflexion}.
+Yet this feedback only describes symptoms. A message such as ``the vulnerable side is silent'' tells the model that something is wrong, but not what the checker misunderstands about the code.
+A cleanup attribute may name a lowered callback that the checker never recognizes. A cast may hide the expression expected by a callback. A state lookup may use a different region from the preceding update.
 
-We observe that the analysis framework already exposes information useful for understanding these mismatches.
-CSA provides compiler representations and observations of symbolic values, regions and checker callbacks.
-CodeQL provides a different interface through its program database and queries~\cite{avgustinov2016ql,codeqlDocs}.
-Exploiting this information requires selecting the relevant part of an analyzer's output, relating it to the patch and checker, and distinguishing it from ordinary reports or source text.
+Our key observation is that \textbf{the analysis framework itself already computes the semantic information needed to close this gap, but existing refinement loops do not use it}.
+CSA, for example, exposes control-flow graphs, symbolic values, memory regions and checker callbacks. CodeQL provides similar depth through its program database and queries~\cite{avgustinov2016ql,codeqlDocs}.
+This information can reveal why a checker misses a vulnerability, not just that it does.
+The challenge is selecting the relevant parts of this rich output and relating them to the patch and the checker under refinement.
 
-We present \toolname, an evidence-guided refinement framework for LLM-generated vulnerability checkers.
-\toolname is designed as a plug-in post-generation layer, treating a generated checker as an artifact to be refined rather than regenerated.
-First, rule-guided preflight selects patch-relevant evidence requirements.
-Second, the collected facts, source context and validation feedback are normalized into a typed evidence bundle, with the origin and unavailable evidence recorded explicitly.
-Third, the agent edits the checker and validates it on both revisions.
-A retention gate keeps vulnerable-side warning recovery or fixed-side report reduction while rejecting the loss of an existing vulnerable-side warning.
-
-We evaluate the workflow on all 39 selected generated-only CSA checkers from KNighter's artifacts.
-Native evidence helps recover silent vulnerable-side warnings, but the no-internal variant nearly matches its $F_1$ with fewer fixed-side reports overall.
-We therefore inspect the edited checkers and their reports to understand where the evidence helps and where it leaves a wrong object, scope or path.
+We present \toolname, a refinement framework that bridges this gap by feeding analyzer-internal evidence into the LLM's editing loop.
+Where existing refinement loops rely primarily on compilation and report feedback, \toolname additionally extracts semantic context from the analyzer itself: a rule-guided preflight selects patch-relevant views such as control-flow structure, symbolic-value bindings and checker callback traces, so the model can see what the checker actually observes at runtime rather than guess from silence alone.
+These facts are assembled with source context and validation feedback into a typed evidence bundle with explicit provenance, giving the model a structured diagnosis instead of a flat error log.
+The agent then edits the checker and validates it on both revisions, guarded by a retention gate that accepts warning recovery or false-positive reduction but rejects edits that lose an existing vulnerable-side warning, directly countering the over-pruning problem.
 
 This paper makes the following contributions:
-\begin{itemize}
+\begin{itemize}[leftmargin=*]
   \item We identify a gap between paired warning feedback and the analyzer's representation of the code a generated checker inspects. We define analyzer-internal evidence by its backend origin, extraction interface and source binding, and study how it can guide edits to an existing checker rather than regenerate one.
   \item To address this gap, we build \toolname as an end-to-end plug-in refinement system. It selects patch-relevant views, joins analyzer, source and validation records in a typed, provenance-labelled bundle, and iteratively edits, compiles and scans the detector on both revisions. A retention gate accepts warning recovery or fixed-side report reduction without losing an existing vulnerable warning. The main implementation targets CSA, with a separate CodeQL query adapter.
   \item We then evaluate all 39 selected generated-only Linux CSA checkers from the same starting artifacts, comparing the actual KNighter refinement loop with native and no-internal refinement. Native recovers eight initially silent vulnerable revisions. At the same time, no-internal reaches nearly the same $F_1$ with fewer fixed-side reports overall. We also repeat the evidence comparison on 12 subjects, run three editor configurations three times on that subset, refine an archived CodeQL query in three decodes, and inspect all 11 non-tied comparisons alongside controlled source changes. These analyses show both useful recognition repairs and warnings that remain on the wrong object, scope or path.

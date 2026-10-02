@@ -71,7 +71,7 @@ Decode & Rows (V,F) & Replies & Tokens & Agent time (s)\\\hline
 \end{tabular}\endgroup
 \end{table}
 
-\textbf{Second-backend costs.}
+\subhead{Second-backend costs.}
 Three warm paired replays per query reproduce $0/0$ before refinement and $8/0$ after it.
 Median query-plus-decode time is 12.57\,s initially and 36.51\,s after refinement with two threads; peak process RSS is 976/1,078\,MiB.
 Database-creation log intervals span 31/30\,s, excluding unlogged startup.
@@ -137,7 +137,7 @@ Capped, format-invalid and compile-failed attempts remain charged; a candidate t
 GLM-5.3-Flash has the highest mean $F_1$. However, its first-decode fixed-report advantage does not recur; GLM-5.3 has fewer fixed-side reports in all three decodes.
 The same 12 subjects, two-reply ceiling and native-only arm limit what can be inferred about other checkers or the contribution of evidence across models.
 
-\textbf{Controlled source replay.}
+\subhead{Controlled source replay.}
 Beyond model variation, we examine source changes in three selected original subjects, G01, G08 and G09; their unchanged-source controls reproduce the original paired counts.
 Local renaming and inert no-ops leave counts unchanged in these cases.
 Under the equivalent guard rewrite, native retains vulnerable-side warning presence in eight of nine case--change pairs: G01 falls from $2/2$ to $0/0$, G08 rises from $1/1$ to $2/2$, and G09 remains $1/1$.
@@ -146,6 +146,11 @@ These controlled changes identify source-form sensitivity without treating the t
 
 \subsection{Qualitative Findings}
 \label{sec:target-results}
+
+To validate whether warning-level improvements reflect genuine semantic understanding, we conduct three supplementary analyses.
+First, a target and report audit inspects all 11 non-tied native/no-internal comparisons across 362 report occurrences and 22 code diffs, classifying each report by target association and source support.
+Second, mechanism probes construct six controlled variants per case for G12, G19, G24 and G25 (48 files, 96 scans), and a separate intervention replaces native-observation lines with missing markers to test whether evidence removal changes the model's editing decisions.
+Third, a controlled source replay rescans three subjects under local renames, inert no-ops and equivalent guard rewrites to measure source-form sensitivity without re-invoking the model.
 
 To explain the native and no-internal differences, we inspect all 11 non-tied comparisons and their reported locations.
 The quantitative results match several distinct changes in the checkers.
@@ -166,7 +171,7 @@ G24 changes region, NULL and frame tests, removing 25 reports per side; its two 
 Some removed target reports are conditional.
 Thus this case shows lower inspection burden, but neither proves a valid target witness was lost nor establishes that the target was preserved.
 
-\textbf{Frozen perturbations.}
+\subhead{Frozen perturbations.}
 On the six positive and six negative fixtures per mechanism, retained native G12 reports at a target location in all positives and no negatives.
 This is within its annotation model; the diagnostic's remote-write note points to a local reset.
 G19 is silent on its adapted-wrapper suite.
@@ -177,7 +182,7 @@ For G24, the starting and no-internal artifacts report at target locations in al
 Native has no frozen target-line hits and 18/12 total reports.
 Secondary inspection supports some guard warnings outside that line list; the original location scores remain unchanged.
 
-\textbf{Selected-clue intervention.}
+\subhead{Selected-clue intervention.}
 All three full-evidence G25 decisions peel the outer casts around the sink expression; no withheld decision does.
 Two full decisions also change bookkeeping.
 After the separate compiler-only completion, full recovers target-line presence with negative-side noise, while withheld remains silent (Table~\ref{tab:checkpoint-intervention}).
@@ -187,7 +192,7 @@ Repetition 1 has six outer count-access reports that admit a source-feasible NUL
 
 \begin{table}[!htbp]
 \centering
-\caption{GLM-5.3-Flash bounded-adapter terminal artifacts after separate compiler-only completion. Each cell gives full and withheld results. Primary suites have six positive and six negative fixtures; G19 lowering has two of each and benign has four negatives. Hits and alerts are final-location presence, not validated diagnoses. Original strict-schema and adapter failures remain separate (Section~\ref{sec:target-followup}).}
+\caption{GLM-5.3-Flash bounded-adapter terminal artifacts after separate compiler-only completion. Each cell gives full and withheld results. Primary suites have six positive and six negative fixtures; G19 lowering has two of each and benign has four negatives. Hits and alerts are final-location presence, not validated diagnoses. Original strict-schema and adapter failures remain separate (Section~\ref{sec:target-results}).}
 \label{tab:checkpoint-intervention}
 \begingroup\FTTableSetup
 % Real header rows keep the grouped rule clear of multiline labels.

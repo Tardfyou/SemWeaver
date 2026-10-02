@@ -1,11 +1,14 @@
-LLM-based patch-driven synthesis can automatically generate static vulnerability checkers from security fixes, but the resulting checkers often capture only the syntactic shape of the patch while missing the semantic conditions needed to distinguish vulnerable code from fixed code.
-Compiler errors and warning reports help refine these checkers, yet do not always explain which condition needs to change.
-We observe that static-analysis engines also expose how the program is represented and how a checker uses that representation.
-\toolname is a plug-in refinement layer that collects patch-relevant analyzer evidence and combines it with source context and validation feedback in a typed evidence bundle.
-The agent edits the existing checker, while paired validation retains recovered vulnerable-side warnings or fewer fixed-side reports.
-We evaluate \toolname on 39 generated-only KNighter CSA checkers.
-Native-evidence refinement reaches 23 warning-positive vulnerable revisions, compared with 15 for KNighter's refinement loop, and raises version-level $F_1$ from $0.448$ to $0.575$.
-Without internal evidence, $F_1$ is nearly identical and the total fixed-side burden is lower.
-Within the complete 15-case initially noisy group, native refinement reduces fixed reports from 69 to 44, mainly through one case.
-Three decodes per model on a 12-subject subset, a controlled source-replay study and an automatic CodeQL refinement examine the workflow under other settings.
-A follow-up of all 11 non-tied comparisons shows how evidence helps repair checker recognition, and why the resulting warning can still concern the wrong object, scope or path.
+Recent work shows that LLMs can synthesize static-analysis checkers from security patches, but a compilable checker is not necessarily a correct one.
+A patch reveals what changed, not why the change is safe, so generated checkers often match only the surface edit and miss the deeper semantic condition.
+Existing refinement loops feed back compilation errors and validation reports, yet these signals describe symptoms without explaining what the checker misunderstands about the code.
+
+We observe that the analysis framework itself already computes the information needed to close this gap.
+Control-flow graphs, symbolic values, memory regions and checker callbacks are available inside the analyzer but unused by current refinement strategies.
+\toolname is a plug-in refinement layer that extracts patch-relevant analyzer evidence and assembles it with source context and validation feedback into a structured, provenance-labelled bundle.
+An iterative editing loop refines the checker on both the vulnerable and fixed revisions, guarded by a retention gate that accepts warning recovery or false-positive reduction while preventing over-pruning.
+
+We evaluate \toolname on 39 KNighter-derived CSA checkers from Linux kernel fixes.
+With analyzer evidence, refinement reaches 23 warning-positive vulnerable revisions (vs.\ 15 for KNighter's loop) and raises version-level $F_1$ from $0.448$ to $0.575$.
+Removing internal evidence yields nearly the same $F_1$ with fewer fixed-side reports.
+Additional experiments cover three editor models on a 12-subject subset, a CodeQL query refinement, and controlled source-form variations.
+A qualitative follow-up on all 11 non-tied comparisons shows how evidence helps repair checker recognition, and why the resulting warnings can still concern the wrong object, scope or path.
