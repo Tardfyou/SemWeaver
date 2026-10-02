@@ -14,6 +14,9 @@ prompt views, and the recorded-evidence packages in lossless transports.
 - [All39 starting checkers and patches](inputs/).
 - [English prompt pages](prompts/README.md).
 - [Illustrative versus main example checkers](example/).
+- [G21 controlled comparison](supplements/g21-controlled-comparison-v1/README.md):
+  the unchanged KNighter loop output, the scored main checker and the separate
+  illustrative checker on the same frozen source variants.
 - [Main results and tables](study-view/main39-tables/).
 - [Target-validation supplement](supplements/target-validation-v1/README.md):
   complete non-tie audit, controlled fixtures, phase-separated interventions,
