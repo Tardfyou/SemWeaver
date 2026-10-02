@@ -30,17 +30,12 @@ Third, the agent edits the checker and validates it on both revisions.
 A retention gate keeps vulnerable-side warning recovery or fixed-side report reduction while rejecting the loss of an existing vulnerable-side warning.
 
 We evaluate the workflow on all 39 selected generated-only CSA checkers from KNighter's artifacts.
-Native refinement recovers eight initially silent vulnerable revisions, compared with six without internal evidence.
-KNighter's report-driven policy makes no recovery edit on these silent starts.
-The native and no-internal variants have nearly equal $F_1$, with 123 and 68 fixed-side reports, respectively.
-Among the 15 initially noisy subjects, native refinement instead reduces fixed reports from KNighter's 69 to 44, largely through one subject.
-These results led us to examine the actual edits and reports behind the differences.
-An audit of all 11 non-tied comparisons, controlled perturbations of four mechanisms, source changes to three original subjects and repeated interventions at two checkpoints reveal useful recognition repairs alongside wrong-scope and infeasible-path warnings.
-The evidence can help the checker recognize an operation without supplying all the conditions needed to report it correctly.
+Native evidence helps recover silent vulnerable-side warnings, but the no-internal variant nearly matches its $F_1$ with fewer fixed-side reports overall.
+We therefore inspect the edited checkers and their reports to understand where the evidence helps and where it leaves a wrong object, scope or path.
 
 This paper makes the following contributions:
 \begin{itemize}
-  \item We present \toolname, a plug-in refinement layer that combines patch facts, source context, compiler representations and checker-execution observations in a typed, provenance-labelled evidence bundle.
-  \item We provide a 39-checker comparison with KNighter's refinement loop and a no-internal variant, together with repeated decodes, three-run model sensitivity, controlled source replay and a separate CodeQL case.
-  \item We analyze the code changes and diagnostic evidence behind the complete non-tie subset, explaining both useful local repairs and the semantic conditions they leave unresolved.
+  \item We identify a gap between paired warning feedback and the analyzer's representation of the code a generated checker inspects. We define analyzer-internal evidence by its backend origin, extraction interface and source binding, and study how it can guide edits to an existing checker rather than regenerate one.
+  \item We build \toolname as an end-to-end plug-in refinement system. It selects patch-relevant views, joins analyzer, source and validation records in a typed, provenance-labelled bundle, and iteratively edits, compiles and scans the detector on both revisions. A retention gate accepts warning recovery or fixed-side report reduction without losing an existing vulnerable warning. The main implementation targets CSA, with a separate CodeQL query adapter.
+  \item We evaluate all 39 selected generated-only Linux CSA checkers from the same starting artifacts, comparing the actual KNighter refinement loop with native and no-internal refinement. Native recovers eight initially silent vulnerable revisions, while no-internal reaches nearly the same $F_1$ with fewer fixed-side reports overall. We also repeat the evidence comparison on 12 subjects, run three editor configurations three times on that subset, refine an archived CodeQL query in three decodes, and inspect all 11 non-tied comparisons alongside controlled source changes. These analyses show both useful recognition repairs and warnings that remain on the wrong object, scope or path.
 \end{itemize}
