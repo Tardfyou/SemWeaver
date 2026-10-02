@@ -89,6 +89,10 @@ API misuse or missing check & \texttt{semantic\_slice}, \texttt{call\_chain} & C
 \subsection{Evidence Sources and Roles}
 \label{sec:evidence-roles}
 
+\noindent\textbf{Definition (Analyzer-internal evidence).}\quad
+An observation is analyzer-internal when its payload comes from an analyzer-produced intermediate representation or from checker callbacks and state observed inside the analyzer, rather than from source text or a final warning alone.
+In \toolname, it also identifies the extraction interface and retained raw output, and is bound to the source revision and patch-related file and function.
+
 Four collectors execute in sequence (Figure~\ref{fig:approach-architecture}b, top to bottom).
 
 \textbf{Patch preflight} identifies changed files, hunks and statements.
@@ -98,7 +102,6 @@ This supplies the structural skeleton: \emph{what changed} and \emph{where}.
 This provides local semantic context without dumping repository-scale source.
 
 \textbf{Analyzer evidence} records what the backend produces.
-We call a record \emph{analyzer-internal} when its payload comes from a backend-produced intermediate representation, identifies the interface and raw output, and is bound to a source revision, file and function.
 In the CSA study, Clang 18's \texttt{debug.DumpCFG} and \texttt{debug.DumpCallGraph} emit UTF-8 dumps.
 The collector parses them into \texttt{semweaver.csa\_cfg\_snapshot.v1}, retaining the raw-output SHA-256 and source scope.
 They supply CFG branches, value bindings and call edges.
