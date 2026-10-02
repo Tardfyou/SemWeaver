@@ -55,11 +55,11 @@ The first candidate passes independent Linux replay at \texttt{1/0}.
 \textbf{Checking the refinement.}
 The Linux pair alone cannot show whether the checker merely memorizes the patched function.
 We therefore test small C programs built from the same look-ahead pattern, changing names and capacities, inserting unrelated statements, and rewriting equivalent loop bounds and guards.
-Their diagnostics guide further automatic edits to the illustrative checker.
 The final version still reports \texttt{1/0} on Linux and gives the expected result on all 114 controlled executions: it warns on 58 unsafe cases and stays silent on 56 safe ones.
 On the same executions, KNighter's unchanged checker handles 31 unsafe and 25 safe cases correctly.
 AddressSanitizer also checks the safety labels for 80 of these variations~\cite{serebryany2012asan}.
 
-These programs were used during development; they are not additional Linux vulnerabilities.
-They show that the illustrated checker survives the tested source rewrites, while arbitrary aliasing, dynamic extents and non-unit loop updates remain untested.
-The one-response G21 checker scored in the main study also reaches \texttt{1/0} on Linux but passes 74 of the 114 tests.
+The 114 programs are constructed variations of the Linux bug, not 114 new vulnerabilities.
+Some helped guide the extra edits to the illustrated checker, so its \texttt{114/114} result applies to these tested variations.
+The 39-case experiment uses a separate one-response checker from the same starting code: it also gives \texttt{1/0} on Linux, but gets \texttt{74/114} here.
+We have not tested aliases, runtime-sized arrays or non-unit loop updates.
