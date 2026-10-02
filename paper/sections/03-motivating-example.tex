@@ -21,10 +21,10 @@ Other branch conditions determine whether the access occurs; the new loop bound 
   connect checker conditions to code.}
   \caption{\textbf{Capacity-aware look-ahead refinement.}
   Abridged code: $N$ denotes \lstinline|MAX_PIPES * 2| and
-  \texttt{hr\_match} host-router equality. Independent vulnerable/fixed alerts
+  \texttt{hr\_match} host-router equality. Independent alerts on the vulnerable and fixed revisions
   change from \texttt{1/1} to \texttt{1/0}. This 14-response illustration used
   fixture feedback and differs from the one-response main-study checker.
-  Orange/green arrows connect the bounds to the access; gray dotted links mark
+  Orange and green arrows connect the bounds to the access; gray dotted links mark
   semantic correspondences.}
   \label{fig:motivating}
 \end{figure}
@@ -39,7 +39,7 @@ The checker has learned that a look-ahead access needs a guard, but not how the 
 
 \textbf{Evidence-guided refinement.}
 \toolname starts from the same validation symptom and assembles the available patch, source and analyzer context.
-This bundle has four provenance-labelled records: two internal Clang~18 CFG/call-graph records and two analyzer-output records.
+This bundle has four provenance-labelled records: two internal Clang~18 CFG and call-graph records and two analyzer-output records.
 The internal records anchor the loop and branch context to raw \texttt{debug.DumpCFG} and \texttt{debug.DumpCallGraph} output; patch and source context identify the bound change.
 
 Both the starting and refined checkers use \lstinline|checkASTCodeBody|; the initial GLM-5.3-Flash edit adds a capacity-aware condition to the existing traversal.
@@ -55,10 +55,10 @@ Further probes expose shortcomings in the candidate's fallback and inherited gua
 Four automatic GPT-6-Luna-high quality continuations use 12 additional calls to repair these problems, giving 14 calls in total.
 They receive the recorded fixture diagnostics; every scored checker edit is model-produced, and failed intermediate versions are retained.
 The final checker still reports \texttt{1/0} on the Linux pair.
-It passes 28 core fixtures, six boundary fixtures, 20 additional guard/bound fixtures, and 60 renamed/capacity-varied executions of those 20 forms: 58/58 unsafe and 56/56 safe executions overall.
+It passes 28 core fixtures, six boundary fixtures, 20 additional guard and bound fixtures, and 60 executions of those forms with varied names and capacities: 58/58 unsafe and 56/56 safe executions overall.
 AddressSanitizer also checks the labels of the latter 80 executions~\cite{serebryany2012asan}.
 
-These tests cover name changes, unrelated statements, constant capacities and equivalent unit-step-loop/guard forms.
+These tests cover name changes, unrelated statements, constant capacities, and equivalent forms of unit-step loops and guards.
 They informed the refinement, so they are a finite development suite rather than unseen-data confirmation or 114 independent bugs.
 Arbitrary aliasing, dynamic extents and non-unit loop updates remain outside the tested forms.
 The stronger illustration is kept separate from the 39-case experiment: its one-response G21 checker also reports \texttt{1/0} on the Linux pair but passes 74/114 of these fixtures.

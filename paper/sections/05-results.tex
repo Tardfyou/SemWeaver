@@ -7,7 +7,7 @@ The anonymous artifact lists every subject and its paired counts.
 
 \begin{table}[!htbp]
 \centering
-\caption{CSA comparison: (a) all 39 subjects; (b) the complete preexisting 15-case fixed-noisy stratum, reusing the same outputs. TP/FP/FN are version-warning decisions; fixed reports measure burden and replies count received responses. Color shades $1-F_1$ at .25/.50/.75, not significance.}
+\caption{CSA comparison: (a) all 39 subjects; (b) the complete preexisting 15-case fixed-noisy stratum, reusing the same outputs. TP, FP and FN are version-warning decisions; fixed reports measure burden and replies count received responses. Color shades $1-F_1$ at .25, .50 and .75, not significance.}
 \label{tab:all39-system}
 \label{tab:matched14}
 \begingroup\FTTableSetup
@@ -15,7 +15,7 @@ The anonymous artifact lists every subject and its paired counts.
 \multicolumn{8}{l}{(a) Full cohort: 39 subjects}\\
 \hline\hline
 \multirow{2}{*}{Condition}&\multicolumn{4}{c|}{Version outcomes}&
-\multirow{2}{*}{$F_1$}&\multicolumn{2}{c}{Burden / effort}\\
+\multirow{2}{*}{$F_1$}&\multicolumn{2}{c}{Burden and effort}\\
 \cline{2-5}\cline{7-8}
 &PDS&TP&FP&FN&&Fixed reports&Replies\\\hline
 Unmodified &0&15&15&24&\FTFScore{.435}&73&0\\\hline
@@ -35,7 +35,7 @@ Fixed reports &69&44&68\\
 \endgroup
 \end{table}
 
-The additional warning coverage comes with more fixed-side reports.
+However, the additional warning coverage comes with more fixed-side reports.
 Native produces 123, compared with 68 for no-internal and 69 for KNighter.
 Its precision is $0.561$, versus $0.618$ for no-internal; their $F_1$ values are nearly equal.
 G12 accounts for 73 native fixed-side reports at distinct locations.
@@ -50,7 +50,7 @@ The follow-up in Section~\ref{sec:target-results} finds that G24's surviving rep
 \subsection{RQ2: Cross-Backend Feasibility}
 
 Table~\ref{tab:codeql-decoding} reports three automatic decodes of the archived ImageMagick CodeQL query.
-The starting query returns $0/0$ vulnerable/fixed rows.
+The starting query returns $0/0$ rows on the vulnerable and fixed revisions.
 Two decodes recover $8/0$; the third returns $22/22$.
 The successful edit corrects relative-path matching while keeping the exact file, function and local-variable filters.
 A second query already starts at $2/0$ and is excluded from the gain count.
@@ -58,12 +58,12 @@ This experiment exercises query refinement separately from the KNighter CSA comp
 
 \begin{table}[!htbp]
 \centering
-\caption{Three automatic CodeQL decodes of one query. Counts are vulnerable/fixed output rows; time is recorded agent-round duration, excluding separate paired replay.}
+\caption{Three automatic CodeQL decodes of one query. Counts are output rows on the vulnerable and fixed revisions; time is recorded agent-round duration, excluding separate paired replay.}
 \label{tab:codeql-decoding}
 \begingroup\FTTableSetup
 \begin{tabular}{c|c|crr}
 \hline\hline
-Decode & V/F rows & Replies & Tokens & Agent time (s)\\\hline
+Decode & Rows (V,F) & Replies & Tokens & Agent time (s)\\\hline
 1 &8/0&1&15,122&87.87\\
 2 &8/0&1&14,345&42.74\\
 3 &22/22&8&110,282&516.77\\
@@ -85,17 +85,17 @@ During refinement, 103 of 150 unique native-chain attempts have usable hash-boun
 The remaining attempts are unavailable because of candidate compilation (11), unsupported context (18), zero scoped callbacks (13), a reproduced candidate crash (1), or capped optional observations (4).
 Zero observations are treated as absence of evidence.
 
-Across the 39 subjects, native has six comparative benefits, five disadvantages and 28 ties/other outcomes.
-The edits include cleanup-wrapper recognition in G19, nested dereference/binding recovery in G25, and null/region/frame handling in G24.
-For example, adding the lowered cleanup name \texttt{\_\_free\_kfree} in G19 changes vulnerable/fixed counts to $15/0$, while no-internal remains at $0/0$.
+Across the 39 subjects, native has six comparative benefits, five disadvantages and 28 ties or other outcomes.
+The edits include cleanup-wrapper recognition in G19, nested dereference and binding recovery in G25, and handling of null values, regions and frames in G24.
+For example, adding the lowered cleanup name \texttt{\_\_free\_kfree} in G19 changes the counts on the vulnerable and fixed revisions to $15/0$, while no-internal remains at $0/0$.
 Conversely, no-internal recovers symbolic-region handling in G23 and persistent-field release recognition in G38.
 In G12, removing CPU-role restrictions broadens matching and produces the noise discussed above.
 
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=378bp]{figures/fig-e3-repeats.pdf}
-\Description{A twelve-subject by three-decode matrix of native and no-internal vulnerable/fixed warning counts, highlighting comparative benefits, disadvantages and ties.}
-\caption{E3: all 36 paired decodes on 12 subjects; cells compare native and no-internal V/F counts. Decode 1 reuses E1; the remaining decodes add 48 condition cells. Color and sign encode the comparative direction.}
+\Description{A twelve-subject by three-decode matrix of native and no-internal warning counts on vulnerable and fixed revisions, highlighting comparative benefits, disadvantages and ties.}
+\caption{E3: all 36 paired decodes on 12 subjects; cells compare native and no-internal counts on the vulnerable and fixed revisions. Decode 1 reuses E1; the remaining decodes add 48 condition cells. Color and sign encode the comparative direction.}
 \label{fig:repeats}
 \end{figure}
 
@@ -132,9 +132,9 @@ GLM-5.3-Flash high &.692&.560&.667&.640&.070&11/41/40\\
 \end{table}
 
 Received replies across the three decodes are 24/23/24 for GPT-6-Luna, 23/23/21 for GLM-5.3 and 21/23/21 for GLM-5.3-Flash.
-Their PDS counts are 1/2/0, 2/2/4 and 4/1/4, respectively; identical vulnerable/fixed warning counts across all three runs occur on 8, 3 and 4 of the 12 subjects.
+Their PDS counts are 1/2/0, 2/2/4 and 4/1/4, respectively; identical warning counts on the vulnerable and fixed revisions across all three runs occur on 8, 3 and 4 of the 12 subjects.
 Capped, format-invalid and compile-failed attempts remain charged; a candidate that cannot complete a valid paired scan is not scored as an improvement.
-GLM-5.3-Flash has the highest mean $F_1$, but its first-decode fixed-report advantage does not recur; GLM-5.3 has fewer fixed-side reports in all three decodes.
+GLM-5.3-Flash has the highest mean $F_1$. However, its first-decode fixed-report advantage does not recur; GLM-5.3 has fewer fixed-side reports in all three decodes.
 The same 12 subjects, two-reply ceiling and native-only arm limit what can be inferred about other checkers or the contribution of evidence across models.
 
 \textbf{Controlled source replay.}
@@ -172,8 +172,8 @@ This is within its annotation model; the diagnostic's remote-write note points t
 G19 is silent on its adapted-wrapper suite.
 Its separate canonical control produces one supported early-exit report and one wrong-scope allocator-return report, and it misses the renamed wrapper.
 G25 reports at target locations in all six positives and five negatives.
-Starting/no-internal artifacts are silent for these three cases.
-For G24, starting/no-internal reports at target locations in all six positives and six negatives, with 108/108 total reports.
+The starting and no-internal artifacts are silent for these three cases.
+For G24, the starting and no-internal artifacts report at target locations in all six positives and six negatives, with 108/108 total reports.
 Native has no frozen target-line hits and 18/12 total reports.
 Secondary inspection supports some guard warnings outside that line list; the original location scores remain unchanged.
 
@@ -187,7 +187,7 @@ Repetition 1 has six outer count-access reports that admit a source-feasible NUL
 
 \begin{table}[!htbp]
 \centering
-\caption{GLM-5.3-Flash bounded-adapter terminal artifacts after separate compiler-only completion. Each cell is full/withheld. Primary suites have six positive and six negative fixtures; G19 lowering has two of each and benign has four negatives. Hits/alerts are final-location presence, not validated diagnoses. Original strict/adapter failures remain separate (Section~\ref{sec:target-followup}).}
+\caption{GLM-5.3-Flash bounded-adapter terminal artifacts after separate compiler-only completion. Each cell gives full and withheld results. Primary suites have six positive and six negative fixtures; G19 lowering has two of each and benign has four negatives. Hits and alerts are final-location presence, not validated diagnoses. Original strict-schema and adapter failures remain separate (Section~\ref{sec:target-followup}).}
 \label{tab:checkpoint-intervention}
 \begingroup\FTTableSetup
 % Real header rows keep the grouped rule clear of multiline labels.

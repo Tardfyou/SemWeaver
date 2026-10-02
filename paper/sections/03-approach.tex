@@ -53,9 +53,9 @@ Passing them wholesale to the model dilutes the facts relevant to the checker un
 \toolname limits collection to patch-related source and presents selected evidence roles through bounded views.
 
 \textbf{Rule-guided preflight.}
-\texttt{PatchFacts\allowbreak Extractor} parses affected functions, added guards, risky calls and type widenings.
-\texttt{Evidence\allowbreak Planner} uses a primary pattern from analysis metadata when available, or infers it from these facts.
-It assigns fixed priorities: patch anchoring is 100, double-free/use-after-free lifetime and state requirements are 92/89, and null/bounds guards are 90.
+PatchFacts Extractor parses affected functions, added guards, risky calls and type widenings.
+Evidence Planner uses a primary pattern from analysis metadata when available, or infers it from these facts.
+It assigns fixed priorities: patch anchoring is 100; lifetime and state requirements are 92 for double-free and 89 for use-after-free; null and bounds guards are 90.
 Requirements are sorted by decreasing priority, with evidence type breaking ties; the default retains at most eight.
 Table~\ref{tab:evidence-routing} shows representative mappings.
 These priorities order collection requirements, rather than express confidence in individual facts.
@@ -76,11 +76,11 @@ The general interface supports bounded, deduplicated role requests; their utilit
 \hline\hline
 Patch mechanism & Possible record types & Backend \\
 \hline
-Cleanup edge / double free & \texttt{allocation\_lifecycle}, \texttt{state\_transition}, \texttt{path\_guard} & CSA \\
-Bounds widening / overflow & \texttt{semantic\_slice}, \texttt{dataflow\_candidate}, \texttt{state\_transition} & CSA/CodeQL \\
-Initialization / null deref & \texttt{state\_transition}, \texttt{path\_guard} & CSA \\
-Use-after-free / escape & \texttt{allocation\_lifecycle}, \texttt{call\_chain} & CSA/CodeQL \\
-API misuse / missing check & \texttt{semantic\_slice}, \texttt{call\_chain} & CodeQL \\
+Cleanup edge or double free & \texttt{allocation\_lifecycle}, \texttt{state\_transition}, \texttt{path\_guard} & CSA \\
+Bounds widening or overflow & \texttt{semantic\_slice}, \texttt{dataflow\_candidate}, \texttt{state\_transition} & CSA and CodeQL \\
+Initialization or null dereference & \texttt{state\_transition}, \texttt{path\_guard} & CSA \\
+Use-after-free or escape & \texttt{allocation\_lifecycle}, \texttt{call\_chain} & CSA and CodeQL \\
+API misuse or missing check & \texttt{semantic\_slice}, \texttt{call\_chain} & CodeQL \\
 \hline\hline
 \end{tabular}
 \endgroup
@@ -94,7 +94,7 @@ Four collectors execute in sequence (Figure~\ref{fig:approach-architecture}b, to
 \textbf{Patch preflight} identifies changed files, hunks and statements.
 This supplies the structural skeleton: \emph{what changed} and \emph{where}.
 
-\textbf{Source extraction} resolves patch files and records bounded contexts around the changed code, including enclosing functions, branch guards, callee signatures, memory/state operations, and build flags.
+\textbf{Source extraction} resolves patch files and records bounded contexts around the changed code, including enclosing functions, branch guards, callee signatures, memory and state operations, and build flags.
 This provides local semantic context without dumping repository-scale source.
 
 \textbf{Analyzer evidence} records what the backend produces.
@@ -103,7 +103,7 @@ In the CSA study, Clang 18's \texttt{debug.DumpCFG} and \texttt{debug.DumpCallGr
 The collector parses them into \texttt{semweaver.csa\_cfg\_snapshot.v1}, retaining the raw-output SHA-256 and source scope.
 They supply CFG branches, value bindings and call edges.
 
-The implementation also observes instrumented CSA callbacks, abstract values/regions and checker-state associations.
+The implementation also observes instrumented CSA callbacks, abstract values and regions, and checker-state associations.
 Raw observations use JSONL schema \texttt{semweaver.checker\_trace.v2}; bounded feedback uses \texttt{semweaver.trace\_feedback.v1}.
 Original and instrumented scans must preserve diagnostics on both revisions.
 These are checker observations, not concrete executions of the vulnerable program.
@@ -147,8 +147,8 @@ When a selected role yields no evidence, the bundle retains an explicit missing-
 \subsection{Evidence Bundle Schema}
 \label{sec:evidence-schema}
 
-The normalizer merges all collected facts into the \texttt{EvidenceBundle} shown in Figure~\ref{fig:approach-architecture}c.
-Each fact becomes an \texttt{EvidenceRecord} carrying a type, the contributing analyzer, scope, source location, payload, provenance, and an optional \texttt{EvidenceSlice} (the compact semantic content consumed by the agent).
+The normalizer merges all collected facts into the EvidenceBundle shown in Figure~\ref{fig:approach-architecture}c.
+Each fact becomes an EvidenceRecord carrying a type, the contributing analyzer, scope, source location, payload, provenance, and an optional EvidenceSlice (the compact semantic content consumed by the agent).
 The schema separates program facts from analysis rules in the spirit of relational analyzer frameworks~\cite{avgustinov2016ql,jordan2016souffle,bravenboer2009doop}, but uses a smaller role vocabulary tailored to checker refinement.
 Formally:
 \begin{equation}
@@ -176,7 +176,7 @@ The CSA comparison makes zero additional evidence requests.
 \textbf{Model and programmatic steps.}
 The model proposes checker edits and may supply patch-analysis metadata or enabled role requests.
 Preflight rules, normalization, raw-output hashing, source binding, compilation, paired replay and acceptance are programmatic.
-The editor prompt gives the current/starting checker, patch, source/evidence context, V/F symptoms and backend-specific edit/validation rules.
+The editor prompt gives the current and starting checkers, patch, source and evidence context, symptoms on both revisions, and backend-specific editing and validation rules.
 Repair prompts contain the actual compiler diagnostics.
 The artifact retains English templates and rendered exchanges, with missing historical exchanges marked.
 
@@ -193,9 +193,9 @@ Algorithm~\ref{alg:evidence-guided-refinement} gives the loop; the protocol spec
 CSA checkers are compiled and replayed against both revisions, while CodeQL queries run over the corresponding databases.
 
 \textbf{Adding a backend.}
-An adapter provides registration, evidence/provenance mapping, dependencies, execution/result decoding and paired validation.
+An adapter provides registration, evidence and provenance mapping, dependencies, execution and result decoding, and paired validation.
 Shared modules still contain backend branches.
 The four CodeQL-specific modules occupy 2,438 physical lines, including comments and generation code.
 With an analyzer and patch pair already available, we estimate that a familiar developer using Codex could complete a basic adapter within an afternoon; developer time was not measured.
 New native-evidence semantics and broad validation require additional work.
-A new bug mechanism needs a role mapping and safe/unsafe fixtures, with a new extractor where a required relation is unavailable.
+A new bug mechanism needs a role mapping and fixtures for safe and unsafe cases, with a new extractor where a required relation is unavailable.
