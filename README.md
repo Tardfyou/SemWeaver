@@ -1,16 +1,10 @@
 # Checker-refinement review snapshot
 
-This repository contains the final manuscript, readable study inputs and English
-prompt views, and the recorded-evidence packages in lossless transports.
+This repository contains readable study inputs and English prompt views, and
+the recorded-evidence packages in lossless transports.
 
 ## Browse
 
-- [Paper PDF](paper/main.pdf) and [LaTeX](paper/main.tex).
-- [Original editable author-slide subset (before Figures 1 and 2 were corrected)](paper/figures/manual/semweaver-figures.pptx)
-  and [current author-exported source PDF](paper/figures/manual/source-slides.pdf).
-- [Current exact paper archive](paper-current.tar.gz),
-  [layout change note](paper/checks/LAYOUT_REFRESH.md) and
-  [current figure sources and export instructions](paper/figures/manual/README.md).
 - [All39 starting checkers and patches](inputs/).
 - [English prompt pages](prompts/README.md).
 - [Illustrative versus main example checkers](example/).
@@ -35,41 +29,38 @@ Every published file is at most7MiB, to fit the anonymous service's documented
 single-file limit. The neutral binary parts contain the complete already-vetted
 publication tree, including large indexes and original byte bindings. They are
 not text-anonymized again. Browsable text may receive additional service masking;
-use the protected tree when validating experimental bytes. The original transport is an
-immutable experiment-closure snapshot and contains the paper as it stood at
-closure. The current paper is in `paper/` and the separately hash-bound
-`paper-current.tar.gz`; original payload parts are unchanged.
+use the protected tree when validating experimental bytes. The transport is an
+immutable experiment-closure snapshot; payload parts are hash-bound by
+`TRANSPORT_INDEX.json`.
 
-To rebuild the latest paper without text-masking changes, download the small
-archive, check its SHA-256 against `RELEASE_ID.txt`, and extract into a new folder:
+The target-validation supplement contains the earlier follow-up; the
+repeated-model/source-replay supplement contains the completed three-run E4 and
+controlled source study. Both have separate small-file transports and offline
+instructions; the immutable 142-part main package is unchanged.
+
+To rebuild the exact publication tree, reassemble the verified parts and
+extract into a new folder:
 
 ```sh
-mkdir ../paper-current
-tar -xzf paper-current.tar.gz -C ../paper-current
-cd ../paper-current/paper
-latexmk -pdf main.tex
+mkdir ../review-exact
+cat payload/part-*.bin | zcat | tar -xf - -C ../review-exact
 ```
 
-The archive contains the current PDF and required sources. The target-validation
-supplement contains the earlier follow-up; the repeated-model/source-replay
-supplement contains the completed three-run E4 and controlled source study.
-Both have separate small-file transports and offline instructions; the immutable
-143-part main package is unchanged.
-
-If the service does not offer a repository ZIP download, use its public file API
-(replace `REVIEW_ID` with the identifier from your anonymous link):
+Part sizes and SHA-256 values are recorded in `TRANSPORT_INDEX.json`; each part
+can be checked before reassembly. If the service does not offer a repository
+ZIP download, use its public file API (replace `REVIEW_ID` with the identifier
+from your anonymous link):
 
 ```sh
 python3 download_transport.py --api-base https://anonymous.4open.science/api/repo/REVIEW_ID/file --output ../review-download
-python3 ../review-download/restore_review.py restore ../review-download --output ../review-exact
 ```
 
 Downloads use ordinary public GET requests, bounded retries, and byte hashes.
 An access-denied response is reported, never bypassed or treated as empty data.
 
+Then continue offline:
+
 ```sh
-python3 restore_review.py verify .
-python3 restore_review.py restore . --output ../review-exact
 python3 ../review-exact/recorded-study/unpack_artifact.py verify ../review-exact/recorded-study
 python3 ../review-exact/recorded-study/unpack_artifact.py unpack ../review-exact/recorded-study --output ../study-expanded
 python3 ../study-expanded/project/final-native-20260928/verify_final_artifact.py ../study-expanded

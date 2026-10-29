@@ -50,10 +50,6 @@ if __name__=='__main__':
     if index.get('schema')!='review-byte-transport.v1':
         raise ValueError('Unexpected public index')
     (args.output/'TRANSPORT_INDEX.json').write_bytes(raw)
-    helper=fetch(args.api_base,'restore_review.py')
-    if hashlib.sha256(helper).hexdigest()!=index['helper_sha256']:
-        raise ValueError('Restore helper hash mismatch; service may have modified text')
-    (args.output/'restore_review.py').write_bytes(helper)
     for i,part in enumerate(index['parts'],1):
         name=part['path']
         if ('..' in Path(name).parts or Path(name).is_absolute() or
@@ -66,4 +62,5 @@ if __name__=='__main__':
         target.parent.mkdir(exist_ok=True)
         target.write_bytes(data)
         print(f'Verified part{i}/{len(index["parts"])}',flush=True)
-    print('Public transport downloaded and verified; run restore_review.py next.')
+    print('Public transport downloaded and verified; reassemble with:')
+    print('  cat payload/part-*.bin | zcat | tar -xf - -C NEW_DIR')
