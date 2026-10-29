@@ -569,15 +569,15 @@ All cases are experimental samples. Do not recreate a development/holdout split.
   reports; target retention remains unproven. QUALIFICATION_G12.json verifies
   that fixed73 reports are73 distinct location-description signatures, not just
   duplicate paths; keep this noisy result and do not call it low-noise benefit.
-- User identified /mnt/hdd:96TB available. move_idle_clones_to_hdd.py relocated
+- User identified cold-storage mount (96TB) available. move_idle_clones_to_hdd.py relocated
   eight idle promisor screening clones, verifying every copied file hash and
   git HEAD, then preserving original host paths as symlinks. Frozen input paths,
   active bundles/adoptions and every current linux_dir were checked against the
   selected names. No current kernel lane or model/evidence output was moved.
-  HDD_COLD_RELOCATION.json records /mnt/hdd/semweaver-cold-20260929.e53dro12.
+  HDD_COLD_RELOCATION.json records ./semweaver-cold-20260929.e53dro12.
   Additional shard/mirror clones use the same checks via a separately versioned
   adapter; HDD_COLD_RELOCATION_SECOND.json records their in-progress relocation.
-  Old Docker containers do not mount /mnt/hdd, so never move a live/referenced
+  Old Docker containers do not mount the cold-storage volume, so never move a live/referenced
   path there without updating container mounts. These selected clones are idle.
 - SSD availability recovered above96GiB; storage guard automatically resumed
   the named bulk launchers. Last check134G free, normal queues live. Do not treat

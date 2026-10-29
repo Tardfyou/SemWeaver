@@ -21,9 +21,9 @@ def verified_copy(source,destination):
 
 
 if __name__=='__main__':
-    assert Path('/mnt/hdd').is_mount()
+    cold_parent=Path(os.environ.get('SEMWEAVER_COLD_ROOT','./cold-storage'));cold_parent.mkdir(parents=True,exist_ok=True)
     owner=PROJECT.stat()
-    cold=Path(tempfile.mkdtemp(prefix='semweaver-cold-20260929.',dir='/mnt/hdd'))
+    cold=Path(tempfile.mkdtemp(prefix='semweaver-cold-20260929.',dir=cold_parent))
     os.chown(cold,owner.st_uid,owner.st_gid)
     names=[f'linux-screen-v8-promisor-{i}' for i in range(4)]+[f'linux-screen-v8-promisor2-{i}' for i in range(4)]
     # These are not experimental source lanes or frozen evidence inputs.
